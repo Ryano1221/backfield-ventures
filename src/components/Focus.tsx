@@ -4,9 +4,9 @@ export default function Focus() {
   const areas = [
     {
       category: "Consumer",
-      tagline: "Brands people love",
+      label: "Brands people return to",
       description:
-        "We back founders redefining how people eat, move, belong, and spend. From DTC brands with loyal followings to platforms changing everyday behavior — if it resonates with the modern consumer, we want to be in it.",
+        "We back founders redefining how people eat, move, belong, and spend. From DTC brands with loyal communities to platforms reshaping everyday behavior.",
       examples: [
         "Direct-to-consumer brands",
         "Consumer health & wellness",
@@ -14,12 +14,13 @@ export default function Focus() {
         "Modern lifestyle brands",
         "Commerce & marketplaces",
       ],
+      accent: false,
     },
     {
       category: "Sports",
-      tagline: "Where passion meets platform",
+      label: "Where passion becomes platform",
       description:
-        "Sports is one of the most culturally charged categories in the world — and one of the most underserved by sophisticated capital. We invest across the full ecosystem: fan experience, athlete platforms, sports media, and the infrastructure that powers the modern game.",
+        "Sports is one of the most culturally powerful categories in the world — and one of the most underserved by sophisticated capital. We invest across the full ecosystem.",
       examples: [
         "Fan engagement & experiences",
         "Athlete brands & ventures",
@@ -27,18 +28,20 @@ export default function Focus() {
         "Media & streaming",
         "Sports data & analytics",
       ],
+      accent: true,
     },
     {
       category: "Adjacent",
-      tagline: "Conviction without constraint",
+      label: "Conviction without constraint",
       description:
-        "We don't draw hard lines. Occasionally we back companies that sit at the intersection of our themes or fall outside them entirely — when the founder is exceptional and the opportunity is clear.",
+        "Occasionally we back companies that sit at the intersection of our themes or fall outside them entirely — when the founder is exceptional and the opportunity is clear.",
       examples: [
         "Emerging creator economy",
         "Entertainment & media",
         "Luxury & premium goods",
         "Adjacent infrastructure",
       ],
+      accent: false,
     },
   ];
 
@@ -46,56 +49,51 @@ export default function Focus() {
     <section
       id="focus"
       style={{
-        padding: "140px 32px",
+        padding: "120px 40px",
         maxWidth: "1200px",
         margin: "0 auto",
       }}
     >
-      {/* Section header */}
-      <div style={{ marginBottom: "80px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "64px" }}>
+        <div className="eyebrow">Investment Focus</div>
         <div
+          className="two-col-grid"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            marginBottom: "20px",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "60px",
+            alignItems: "end",
           }}
         >
-          <span
+          <h2
             style={{
-              display: "block",
-              width: "28px",
-              height: "1px",
-              background: "var(--color-gold)",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 500,
-              letterSpacing: "0.18em",
+              fontFamily: "var(--font-montserrat), system-ui, sans-serif",
+              fontSize: "clamp(32px, 4vw, 48px)",
+              fontWeight: 800,
+              lineHeight: 1.1,
+              letterSpacing: "-0.02em",
               textTransform: "uppercase",
-              color: "var(--color-gold)",
+              color: "var(--color-text)",
+              margin: 0,
             }}
           >
-            Investment Focus
-          </span>
+            Where we{" "}
+            <span style={{ color: "var(--color-blue)" }}>concentrate</span>
+          </h2>
+          <p
+            style={{
+              fontSize: "14px",
+              lineHeight: 1.8,
+              color: "var(--color-text-secondary)",
+              margin: 0,
+            }}
+          >
+            Two primary categories. One firm with deep relationships in both.
+            We don&apos;t try to cover the waterfront — we go deep where we have
+            genuine edge.
+          </p>
         </div>
-        <h2
-          style={{
-            fontFamily: "var(--font-cormorant), Georgia, serif",
-            fontSize: "clamp(38px, 5vw, 58px)",
-            fontWeight: 400,
-            lineHeight: 1.1,
-            color: "var(--color-text-primary)",
-            maxWidth: "560px",
-          }}
-        >
-          Where we{" "}
-          <em style={{ fontStyle: "italic", color: "var(--color-gold-light)" }}>
-            concentrate
-          </em>
-        </h2>
       </div>
 
       {/* Cards */}
@@ -103,80 +101,97 @@ export default function Focus() {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "1px",
-          background: "var(--color-border)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "4px",
-          overflow: "hidden",
+          gap: "20px",
         }}
       >
         {areas.map((area) => (
           <div
             key={area.category}
             style={{
-              background: "var(--color-surface)",
-              padding: "48px 40px",
+              background: area.accent ? "var(--color-blue)" : "var(--color-surface)",
+              border: area.accent
+                ? "2px solid var(--color-blue)"
+                : "1px solid var(--color-border)",
+              borderRadius: "6px",
+              padding: "40px 36px",
               display: "flex",
               flexDirection: "column",
-              gap: "0",
-              transition: "background 0.2s ease",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              cursor: "default",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--color-surface-2)";
+              const el = e.currentTarget as HTMLElement;
+              el.style.transform = "translateY(-2px)";
+              el.style.boxShadow = area.accent
+                ? "0 12px 40px rgba(29,103,188,0.3)"
+                : "0 8px 32px rgba(14,28,46,0.08)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--color-surface)";
+              const el = e.currentTarget as HTMLElement;
+              el.style.transform = "translateY(0)";
+              el.style.boxShadow = "none";
             }}
           >
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 500,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: "var(--color-gold)",
-                marginBottom: "16px",
-              }}
-            >
-              {area.category}
-            </span>
+            {/* Category badge */}
+            <div style={{ marginBottom: "20px" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: area.accent ? "rgba(255,255,255,0.7)" : "var(--color-blue)",
+                  background: area.accent
+                    ? "rgba(255,255,255,0.12)"
+                    : "var(--color-blue-faint)",
+                  padding: "5px 12px",
+                  borderRadius: "2px",
+                  border: area.accent
+                    ? "1px solid rgba(255,255,255,0.2)"
+                    : "1px solid var(--color-blue-pale)",
+                }}
+              >
+                {area.category}
+              </span>
+            </div>
+
             <h3
               style={{
-                fontFamily: "var(--font-cormorant), Georgia, serif",
-                fontSize: "28px",
-                fontWeight: 400,
-                color: "var(--color-text-primary)",
-                marginBottom: "20px",
-                lineHeight: 1.2,
+                fontFamily: "var(--font-montserrat), system-ui, sans-serif",
+                fontSize: "20px",
+                fontWeight: 700,
+                lineHeight: 1.25,
+                color: area.accent ? "#fff" : "var(--color-text)",
+                marginBottom: "16px",
+                letterSpacing: "-0.01em",
               }}
             >
-              {area.tagline}
+              {area.label}
             </h3>
+
             <p
               style={{
-                fontSize: "14px",
+                fontSize: "13.5px",
                 lineHeight: 1.75,
-                color: "var(--color-text-secondary)",
+                color: area.accent ? "rgba(255,255,255,0.75)" : "var(--color-text-secondary)",
                 marginBottom: "32px",
                 flex: 1,
               }}
             >
               {area.description}
             </p>
-            <ul
+
+            {/* Divider */}
+            <div
               style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                borderTop: "1px solid var(--color-border)",
-                paddingTop: "28px",
+                height: "1px",
+                background: area.accent ? "rgba(255,255,255,0.15)" : "var(--color-border)",
+                marginBottom: "24px",
               }}
-            >
+            />
+
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "9px" }}>
               {area.examples.map((ex) => (
                 <li
                   key={ex}
@@ -184,17 +199,17 @@ export default function Focus() {
                     display: "flex",
                     alignItems: "center",
                     gap: "10px",
-                    fontSize: "13px",
-                    color: "var(--color-text-muted)",
+                    fontSize: "12.5px",
+                    fontWeight: 500,
+                    color: area.accent ? "rgba(255,255,255,0.65)" : "var(--color-text-muted)",
                   }}
                 >
                   <span
                     style={{
-                      width: "4px",
-                      height: "4px",
+                      width: "5px",
+                      height: "5px",
                       borderRadius: "50%",
-                      background: "var(--color-gold)",
-                      opacity: 0.6,
+                      background: area.accent ? "rgba(255,255,255,0.5)" : "var(--color-blue)",
                       flexShrink: 0,
                     }}
                   />

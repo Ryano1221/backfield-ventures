@@ -1,33 +1,51 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+   BACKFIELD VENTURES — Design Tokens
+   Colors extracted directly from the official logo:
+     Primary Blue  : #1D67BC  (arch, wordmark, dominant brand color)
+     Blue Dark     : #1550A0  (pressed states, depth)
+     Blue Light    : #4A90D9  (hover states, supporting blue)
+     Blue Pale     : #D8EAFE  (tinted backgrounds, light surfaces)
+     Red Accent    : #CC2B33  (roof trim, field stripes — restrained use only)
+     White         : #FFFFFF
+─────────────────────────────────────────────────────────────── */
+
 :root {
-  /* Brand Colors */
-  --color-bg: #09090B;
-  --color-surface: #111113;
-  --color-surface-2: #18181B;
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-border-strong: rgba(255, 255, 255, 0.12);
+  /* Brand Blues */
+  --color-blue:       #1D67BC;
+  --color-blue-dark:  #1550A0;
+  --color-blue-light: #4A90D9;
+  --color-blue-pale:  #D8EAFE;
+  --color-blue-faint: #F0F6FF;
+
+  /* Brand Red — accent only */
+  --color-red:        #CC2B33;
+  --color-red-faint:  #FFF0F1;
+
+  /* Backgrounds */
+  --color-bg:        #F5F8FC;
+  --color-surface:   #FFFFFF;
+  --color-surface-2: #EEF4FB;
 
   /* Text */
-  --color-text-primary: #F4EFE6;
-  --color-text-secondary: #9E9690;
-  --color-text-muted: #5C5852;
+  --color-text:           #0E1C2E;
+  --color-text-secondary: #3D5470;
+  --color-text-muted:     #7A93AD;
 
-  /* Accent */
-  --color-gold: #C8A86B;
-  --color-gold-light: #E2C99A;
-  --color-gold-dim: rgba(200, 168, 107, 0.15);
+  /* Borders */
+  --color-border:       #D4DDE9;
+  --color-border-light: #E8EFF7;
 
-  /* Background */
+  /* Aliases */
   --background: var(--color-bg);
-  --foreground: var(--color-text-primary);
+  --foreground: var(--color-text);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-cormorant);
+  --font-sans: var(--font-montserrat);
 }
 
 * {
@@ -42,150 +60,139 @@ html {
 
 body {
   background: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  color: var(--color-text);
+  font-family: var(--font-montserrat), system-ui, sans-serif;
   line-height: 1.6;
-}
-
-/* Typography */
-.font-display {
-  font-family: var(--font-cormorant), Georgia, serif;
 }
 
 /* Selection */
 ::selection {
-  background: var(--color-gold-dim);
-  color: var(--color-gold-light);
+  background: var(--color-blue-pale);
+  color: var(--color-blue-dark);
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+
+/* ── Global Buttons ─────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--color-blue);
+  color: #fff;
+  font-family: var(--font-montserrat), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 3px;
+  border: 2px solid var(--color-blue);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  cursor: pointer;
 }
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border-radius: 2px;
+.btn-primary:hover {
+  background: var(--color-blue-dark);
+  border-color: var(--color-blue-dark);
+  transform: translateY(-1px);
 }
 
-/* Utility classes */
-.text-primary { color: var(--color-text-primary); }
-.text-secondary { color: var(--color-text-secondary); }
-.text-muted { color: var(--color-text-muted); }
-.text-gold { color: var(--color-gold); }
-.text-gold-light { color: var(--color-gold-light); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: transparent;
+  color: var(--color-blue);
+  font-family: var(--font-montserrat), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 3px;
+  border: 2px solid var(--color-blue);
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: var(--color-blue);
+  color: #fff;
+  transform: translateY(-1px);
+}
 
-.bg-surface { background: var(--color-surface); }
-.bg-surface-2 { background: var(--color-surface-2); }
-.border-subtle { border-color: var(--color-border); }
-.border-strong { border-color: var(--color-border-strong); }
+/* ── Section eyebrow label ──────────────────────────────────── */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-blue);
+  margin-bottom: 18px;
+}
+.eyebrow::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--color-blue);
+  border-radius: 1px;
+  flex-shrink: 0;
+}
 
-/* Field line - thin gold line motif */
+/* ── Field-line accent ──────────────────────────────────────── */
 .field-line {
   display: block;
   width: 40px;
-  height: 1px;
-  background: var(--color-gold);
-  opacity: 0.7;
+  height: 2px;
+  background: var(--color-blue);
+  border-radius: 1px;
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, var(--color-gold-light) 0%, var(--color-gold) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.field-line-red {
+  display: block;
+  width: 32px;
+  height: 2px;
+  background: var(--color-red);
+  border-radius: 1px;
 }
 
-/* Fade in animation */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-fade-up {
-  animation: fadeUp 0.7s ease forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease forwards;
-}
-
-/* Delay utilities */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-
-/* ── Responsive layouts ─────────────────────────────────────── */
-@media (max-width: 768px) {
-  /* Two-col grids collapse to single col */
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
   .two-col-grid {
     grid-template-columns: 1fr !important;
     gap: 40px !important;
   }
+  .hero-ctas {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .hero-ctas a,
+  .hero-ctas button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
 
-  /* Sections get less padding on mobile */
+@media (max-width: 640px) {
   section {
-    padding-top: 80px !important;
-    padding-bottom: 80px !important;
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
-
-  /* Nav padding */
   header > div {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
-
-  /* Focus section grid */
-  .focus-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Why Backfield grid */
-  .why-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Contact grid */
-  .contact-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Footer */
   footer > div {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 16px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  /* Stacked CTAs on small phones */
-  .hero-ctas {
-    flex-direction: column !important;
-    align-items: center !important;
-  }
-
-  .hero-ctas a {
-    width: 100% !important;
-    text-align: center !important;
   }
 }

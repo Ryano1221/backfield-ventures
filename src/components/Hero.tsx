@@ -10,13 +10,68 @@ export default function Hero() {
     setMounted(true);
   }, []);
 
-  // Subtle animated field-line canvas background
+  // Subtle stadium field geometry on a light background
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const draw = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Stadium arc (top-center) — like the logo's arch
+      ctx.strokeStyle = "rgba(29, 103, 188, 0.07)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(w * 0.5, h * -0.2, w * 0.65, 0, Math.PI, false);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(29, 103, 188, 0.04)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.arc(w * 0.5, h * -0.1, w * 0.55, 0, Math.PI, false);
+      ctx.stroke();
+
+      // Field horizontal lines — evenly spaced, converging toward center (perspective)
+      const lineCount = 8;
+      for (let i = 0; i < lineCount; i++) {
+        const t = i / lineCount;
+        const y = h * 0.5 + t * h * 0.55;
+        const xPad = w * 0.08 + t * w * 0.12;
+        ctx.strokeStyle = `rgba(29, 103, 188, ${0.045 - t * 0.004})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(xPad, y);
+        ctx.lineTo(w - xPad, y);
+        ctx.stroke();
+      }
+
+      // Two red accent lines at bottom — field stripe echo
+      ctx.strokeStyle = "rgba(204, 43, 51, 0.09)";
+      ctx.lineWidth = 1.5;
+      const ry1 = h * 0.82;
+      const ry2 = h * 0.87;
+      const rPad = w * 0.15;
+      ctx.beginPath();
+      ctx.moveTo(rPad, ry1);
+      ctx.lineTo(w - rPad, ry1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(rPad * 1.4, ry2);
+      ctx.lineTo(w - rPad * 1.4, ry2);
+      ctx.stroke();
+
+      // Vertical center axis
+      ctx.strokeStyle = "rgba(29, 103, 188, 0.04)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.5, h * 0.45);
+      ctx.lineTo(w * 0.5, h * 0.9);
+      ctx.stroke();
+    };
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -24,55 +79,9 @@ export default function Hero() {
       draw();
     };
 
-    const draw = () => {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      // Subtle radial glow from center-top
-      const grd = ctx.createRadialGradient(
-        w * 0.5, h * 0.15, 0,
-        w * 0.5, h * 0.15, w * 0.7
-      );
-      grd.addColorStop(0, "rgba(200,168,107,0.045)");
-      grd.addColorStop(1, "rgba(200,168,107,0)");
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, w, h);
-
-      // Horizontal field lines (very faint)
-      const lineCount = 6;
-      ctx.strokeStyle = "rgba(200,168,107,0.055)";
-      ctx.lineWidth = 0.5;
-
-      for (let i = 0; i < lineCount; i++) {
-        const y = h * 0.3 + (h * 0.5 * i) / lineCount;
-        const spread = (i / lineCount) * 0.35;
-        ctx.beginPath();
-        ctx.moveTo(w * (0.1 + spread), y);
-        ctx.lineTo(w * (0.9 - spread), y);
-        ctx.stroke();
-      }
-
-      // Center vertical axis line
-      ctx.strokeStyle = "rgba(200,168,107,0.035)";
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(w * 0.5, h * 0.28);
-      ctx.lineTo(w * 0.5, h * 0.82);
-      ctx.stroke();
-
-      // Corner arcs (stadium end zone feel)
-      ctx.strokeStyle = "rgba(200,168,107,0.04)";
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.arc(w * 0.5, h * 0.3, w * 0.28, 0, Math.PI, false);
-      ctx.stroke();
-    };
-
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
     resize();
-
     return () => observer.disconnect();
   }, []);
 
@@ -86,10 +95,11 @@ export default function Hero() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        background: "var(--color-bg)",
+        background: "var(--color-surface)",
+        borderBottom: "1px solid var(--color-border-light)",
       }}
     >
-      {/* Field geometry canvas */}
+      {/* Canvas geometry */}
       <canvas
         ref={canvasRef}
         aria-hidden="true"
@@ -102,7 +112,7 @@ export default function Hero() {
         }}
       />
 
-      {/* Bottom gradient fade */}
+      {/* Bottom gradient */}
       <div
         aria-hidden="true"
         style={{
@@ -110,9 +120,8 @@ export default function Hero() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: "200px",
-          background:
-            "linear-gradient(to bottom, transparent, var(--color-bg))",
+          height: "160px",
+          background: "linear-gradient(to bottom, transparent, var(--color-surface))",
           pointerEvents: "none",
         }}
       />
@@ -123,8 +132,8 @@ export default function Hero() {
           position: "relative",
           zIndex: 10,
           textAlign: "center",
-          maxWidth: "820px",
-          padding: "0 32px",
+          maxWidth: "880px",
+          padding: "0 40px",
           paddingTop: "80px",
         }}
       >
@@ -134,29 +143,29 @@ export default function Hero() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "16px",
-            marginBottom: "40px",
+            gap: "12px",
+            marginBottom: "36px",
             opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(12px)",
-            transition: "opacity 0.6s ease, transform 0.6s ease",
+            transform: mounted ? "translateY(0)" : "translateY(10px)",
+            transition: "opacity 0.55s ease, transform 0.55s ease",
           }}
         >
           <span
             style={{
               display: "block",
-              width: "32px",
-              height: "1px",
-              background: "var(--color-gold)",
-              opacity: 0.6,
+              width: "28px",
+              height: "2px",
+              background: "var(--color-red)",
+              borderRadius: "1px",
             }}
           />
           <span
             style={{
-              fontSize: "11px",
-              fontWeight: 500,
-              letterSpacing: "0.18em",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "var(--color-gold)",
+              color: "var(--color-blue)",
             }}
           >
             Venture Capital
@@ -164,10 +173,10 @@ export default function Hero() {
           <span
             style={{
               display: "block",
-              width: "32px",
-              height: "1px",
-              background: "var(--color-gold)",
-              opacity: 0.6,
+              width: "28px",
+              height: "2px",
+              background: "var(--color-red)",
+              borderRadius: "1px",
             }}
           />
         </div>
@@ -175,61 +184,74 @@ export default function Hero() {
         {/* Headline */}
         <h1
           style={{
-            fontFamily: "var(--font-cormorant), Georgia, serif",
-            fontSize: "clamp(52px, 9vw, 96px)",
-            fontWeight: 400,
-            lineHeight: 1.0,
-            letterSpacing: "-0.02em",
-            color: "var(--color-text-primary)",
-            marginBottom: "32px",
+            fontFamily: "var(--font-montserrat), system-ui, sans-serif",
+            fontSize: "clamp(48px, 8vw, 88px)",
+            fontWeight: 900,
+            lineHeight: 0.95,
+            letterSpacing: "-0.025em",
+            textTransform: "uppercase",
+            color: "var(--color-blue)",
+            marginBottom: "24px",
             opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(16px)",
-            transition: "opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s",
+            transform: mounted ? "translateY(0)" : "translateY(18px)",
+            transition: "opacity 0.65s ease 0.08s, transform 0.65s ease 0.08s",
           }}
         >
           Backfield
           <br />
-          <em
+          <span
             style={{
-              fontStyle: "italic",
-              color: "var(--color-gold-light)",
-              fontWeight: 300,
+              color: "var(--color-text)",
+              fontWeight: 800,
             }}
           >
             Ventures
-          </em>
+          </span>
         </h1>
+
+        {/* Red divider */}
+        <div
+          style={{
+            width: "48px",
+            height: "3px",
+            background: "var(--color-red)",
+            borderRadius: "2px",
+            margin: "0 auto 28px",
+            opacity: mounted ? 1 : 0,
+            transition: "opacity 0.6s ease 0.2s",
+          }}
+        />
 
         {/* Tagline */}
         <p
           style={{
-            fontFamily: "var(--font-cormorant), Georgia, serif",
-            fontSize: "clamp(20px, 3vw, 26px)",
-            fontWeight: 300,
-            fontStyle: "italic",
+            fontFamily: "var(--font-montserrat), system-ui, sans-serif",
+            fontSize: "clamp(16px, 2.2vw, 22px)",
+            fontWeight: 500,
             color: "var(--color-text-secondary)",
             lineHeight: 1.5,
-            marginBottom: "20px",
+            letterSpacing: "0.01em",
+            marginBottom: "16px",
             opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(16px)",
-            transition: "opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s",
+            transform: mounted ? "translateY(0)" : "translateY(14px)",
+            transition: "opacity 0.65s ease 0.25s, transform 0.65s ease 0.25s",
           }}
         >
           Behind the next generation of consumer and sports companies
         </p>
 
-        {/* Supporting copy */}
+        {/* Sub-copy */}
         <p
           style={{
-            fontSize: "15px",
+            fontSize: "14px",
             fontWeight: 400,
             color: "var(--color-text-muted)",
-            lineHeight: 1.7,
-            maxWidth: "520px",
-            margin: "0 auto 52px",
+            lineHeight: 1.75,
+            maxWidth: "500px",
+            margin: "0 auto 48px",
             opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(16px)",
-            transition: "opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s",
+            transform: mounted ? "translateY(0)" : "translateY(14px)",
+            transition: "opacity 0.65s ease 0.35s, transform 0.65s ease 0.35s",
           }}
         >
           We invest in founders building iconic consumer brands and sports
@@ -241,12 +263,11 @@ export default function Hero() {
           className="hero-ctas"
           style={{
             display: "flex",
-            gap: "16px",
+            gap: "14px",
             justifyContent: "center",
-            flexWrap: "wrap",
             opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(16px)",
-            transition: "opacity 0.7s ease 0.4s, transform 0.7s ease 0.4s",
+            transform: mounted ? "translateY(0)" : "translateY(14px)",
+            transition: "opacity 0.65s ease 0.45s, transform 0.65s ease 0.45s",
           }}
         >
           <a href="#contact" className="btn-primary">
@@ -262,21 +283,22 @@ export default function Hero() {
       <div
         style={{
           position: "absolute",
-          bottom: "40px",
+          bottom: "36px",
           left: "50%",
           transform: "translateX(-50%)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "8px",
-          opacity: mounted ? 0.4 : 0,
-          transition: "opacity 1s ease 0.8s",
+          gap: "6px",
+          opacity: mounted ? 0.5 : 0,
+          transition: "opacity 1s ease 1s",
         }}
       >
         <span
           style={{
-            fontSize: "10px",
-            letterSpacing: "0.15em",
+            fontSize: "9px",
+            fontWeight: 700,
+            letterSpacing: "0.2em",
             textTransform: "uppercase",
             color: "var(--color-text-muted)",
           }}
@@ -285,52 +307,13 @@ export default function Hero() {
         </span>
         <div
           style={{
-            width: "1px",
-            height: "40px",
-            background:
-              "linear-gradient(to bottom, var(--color-gold), transparent)",
+            width: "1.5px",
+            height: "36px",
+            background: "linear-gradient(to bottom, var(--color-blue), transparent)",
+            borderRadius: "1px",
           }}
         />
       </div>
-
-      <style>{`
-        .btn-primary {
-          display: inline-block;
-          padding: 14px 36px;
-          background: var(--color-gold);
-          color: #09090B;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          text-decoration: none;
-          border-radius: 2px;
-          transition: background 0.2s ease, transform 0.2s ease;
-        }
-        .btn-primary:hover {
-          background: var(--color-gold-light);
-          transform: translateY(-1px);
-        }
-        .btn-secondary {
-          display: inline-block;
-          padding: 14px 36px;
-          background: transparent;
-          color: var(--color-text-secondary);
-          font-size: 13px;
-          font-weight: 500;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          text-decoration: none;
-          border-radius: 2px;
-          border: 1px solid rgba(255,255,255,0.1);
-          transition: all 0.2s ease;
-        }
-        .btn-secondary:hover {
-          border-color: rgba(255,255,255,0.2);
-          color: var(--color-text-primary);
-          transform: translateY(-1px);
-        }
-      `}</style>
     </section>
   );
 }

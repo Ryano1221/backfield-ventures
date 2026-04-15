@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  variable: "--font-cormorant",
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  variable: "--font-montserrat",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 
@@ -34,10 +27,7 @@ export const metadata: Metadata = {
     title: "Backfield Ventures",
     description: "Behind the next generation of consumer and sports companies.",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
   keywords: [
     "venture capital",
     "consumer startups",
@@ -45,17 +35,14 @@ export const metadata: Metadata = {
     "seed funding",
     "Series A",
     "venture firm",
-    "startup investment",
   ],
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
+    <html lang="en" className={montserrat.variable}>
       <body className="antialiased">{children}</body>
     </html>
   );

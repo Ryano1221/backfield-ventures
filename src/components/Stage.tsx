@@ -1,22 +1,22 @@
 export default function Stage() {
   const stages = [
-    { label: "Pre-Seed", note: "Selectively", width: "35%", active: false },
-    { label: "Seed", note: "Primary Focus", width: "100%", active: true },
-    { label: "Series A", note: "Primary Focus", width: "80%", active: true },
-    { label: "Series B+", note: "Selectively", width: "28%", active: false },
+    { label: "Pre-Seed", note: "Selectively", pct: 35, active: false },
+    { label: "Seed", note: "Primary Focus", pct: 100, active: true },
+    { label: "Series A", note: "Primary Focus", pct: 82, active: true },
+    { label: "Series B+", note: "Selectively", pct: 28, active: false },
   ];
 
   return (
     <section
       style={{
-        borderTop: "1px solid var(--color-border)",
-        borderBottom: "1px solid var(--color-border)",
-        background: "var(--color-surface)",
-        padding: "120px 32px",
+        background: "var(--color-blue-faint)",
+        borderTop: "1px solid var(--color-border-light)",
+        borderBottom: "1px solid var(--color-border-light)",
+        padding: "120px 40px",
       }}
     >
       <div
-        className="stage-grid"
+        className="two-col-grid stage-grid"
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
@@ -26,149 +26,122 @@ export default function Stage() {
           alignItems: "center",
         }}
       >
-        {/* Left: copy */}
+        {/* Left */}
         <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              marginBottom: "20px",
-            }}
-          >
-            <span
-              style={{
-                display: "block",
-                width: "28px",
-                height: "1px",
-                background: "var(--color-gold)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 500,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: "var(--color-gold)",
-              }}
-            >
-              Stage & Check Size
-            </span>
-          </div>
-
+          <div className="eyebrow">Stage &amp; Check Size</div>
           <h2
             style={{
-              fontFamily: "var(--font-cormorant), Georgia, serif",
-              fontSize: "clamp(36px, 4.5vw, 54px)",
-              fontWeight: 400,
+              fontFamily: "var(--font-montserrat), system-ui, sans-serif",
+              fontSize: "clamp(30px, 4vw, 46px)",
+              fontWeight: 800,
               lineHeight: 1.1,
-              color: "var(--color-text-primary)",
-              marginBottom: "28px",
+              letterSpacing: "-0.02em",
+              textTransform: "uppercase",
+              color: "var(--color-text)",
+              marginBottom: "24px",
             }}
           >
-            Seed to Series A.
+            Seed to{" "}
+            <span style={{ color: "var(--color-blue)" }}>Series A.</span>
             <br />
-            <em
+            <span
               style={{
-                fontStyle: "italic",
-                color: "var(--color-text-secondary)",
-                fontWeight: 300,
+                fontSize: "0.65em",
+                fontWeight: 600,
+                color: "var(--color-text-muted)",
+                textTransform: "uppercase",
               }}
             >
               Earlier when it&apos;s right.
-            </em>
+            </span>
           </h2>
-
           <p
             style={{
-              fontSize: "15px",
+              fontSize: "14px",
               lineHeight: 1.8,
               color: "var(--color-text-secondary)",
-              maxWidth: "440px",
+              maxWidth: "420px",
             }}
           >
             Our primary focus is seed and Series A — the stages where
-            foundational conviction and the right capital partner matter most.
-            We&apos;ll go earlier for the right founder, and we&apos;ll lean in at later
-            stages when we have meaningful insight into the company.
+            foundational conviction and the right partner matter most. We&apos;ll
+            go earlier for the right founder, and lean in later when we
+            have meaningful insight into the business.
           </p>
         </div>
 
-        {/* Right: stage indicators */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        {/* Right: stage bars */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {stages.map((stage) => (
             <div
               key={stage.label}
               style={{
-                padding: "18px 24px",
-                borderRadius: "3px",
-                background: stage.active
-                  ? "rgba(200,168,107,0.06)"
-                  : "transparent",
+                padding: "18px 22px",
+                borderRadius: "5px",
+                background: stage.active ? "var(--color-surface)" : "transparent",
                 border: stage.active
-                  ? "1px solid rgba(200,168,107,0.15)"
-                  : "1px solid transparent",
+                  ? "1.5px solid var(--color-blue-pale)"
+                  : "1.5px solid transparent",
+                boxShadow: stage.active
+                  ? "0 2px 12px rgba(29,103,188,0.07)"
+                  : "none",
                 display: "flex",
                 alignItems: "center",
-                gap: "20px",
+                gap: "18px",
               }}
             >
-              {/* Bar */}
+              {/* Progress bar */}
               <div
                 style={{
                   flex: 1,
-                  height: "2px",
-                  background: "rgba(255,255,255,0.08)",
+                  height: "3px",
+                  background: "var(--color-border)",
                   borderRadius: "2px",
-                  position: "relative",
                   overflow: "hidden",
                 }}
               >
                 <div
                   style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: stage.width,
-                    background: stage.active
-                      ? "var(--color-gold)"
-                      : "rgba(255,255,255,0.18)",
+                    height: "100%",
+                    width: `${stage.pct}%`,
+                    background: stage.active ? "var(--color-blue)" : "var(--color-text-muted)",
                     borderRadius: "2px",
+                    opacity: stage.active ? 1 : 0.35,
                   }}
                 />
               </div>
               {/* Labels */}
               <div
                 style={{
-                  minWidth: "180px",
+                  minWidth: "200px",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  gap: "16px",
+                  gap: "12px",
                 }}
               >
                 <span
                   style={{
-                    fontSize: "14px",
-                    fontWeight: stage.active ? 500 : 400,
-                    color: stage.active
-                      ? "var(--color-text-primary)"
-                      : "var(--color-text-muted)",
+                    fontSize: "13px",
+                    fontWeight: stage.active ? 700 : 500,
+                    color: stage.active ? "var(--color-text)" : "var(--color-text-muted)",
+                    letterSpacing: "0.01em",
                   }}
                 >
                   {stage.label}
                 </span>
                 <span
                   style={{
-                    fontSize: "11px",
-                    letterSpacing: "0.06em",
-                    color: stage.active
-                      ? "var(--color-gold)"
-                      : "var(--color-text-muted)",
-                    opacity: stage.active ? 0.9 : 0.5,
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: stage.active ? "var(--color-blue)" : "var(--color-text-muted)",
+                    opacity: stage.active ? 1 : 0.5,
                     whiteSpace: "nowrap",
+                    background: stage.active ? "var(--color-blue-faint)" : "transparent",
+                    padding: stage.active ? "3px 8px" : "0",
+                    borderRadius: "2px",
                   }}
                 >
                   {stage.note}
@@ -178,15 +151,6 @@ export default function Stage() {
           ))}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .stage-grid {
-            grid-template-columns: 1fr !important;
-            gap: 48px !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }
