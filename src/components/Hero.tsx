@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 export default function Hero() {
   const [mounted, setMounted] = useState(false);
@@ -132,95 +133,37 @@ export default function Hero() {
           position: "relative",
           zIndex: 10,
           textAlign: "center",
-          maxWidth: "880px",
+          maxWidth: "720px",
           padding: "0 40px",
-          paddingTop: "80px",
+          paddingTop: "96px",
         }}
       >
-        {/* Eyebrow */}
+
+
+        {/* Logo */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            gap: "12px",
             marginBottom: "36px",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(10px)",
-            transition: "opacity 0.55s ease, transform 0.55s ease",
-          }}
-        >
-          <span
-            style={{
-              display: "block",
-              width: "28px",
-              height: "2px",
-              background: "var(--color-red)",
-              borderRadius: "1px",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              color: "var(--color-blue)",
-            }}
-          >
-            Venture Capital
-          </span>
-          <span
-            style={{
-              display: "block",
-              width: "28px",
-              height: "2px",
-              background: "var(--color-red)",
-              borderRadius: "1px",
-            }}
-          />
-        </div>
-
-        {/* Headline */}
-        <h1
-          style={{
-            fontFamily: "var(--font-montserrat), system-ui, sans-serif",
-            fontSize: "clamp(48px, 8vw, 88px)",
-            fontWeight: 900,
-            lineHeight: 0.95,
-            letterSpacing: "-0.025em",
-            textTransform: "uppercase",
-            color: "var(--color-blue)",
-            marginBottom: "24px",
             opacity: mounted ? 1 : 0,
             transform: mounted ? "translateY(0)" : "translateY(18px)",
             transition: "opacity 0.65s ease 0.08s, transform 0.65s ease 0.08s",
           }}
         >
-          Backfield
-          <br />
-          <span
+          <Image
+            src="/logo.png"
+            alt="Backfield Ventures"
+            width={2000}
+            height={1333}
             style={{
-              color: "var(--color-text)",
-              fontWeight: 800,
+              objectFit: "contain",
+              width: "clamp(240px, 28vw, 360px)",
+              height: "auto",
             }}
-          >
-            Ventures
-          </span>
-        </h1>
-
-        {/* Red divider */}
-        <div
-          style={{
-            width: "48px",
-            height: "3px",
-            background: "var(--color-red)",
-            borderRadius: "2px",
-            margin: "0 auto 28px",
-            opacity: mounted ? 1 : 0,
-            transition: "opacity 0.6s ease 0.2s",
-          }}
-        />
+            priority
+          />
+        </div>
 
         {/* Tagline */}
         <p
@@ -234,7 +177,7 @@ export default function Hero() {
             marginBottom: "16px",
             opacity: mounted ? 1 : 0,
             transform: mounted ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 0.65s ease 0.25s, transform 0.65s ease 0.25s",
+            transition: "opacity 0.65s ease 0.18s, transform 0.65s ease 0.18s",
           }}
         >
           Behind the next generation of consumer and sports companies
