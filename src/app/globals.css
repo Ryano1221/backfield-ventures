@@ -841,7 +841,7 @@ ul { list-style: none; }
 .philosophy__num {
   font-family: var(--font-bebas);
   font-size: clamp(80px, 12vw, 180px);
-  color: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.14);
   line-height: 1;
   width: 220px;
   flex-shrink: 0;
