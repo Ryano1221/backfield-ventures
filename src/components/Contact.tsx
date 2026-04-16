@@ -30,7 +30,7 @@ export default function Contact() {
       id="contact"
       style={{
         background: "var(--color-blue)",
-        padding: "120px 40px",
+        padding: "72px 40px",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>

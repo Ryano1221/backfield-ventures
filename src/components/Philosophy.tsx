@@ -23,7 +23,7 @@ export default function Philosophy() {
       style={{
         background: "var(--color-surface)",
         borderTop: "1px solid var(--color-border-light)",
-        padding: "120px 40px",
+        padding: "72px 40px",
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>

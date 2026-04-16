@@ -38,7 +38,7 @@ export default function WhyBackfield() {
     <section
       id="why"
       style={{
-        padding: "120px 40px",
+        padding: "72px 40px",
         maxWidth: "1200px",
         margin: "0 auto",
       }}
