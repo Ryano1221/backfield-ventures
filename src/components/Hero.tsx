@@ -23,19 +23,6 @@ export default function Hero() {
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Stadium arc (top-center)
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(w * 0.5, h * -0.2, w * 0.65, 0, Math.PI, false);
-      ctx.stroke();
-
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.035)";
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.arc(w * 0.5, h * -0.1, w * 0.55, 0, Math.PI, false);
-      ctx.stroke();
-
       // Field horizontal lines — perspective converging
       const lineCount = 8;
       for (let i = 0; i < lineCount; i++) {
