@@ -214,9 +214,10 @@ export default function Hero() {
       <canvas ref={canvasRef} id="hero-canvas" aria-hidden="true" />
 
       <div className="hero__content">
+        {/* Desktop: animated cycling headline */}
         <h2
-          className="hero__headline"
-          aria-label="Behind the next generation of consumer brands and sports companies"
+          className="hero__headline hero__headline--desktop"
+          aria-hidden="true"
         >
           <span className="hero__line hero__line--1">
             <span className="hero__line-inner">BEHIND THE NEXT</span>
@@ -229,6 +230,14 @@ export default function Hero() {
               <span className="hero__cycle" ref={cycleRef}>CONSUMER</span>
             </span>
           </span>
+        </h2>
+
+        {/* Mobile: static headline */}
+        <h2
+          className="hero__headline hero__headline--mobile"
+          aria-label="Behind the next generation of sports and consumer brands"
+        >
+          BEHIND THE NEXT GENERATION OF SPORTS AND CONSUMER BRANDS
         </h2>
 
         <div className="hero__ctas">
