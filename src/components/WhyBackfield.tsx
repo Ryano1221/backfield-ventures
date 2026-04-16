@@ -2,33 +2,33 @@ export default function WhyBackfield() {
   const cards = [
     {
       num: "01",
-      title: "We lead",
-      body: "First or second check, meaningful ownership, board seat or observer role. We don't take passive stakes or ride along.",
+      title: "Selective by design",
+      body: "We invest in a small number of companies each year. Every founder gets real attention, not a quarterly check-in.",
     },
     {
       num: "02",
-      title: "Two verticals. No exceptions.",
-      body: "Consumer and sports exclusively. Not adjacent, not adjacent-adjacent. Deep category expertise built over years of operating in both.",
+      title: "Relationship-driven",
+      body: "The best opportunities rarely come from cold decks. We spend time with founders long before term sheets are on the table.",
     },
     {
       num: "03",
-      title: "Operator-backed network",
-      body: "Our LPs and advisors have built the brands you're building. Our intros aren't cold — they open doors that matter.",
+      title: "High conviction",
+      body: "We don't hedge. When we invest, we believe — in the category, the team, and the timing.",
     },
     {
       num: "04",
-      title: "Pre-seed to Series A",
-      body: "We want to be your first institutional partner, not a late follow-on. We earn the relationship before the round is competitive.",
+      title: "Long-term partners",
+      body: "We want to be the firm founders still call five years from now — for advice, introductions, and the hard conversations.",
     },
     {
       num: "05",
-      title: "Small portfolio by design",
-      body: "We cap the number of companies we back each year. Every founder gets real time from us — not a deck review and a quarterly check-in.",
+      title: "Honest & consistent",
+      body: "The way we treat founders in moments that don't benefit us directly is the best signal of who we are.",
     },
     {
       num: "06",
-      title: "We follow on",
-      body: "When you raise again, we're in. We protect our position and double down on what's working. We're not optimizing for our DPI.",
+      title: "Deep in both categories",
+      body: "Consumer and sports aren't sidelines for us. They're the only thing we do — and we've built real relationships across both.",
     },
   ];
 
