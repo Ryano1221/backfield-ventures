@@ -216,7 +216,7 @@ export default function Hero() {
       <div className="hero__content">
         <h2
           className="hero__headline"
-          aria-label="Behind the next generation of consumer and sports companies"
+          aria-label="Behind the next generation of consumer brands and sports companies"
         >
           <span className="hero__line hero__line--1">
             <span className="hero__line-inner">BEHIND THE NEXT</span>
@@ -226,7 +226,7 @@ export default function Hero() {
           </span>
           <span className="hero__line hero__line--3">
             <span className="hero__line-inner">
-              <span className="hero__cycle" ref={cycleRef}>CONSUMER</span> COMPANIES
+              <span className="hero__cycle" ref={cycleRef}>CONSUMER</span> BRANDS
             </span>
           </span>
         </h2>
