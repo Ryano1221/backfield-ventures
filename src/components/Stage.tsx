@@ -1,9 +1,9 @@
 export default function Stage() {
   const rows = [
-    { name: "PRE-SEED", tag: "SELECTIVE", tagClass: "stage__tag--selective", note: "Exceptional founders only", primary: false },
-    { name: "SEED",     tag: "PRIMARY FOCUS", tagClass: "stage__tag--primary", note: "Core investment stage",    primary: true  },
-    { name: "SERIES A", tag: "PRIMARY FOCUS", tagClass: "stage__tag--primary", note: "Core investment stage",    primary: true  },
-    { name: "SERIES B+", tag: "SELECTIVE",   tagClass: "stage__tag--selective", note: "Adjacent & breakout opportunities", primary: false },
+    { name: "PRE-SEED",  tag: "SELECTIVE",     tagClass: "stage__tag--selective", note: "Exceptional founders only",           primary: false, fill: 20  },
+    { name: "SEED",      tag: "PRIMARY FOCUS", tagClass: "stage__tag--primary",   note: "Core investment stage",               primary: true,  fill: 100 },
+    { name: "SERIES A",  tag: "PRIMARY FOCUS", tagClass: "stage__tag--primary",   note: "Core investment stage",               primary: true,  fill: 100 },
+    { name: "SERIES B+", tag: "SELECTIVE",     tagClass: "stage__tag--selective", note: "Adjacent & breakout opportunities",   primary: false, fill: 30  },
   ];
 
   return (
@@ -19,6 +19,7 @@ export default function Stage() {
             <div
               key={row.name}
               className={`stage__row${row.primary ? " stage__row--primary" : ""}`}
+              data-fill={row.fill}
             >
               <span className="stage__name">{row.name}</span>
               <span className={`stage__tag ${row.tagClass}`}>{row.tag}</span>

@@ -682,6 +682,8 @@ ul { list-style: none; }
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.12em;
+  position: relative;
+  overflow: hidden;
   text-transform: uppercase;
   padding: 6px 14px;
   display: inline-block;
@@ -696,6 +698,21 @@ ul { list-style: none; }
   border: 1px solid #444;
   color: #666;
 }
+
+/* Fill bar — expands left-to-right on row hover */
+.stage__tag::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: rgba(255, 255, 255, 0.12);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.stage__row[data-fill="20"]:hover .stage__tag::before  { width: 20%; }
+.stage__row[data-fill="30"]:hover .stage__tag::before  { width: 30%; }
+.stage__row[data-fill="100"]:hover .stage__tag::before { width: 100%; }
 
 .stage__note {
   font-family: var(--font-body);
