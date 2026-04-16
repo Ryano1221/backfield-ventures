@@ -1181,6 +1181,10 @@ body.js-ready .reveal-right {
   .hero__headline--desktop { display: none; }
   .hero__headline--mobile { display: block; }
 
+  .section-heading { margin-bottom: 24px; }
+
+  .ticker { display: none; }
+
   .why__grid {
     grid-template-columns: 1fr;
   }
