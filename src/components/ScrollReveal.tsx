@@ -8,14 +8,25 @@ export default function ScrollReveal() {
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
-    const els = document.querySelectorAll<HTMLElement>(
-      ".reveal-bottom, .reveal-left, .reveal-right"
+    const els = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".reveal-bottom, .reveal-left, .reveal-right"
+      )
     );
 
+    // If reduced motion, show everything immediately without the js-ready class
     if (prefersReducedMotion) {
       els.forEach((el) => el.classList.add("is-visible"));
       return;
     }
+
+    // Mark body so CSS hides elements — only now do reveals kick in
+    document.body.classList.add("js-ready");
+
+    // Hard fallback: reveal everything after 2.5 s no matter what
+    const fallback = setTimeout(() => {
+      els.forEach((el) => el.classList.add("is-visible"));
+    }, 2500);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -26,11 +37,17 @@ export default function ScrollReveal() {
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      // Low threshold + no negative margin = fires as soon as element peeks in
+      { threshold: 0.05, rootMargin: "0px" }
     );
 
     els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+
+    return () => {
+      clearTimeout(fallback);
+      observer.disconnect();
+      document.body.classList.remove("js-ready");
+    };
   }, []);
 
   return null;
