@@ -1160,11 +1160,12 @@ body.js-ready .reveal-right {
 }
 
 @media (max-width: 640px) {
-  .section { padding: 56px 0; }
+  .section { padding: 32px 0; }
 
   .hero {
-    padding: 100px 24px 60px;
+    padding: 72px 20px 40px;
     align-items: flex-start;
+    min-height: auto;
   }
 
   .hero__content {
@@ -1172,7 +1173,8 @@ body.js-ready .reveal-right {
   }
 
   .hero__headline {
-    font-size: clamp(52px, 14vw, 80px);
+    font-size: clamp(48px, 13vw, 72px);
+    margin-bottom: 28px;
   }
 
   /* Show static headline on mobile, hide animated desktop version */
@@ -1187,22 +1189,23 @@ body.js-ready .reveal-right {
   .why__card {
     border-right: none;
     border-bottom: 1px solid #222;
+    padding: 28px 20px;
   }
   .why__card:last-child { border-bottom: none; }
 
   .philosophy__item {
     grid-template-columns: 1fr;
-    padding: 48px 24px;
-    gap: 16px;
+    padding: 28px 20px;
+    gap: 12px;
   }
-  .philosophy__num { font-size: 80px; }
+  .philosophy__num { font-size: 60px; }
 
-  .statement { padding: 100px 24px; }
-  .statement__text { font-size: clamp(48px, 14vw, 80px); }
+  .statement { padding: 48px 20px; }
+  .statement__text { font-size: clamp(40px, 12vw, 64px); }
 
-  .focus__col { padding: 40px 24px; }
-  .stage__row { padding: 16px 24px; }
-  .container { padding: 0 24px; }
+  .focus__col { padding: 28px 20px; }
+  .stage__row { padding: 12px 20px; }
+  .container { padding: 0 20px; }
 }
 
 /* ============================================================
