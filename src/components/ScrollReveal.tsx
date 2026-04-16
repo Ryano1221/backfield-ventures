@@ -23,10 +23,15 @@ export default function ScrollReveal() {
     // Mark body so CSS hides elements — only now do reveals kick in
     document.body.classList.add("js-ready");
 
-    // Hard fallback: reveal everything after 2.5 s no matter what
+    // Force a synchronous layout so the browser actually paints opacity:0
+    // BEFORE the IntersectionObserver fires. Without this the browser may
+    // batch the hide + show into one frame and skip the transition entirely.
+    void document.body.getBoundingClientRect();
+
+    // Hard fallback: reveal everything after 2 s no matter what
     const fallback = setTimeout(() => {
       els.forEach((el) => el.classList.add("is-visible"));
-    }, 2500);
+    }, 2000);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -37,7 +42,6 @@ export default function ScrollReveal() {
           }
         });
       },
-      // Low threshold + no negative margin = fires as soon as element peeks in
       { threshold: 0.05, rootMargin: "0px" }
     );
 
