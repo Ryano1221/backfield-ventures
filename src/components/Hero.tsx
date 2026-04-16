@@ -226,7 +226,7 @@ export default function Hero() {
           </span>
           <span className="hero__line hero__line--3">
             <span className="hero__line-inner">
-              <span className="hero__cycle" ref={cycleRef}>CONSUMER</span> BRANDS
+              <span className="hero__cycle" ref={cycleRef}>CONSUMER</span>
             </span>
           </span>
         </h2>
