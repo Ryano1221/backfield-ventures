@@ -1159,7 +1159,8 @@ body.js-ready .reveal-right {
   .section { padding: 80px 0; }
 
   .hero {
-    padding: 120px 24px 80px;
+    padding: 100px 24px 60px;
+    align-items: flex-start;
   }
 
   .hero__content {
@@ -1168,6 +1169,21 @@ body.js-ready .reveal-right {
 
   .hero__headline {
     font-size: clamp(72px, 18vw, 140px);
+  }
+
+  /* clip-path transitions are unreliable on iOS Safari — use opacity+transform instead */
+  .hero__line-inner {
+    clip-path: none !important;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hero__line-inner.revealed {
+    clip-path: none !important;
+    opacity: 1;
+    transform: none;
   }
 
   .why__grid {
