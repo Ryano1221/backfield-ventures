@@ -36,10 +36,15 @@ export default async function Image() {
     // Font fetch failed — render with monospace fallback
   }
 
-  const fonts: ConstructorParameters<typeof ImageResponse>[1]["fonts"] =
-    fontData
-      ? [{ name: "Space Mono", data: fontData, weight: 400, style: "normal" }]
-      : [];
+  type FontInput = {
+    name: string;
+    data: ArrayBuffer;
+    weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
+    style?: "normal" | "italic";
+  };
+  const fonts: FontInput[] = fontData
+    ? [{ name: "Space Mono", data: fontData, weight: 400, style: "normal" }]
+    : [];
 
   return new ImageResponse(
     (
