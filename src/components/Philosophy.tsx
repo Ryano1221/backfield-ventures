@@ -1,20 +1,20 @@
 export default function Philosophy() {
   const principles = [
     {
-      title: "Selective by design",
-      body: "We say no often so we can say yes completely. Every founder gets real attention, not a check and a wave.",
+      title: "Back the team, not the TAM",
+      body: "Market size is theoretical. We invest in people who make markets, not people who fit markets. The TAM doesn't matter until the founder makes it matter.",
     },
     {
-      title: "Relationship-driven",
-      body: "People first, markets second. The best deals come from relationships, not deal flow.",
+      title: "Conviction over consensus",
+      body: "The interesting companies look wrong before they look right. We don't need the market to agree with us — we need to be right about the one bet we're making.",
     },
     {
-      title: "High conviction",
-      body: "We back the company we believe in most. One yes carries the full weight of our network.",
+      title: "Time is the edge",
+      body: "We're not optimizing for the fastest exit. Patience isn't passive — it's what lets us stay in the game long enough to win it.",
     },
     {
-      title: "Long-term partners",
-      body: "We're not looking for exits. We're looking for companies that redefine categories.",
+      title: "The relationship is the diligence",
+      body: "We know our founders before we need to make a decision. There's no spreadsheet that replaces a year of watching someone operate.",
     },
   ];
 
@@ -22,10 +22,10 @@ export default function Philosophy() {
     <section className="section" id="philosophy">
       <div className="container">
         <div className="section-label reveal-bottom">
-          <span className="section-num">03 &mdash; HOW WE OPERATE</span>
+          <span className="section-num">03 &mdash; HOW WE THINK</span>
         </div>
         <h2 className="section-heading reveal-bottom">
-          How we show up<br />for founders.
+          The beliefs that<br />drive every decision.
         </h2>
       </div>
 
