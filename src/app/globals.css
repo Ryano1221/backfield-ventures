@@ -94,6 +94,26 @@ ul { list-style: none; }
 ============================================================ */
 .section {
   padding: 120px 0;
+  position: relative;
+}
+
+.section::before,
+.statement::before,
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.18) 25%,
+    rgba(255, 255, 255, 0.18) 75%,
+    transparent
+  );
+  pointer-events: none;
 }
 
 .section-label {
@@ -985,8 +1005,8 @@ ul { list-style: none; }
 ============================================================ */
 .footer {
   background: #000;
-  border-top: 1px solid #222;
   padding: 56px 0;
+  position: relative;
 }
 
 .footer__inner {
