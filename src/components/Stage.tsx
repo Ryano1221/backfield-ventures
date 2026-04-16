@@ -28,7 +28,7 @@ export default function Stage() {
       >
         {/* Left */}
         <div>
-          <div className="eyebrow">Stage &amp; Check Size</div>
+          <div className="eyebrow">Stage</div>
           <h2
             style={{
               fontFamily: "var(--font-montserrat), system-ui, sans-serif",
