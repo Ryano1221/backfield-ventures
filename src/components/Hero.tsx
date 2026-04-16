@@ -151,13 +151,13 @@ export default function Hero() {
           }}
         >
           <Image
-            src="/logo-bw.png"
+            src="/logo-text.png"
             alt="Backfield Ventures"
-            width={1484}
-            height={950}
+            width={1024}
+            height={1024}
             style={{
               objectFit: "contain",
-              width: "clamp(240px, 28vw, 360px)",
+              width: "clamp(280px, 36vw, 480px)",
               height: "auto",
             }}
             priority
@@ -221,42 +221,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "36px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "6px",
-          opacity: mounted ? 0.35 : 0,
-          transition: "opacity 1s ease 1s",
-        }}
-      >
-        <span
-          style={{
-            fontSize: "9px",
-            fontWeight: 700,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: "var(--color-text-muted)",
-          }}
-        >
-          Scroll
-        </span>
-        <div
-          style={{
-            width: "1px",
-            height: "36px",
-            background: "linear-gradient(to bottom, var(--color-gray-400), transparent)",
-            borderRadius: "1px",
-          }}
-        />
-      </div>
     </section>
   );
 }
