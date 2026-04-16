@@ -10,13 +10,11 @@ export const contentType = "image/png";
 export const dynamic = "force-dynamic";
 
 export default async function Image() {
-  // Read logo from local filesystem (no network dep, works at build + runtime)
-  const logoData = await readFile(
-    join(process.cwd(), "public/logo-white.png")
-  );
+  // Read B&W stadium logo from local filesystem
+  const logoData = await readFile(join(process.cwd(), "public/logo-bw.png"));
   const logoSrc = `data:image/png;base64,${logoData.toString("base64")}`;
 
-  // Try to load Space Mono (used on the live site) for branded typography
+  // Try to load Space Mono for branded typography
   let fontData: ArrayBuffer | null = null;
   try {
     const css = await fetch(
@@ -52,7 +50,7 @@ export default async function Image() {
     (
       <div
         style={{
-          background: "#0a0a0a",
+          background: "#f5f5f3",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -70,8 +68,8 @@ export default async function Image() {
             top: 0,
             left: 0,
             right: 0,
-            height: "3px",
-            background: "rgba(255,255,255,0.15)",
+            height: "4px",
+            background: "#0a0a0a",
             display: "flex",
           }}
         />
@@ -79,9 +77,9 @@ export default async function Image() {
         {/* Logo */}
         <img
           src={logoSrc}
-          width={340}
-          height={210}
-          style={{ objectFit: "contain", marginBottom: "36px" }}
+          width={380}
+          height={240}
+          style={{ objectFit: "contain", marginBottom: "32px" }}
         />
 
         {/* Divider */}
@@ -89,8 +87,8 @@ export default async function Image() {
           style={{
             width: "56px",
             height: "1px",
-            background: "rgba(255,255,255,0.25)",
-            marginBottom: "28px",
+            background: "rgba(0,0,0,0.2)",
+            marginBottom: "24px",
             display: "flex",
           }}
         />
@@ -98,8 +96,8 @@ export default async function Image() {
         {/* Tagline */}
         <div
           style={{
-            color: "rgba(255,255,255,0.5)",
-            fontSize: "17px",
+            color: "rgba(0,0,0,0.45)",
+            fontSize: "16px",
             fontFamily: fontData ? "Space Mono" : "monospace",
             letterSpacing: "0.22em",
             textTransform: "uppercase",
@@ -113,8 +111,8 @@ export default async function Image() {
         <div
           style={{
             position: "absolute",
-            bottom: "32px",
-            color: "rgba(255,255,255,0.2)",
+            bottom: "28px",
+            color: "rgba(0,0,0,0.25)",
             fontSize: "13px",
             fontFamily: fontData ? "Space Mono" : "monospace",
             letterSpacing: "0.14em",
@@ -131,8 +129,8 @@ export default async function Image() {
             bottom: 0,
             left: 0,
             right: 0,
-            height: "3px",
-            background: "rgba(255,255,255,0.15)",
+            height: "4px",
+            background: "#0a0a0a",
             display: "flex",
           }}
         />
