@@ -2,33 +2,33 @@ export default function WhyBackfield() {
   const cards = [
     {
       num: "01",
-      title: "Selective by design",
-      body: "We invest in a small number of companies each year. Every founder gets real attention, not a quarterly check-in.",
+      title: "Disciplined Underwriting",
+      body: "We build real conviction through deep underwriting.",
     },
     {
       num: "02",
-      title: "Relationship-driven",
-      body: "The best opportunities rarely come from cold decks. We spend time with founders long before term sheets are on the table.",
+      title: "Selective By Design",
+      body: "We invest in a small number of companies each year. Every founder gets real attention, not a quarterly check-in.",
     },
     {
       num: "03",
-      title: "High conviction",
-      body: "We don't hedge. When we invest, we believe — in the category, the team, and the timing.",
+      title: "Collaborative Partnership",
+      body: "We work alongside founders, not above them.",
     },
     {
       num: "04",
-      title: "Long-term partners",
-      body: "We want to be the firm founders still call five years from now — for advice, introductions, and the hard conversations.",
+      title: "Built-In Acceleration",
+      body: "Operators, athletes, and creators help accelerate growth.",
     },
     {
       num: "05",
-      title: "Honest & consistent",
-      body: "The way we treat founders in moments that don't benefit us directly is the best signal of who we are.",
+      title: "High-Growth Focus",
+      body: "We invest in businesses with real paths to scale.",
     },
     {
       num: "06",
-      title: "Deep in both categories",
-      body: "Consumer and sports aren't sidelines for us. They're the only thing we do — and we've built real relationships across both.",
+      title: "\u201cFilm Study\u201d Mindset",
+      body: "We study performance constantly and adapt.",
     },
   ];
 
