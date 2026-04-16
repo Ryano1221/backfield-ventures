@@ -3,7 +3,7 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 
 export const alt =
-  "Backfield Ventures — Venture Capital for Consumer & Sports Companies";
+  "Backfield Ventures — Venture Capital for Sports and Consumer Brands";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 // Generate on first request so the font fetch works at runtime (Vercel CDN caches the response)
@@ -104,7 +104,7 @@ export default async function Image() {
             display: "flex",
           }}
         >
-          Venture Capital · Consumer &amp; Sports
+          Venture Capital for Sports and Consumer Brands
         </div>
 
         {/* URL */}

@@ -1,7 +1,7 @@
 {
   "name": "Backfield Ventures",
   "short_name": "Backfield",
-  "description": "Venture Capital for Consumer & Sports Companies",
+  "description": "Venture Capital for Sports and Consumer Brands",
   "icons": [
     { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
