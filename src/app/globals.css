@@ -1185,6 +1185,11 @@ body.js-ready .reveal-right {
     margin-bottom: 20px;
   }
 
+  .why__intro {
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
   .ticker { display: none; }
 
   .why__grid {
