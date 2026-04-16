@@ -6,6 +6,8 @@ export const alt =
   "Backfield Ventures — Venture Capital for Consumer & Sports Companies";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+// Generate on first request so the font fetch works at runtime (Vercel CDN caches the response)
+export const dynamic = "force-dynamic";
 
 export default async function Image() {
   // Read logo from local filesystem (no network dep, works at build + runtime)
