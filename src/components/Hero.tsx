@@ -37,28 +37,6 @@ export default function Hero() {
         ctx.stroke();
       }
 
-      // Two accent lines at bottom — field stripe echo
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.07)";
-      ctx.lineWidth = 1.5;
-      const ry1 = h * 0.82;
-      const ry2 = h * 0.87;
-      const rPad = w * 0.15;
-      ctx.beginPath();
-      ctx.moveTo(rPad, ry1);
-      ctx.lineTo(w - rPad, ry1);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(rPad * 1.4, ry2);
-      ctx.lineTo(w - rPad * 1.4, ry2);
-      ctx.stroke();
-
-      // Vertical center axis
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.03)";
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(w * 0.5, h * 0.45);
-      ctx.lineTo(w * 0.5, h * 0.9);
-      ctx.stroke();
     };
 
     const resize = () => {
