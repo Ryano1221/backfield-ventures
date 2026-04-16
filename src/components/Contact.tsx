@@ -6,7 +6,7 @@ export default function Contact() {
           <span className="section-num">04 &mdash; GET IN TOUCH</span>
         </div>
         <h2 className="section-heading reveal-bottom">
-          Let&apos;s talk about<br />your play.
+          Connect<br />with us.
         </h2>
 
         <div className="contact__cards">
