@@ -4,7 +4,6 @@ import Focus from "@/components/Focus";
 import Stage from "@/components/Stage";
 import WhyBackfield from "@/components/WhyBackfield";
 import Philosophy from "@/components/Philosophy";
-import SeoContent from "@/components/SeoContent";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
@@ -19,8 +18,7 @@ export default function Home() {
         <Stage />
         <WhyBackfield />
         <Philosophy />
-        <SeoContent />
-        <Contact />
+<Contact />
       </main>
       <Footer />
     </>
