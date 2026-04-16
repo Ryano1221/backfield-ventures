@@ -724,7 +724,7 @@ ul { list-style: none; }
   justify-content: center;
   font-family: var(--font-bebas);
   font-size: clamp(60px, 12vw, 160px);
-  color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.28);
   letter-spacing: 0.05em;
   pointer-events: none;
   user-select: none;
