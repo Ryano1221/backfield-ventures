@@ -1181,7 +1181,10 @@ body.js-ready .reveal-right {
   .hero__headline--desktop { display: none; }
   .hero__headline--mobile { display: block; }
 
-  .section-heading { margin-bottom: 24px; }
+  .section-heading {
+    font-size: clamp(36px, 10vw, 56px);
+    margin-bottom: 20px;
+  }
 
   .ticker { display: none; }
 
