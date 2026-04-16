@@ -1,41 +1,43 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────
-   BACKFIELD VENTURES — Design Tokens
-   Colors extracted directly from the official logo:
-     Primary Blue  : #1D67BC  (arch, wordmark, dominant brand color)
-     Blue Dark     : #1550A0  (pressed states, depth)
-     Blue Light    : #4A90D9  (hover states, supporting blue)
-     Blue Pale     : #D8EAFE  (tinted backgrounds, light surfaces)
-     Red Accent    : #CC2B33  (roof trim, field stripes — restrained use only)
-     White         : #FFFFFF
+   BACKFIELD VENTURES — Monochrome Design Tokens
 ─────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Brand Blues */
-  --color-blue:       #1D67BC;
-  --color-blue-dark:  #1550A0;
-  --color-blue-light: #4A90D9;
-  --color-blue-pale:  #D8EAFE;
-  --color-blue-faint: #F0F6FF;
+  /* Monochrome palette */
+  --color-black:       #0A0A0A;
+  --color-gray-800:    #222222;
+  --color-gray-600:    #555555;
+  --color-gray-400:    #999999;
+  --color-gray-200:    #E0E0E0;
+  --color-gray-100:    #F0F0F0;
+  --color-gray-50:     #F8F8F8;
+  --color-white:       #FFFFFF;
 
-  /* Brand Red — accent only */
-  --color-red:        #CC2B33;
-  --color-red-faint:  #FFF0F1;
+  /* Semantic aliases — used throughout components */
+  --color-blue:        #0A0A0A;   /* primary accent → black */
+  --color-blue-dark:   #000000;
+  --color-blue-light:  #444444;
+  --color-blue-pale:   #DDDDDD;
+  --color-blue-faint:  #F2F2F2;
+
+  --color-red:         #0A0A0A;   /* secondary accent → black */
+  --color-red-faint:   #F2F2F2;
 
   /* Backgrounds */
-  --color-bg:        #F5F8FC;
-  --color-surface:   #FFFFFF;
-  --color-surface-2: #EEF4FB;
+  --color-bg:          #F8F8F8;
+  --color-surface:     #FFFFFF;
+  --color-surface-2:   #F2F2F2;
 
   /* Text */
-  --color-text:           #0E1C2E;
-  --color-text-secondary: #3D5470;
-  --color-text-muted:     #7A93AD;
+  --color-text:           #0A0A0A;
+  --color-text-secondary: #555555;
+  --color-text-muted:     #999999;
 
   /* Borders */
-  --color-border:       #D4DDE9;
-  --color-border-light: #E8EFF7;
+  --color-border:       #D8D8D8;
+  --color-border-light: #EBEBEB;
 
   /* Aliases */
   --background: var(--color-bg);
@@ -67,8 +69,8 @@ body {
 
 /* Selection */
 ::selection {
-  background: var(--color-blue-pale);
-  color: var(--color-blue-dark);
+  background: var(--color-gray-200);
+  color: var(--color-black);
 }
 
 /* Scrollbar */
@@ -82,7 +84,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 14px 32px;
-  background: var(--color-blue);
+  background: var(--color-black);
   color: #fff;
   font-family: var(--font-montserrat), system-ui, sans-serif;
   font-size: 12px;
@@ -91,13 +93,13 @@ body {
   text-transform: uppercase;
   text-decoration: none;
   border-radius: 3px;
-  border: 2px solid var(--color-blue);
+  border: 2px solid var(--color-black);
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
   cursor: pointer;
 }
 .btn-primary:hover {
-  background: var(--color-blue-dark);
-  border-color: var(--color-blue-dark);
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-800);
   transform: translateY(-1px);
 }
 
@@ -107,7 +109,7 @@ body {
   gap: 8px;
   padding: 14px 32px;
   background: transparent;
-  color: var(--color-blue);
+  color: var(--color-black);
   font-family: var(--font-montserrat), system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
@@ -115,12 +117,12 @@ body {
   text-transform: uppercase;
   text-decoration: none;
   border-radius: 3px;
-  border: 2px solid var(--color-blue);
+  border: 2px solid var(--color-black);
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
   cursor: pointer;
 }
 .btn-secondary:hover {
-  background: var(--color-blue);
+  background: var(--color-black);
   color: #fff;
   transform: translateY(-1px);
 }
@@ -134,15 +136,15 @@ body {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-blue);
+  color: var(--color-text-muted);
   margin-bottom: 18px;
 }
 .eyebrow::before {
   content: '';
   display: block;
   width: 24px;
-  height: 2px;
-  background: var(--color-blue);
+  height: 1.5px;
+  background: var(--color-gray-400);
   border-radius: 1px;
   flex-shrink: 0;
 }
@@ -151,16 +153,16 @@ body {
 .field-line {
   display: block;
   width: 40px;
-  height: 2px;
-  background: var(--color-blue);
+  height: 1.5px;
+  background: var(--color-gray-400);
   border-radius: 1px;
 }
 
 .field-line-red {
   display: block;
   width: 32px;
-  height: 2px;
-  background: var(--color-red);
+  height: 1.5px;
+  background: var(--color-gray-400);
   border-radius: 1px;
 }
 

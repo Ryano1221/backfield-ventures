@@ -31,10 +31,10 @@ export default function Footer() {
           aria-label="Backfield Ventures — Home"
         >
           <Image
-            src="/logo.png"
+            src="/logo-bw.png"
             alt="Backfield Ventures"
-            width={2000}
-            height={1333}
+            width={1484}
+            height={950}
             style={{ objectFit: "contain", height: "44px", width: "auto" }}
           />
         </a>

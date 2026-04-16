@@ -11,7 +11,7 @@ export default function Hero() {
     setMounted(true);
   }, []);
 
-  // Subtle stadium field geometry on a light background
+  // Subtle stadium geometry — monochrome
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -23,26 +23,26 @@ export default function Hero() {
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Stadium arc (top-center) — like the logo's arch
-      ctx.strokeStyle = "rgba(29, 103, 188, 0.07)";
+      // Stadium arc (top-center)
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(w * 0.5, h * -0.2, w * 0.65, 0, Math.PI, false);
       ctx.stroke();
 
-      ctx.strokeStyle = "rgba(29, 103, 188, 0.04)";
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.035)";
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       ctx.arc(w * 0.5, h * -0.1, w * 0.55, 0, Math.PI, false);
       ctx.stroke();
 
-      // Field horizontal lines — evenly spaced, converging toward center (perspective)
+      // Field horizontal lines — perspective converging
       const lineCount = 8;
       for (let i = 0; i < lineCount; i++) {
         const t = i / lineCount;
         const y = h * 0.5 + t * h * 0.55;
         const xPad = w * 0.08 + t * w * 0.12;
-        ctx.strokeStyle = `rgba(29, 103, 188, ${0.045 - t * 0.004})`;
+        ctx.strokeStyle = `rgba(0, 0, 0, ${0.04 - t * 0.004})`;
         ctx.lineWidth = 0.5;
         ctx.beginPath();
         ctx.moveTo(xPad, y);
@@ -50,8 +50,8 @@ export default function Hero() {
         ctx.stroke();
       }
 
-      // Two red accent lines at bottom — field stripe echo
-      ctx.strokeStyle = "rgba(204, 43, 51, 0.09)";
+      // Two accent lines at bottom — field stripe echo
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.07)";
       ctx.lineWidth = 1.5;
       const ry1 = h * 0.82;
       const ry2 = h * 0.87;
@@ -66,7 +66,7 @@ export default function Hero() {
       ctx.stroke();
 
       // Vertical center axis
-      ctx.strokeStyle = "rgba(29, 103, 188, 0.04)";
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.03)";
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       ctx.moveTo(w * 0.5, h * 0.45);
@@ -139,8 +139,6 @@ export default function Hero() {
           paddingTop: "96px",
         }}
       >
-
-
         {/* Logo */}
         <div
           style={{
@@ -153,10 +151,10 @@ export default function Hero() {
           }}
         >
           <Image
-            src="/logo.png"
+            src="/logo-bw.png"
             alt="Backfield Ventures"
-            width={2000}
-            height={1333}
+            width={1484}
+            height={950}
             style={{
               objectFit: "contain",
               width: "clamp(240px, 28vw, 360px)",
@@ -235,7 +233,7 @@ export default function Hero() {
           flexDirection: "column",
           alignItems: "center",
           gap: "6px",
-          opacity: mounted ? 0.5 : 0,
+          opacity: mounted ? 0.35 : 0,
           transition: "opacity 1s ease 1s",
         }}
       >
@@ -252,9 +250,9 @@ export default function Hero() {
         </span>
         <div
           style={{
-            width: "1.5px",
+            width: "1px",
             height: "36px",
-            background: "linear-gradient(to bottom, var(--color-blue), transparent)",
+            background: "linear-gradient(to bottom, var(--color-gray-400), transparent)",
             borderRadius: "1px",
           }}
         />

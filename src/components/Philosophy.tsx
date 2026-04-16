@@ -89,7 +89,7 @@ export default function Philosophy() {
                 background: "var(--color-bg)",
                 border: "1px solid var(--color-border)",
                 borderRadius: "6px",
-                borderTop: `3px solid ${i === 0 ? "var(--color-red)" : "var(--color-blue)"}`,
+                borderTop: "2px solid var(--color-black)",
               }}
             >
               <div

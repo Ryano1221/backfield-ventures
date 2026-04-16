@@ -83,7 +83,7 @@ export default function Stage() {
                   ? "1.5px solid var(--color-blue-pale)"
                   : "1.5px solid transparent",
                 boxShadow: stage.active
-                  ? "0 2px 12px rgba(29,103,188,0.07)"
+                  ? "0 2px 12px rgba(0,0,0,0.07)"
                   : "none",
                 display: "flex",
                 alignItems: "center",

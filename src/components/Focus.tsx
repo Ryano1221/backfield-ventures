@@ -122,9 +122,7 @@ export default function Focus() {
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.transform = "translateY(-2px)";
-              el.style.boxShadow = area.accent
-                ? "0 12px 40px rgba(29,103,188,0.3)"
-                : "0 8px 32px rgba(14,28,46,0.08)";
+              el.style.boxShadow = "0 8px 32px rgba(0,0,0,0.1)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLElement;

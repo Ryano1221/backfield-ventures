@@ -46,11 +46,11 @@ export default function Nav() {
           aria-label="Backfield Ventures — Home"
         >
           <Image
-            src="/logo.png"
+            src="/logo-bw.png"
             alt="Backfield Ventures"
-            width={120}
-            height={52}
-            style={{ objectFit: "contain", height: "52px", width: "auto" }}
+            width={1484}
+            height={950}
+            style={{ objectFit: "contain", height: "48px", width: "auto" }}
             priority
           />
         </a>
@@ -76,7 +76,7 @@ export default function Nav() {
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.color =
-                    "var(--color-blue)";
+                    "var(--color-black)";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.color =
