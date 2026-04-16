@@ -30,19 +30,6 @@ export default function Focus() {
       ],
       accent: true,
     },
-    {
-      category: "Adjacent",
-      label: "Conviction without constraint",
-      description:
-        "Occasionally we back companies that sit at the intersection of our themes or fall outside them entirely — when the founder is exceptional and the opportunity is clear.",
-      examples: [
-        "Emerging creator economy",
-        "Entertainment & media",
-        "Luxury & premium goods",
-        "Adjacent infrastructure",
-      ],
-      accent: false,
-    },
   ];
 
   return (
@@ -217,6 +204,34 @@ export default function Focus() {
             </ul>
           </div>
         ))}
+      </div>
+
+      {/* Adjacent — plain text, no card */}
+      <div style={{ marginTop: "40px", paddingLeft: "4px" }}>
+        <span
+          style={{
+            display: "block",
+            fontSize: "9px",
+            fontWeight: 700,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "var(--color-text-muted)",
+            marginBottom: "8px",
+          }}
+        >
+          Adjacent
+        </span>
+        <p
+          style={{
+            fontSize: "13px",
+            lineHeight: 1.75,
+            color: "var(--color-text-muted)",
+            maxWidth: "560px",
+            margin: 0,
+          }}
+        >
+          Occasionally we back companies that sit at the intersection of our themes or fall outside them entirely — when the founder is exceptional and the opportunity is clear.
+        </p>
       </div>
     </section>
   );
