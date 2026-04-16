@@ -153,11 +153,11 @@ export default function Hero() {
           <Image
             src="/logo-text.png"
             alt="Backfield Ventures"
-            width={1024}
-            height={1024}
+            width={1462}
+            height={317}
             style={{
               objectFit: "contain",
-              width: "clamp(280px, 36vw, 480px)",
+              width: "clamp(300px, 44vw, 560px)",
               height: "auto",
             }}
             priority
