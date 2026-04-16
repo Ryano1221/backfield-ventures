@@ -528,7 +528,7 @@ ul { list-style: none; }
   right: -10px;
   font-family: var(--font-bebas);
   font-size: clamp(120px, 14vw, 200px);
-  color: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.14);
   line-height: 1;
   pointer-events: none;
   user-select: none;
