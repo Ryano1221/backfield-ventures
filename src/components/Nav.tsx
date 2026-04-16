@@ -5,97 +5,67 @@ import Image from "next/image";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 48);
+    const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <header
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        background: scrolled ? "rgba(255,255,255,0.96)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled
-          ? "1px solid var(--color-border-light)"
-          : "1px solid transparent",
-        transition: "background 0.3s ease, border-color 0.3s ease",
-      }}
+    <nav
+      id="nav"
+      className={`nav${scrolled ? " scrolled" : ""}${menuOpen ? " menu-open" : ""}`}
     >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 40px",
-          height: "72px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {/* Logo */}
-        <a
-          href="/"
-          style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}
-          aria-label="Backfield Ventures — Home"
-        >
+      <div className="nav__inner">
+        <a href="#" className="nav__brand" aria-label="Backfield Ventures Home">
           <Image
-            src="/logo-bw.png"
+            src="/logo-text.png"
             alt="Backfield Ventures"
-            width={1484}
-            height={950}
-            style={{ objectFit: "contain", height: "48px", width: "auto" }}
+            width={1462}
+            height={317}
+            className="nav__logo-img"
             priority
           />
         </a>
 
-        {/* Nav links + CTA */}
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-          <nav style={{ display: "flex", gap: "28px" }}>
-            {[
-              { label: "Focus", href: "#focus" },
-              { label: "Approach", href: "#why" },
-            ].map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "var(--color-text-secondary)",
-                  textDecoration: "none",
-                  transition: "color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color =
-                    "var(--color-black)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color =
-                    "var(--color-text-secondary)";
-                }}
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <a
-            href="#contact"
-            className="btn-primary"
-            style={{ padding: "10px 22px" }}
-          >
-            Get in Touch
-          </a>
-        </div>
+        <ul className="nav__links">
+          <li><a href="#focus" className="nav__link">FOCUS</a></li>
+          <li><a href="#why" className="nav__link">WHY</a></li>
+          <li><a href="#philosophy" className="nav__link">PHILOSOPHY</a></li>
+          <li><a href="#contact" className="nav__link">CONTACT</a></li>
+        </ul>
+
+        <a href="mailto:hello@backfieldventures.com" className="nav__cta">
+          PITCH US &rarr;
+        </a>
+
+        <button
+          className="nav__hamburger"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span />
+          <span />
+        </button>
       </div>
-    </header>
+
+      <div className="nav__mobile-menu">
+        <a href="#focus" className="nav__mobile-link" onClick={closeMenu}>FOCUS</a>
+        <a href="#why" className="nav__mobile-link" onClick={closeMenu}>WHY</a>
+        <a href="#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</a>
+        <a href="#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</a>
+        <a
+          href="mailto:hello@backfieldventures.com"
+          className="nav__mobile-cta"
+          onClick={closeMenu}
+        >
+          PITCH US &rarr;
+        </a>
+      </div>
+    </nav>
   );
 }

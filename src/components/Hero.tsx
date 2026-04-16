@@ -1,191 +1,245 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 export default function Hero() {
-  const [mounted, setMounted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cycleRef = useRef<HTMLSpanElement>(null);
 
+  // ── Perspective field + floating particles canvas
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const maybeEl = canvasRef.current;
+    if (!maybeEl) return;
+    const maybeCx = maybeEl.getContext("2d");
+    if (!maybeCx) return;
+    // Rebind as definitely-typed for use inside closures
+    const el: HTMLCanvasElement = maybeEl;
+    const cx: CanvasRenderingContext2D = maybeCx;
 
-  // Subtle stadium geometry — monochrome
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    let raf: number;
+    let W = 0, H = 0;
+    let particles: {
+      x: number; y: number; r: number;
+      vx: number; vy: number;
+      opacity: number; flicker: number; flickerSpeed: number;
+    }[] = [];
+    let t = 0;
 
-    const draw = () => {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+    const VP_Y = 0.42;
+    const YARD_LINES = 12;
+    const HASH_COLS = [0.28, 0.5, 0.72];
 
-      // Field horizontal lines — perspective converging
-      const lineCount = 8;
-      for (let i = 0; i < lineCount; i++) {
-        const t = i / lineCount;
-        const y = h * 0.5 + t * h * 0.55;
-        const xPad = w * 0.08 + t * w * 0.12;
-        ctx.strokeStyle = `rgba(0, 0, 0, ${0.04 - t * 0.004})`;
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(xPad, y);
-        ctx.lineTo(w - xPad, y);
-        ctx.stroke();
+    function buildParticles() {
+      particles = [];
+      const count = Math.min(Math.floor(W * H / 8000), 120);
+      for (let i = 0; i < count; i++) particles.push(makeParticle(true));
+    }
+
+    function makeParticle(random: boolean) {
+      return {
+        x: Math.random() * W,
+        y: random ? Math.random() * H : H + 5,
+        r: Math.random() * 1.2 + 0.2,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: -(Math.random() * 0.25 + 0.05),
+        opacity: Math.random() * 0.25 + 0.04,
+        flicker: Math.random() * Math.PI * 2,
+        flickerSpeed: Math.random() * 0.015 + 0.004,
+      };
+    }
+
+    function resize() {
+      W = el.width = el.offsetWidth;
+      H = el.height = el.offsetHeight;
+      buildParticles();
+    }
+
+    function drawField() {
+      const vpX = W * 0.5;
+      const vpY = H * VP_Y;
+      const bottom = H;
+
+      cx.save();
+
+      for (let i = 0; i < YARD_LINES; i++) {
+        const tVal = i / (YARD_LINES - 1);
+        const ease = tVal * tVal;
+        const y = vpY + ease * (bottom - vpY);
+        const spread = ease;
+        const x0 = vpX + spread * (0 - vpX);
+        const x1 = vpX + spread * (W - vpX);
+        const alpha = 0.03 + ease * 0.08;
+
+        cx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        cx.lineWidth = 0.8;
+        cx.beginPath();
+        cx.moveTo(x0, y);
+        cx.lineTo(x1, y);
+        cx.stroke();
+
+        for (const hx of HASH_COLS) {
+          const hashX = vpX + spread * (W * hx - vpX);
+          const hashLen = ease * 12;
+          cx.strokeStyle = `rgba(255,255,255,${alpha * 0.7})`;
+          cx.lineWidth = 0.6;
+          cx.beginPath();
+          cx.moveTo(hashX, y - hashLen * 0.5);
+          cx.lineTo(hashX, y + hashLen * 0.5);
+          cx.stroke();
+        }
       }
 
-    };
+      for (const side of [0.05, 0.95]) {
+        cx.strokeStyle = `rgba(255,255,255,0.06)`;
+        cx.lineWidth = 1;
+        cx.beginPath();
+        cx.moveTo(vpX, vpY);
+        cx.lineTo(W * side, bottom);
+        cx.stroke();
+      }
 
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      draw();
-    };
+      const ezEase = 0.85 * 0.85;
+      const ezY = vpY + 0.85 * (bottom - vpY);
+      const ezX0 = vpX + ezEase * (0 - vpX);
+      const ezX1 = vpX + ezEase * (W - vpX);
+      cx.strokeStyle = `rgba(255,255,255,0.1)`;
+      cx.lineWidth = 1.5;
+      cx.beginPath();
+      cx.moveTo(ezX0, ezY);
+      cx.lineTo(ezX1, ezY);
+      cx.stroke();
 
-    const observer = new ResizeObserver(resize);
-    observer.observe(canvas);
+      cx.restore();
+    }
+
+    function drawParticles() {
+      for (const p of particles) {
+        p.flicker += p.flickerSpeed;
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < -10) Object.assign(p, makeParticle(false));
+        const alpha = p.opacity * (0.5 + 0.5 * Math.sin(p.flicker));
+        cx.beginPath();
+        cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        cx.fillStyle = `rgba(255,255,255,${alpha})`;
+        cx.fill();
+      }
+    }
+
+    function drawVignette(timestamp: number) {
+      const grad = cx.createRadialGradient(W * 0.5, H * 0.3, 0, W * 0.5, H * 0.3, W * 0.75);
+      const pulse = 0.5 + 0.5 * Math.sin(timestamp * 0.0008);
+      const alpha = 0.06 + pulse * 0.03;
+      grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      cx.fillStyle = grad;
+      cx.fillRect(0, 0, W, H);
+    }
+
+    function loop(timestamp: number) {
+      t = timestamp;
+      cx.clearRect(0, 0, W, H);
+      drawVignette(t);
+      drawField();
+      drawParticles();
+      raf = requestAnimationFrame(loop);
+    }
+
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      resize();
+      raf = requestAnimationFrame(loop);
+    });
+    ro.observe(el);
     resize();
-    return () => observer.disconnect();
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, []);
+
+  // ── Hero headline line reveal
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const lines = document.querySelectorAll<HTMLElement>(".hero__line-inner");
+
+    if (prefersReducedMotion) {
+      lines.forEach((l) => l.classList.add("revealed"));
+      return;
+    }
+
+    lines.forEach((line, i) => {
+      setTimeout(() => line.classList.add("revealed"), 200 + i * 180);
+    });
+  }, []);
+
+  // ── Cycling word (CONSUMER ↔ SPORTS)
+  useEffect(() => {
+    const el = cycleRef.current;
+    if (!el) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
+
+    const words = ["CONSUMER", "SPORTS"];
+    let idx = 0;
+
+    const cycle = () => {
+      el.classList.add("exit");
+      setTimeout(() => {
+        idx = (idx + 1) % words.length;
+        el.textContent = words[idx];
+        el.classList.remove("exit");
+        el.classList.add("enter");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => el.classList.add("active"));
+        });
+        setTimeout(() => el.classList.remove("enter", "active"), 350);
+      }, 260);
+    };
+
+    const interval = setInterval(cycle, 2200);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <section
-      style={{
-        position: "relative",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-        background: "var(--color-surface)",
-        borderBottom: "1px solid var(--color-border-light)",
-      }}
-    >
-      {/* Canvas geometry */}
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-        }}
-      />
+    <section className="hero" id="home">
+      <canvas ref={canvasRef} id="hero-canvas" aria-hidden="true" />
 
-      {/* Bottom gradient */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "100px",
-          zIndex: 1,
-          background: "linear-gradient(to bottom, transparent, var(--color-surface))",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Content */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          maxWidth: "720px",
-          padding: "0 40px",
-          paddingTop: "96px",
-        }}
-      >
-        {/* Logo */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "36px",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(18px)",
-            transition: "opacity 0.65s ease 0.08s, transform 0.65s ease 0.08s",
-          }}
+      <div className="hero__content">
+        <h2
+          className="hero__headline"
+          aria-label="Behind the next generation of consumer and sports companies"
         >
-          <Image
-            src="/logo-text.png"
-            alt="Backfield Ventures — Venture Capital for Consumer & Sports Companies"
-            width={1462}
-            height={317}
-            style={{
-              objectFit: "contain",
-              width: "clamp(300px, 44vw, 560px)",
-              height: "auto",
-            }}
-            priority
-          />
-        </div>
+          <span className="hero__line hero__line--1">
+            <span className="hero__line-inner">BEHIND THE NEXT</span>
+          </span>
+          <span className="hero__line hero__line--2">
+            <span className="hero__line-inner">GENERATION OF</span>
+          </span>
+          <span className="hero__line hero__line--3">
+            <span className="hero__line-inner">
+              <span className="hero__cycle" ref={cycleRef}>CONSUMER</span> COMPANIES
+            </span>
+          </span>
+        </h2>
 
-        {/* Tagline */}
-        <p
-          style={{
-            fontFamily: "var(--font-montserrat), system-ui, sans-serif",
-            fontSize: "clamp(16px, 2.2vw, 22px)",
-            fontWeight: 500,
-            color: "var(--color-text-secondary)",
-            lineHeight: 1.5,
-            letterSpacing: "0.01em",
-            marginBottom: "16px",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 0.65s ease 0.18s, transform 0.65s ease 0.18s",
-          }}
-        >
-          Behind the next generation of consumer and sports companies
-        </p>
-
-        {/* Sub-copy */}
-        <p
-          style={{
-            fontSize: "14px",
-            fontWeight: 400,
-            color: "var(--color-text-muted)",
-            lineHeight: 1.75,
-            maxWidth: "500px",
-            margin: "0 auto 48px",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 0.65s ease 0.35s, transform 0.65s ease 0.35s",
-          }}
-        >
-          We invest in founders building iconic consumer brands and sports
-          platforms — from the earliest stages through Series A.
-        </p>
-
-        {/* CTAs */}
-        <div
-          className="hero-ctas"
-          style={{
-            display: "flex",
-            gap: "14px",
-            justifyContent: "center",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 0.65s ease 0.45s, transform 0.65s ease 0.45s",
-          }}
-        >
-          <a href="#contact" className="btn-primary">
-            Reach Out
+        <div className="hero__ctas">
+          <a href="mailto:hello@backfieldventures.com" className="btn btn--filled">
+            SEND DECK
           </a>
-          <a href="#focus" className="btn-secondary">
-            Our Focus
+          <a href="#focus" className="btn btn--outline">
+            OUR FOCUS
           </a>
         </div>
       </div>
-
     </section>
   );
 }

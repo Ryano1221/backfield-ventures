@@ -1,156 +1,62 @@
-"use client";
-
 export default function WhyBackfield() {
-  const pillars = [
+  const cards = [
     {
-      number: "01",
-      title: "Network That Opens Doors",
-      body: "We've spent years building relationships with operators, executives, and decision-makers who matter in consumer and sports. Our portfolio companies don't just get capital — they get access.",
+      num: "01",
+      title: "Selective by design",
+      body: "We invest in a small number of companies each year. Every founder gets real attention, not a quarterly check-in.",
     },
     {
-      number: "02",
-      title: "Commercial Instincts",
-      body: "We understand how consumer businesses actually grow — not in theory, but in practice. We've lived in these ecosystems long enough to spot the signals that matter and ignore the noise.",
+      num: "02",
+      title: "Relationship-driven",
+      body: "The best opportunities rarely come from cold decks. We spend time with founders long before term sheets are on the table.",
     },
     {
-      number: "03",
-      title: "Strategic Partners",
-      body: "We roll up our sleeves. Whether it's closing a partnership, sharpening a go-to-market, or making a critical introduction at the right moment — we're available when it counts.",
+      num: "03",
+      title: "High conviction",
+      body: "We don't hedge. When we invest, we believe — in the category, the team, and the timing.",
     },
     {
-      number: "04",
-      title: "Sports Ecosystem Depth",
-      body: "Sports is more than a category for us. We have relationships across leagues, teams, media companies, athletes, and brands that give our portfolio companies a meaningful edge.",
+      num: "04",
+      title: "Long-term partners",
+      body: "We want to be the firm founders still call five years from now — for advice, introductions, and the hard conversations.",
     },
     {
-      number: "05",
-      title: "Long-Term Orientation",
-      body: "We invest with conviction and hold with patience. We're not optimizing for a quick flip — we're building lasting relationships with founders we believe in.",
+      num: "05",
+      title: "Honest & consistent",
+      body: "The way we treat founders in moments that don't benefit us directly is the best signal of who we are.",
     },
     {
-      number: "06",
-      title: "Pattern Recognition",
-      body: "We've seen what works and what fails in consumer and sports. That experience informs every decision — from diligence to how we support companies post-investment.",
+      num: "06",
+      title: "Deep in both categories",
+      body: "Consumer and sports aren't sidelines for us. They're the only thing we do — and we've built real relationships across both.",
     },
   ];
 
   return (
-    <section
-      id="why"
-      style={{
-        padding: "48px 40px",
-        maxWidth: "1200px",
-        margin: "0 auto",
-      }}
-    >
-      {/* Header */}
-      <div
-        className="two-col-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "60px",
-          alignItems: "end",
-          marginBottom: "64px",
-        }}
-      >
-        <div>
-          <div className="eyebrow">Why Backfield</div>
-          <h2
-            style={{
-              fontFamily: "var(--font-montserrat), system-ui, sans-serif",
-              fontSize: "clamp(30px, 4vw, 46px)",
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: "-0.02em",
-              textTransform: "uppercase",
-              color: "var(--color-text)",
-              margin: 0,
-            }}
-          >
-            What we bring{" "}
-            <span style={{ color: "var(--color-blue)" }}>beyond capital</span>
-          </h2>
+    <section className="section" id="why">
+      <div className="container">
+        <div className="section-label reveal-bottom">
+          <span className="section-num">02 &mdash; WHY BACKFIELD</span>
         </div>
-        <p
-          style={{
-            fontSize: "14px",
-            lineHeight: 1.8,
-            color: "var(--color-text-secondary)",
-            margin: 0,
-          }}
-        >
-          Capital is table stakes. The most valuable thing we offer is
-          the network, judgment, and relentless follow-through that helps
-          founders navigate what comes after the term sheet.
-        </p>
-      </div>
+        <h2 className="section-heading reveal-bottom">
+          What we bring<br />beyond capital.
+        </h2>
 
-      {/* Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "1px",
-          background: "var(--color-border)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "6px",
-          overflow: "hidden",
-        }}
-      >
-        {pillars.map((pillar, i) => (
-          <div
-            key={pillar.number}
-            style={{
-              background: "var(--color-surface)",
-              padding: "40px 36px",
-              transition: "background 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--color-blue-faint)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--color-surface)";
-            }}
-          >
-            {/* Number */}
-            <div style={{ marginBottom: "20px" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-montserrat), system-ui, sans-serif",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                {pillar.number}
-              </span>
+        <p className="why__intro reveal-bottom">
+          Capital is table stakes. The most valuable thing we offer is the
+          network, judgment, and relentless follow-through that helps founders
+          navigate what comes after the term sheet.
+        </p>
+
+        <div className="why__grid">
+          {cards.map((card) => (
+            <div key={card.num} className="why__card reveal-bottom">
+              <span className="why__num">{card.num}</span>
+              <h3 className="why__title">{card.title}</h3>
+              <p className="why__body">{card.body}</p>
             </div>
-            <h3
-              style={{
-                fontFamily: "var(--font-montserrat), system-ui, sans-serif",
-                fontSize: "16px",
-                fontWeight: 700,
-                lineHeight: 1.35,
-                color: "var(--color-text)",
-                marginBottom: "14px",
-                letterSpacing: "-0.005em",
-              }}
-            >
-              {pillar.title}
-            </h3>
-            <p
-              style={{
-                fontSize: "13.5px",
-                lineHeight: 1.75,
-                color: "var(--color-text-secondary)",
-              }}
-            >
-              {pillar.body}
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
