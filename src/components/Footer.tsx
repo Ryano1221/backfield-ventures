@@ -8,8 +8,8 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: "var(--color-text)",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--color-bg)",
+        borderTop: "1px solid var(--color-border-light)",
         padding: "40px 40px",
       }}
     >
@@ -31,10 +31,10 @@ export default function Footer() {
           aria-label="Backfield Ventures — Home"
         >
           <Image
-            src="/logo-white.png"
+            src="/logo.png"
             alt="Backfield Ventures"
-            width={100}
-            height={44}
+            width={2000}
+            height={1333}
             style={{ objectFit: "contain", height: "44px", width: "auto" }}
           />
         </a>
@@ -43,7 +43,7 @@ export default function Footer() {
         <p
           style={{
             fontSize: "11px",
-            color: "rgba(255,255,255,0.3)",
+            color: "var(--color-text-muted)",
             letterSpacing: "0.03em",
             textAlign: "center",
           }}
@@ -60,23 +60,23 @@ export default function Footer() {
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.4)",
+              color: "var(--color-text-muted)",
               textDecoration: "none",
               transition: "color 0.2s ease",
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.color =
-                "rgba(255,255,255,0.8)";
+                "var(--color-text)";
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.color =
-                "rgba(255,255,255,0.4)";
+                "var(--color-text-muted)";
             }}
           >
             Email
           </a>
           <span
-            style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)" }}
+            style={{ fontSize: "11px", color: "var(--color-text-muted)" }}
           >
             © {year} Backfield Ventures
           </span>

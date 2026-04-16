@@ -121,7 +121,8 @@ export default function Hero() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: "160px",
+          height: "100px",
+          zIndex: 1,
           background: "linear-gradient(to bottom, transparent, var(--color-surface))",
           pointerEvents: "none",
         }}
@@ -229,6 +230,7 @@ export default function Hero() {
           bottom: "36px",
           left: "50%",
           transform: "translateX(-50%)",
+          zIndex: 2,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
