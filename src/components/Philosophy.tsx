@@ -1,20 +1,20 @@
 export default function Philosophy() {
   const principles = [
     {
-      title: "Back the team, not the TAM",
-      body: "Market size is theoretical. We invest in people who make markets, not people who fit markets. The TAM doesn't matter until the founder makes it matter.",
+      title: "We Don\u2019t Shortcut The Work",
+      body: "Every investment is fully underwritten before we commit.",
     },
     {
-      title: "Conviction over consensus",
-      body: "The interesting companies look wrong before they look right. We don't need the market to agree with us — we need to be right about the one bet we're making.",
+      title: "We Don\u2019t Rush Outcomes",
+      body: "Time is required for great businesses to play out.",
     },
     {
-      title: "Time is the edge",
-      body: "We're not optimizing for the fastest exit. Patience isn't passive — it's what lets us stay in the game long enough to win it.",
+      title: "We Stay Involved",
+      body: "We continue building conviction post-investment.",
     },
     {
-      title: "The relationship is the diligence",
-      body: "We know our founders before we need to make a decision. There's no spreadsheet that replaces a year of watching someone operate.",
+      title: "We Connect Builders",
+      body: "We connect the right people to move businesses forward.",
     },
   ];
 
