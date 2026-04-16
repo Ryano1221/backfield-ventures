@@ -29,7 +29,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="footer__nav-link"
           >
-            LINKEDIN &nearr;
+            LINKEDIN ↗
           </a>
         </nav>
 

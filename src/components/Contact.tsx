@@ -76,7 +76,7 @@ export default function Contact() {
             rel="noopener noreferrer"
             className="contact__social-link"
           >
-            LINKEDIN &nearr;
+            LINKEDIN ↗
           </a>
         </div>
       </div>
