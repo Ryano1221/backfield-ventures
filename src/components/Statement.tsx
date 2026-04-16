@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-const words = ["WE", "DON'T", "HEDGE.", "WE", "BELIEVE."];
+const words = ["ACCESS", "WHAT", "OTHERS", "CAN'T."];
 
 export default function Statement() {
   const textRef = useRef<HTMLDivElement>(null);
@@ -48,17 +48,11 @@ export default function Statement() {
         BACKFIELD
       </div>
       <div className="statement__text" ref={textRef}>
-        {words.map((word, i) => {
-          const isBreak = i === 3;
-          return (
-            <>
-              {isBreak && <br key="br" className="statement__br" aria-hidden="true" />}
-              <span key={word + i} className="statement__word">
-                <span className="statement__word-inner">{word}</span>
-              </span>
-            </>
-          );
-        })}
+        {words.map((word, i) => (
+          <span key={word + i} className="statement__word">
+            <span className="statement__word-inner">{word}</span>
+          </span>
+        ))}
       </div>
     </section>
   );
