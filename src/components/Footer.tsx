@@ -82,23 +82,24 @@ export default function Footer() {
           </a>
           <a
             href="mailto:hello@backfieldventures.com"
+            aria-label="Email Backfield Ventures"
             style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--color-text-muted)",
-              textDecoration: "none",
-              transition: "color 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              opacity: 0.6,
+              transition: "opacity 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "var(--color-text)";
+              (e.currentTarget as HTMLElement).style.opacity = "1";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "var(--color-text-muted)";
+              (e.currentTarget as HTMLElement).style.opacity = "0.6";
             }}
           >
-            Email
+            <svg width="24" height="18" viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="1" y="1" width="22" height="16" rx="2.5" ry="2.5" />
+              <polyline points="1,1 12,10 23,1" />
+            </svg>
           </a>
           <span
             style={{ fontSize: "11px", color: "var(--color-text-muted)" }}
