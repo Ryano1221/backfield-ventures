@@ -36,7 +36,7 @@ export default function Focus() {
     <section
       id="focus"
       style={{
-        padding: "72px 40px",
+        padding: "48px 40px",
         maxWidth: "1200px",
         margin: "0 auto",
       }}

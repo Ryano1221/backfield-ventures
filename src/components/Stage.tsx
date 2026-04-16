@@ -12,7 +12,7 @@ export default function Stage() {
         background: "var(--color-blue-faint)",
         borderTop: "1px solid var(--color-border-light)",
         borderBottom: "1px solid var(--color-border-light)",
-        padding: "72px 40px",
+        padding: "48px 40px",
       }}
     >
       <div
