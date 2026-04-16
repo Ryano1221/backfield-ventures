@@ -10,10 +10,12 @@ import Philosophy from "@/components/Philosophy";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
+import ParticleBackground from "@/components/ParticleBackground";
 
 export default function Home() {
   return (
     <>
+      <ParticleBackground />
       <LeftBar />
       <Nav />
       <main>

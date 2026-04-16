@@ -6,7 +6,7 @@ export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cycleRef = useRef<HTMLSpanElement>(null);
 
-  // ── Perspective field + floating particles canvas
+  // ── Perspective field canvas (particles handled by global ParticleBackground)
   useEffect(() => {
     const maybeEl = canvasRef.current;
     if (!maybeEl) return;
@@ -18,40 +18,15 @@ export default function Hero() {
 
     let raf: number;
     let W = 0, H = 0;
-    let particles: {
-      x: number; y: number; r: number;
-      vx: number; vy: number;
-      opacity: number; flicker: number; flickerSpeed: number;
-    }[] = [];
     let t = 0;
 
     const VP_Y = 0.42;
     const YARD_LINES = 12;
     const HASH_COLS = [0.28, 0.5, 0.72];
 
-    function buildParticles() {
-      particles = [];
-      const count = Math.min(Math.floor(W * H / 8000), 120);
-      for (let i = 0; i < count; i++) particles.push(makeParticle(true));
-    }
-
-    function makeParticle(random: boolean) {
-      return {
-        x: Math.random() * W,
-        y: random ? Math.random() * H : H + 5,
-        r: Math.random() * 1.2 + 0.2,
-        vx: (Math.random() - 0.5) * 0.15,
-        vy: -(Math.random() * 0.25 + 0.05),
-        opacity: Math.random() * 0.25 + 0.04,
-        flicker: Math.random() * Math.PI * 2,
-        flickerSpeed: Math.random() * 0.015 + 0.004,
-      };
-    }
-
     function resize() {
       W = el.width = el.offsetWidth;
       H = el.height = el.offsetHeight;
-      buildParticles();
     }
 
     function drawField() {
@@ -112,20 +87,6 @@ export default function Hero() {
       cx.restore();
     }
 
-    function drawParticles() {
-      for (const p of particles) {
-        p.flicker += p.flickerSpeed;
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.y < -10) Object.assign(p, makeParticle(false));
-        const alpha = p.opacity * (0.5 + 0.5 * Math.sin(p.flicker));
-        cx.beginPath();
-        cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        cx.fillStyle = `rgba(255,255,255,${alpha})`;
-        cx.fill();
-      }
-    }
-
     function drawVignette(timestamp: number) {
       const grad = cx.createRadialGradient(W * 0.5, H * 0.3, 0, W * 0.5, H * 0.3, W * 0.75);
       const pulse = 0.5 + 0.5 * Math.sin(timestamp * 0.0008);
@@ -141,7 +102,6 @@ export default function Hero() {
       cx.clearRect(0, 0, W, H);
       drawVignette(t);
       drawField();
-      drawParticles();
       raf = requestAnimationFrame(loop);
     }
 
