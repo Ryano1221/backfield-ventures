@@ -667,7 +667,7 @@ ul { list-style: none; }
 ============================================================ */
 .statement {
   position: relative;
-  padding: 160px 48px;
+  padding: 80px 48px;
   background: #000;
   overflow: hidden;
   text-align: center;
