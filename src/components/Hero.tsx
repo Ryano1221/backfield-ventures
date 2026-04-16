@@ -117,7 +117,7 @@ export default function Hero() {
         >
           <Image
             src="/logo-text.png"
-            alt="Backfield Ventures"
+            alt="Backfield Ventures — Venture Capital for Consumer & Sports Companies"
             width={1462}
             height={317}
             style={{

@@ -8,6 +8,7 @@ export default function Contact() {
         "Building something in consumer or sports and looking for a partner who gets it? We'd love to hear from you. Tell us what you're building and why now.",
       cta: "Send us your deck",
       href: "mailto:hello@backfieldventures.com?subject=Founder Intro",
+      ariaLabel: "Send your deck to Backfield Ventures for consumer or sports funding",
     },
     {
       type: "Investors & LPs",
@@ -15,6 +16,7 @@ export default function Contact() {
         "Interested in what we're building at Backfield? We're selective about LP relationships — reach out if you'd like to learn more about our focus and portfolio.",
       cta: "Get in touch",
       href: "mailto:hello@backfieldventures.com?subject=LP Inquiry",
+      ariaLabel: "Contact Backfield Ventures about LP and investor opportunities",
     },
     {
       type: "Partners & Operators",
@@ -22,6 +24,7 @@ export default function Contact() {
         "Work in consumer or sports and want to explore how we might collaborate — for portfolio companies or in a broader capacity — let's connect.",
       cta: "Start a conversation",
       href: "mailto:hello@backfieldventures.com?subject=Partnership",
+      ariaLabel: "Reach out to Backfield Ventures about operator and partner collaboration",
     },
   ];
 
@@ -167,6 +170,7 @@ export default function Contact() {
               </p>
               <a
                 href={aud.href}
+                aria-label={aud.ariaLabel}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -219,6 +223,7 @@ export default function Contact() {
           </p>
           <a
             href="mailto:hello@backfieldventures.com"
+            aria-label="Email Backfield Ventures at hello@backfieldventures.com"
             style={{
               fontFamily: "var(--font-montserrat), system-ui, sans-serif",
               fontSize: "clamp(18px, 2.5vw, 28px)",

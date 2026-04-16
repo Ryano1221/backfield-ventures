@@ -65,8 +65,8 @@ export default function Focus() {
               margin: 0,
             }}
           >
-            Where we{" "}
-            <span style={{ color: "var(--color-blue)" }}>concentrate</span>
+            Consumer Brand &amp;{" "}
+            <span style={{ color: "var(--color-blue)" }}>Sports Venture Capital</span>
           </h2>
           <p
             style={{
@@ -76,9 +76,7 @@ export default function Focus() {
               margin: 0,
             }}
           >
-            Two primary categories. One firm with deep relationships in both.
-            We don&apos;t try to cover the waterfront — we go deep where we have
-            genuine edge.
+            Two categories. Deep relationships in both. We provide venture capital for consumer brands and sports companies — from seed through Series A.
           </p>
         </div>
       </div>
