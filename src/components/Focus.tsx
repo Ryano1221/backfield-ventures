@@ -207,7 +207,7 @@ export default function Focus() {
       </div>
 
       {/* Adjacent — plain text, no card */}
-      <div style={{ marginTop: "40px", paddingLeft: "4px" }}>
+      <div style={{ marginTop: "40px", textAlign: "center" }}>
         <span
           style={{
             display: "block",
@@ -227,7 +227,7 @@ export default function Focus() {
             lineHeight: 1.75,
             color: "var(--color-text-muted)",
             maxWidth: "560px",
-            margin: 0,
+            margin: "0 auto",
           }}
         >
           Occasionally we back companies that sit at the intersection of our themes or fall outside them entirely — when the founder is exceptional and the opportunity is clear.
