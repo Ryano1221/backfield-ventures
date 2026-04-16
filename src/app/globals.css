@@ -1207,7 +1207,7 @@ body.js-ready .reveal-right {
   }
   .philosophy__num { font-size: 60px; }
 
-  .statement { padding: 48px 20px; }
+  .statement { padding: 32px 20px; }
   .statement__text { font-size: clamp(40px, 12vw, 64px); }
 
   .focus__col { padding: 28px 20px; }
