@@ -113,30 +113,19 @@ export default function WhyBackfield() {
               (e.currentTarget as HTMLElement).style.background = "var(--color-surface)";
             }}
           >
-            {/* Number + red accent */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+            {/* Number */}
+            <div style={{ marginBottom: "20px" }}>
               <span
                 style={{
                   fontFamily: "var(--font-montserrat), system-ui, sans-serif",
                   fontSize: "11px",
                   fontWeight: 700,
                   letterSpacing: "0.1em",
-                  color: "var(--color-blue)",
+                  color: "var(--color-text-muted)",
                 }}
               >
                 {pillar.number}
               </span>
-              {i < 2 && (
-                <span
-                  style={{
-                    display: "block",
-                    width: "20px",
-                    height: "2px",
-                    background: "var(--color-red)",
-                    borderRadius: "1px",
-                  }}
-                />
-              )}
             </div>
             <h3
               style={{
