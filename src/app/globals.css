@@ -205,8 +205,8 @@ ul { list-style: none; }
   left: 0;
   width: var(--left-bar-w);
   height: 100vh;
-  background: #fff;
-  border-right: 1px solid #e8e8e8;
+  background: #000;
+  border-right: 1px solid #1a1a1a;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -220,7 +220,7 @@ ul { list-style: none; }
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.18em;
-  color: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.35);
   text-transform: uppercase;
   white-space: nowrap;
   writing-mode: vertical-rl;
@@ -242,6 +242,7 @@ ul { list-style: none; }
   width: 32px;
   height: 32px;
   object-fit: contain;
+  filter: invert(1);
   opacity: 0.5;
 }
 
