@@ -1277,6 +1277,71 @@ body.js-ready .reveal-right {
 }
 
 /* ============================================================
+   LARGE SCREENS
+============================================================ */
+@media (min-width: 1440px) {
+  .container,
+  .nav__inner,
+  .footer__inner {
+    max-width: 1600px;
+  }
+
+  .hero__content {
+    max-width: 70vw;
+  }
+
+  .hero__headline {
+    font-size: clamp(120px, 8.5vw, 220px);
+  }
+
+  .philosophy__list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .philosophy__item {
+    max-width: none;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+    border-right: 1px solid #111;
+    border-bottom: 1px solid #111;
+  }
+
+  .philosophy__item:nth-child(2n) {
+    border-right: none;
+  }
+
+  .philosophy__item:nth-child(n+3) {
+    border-bottom: none;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container,
+  .nav__inner,
+  .footer__inner {
+    max-width: none;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 80px;
+    padding-right: 80px;
+    box-sizing: border-box;
+  }
+
+  .hero {
+    padding: 120px 80px;
+  }
+
+  .hero__content {
+    max-width: 68vw;
+    margin-left: 60px;
+  }
+}
+
+/* ============================================================
    REDUCED MOTION
 ============================================================ */
 @media (prefers-reduced-motion: reduce) {
