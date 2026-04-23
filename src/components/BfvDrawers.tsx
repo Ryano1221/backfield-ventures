@@ -256,6 +256,7 @@ const overlayHtml = `
             <option>Deep Tech / AI / Infrastructure</option>
             <option>Climate &amp; Sustainability</option>
             <option>Marketplace</option>
+            <option>Sports</option>
             <option>Other / Cross-sector</option>
           </select>
         </div>
