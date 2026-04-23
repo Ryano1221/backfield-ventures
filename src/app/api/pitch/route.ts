@@ -12,11 +12,38 @@ const stageMap: Record<string, string> = {
   "Series A": "series-a",
 };
 
+function line(label: string, value: string | undefined) {
+  return value?.trim() ? `${label}: ${value.trim()}` : null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const d = await req.json();
 
-    // 1. Create company record
+    // Build company notes — every pitch field, clearly labelled
+    const companyNotes = [
+      line("One-liner", d.oneLiner),
+      "",
+      line("Problem", d.problem),
+      line("Solution", d.solution),
+      line("Traction", d.traction),
+      "",
+      line("Raising", d.raiseAmount),
+      line("Raised to date", d.raisedToDate),
+      line("Deck", d.deckLink),
+      "",
+      line("Source", d.source),
+      line("Additional notes", d.notes),
+    ].filter((l) => l !== null).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+
+    // Build founder notes — background + team context
+    const founderNotes = [
+      line("Background", d.background),
+      line("Team size", d.teamSize),
+      line("Source", d.source),
+    ].filter(Boolean).join("\n") || null;
+
+    // 1. Create company record — all visible columns populated
     const { data: company, error: companyErr } = await supabase
       .from("companies")
       .insert({
@@ -27,13 +54,14 @@ export async function POST(req: NextRequest) {
         description: d.oneLiner || null,
         location: d.location || null,
         status: "prospect",
+        notes: companyNotes || null,
       })
       .select("id")
       .single();
 
     if (companyErr) throw companyErr;
 
-    // 2. Create founder record
+    // 2. Create founder record — all visible columns populated
     const { data: person, error: personErr } = await supabase
       .from("people")
       .insert({
@@ -41,17 +69,16 @@ export async function POST(req: NextRequest) {
         email: d.founderEmail || null,
         title: d.founderRole || null,
         linkedin_url: d.linkedin || null,
-        notes: d.background || null,
         type: "founder",
         source: d.source || null,
-        metadata: d.teamSize ? { team_size: d.teamSize } : null,
+        notes: founderNotes,
       })
       .select("id")
       .single();
 
     if (personErr) throw personErr;
 
-    // 3. Link founder to company
+    // 3. Link founder → company
     await supabase.from("relationships").insert({
       entity_a_type: "person",
       entity_a_id: person.id,
@@ -60,24 +87,12 @@ export async function POST(req: NextRequest) {
       relationship_type: "founder",
     });
 
-    // 4. Log full pitch details as a note on the company
-    const noteParts = [
-      d.oneLiner && `One-liner: ${d.oneLiner}`,
-      d.problem && `Problem: ${d.problem}`,
-      d.solution && `Solution: ${d.solution}`,
-      d.traction && `Traction: ${d.traction}`,
-      d.raiseAmount && `Raising: ${d.raiseAmount}`,
-      d.raisedToDate && `Raised to date: ${d.raisedToDate}`,
-      d.deckLink && `Deck: ${d.deckLink}`,
-      d.source && `Source: ${d.source}`,
-      d.notes && `Notes: ${d.notes}`,
-    ].filter(Boolean).join("\n");
-
+    // 4. Activity log — full submission snapshot
     await supabase.from("interactions").insert({
       entity_type: "company",
       entity_id: company.id,
       type: "note",
-      content: `Inbound pitch from ${d.founderName} (${d.founderEmail})\n\n${noteParts}`,
+      content: `Inbound pitch — ${d.founderName} (${d.founderEmail})\n\n${companyNotes}`,
     });
 
     return NextResponse.json({ ok: true });
