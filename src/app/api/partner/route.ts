@@ -6,36 +6,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-function line(label: string, value: string | undefined) {
-  return value?.trim() ? `${label}: ${value.trim()}` : null;
-}
-
 export async function POST(req: NextRequest) {
   try {
     const d = await req.json();
 
-    // Parse sector into array for investment_focus column
-    // (displayed as tag pills in the CRM person detail view)
+    // Parse sector into array for investment_focus tag pills
     const sectorArray = d.sector?.trim() ? [d.sector.trim()] : null;
 
-    // Build person notes — every partner field, clearly labelled
-    const personNotes = [
-      line("Operator background", d.background),
-      "",
-      line("Stage experience", d.stageExperience),
-      line("Functional strengths", d.functionalStrengths),
-      line("Advisory experience", d.advisoryExperience),
-      "",
-      line("Primary interest", d.primaryInterest),
-      line("Time commitment", d.timeCommitment),
-      line("Compensation preference", d.compensation),
-      "",
-      line("Why Backfield", d.whyBackfield),
-      line("Referred by", d.referral),
-      line("Additional notes", d.notes),
-    ].filter((l) => l !== null).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-
-    // 1. Create operator / partner record — all visible columns populated
+    // 1. Create operator / partner record — each form field in its own column
     const { data: person, error: personErr } = await supabase
       .from("people")
       .insert({
@@ -48,7 +26,16 @@ export async function POST(req: NextRequest) {
         source: d.source || null,
         source_data: d.referral ? { referral: d.referral } : null,
         investment_focus: sectorArray,
-        notes: personNotes || null,
+        // Individual columns — filterable in CRM
+        op_background: d.background || null,
+        stage_experience: d.stageExperience || null,
+        functional_strengths: d.functionalStrengths || null,
+        advisory_experience: d.advisoryExperience || null,
+        primary_interest: d.primaryInterest || null,
+        time_commitment: d.timeCommitment || null,
+        compensation_pref: d.compensation || null,
+        why_backfield: d.whyBackfield || null,
+        referral: d.referral || null,
       })
       .select("id")
       .single();
@@ -56,11 +43,29 @@ export async function POST(req: NextRequest) {
     if (personErr) throw personErr;
 
     // 2. Activity log — full submission snapshot
+    const snap = [
+      `Partner inquiry — ${d.firstName} ${d.lastName} (${d.email})`,
+      "",
+      d.background          ? `Operator background: ${d.background}` : null,
+      "",
+      d.stageExperience     ? `Stage experience: ${d.stageExperience}` : null,
+      d.functionalStrengths ? `Functional strengths: ${d.functionalStrengths}` : null,
+      d.advisoryExperience  ? `Advisory experience: ${d.advisoryExperience}` : null,
+      "",
+      d.primaryInterest     ? `Primary interest: ${d.primaryInterest}` : null,
+      d.timeCommitment      ? `Time commitment: ${d.timeCommitment}` : null,
+      d.compensation        ? `Compensation preference: ${d.compensation}` : null,
+      "",
+      d.whyBackfield        ? `Why Backfield: ${d.whyBackfield}` : null,
+      d.referral            ? `Referred by: ${d.referral}` : null,
+      d.notes               ? `Additional notes: ${d.notes}` : null,
+    ].filter((l) => l !== null).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+
     await supabase.from("interactions").insert({
       entity_type: "person",
       entity_id: person.id,
       type: "note",
-      content: `Partner inquiry — ${d.firstName} ${d.lastName} (${d.email})\n\n${personNotes}`,
+      content: snap,
     });
 
     return NextResponse.json({ ok: true });

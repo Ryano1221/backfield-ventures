@@ -10,40 +10,14 @@ const stageMap: Record<string, string> = {
   "Pre-Seed": "pre-seed",
   "Seed": "seed",
   "Series A": "series-a",
+  "Series B": "series-b",
 };
-
-function line(label: string, value: string | undefined) {
-  return value?.trim() ? `${label}: ${value.trim()}` : null;
-}
 
 export async function POST(req: NextRequest) {
   try {
     const d = await req.json();
 
-    // Build company notes — every pitch field, clearly labelled
-    const companyNotes = [
-      line("One-liner", d.oneLiner),
-      "",
-      line("Problem", d.problem),
-      line("Solution", d.solution),
-      line("Traction", d.traction),
-      "",
-      line("Raising", d.raiseAmount),
-      line("Raised to date", d.raisedToDate),
-      line("Deck", d.deckLink),
-      "",
-      line("Source", d.source),
-      line("Additional notes", d.notes),
-    ].filter((l) => l !== null).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-
-    // Build founder notes — background + team context
-    const founderNotes = [
-      line("Background", d.background),
-      line("Team size", d.teamSize),
-      line("Source", d.source),
-    ].filter(Boolean).join("\n") || null;
-
-    // 1. Create company record — all visible columns populated
+    // 1. Create company record — each form field in its own column
     const { data: company, error: companyErr } = await supabase
       .from("companies")
       .insert({
@@ -54,14 +28,20 @@ export async function POST(req: NextRequest) {
         description: d.oneLiner || null,
         location: d.location || null,
         status: "prospect",
-        notes: companyNotes || null,
+        // Individual pitch columns — filterable in CRM
+        problem: d.problem || null,
+        solution: d.solution || null,
+        traction: d.traction || null,
+        raise_amount: d.raiseAmount || null,
+        raised_to_date: d.raisedToDate || null,
+        deck_link: d.deckLink || null,
       })
       .select("id")
       .single();
 
     if (companyErr) throw companyErr;
 
-    // 2. Create founder record — all visible columns populated
+    // 2. Create founder record — each form field in its own column
     const { data: person, error: personErr } = await supabase
       .from("people")
       .insert({
@@ -71,7 +51,9 @@ export async function POST(req: NextRequest) {
         linkedin_url: d.linkedin || null,
         type: "founder",
         source: d.source || null,
-        notes: founderNotes,
+        // Individual founder columns — filterable in CRM
+        founder_background: d.background || null,
+        team_size: d.teamSize || null,
       })
       .select("id")
       .single();
@@ -88,11 +70,30 @@ export async function POST(req: NextRequest) {
     });
 
     // 4. Activity log — full submission snapshot
+    const snap = [
+      `Inbound pitch — ${d.founderName} (${d.founderEmail})`,
+      "",
+      d.oneLiner      ? `One-liner: ${d.oneLiner}` : null,
+      "",
+      d.problem       ? `Problem: ${d.problem}` : null,
+      d.solution      ? `Solution: ${d.solution}` : null,
+      d.traction      ? `Traction: ${d.traction}` : null,
+      "",
+      d.raiseAmount   ? `Raising: ${d.raiseAmount}` : null,
+      d.raisedToDate  ? `Raised to date: ${d.raisedToDate}` : null,
+      d.deckLink      ? `Deck: ${d.deckLink}` : null,
+      "",
+      d.background    ? `Background: ${d.background}` : null,
+      d.teamSize      ? `Team size: ${d.teamSize}` : null,
+      d.source        ? `Source: ${d.source}` : null,
+      d.notes         ? `Additional notes: ${d.notes}` : null,
+    ].filter((l) => l !== null).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+
     await supabase.from("interactions").insert({
       entity_type: "company",
       entity_id: company.id,
       type: "note",
-      content: `Inbound pitch — ${d.founderName} (${d.founderEmail})\n\n${companyNotes}`,
+      content: snap,
     });
 
     return NextResponse.json({ ok: true });
