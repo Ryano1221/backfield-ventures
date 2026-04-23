@@ -26,7 +26,7 @@ const overlayHtml = `
         <div class="bfv-field"><label>Website</label><input id="bfv-p-web" type="text" placeholder="https://acme.com" /></div>
         <div class="bfv-field-row">
           <div class="bfv-field" id="bfv-pf-st"><label>Stage *</label><select id="bfv-p-st"><option value="">Select stage</option><option>Pre-Seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Other</option></select><span class="bfv-field-error">Required</span></div>
-          <div class="bfv-field"><label>Sector</label><select id="bfv-p-sec"><option value="">Select sector</option><option>B2B SaaS</option><option>Consumer</option><option>Fintech</option><option>Health &amp; Bio</option><option>Deep Tech</option><option>Climate</option><option>Marketplace</option><option>Other</option></select></div>
+          <div class="bfv-field"><label>Sector</label><select id="bfv-p-sec"><option value="">Select sector</option><option>B2B SaaS</option><option>Consumer</option><option>Fintech</option><option>Health &amp; Bio</option><option>Deep Tech</option><option>Climate</option><option>Marketplace</option><option>Sports</option><option>Other</option></select></div>
         </div>
         <div class="bfv-field" id="bfv-pf-ol"><label>One-Liner *</label><input id="bfv-p-ol" type="text" placeholder="We are the X for Y" /><div class="bfv-field-hint">Describe your company in one sentence.</div><span class="bfv-field-error">Required</span></div>
         <div class="bfv-field"><label>Location</label><input id="bfv-p-loc" type="text" placeholder="San Francisco, CA" /></div>
