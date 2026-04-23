@@ -41,7 +41,7 @@ export default function Nav() {
 
         <div className="nav__cta-group">
           <button className="bfv-btn" onClick={() => (window as any).bfvOpen('pitch')}>
-            PITCH US <span className="bfv-arrow">→</span>
+            PITCH <span className="bfv-arrow">→</span>
           </button>
           <button className="bfv-btn" onClick={() => (window as any).bfvOpen('invest')}>
             INVEST <span className="bfv-arrow">→</span>
@@ -64,7 +64,7 @@ export default function Nav() {
         <a href="#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</a>
         <a href="#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</a>
         <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
-          PITCH US <span className="bfv-arrow">→</span>
+          PITCH <span className="bfv-arrow">→</span>
         </button>
         <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('invest'); }}>
           INVEST <span className="bfv-arrow">→</span>
