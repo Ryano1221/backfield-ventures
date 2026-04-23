@@ -161,13 +161,9 @@ const overlayHtml = `
         </div>
         <div class="bfv-field"><label>Sectors of Interest</label>
           <div class="bfv-check-group">
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">B2B SaaS / Enterprise</div></div>
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Consumer &amp; Commerce</div></div>
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Fintech &amp; Financial Services</div></div>
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Health &amp; Life Sciences</div></div>
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Deep Tech / AI / Infrastructure</div></div>
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Climate &amp; Sustainability</div></div>
-            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">No preference — trust the team</div></div>
+            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">CPG (Consumer Packaged Goods)</div></div>
+            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Sports</div></div>
+            <div class="bfv-check-opt" onclick="this.classList.toggle('sel')"><div class="bfv-check-box">✓</div><div class="bfv-opt-text">Other</div></div>
           </div>
         </div>
         <div class="bfv-field"><label>Investment Timeline</label>
