@@ -462,6 +462,12 @@ export default function RootLayout({
       if(prs===1){var ok=bfvpVal('bfvp-fn','bfvp-f-fn')&bfvpVal('bfvp-ln','bfvp-f-ln')&bfvpValEmail('bfvp-em','bfvp-f-em');if(!ok)return;}
       if(prs===2){if(!bfvpVal('bfvp-bg','bfvp-f-bg'))return;}
       if(prs===T){
+        var agreeEl=document.getElementById('bfvp-agree');
+        if(!agreeEl||!agreeEl.checked){
+          var agreeWrap=agreeEl&&agreeEl.closest('.bfvp-field');
+          if(agreeWrap){agreeWrap.style.outline='1px solid rgba(196,122,106,0.6)';}
+          return;
+        }
         var nextBtn=document.getElementById('bfvp-next');
         nextBtn.textContent='Submitting\u2026';
         nextBtn.disabled=true;
@@ -511,7 +517,8 @@ export default function RootLayout({
     var f=e.target.closest('.bfv-field');
     if(f)f.classList.remove('bfv-err');
     var fp=e.target.closest('.bfvp-field');
-    if(fp)fp.classList.remove('err');
+    if(fp){fp.classList.remove('err');fp.style.outline='';}
+    if(e.target.type==='checkbox'&&e.target.closest('.bfvp-field')){e.target.closest('.bfvp-field').style.outline='';}
   });
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'){bfvClose('pitch');bfvClose('invest');bfvPartnerClose();}
