@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { notifyInvest } from "@/lib/notify";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -67,6 +68,8 @@ export async function POST(req: NextRequest) {
       type: "note",
       content: snap,
     });
+
+    await notifyInvest(d).catch((e) => console.error("invest email error", e));
 
     return NextResponse.json({ ok: true });
   } catch (err) {
