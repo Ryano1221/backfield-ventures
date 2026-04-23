@@ -1395,6 +1395,9 @@ body.js-ready .reveal-right {
   font-size: 10px;
   gap: 8px;
 }
+@media (max-width: 900px) {
+  .nav__cta-group { display: none; }
+}
 
 .bfv-btn {
   display: inline-flex;
