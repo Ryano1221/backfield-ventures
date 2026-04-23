@@ -1548,6 +1548,11 @@ body.js-ready .reveal-right {
   appearance: none;
   border-radius: 0;
 }
+.bfv-field input[type="checkbox"] {
+  width: auto; appearance: auto; padding: 0; background: transparent;
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 2px;
+  cursor: pointer; flex-shrink: 0; accent-color: #c8b89a;
+}
 .bfv-field input::placeholder, .bfv-field textarea::placeholder { color: rgba(240,237,232,0.2); }
 .bfv-field input:focus, .bfv-field textarea:focus, .bfv-field select:focus { border-color: rgba(255,255,255,0.35); }
 .bfv-field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
