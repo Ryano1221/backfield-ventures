@@ -243,7 +243,7 @@ export default function RootLayout({
         {children}
         <BfvDrawers />
         <script dangerouslySetInnerHTML={{ __html: `(function(){
-  var ps = 1, is = 1, T = 4;
+  var ps = 1, is = 1, prs = 1, T = 4;
 
   window.bfvOpen = function(t) {
     document.getElementById('bfv-'+t).classList.add('bfv-open');
@@ -413,12 +413,108 @@ export default function RootLayout({
     document.getElementById('bfv-ibody').scrollTop=0;
   };
 
+  // Partner drawer
+  window.bfvPartnerOpen = function(e) {
+    if(e) e.preventDefault();
+    document.getElementById('bfvp-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.bfvPartnerClose = function() {
+    document.getElementById('bfvp-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.bfvpRadio = function(gid, el) {
+    document.querySelectorAll('#'+gid+' .bfvp-ropt').forEach(function(o){ o.classList.remove('sel'); });
+    el.classList.add('sel');
+  };
+  function bfvpVal(id, fid) {
+    var inp=document.getElementById(id), f=document.getElementById(fid);
+    if(!inp||!inp.value.trim()){if(f)f.classList.add('err');return false;}
+    if(f)f.classList.remove('err');return true;
+  }
+  function bfvpValEmail(id, fid) {
+    var inp=document.getElementById(id), f=document.getElementById(fid);
+    if(!inp||!inp.value.trim()||!inp.value.includes('@')){
+      if(f){f.classList.add('err');var e=f.querySelector('.bfvp-field-err');if(e)e.textContent=inp&&inp.value?'Valid email required':'Required';}
+      return false;
+    }
+    if(f)f.classList.remove('err');return true;
+  }
+  function bfvpGetRadio(gid) {
+    var sel=document.querySelector('#'+gid+' .bfvp-ropt.sel .bfvp-opt-text');
+    return sel ? sel.textContent.trim() : '';
+  }
+  function bfvpGetChecks(gid) {
+    var sels=document.querySelectorAll('#'+gid+' .bfvp-copt.sel .bfvp-opt-text');
+    return Array.from(sels).map(function(el){ return el.textContent.trim(); }).join(', ');
+  }
+  function bfvpConfirm() {
+    var email=document.getElementById('bfvp-em').value;
+    document.getElementById('bfvp-conf-email').textContent=email;
+    for(var i=1;i<=T;i++){var el=document.getElementById('bfvp-s'+i);if(el)el.classList.remove('active');}
+    document.getElementById('bfvp-confirm').style.display='flex';
+    document.getElementById('bfvp-footer').style.display='none';
+    document.getElementById('bfvp-fill').style.width='100%';
+    for(var j=1;j<=T;j++){var l=document.getElementById('bfvp-l'+j);l.classList.remove('cur');l.classList.add('done');}
+  }
+  window.bfvpNav = function(d) {
+    if(d===1){
+      if(prs===1){var ok=bfvpVal('bfvp-fn','bfvp-f-fn')&bfvpVal('bfvp-ln','bfvp-f-ln')&bfvpValEmail('bfvp-em','bfvp-f-em');if(!ok)return;}
+      if(prs===2){if(!bfvpVal('bfvp-bg','bfvp-f-bg'))return;}
+      if(prs===T){
+        var nextBtn=document.getElementById('bfvp-next');
+        nextBtn.textContent='Submitting\u2026';
+        nextBtn.disabled=true;
+        var payload={
+          firstName: document.getElementById('bfvp-fn').value,
+          lastName: document.getElementById('bfvp-ln').value,
+          email: document.getElementById('bfvp-em').value,
+          linkedin: document.getElementById('bfvp-li').value,
+          title: document.getElementById('bfvp-title').value,
+          company: document.getElementById('bfvp-co').value,
+          sector: document.getElementById('bfvp-sec').value,
+          background: document.getElementById('bfvp-bg').value,
+          stageExperience: bfvpGetChecks('bfvp-stage-exp'),
+          functionalStrengths: bfvpGetChecks('bfvp-func-str'),
+          advisoryExperience: document.getElementById('bfvp-adv').value,
+          primaryInterest: bfvpGetRadio('bfvp-role'),
+          timeCommitment: bfvpGetRadio('bfvp-time'),
+          compensation: bfvpGetRadio('bfvp-comp'),
+          source: document.getElementById('bfvp-src').value,
+          referral: document.getElementById('bfvp-ref').value,
+          whyBackfield: document.getElementById('bfvp-why').value,
+          notes: document.getElementById('bfvp-notes').value,
+        };
+        fetch('/api/partner',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+          .then(function(){bfvpConfirm();})
+          .catch(function(){bfvpConfirm();});
+        return;
+      }
+    }
+    prs=Math.max(1,Math.min(T,prs+d));
+    for(var i=1;i<=T;i++){var el=document.getElementById('bfvp-s'+i);if(el)el.classList.remove('active');}
+    var t=document.getElementById('bfvp-s'+prs);if(t)t.classList.add('active');
+    document.getElementById('bfvp-fill').style.width=((prs/T)*100)+'%';
+    for(var i=1;i<=T;i++){
+      var l=document.getElementById('bfvp-l'+i);
+      l.classList.remove('cur','done');
+      if(i<prs)l.classList.add('done');
+      if(i===prs)l.classList.add('cur');
+    }
+    document.getElementById('bfvp-ctr').textContent=String(prs).padStart(2,'0')+' / '+String(T).padStart(2,'0');
+    document.getElementById('bfvp-back').style.display=prs>1?'inline-flex':'none';
+    document.getElementById('bfvp-next').textContent=prs===T?'Submit \u2192':'Next \u2192';
+    document.getElementById('bfvp-body').scrollTop=0;
+  };
+
   document.addEventListener('input',function(e){
     var f=e.target.closest('.bfv-field');
     if(f)f.classList.remove('bfv-err');
+    var fp=e.target.closest('.bfvp-field');
+    if(fp)fp.classList.remove('err');
   });
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){bfvClose('pitch');bfvClose('invest');}
+    if(e.key==='Escape'){bfvClose('pitch');bfvClose('invest');bfvPartnerClose();}
   });
 })();` }} />
       </body>

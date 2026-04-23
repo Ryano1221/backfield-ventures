@@ -208,6 +208,170 @@ const overlayHtml = `
     </div>
   </div>
 </div>
+
+<div class="bfvp-overlay" id="bfvp-overlay">
+  <div class="bfvp-backdrop" onclick="bfvPartnerClose()"></div>
+  <div class="bfvp-drawer">
+    <div class="bfvp-header">
+      <div>
+        <div class="bfvp-label">Backfield Ventures</div>
+        <div class="bfvp-title">Partner with Us</div>
+      </div>
+      <button class="bfvp-close" onclick="bfvPartnerClose()">&#x2715;</button>
+    </div>
+
+    <div class="bfvp-progress">
+      <div class="bfvp-track"><div class="bfvp-fill" id="bfvp-fill" style="width:25%"></div></div>
+      <div class="bfvp-prog-labels">
+        <span class="bfvp-lbl cur" id="bfvp-l1">Background</span>
+        <span class="bfvp-lbl" id="bfvp-l2">Experience</span>
+        <span class="bfvp-lbl" id="bfvp-l3">Engagement</span>
+        <span class="bfvp-lbl" id="bfvp-l4">Submit</span>
+      </div>
+    </div>
+
+    <div class="bfvp-body" id="bfvp-body">
+
+      <!-- Step 1 -->
+      <div class="bfvp-step active" id="bfvp-s1">
+        <div><div class="bfvp-step-title">Your Background</div><div class="bfvp-step-desc">Tell us who you are and what you&apos;ve built.</div></div>
+        <hr class="bfvp-divider" />
+        <div class="bfvp-row">
+          <div class="bfvp-field" id="bfvp-f-fn"><label>First Name *</label><input id="bfvp-fn" type="text" placeholder="Alex" /><span class="bfvp-field-err">Required</span></div>
+          <div class="bfvp-field" id="bfvp-f-ln"><label>Last Name *</label><input id="bfvp-ln" type="text" placeholder="Johnson" /><span class="bfvp-field-err">Required</span></div>
+        </div>
+        <div class="bfvp-field" id="bfvp-f-em"><label>Email *</label><input id="bfvp-em" type="email" placeholder="alex@example.com" /><span class="bfvp-field-err">Required</span></div>
+        <div class="bfvp-field"><label>LinkedIn</label><input id="bfvp-li" type="text" placeholder="linkedin.com/in/alexjohnson" /></div>
+        <div class="bfvp-row">
+          <div class="bfvp-field"><label>Current Title</label><input id="bfvp-title" type="text" placeholder="VP of Growth" /></div>
+          <div class="bfvp-field"><label>Current Company</label><input id="bfvp-co" type="text" placeholder="Acme Corp" /></div>
+        </div>
+        <div class="bfvp-field"><label>Primary Sector Expertise</label>
+          <select id="bfvp-sec">
+            <option value="">Select sector</option>
+            <option>B2B SaaS / Enterprise</option>
+            <option>Consumer &amp; Commerce</option>
+            <option>Fintech &amp; Financial Services</option>
+            <option>Health &amp; Life Sciences</option>
+            <option>Deep Tech / AI / Infrastructure</option>
+            <option>Climate &amp; Sustainability</option>
+            <option>Marketplace</option>
+            <option>Other / Cross-sector</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bfvp-step" id="bfvp-s2">
+        <div><div class="bfvp-step-title">Your Experience</div><div class="bfvp-step-desc">Help us understand the depth of your operator background.</div></div>
+        <hr class="bfvp-divider" />
+        <div class="bfvp-field" id="bfvp-f-bg"><label>Operator Background *</label>
+          <textarea id="bfvp-bg" placeholder="What have you built or scaled? Prior companies, roles, key achievements..."></textarea>
+          <span class="bfvp-field-err">Required</span>
+        </div>
+        <div class="bfvp-field"><label>Stage Experience</label>
+          <div class="bfvp-check-group" id="bfvp-stage-exp">
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">0 &rarr; 1 (pre-product, idea stage)</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Early traction (pre-seed / seed)</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Growth (Series A&ndash;C)</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Scale / Late stage</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Exit / M&amp;A experience</div></div>
+          </div>
+        </div>
+        <div class="bfvp-field"><label>Functional Strengths</label>
+          <div class="bfvp-check-group" id="bfvp-func-str">
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Go-to-market / Sales</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Product / Engineering</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Marketing / Brand</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Finance / Operations</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Hiring / Team building</div></div>
+            <div class="bfvp-copt" onclick="this.classList.toggle('sel')"><div class="bfvp-cbox">&#x2713;</div><div class="bfvp-opt-text">Partnerships / BD</div></div>
+          </div>
+        </div>
+        <div class="bfvp-field"><label>Prior Advisory Experience</label>
+          <select id="bfvp-adv">
+            <option value="">Select one</option>
+            <option>No prior advisory roles</option>
+            <option>1&ndash;2 informal advisor roles</option>
+            <option>Active advisor (formal equity/cash)</option>
+            <option>Board member / Observer</option>
+            <option>EIR / Venture Partner</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bfvp-step" id="bfvp-s3">
+        <div><div class="bfvp-step-title">How You Want to Engage</div><div class="bfvp-step-desc">Tell us what kind of relationship you&apos;re looking for.</div></div>
+        <hr class="bfvp-divider" />
+        <div class="bfvp-field"><label>Primary Interest</label>
+          <div class="bfvp-radio-group" id="bfvp-role">
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Advisor to portfolio companies</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Strategic advisor to Backfield Ventures</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Both &mdash; open to either</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Just want to connect / stay in touch</div></div>
+          </div>
+        </div>
+        <div class="bfvp-field"><label>Time Commitment</label>
+          <div class="bfvp-radio-group" id="bfvp-time">
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Light touch &mdash; 1&ndash;2 hrs/month</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Active &mdash; a few hrs/week</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Embedded / Fractional exec role</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Flexible &mdash; depends on fit</div></div>
+          </div>
+        </div>
+        <div class="bfvp-field"><label>Compensation Preference</label>
+          <div class="bfvp-radio-group" id="bfvp-comp">
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-comp',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Equity only</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-comp',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Cash + equity</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-comp',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Pro bono / giving back</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-comp',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Open to discussion</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="bfvp-step" id="bfvp-s4">
+        <div><div class="bfvp-step-title">Let&apos;s Connect</div><div class="bfvp-step-desc">Final details before we reach out.</div></div>
+        <hr class="bfvp-divider" />
+        <div class="bfvp-field"><label>How did you hear about us?</label>
+          <select id="bfvp-src"><option value="">Select one</option><option>Referral / Introduction</option><option>Portfolio founder</option><option>Social media / LinkedIn</option><option>Event / Conference</option><option>Press / Media</option><option>Other</option></select>
+        </div>
+        <div class="bfvp-field"><label>Referral Name</label><input id="bfvp-ref" type="text" placeholder="Who introduced us?" /><div class="bfvp-field-hint">Only if applicable.</div></div>
+        <div class="bfvp-field"><label>Why Backfield?</label>
+          <textarea id="bfvp-why" placeholder="What draws you to working with us specifically?"></textarea>
+        </div>
+        <div class="bfvp-field"><label>Anything else?</label>
+          <textarea id="bfvp-notes" placeholder="Specific companies, constraints, questions..." style="min-height:70px;"></textarea>
+        </div>
+        <div class="bfvp-field">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="bfvp-agree" style="width:auto;flex-shrink:0;margin-top:2px;" />
+            <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:rgba(240,237,232,0.5);line-height:1.5;">I understand this is an expression of interest and Backfield Ventures will reach out if there is a mutual fit.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Confirm -->
+      <div class="bfvp-confirm" id="bfvp-confirm" style="display:none;">
+        <div class="bfvp-confirm-icon">&#x2713;</div>
+        <div class="bfvp-confirm-title">Thanks for Reaching Out</div>
+        <p class="bfvp-confirm-body">We&apos;ll review your background and be in touch if there&apos;s a fit with our portfolio or fund. We appreciate operators who want to give back.</p>
+        <div class="bfvp-confirm-detail">Backfield Ventures &middot; <span id="bfvp-conf-email"></span></div>
+        <button class="bfvp-btn" onclick="bfvPartnerClose()" style="margin-top:8px;">Close &#x2715;</button>
+      </div>
+
+    </div>
+
+    <div class="bfvp-footer" id="bfvp-footer">
+      <div class="bfvp-counter" id="bfvp-ctr">01 / 04</div>
+      <div class="bfvp-footer-btns">
+        <button class="bfvp-btn" id="bfvp-back" onclick="bfvpNav(-1)" style="display:none;">&larr; Back</button>
+        <button class="bfvp-btn filled" id="bfvp-next" onclick="bfvpNav(1)">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
 `;
 
 export default function BfvDrawers() {

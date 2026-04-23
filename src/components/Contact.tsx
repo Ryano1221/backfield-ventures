@@ -44,10 +44,10 @@ export default function Contact() {
             <span className="contact__card-arrow">&rarr;</span>
           </button>
 
-          <a
-            href="mailto:hello@backfieldventures.com?subject=Partnership"
+          <button
             className="contact__card reveal-bottom"
             aria-label="Partner with Backfield Ventures"
+            onClick={() => (window as any).bfvPartnerOpen()}
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -58,7 +58,7 @@ export default function Contact() {
             <span className="contact__card-label">OPERATORS</span>
             <h3 className="contact__card-title">Partner With Us</h3>
             <span className="contact__card-arrow">&rarr;</span>
-          </a>
+          </button>
 
         </div>
 
