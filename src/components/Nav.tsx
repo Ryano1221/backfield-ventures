@@ -33,15 +33,20 @@ export default function Nav() {
         </a>
 
         <ul className="nav__links">
-          <li><a href="#focus" className="nav__link">FOCUS</a></li>
+          <li><a href="#focus" className="nav__link">THESIS</a></li>
           <li><a href="#why" className="nav__link">WHY</a></li>
           <li><a href="#philosophy" className="nav__link">PHILOSOPHY</a></li>
           <li><a href="#contact" className="nav__link">CONTACT</a></li>
         </ul>
 
-        <a href="mailto:hello@backfieldventures.com" className="nav__cta">
-          PITCH US &rarr;
-        </a>
+        <div className="nav__cta-group">
+          <button className="bfv-btn" onClick={() => (window as any).bfvOpen('pitch')}>
+            PITCH US <span className="bfv-arrow">→</span>
+          </button>
+          <button className="bfv-btn" onClick={() => (window as any).bfvOpen('invest')}>
+            INVEST <span className="bfv-arrow">→</span>
+          </button>
+        </div>
 
         <button
           className="nav__hamburger"
@@ -54,17 +59,16 @@ export default function Nav() {
       </div>
 
       <div className="nav__mobile-menu">
-        <a href="#focus" className="nav__mobile-link" onClick={closeMenu}>FOCUS</a>
+        <a href="#focus" className="nav__mobile-link" onClick={closeMenu}>THESIS</a>
         <a href="#why" className="nav__mobile-link" onClick={closeMenu}>WHY</a>
         <a href="#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</a>
         <a href="#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</a>
-        <a
-          href="mailto:hello@backfieldventures.com"
-          className="nav__mobile-cta"
-          onClick={closeMenu}
-        >
-          PITCH US &rarr;
-        </a>
+        <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
+          PITCH US <span className="bfv-arrow">→</span>
+        </button>
+        <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('invest'); }}>
+          INVEST <span className="bfv-arrow">→</span>
+        </button>
       </div>
     </nav>
   );

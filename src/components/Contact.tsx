@@ -1,3 +1,5 @@
+"use client";
+
 export default function Contact() {
   return (
     <section className="contact section" id="contact">
@@ -11,10 +13,10 @@ export default function Contact() {
 
         <div className="contact__cards">
 
-          <a
-            href="mailto:hello@backfieldventures.com?subject=Pitch Deck"
+          <button
             className="contact__card reveal-bottom"
             aria-label="Send your deck to Backfield Ventures"
+            onClick={() => (window as any).bfvOpen('pitch')}
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -24,12 +26,12 @@ export default function Contact() {
             <span className="contact__card-label">FOUNDERS</span>
             <h3 className="contact__card-title">Send Your Deck</h3>
             <span className="contact__card-arrow">&rarr;</span>
-          </a>
+          </button>
 
-          <a
-            href="mailto:hello@backfieldventures.com?subject=LP Inquiry"
+          <button
             className="contact__card reveal-bottom"
             aria-label="Contact Backfield Ventures about LP opportunities"
+            onClick={() => (window as any).bfvOpen('invest')}
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -40,7 +42,7 @@ export default function Contact() {
             <span className="contact__card-label">INVESTORS</span>
             <h3 className="contact__card-title">LP Inquiries</h3>
             <span className="contact__card-arrow">&rarr;</span>
-          </a>
+          </button>
 
           <a
             href="mailto:hello@backfieldventures.com?subject=Partnership"
