@@ -885,6 +885,24 @@ ul { list-style: none; }
   margin: 0 auto;
   gap: 48px;
   border-bottom: 1px solid #111;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.35s ease;
+}
+
+.philosophy__item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 0;
+  background: #fff;
+  transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.philosophy__item:hover::before {
+  height: 100%;
 }
 
 .philosophy__item--even {
@@ -893,6 +911,14 @@ ul { list-style: none; }
 
 .philosophy__item--odd {
   background: #000;
+}
+
+.philosophy__item--even:hover {
+  background: #111;
+}
+
+.philosophy__item--odd:hover {
+  background: #0d0d0d;
 }
 
 .philosophy__num {
@@ -905,6 +931,11 @@ ul { list-style: none; }
   padding: 0 40px 0 48px;
   display: flex;
   align-items: center;
+  transition: color 0.35s ease;
+}
+
+.philosophy__item:hover .philosophy__num {
+  color: rgba(255, 255, 255, 0.32);
 }
 
 .philosophy__title {
@@ -914,6 +945,11 @@ ul { list-style: none; }
   font-weight: 400;
   margin-bottom: 16px;
   color: #fff;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.philosophy__item:hover .philosophy__title {
+  transform: translateX(8px);
 }
 
 .philosophy__body {
