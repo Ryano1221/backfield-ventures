@@ -18,9 +18,9 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Backfield Ventures | Sports & CPG Venture Capital | Austin, TX",
+  title: "Backfield Ventures | Austin VC | Sports & CPG Venture Capital",
   description:
-    "Backfield Ventures is an Austin, TX venture capital firm backing the next generation of sports, CPG, and consumer companies. Pre-Seed to Series A. Founder, investor, or operator — let's talk.",
+    "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company — let's talk.",
   applicationName: "Backfield Ventures",
   metadataBase: new URL("https://backfieldventures.com"),
   alternates: {
@@ -72,9 +72,9 @@ export const metadata: Metadata = {
     "how to get venture capital funding",
   ],
   openGraph: {
-    title: "Backfield Ventures | Sports & CPG Venture Capital | Austin, TX",
+    title: "Backfield Ventures | Austin VC | Sports & CPG Venture Capital",
     description:
-      "Backfield Ventures is an Austin, TX venture capital firm backing the next generation of sports, CPG, and consumer companies. Pre-Seed to Series A. Founder, investor, or operator — let's talk.",
+      "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company — let's talk.",
     url: "https://backfieldventures.com",
     siteName: "Backfield Ventures",
     type: "website",
@@ -83,9 +83,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Backfield Ventures | Sports & CPG Venture Capital | Austin, TX",
+    title: "Backfield Ventures | Austin VC | Sports & CPG Venture Capital",
     description:
-      "Backfield Ventures is an Austin, TX venture capital firm backing the next generation of sports, CPG, and consumer companies. Pre-Seed to Series A. Founder, investor, or operator — let's talk.",
+      "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company — let's talk.",
     // twitter:image falls back to og:image
   },
   robots: {

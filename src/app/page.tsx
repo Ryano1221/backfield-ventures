@@ -20,7 +20,7 @@ export default function Home() {
       <Nav />
       <main>
         <h1 className="sr-only">
-          Backfield Ventures — Venture Capital for Consumer &amp; Sports Companies
+          Backfield Ventures — Austin, TX Venture Capital for Sports, CPG &amp; Consumer Companies
         </h1>
         <Hero />
         <Ticker />
