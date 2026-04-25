@@ -14,8 +14,10 @@ const overlayHtml = `
       <div class="bfv-progress-labels">
         <span class="bfv-step-lbl active" id="bfv-pl1">Company</span>
         <span class="bfv-step-lbl" id="bfv-pl2">Team</span>
-        <span class="bfv-step-lbl" id="bfv-pl3">Opportunity</span>
-        <span class="bfv-step-lbl" id="bfv-pl4">Submit</span>
+        <span class="bfv-step-lbl" id="bfv-pl3">Opp.</span>
+        <span class="bfv-step-lbl" id="bfv-pl4">Metrics</span>
+        <span class="bfv-step-lbl" id="bfv-pl5">Deep Dive</span>
+        <span class="bfv-step-lbl" id="bfv-pl6">Submit</span>
       </div>
     </div>
     <div class="bfv-body" id="bfv-pbody">
@@ -58,6 +60,67 @@ const overlayHtml = `
       </div>
 
       <div class="bfv-step" id="bfv-ps4">
+        <div><div class="bfv-step-title">Key Metrics</div><div class="bfv-step-desc">Numbers we need to score your submission. Be precise — skip anything not yet applicable.</div></div>
+        <hr class="bfv-divider" />
+        <div id="bfv-p-metrics-cpg">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(240,237,232,0.35);margin-bottom:14px;">CPG / Consumer Metrics</div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>Revenue (TTM) *</label><input id="bfv-p-cpg-rev" type="text" placeholder="e.g. $1.8M" /><div class="bfv-field-hint">Trailing 12 months, net of returns</div></div>
+            <div class="bfv-field"><label>Gross Margin *</label><input id="bfv-p-cpg-gm" type="text" placeholder="e.g. 52%" /><div class="bfv-field-hint">After COGS, freight, co-man, packaging</div></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>Velocity</label><input id="bfv-p-cpg-vel" type="text" placeholder="e.g. $8.20/store/wk" /><div class="bfv-field-hint">Avg across all active doors</div></div>
+            <div class="bfv-field"><label>Retail Doors</label><input id="bfv-p-cpg-doors" type="text" placeholder="e.g. 420" /></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>Avg MoM Growth</label><input id="bfv-p-cpg-growth" type="text" placeholder="e.g. 13%" /><div class="bfv-field-hint">Average over last 6 months</div></div>
+            <div class="bfv-field"><label>DTC Revenue %</label><input id="bfv-p-cpg-dtc" type="text" placeholder="e.g. 38%" /></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>Repeat Purchase Rate</label><input id="bfv-p-cpg-rep" type="text" placeholder="e.g. 46%" /><div class="bfv-field-hint">Reorder within 90 days (DTC)</div></div>
+            <div class="bfv-field"><label>DTC CAC</label><input id="bfv-p-cpg-cac" type="text" placeholder="e.g. $26" /></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>CAC Payback</label><input id="bfv-p-cpg-payback" type="text" placeholder="e.g. 3.5 months" /></div>
+            <div class="bfv-field"><label>Cash Runway</label><input id="bfv-p-cpg-runway" type="text" placeholder="e.g. 14 months" /></div>
+          </div>
+        </div>
+        <div id="bfv-p-metrics-sports" style="display:none">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(240,237,232,0.35);margin-bottom:14px;">Sports / Sports Tech Metrics</div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>ARR / Revenue (TTM) *</label><input id="bfv-p-sp-arr" type="text" placeholder="e.g. $2.1M ARR" /><div class="bfv-field-hint">Annual run rate or trailing 12M</div></div>
+            <div class="bfv-field"><label>Gross Margin *</label><input id="bfv-p-sp-gm" type="text" placeholder="e.g. 74%" /></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>YoY Revenue Growth</label><input id="bfv-p-sp-yoy" type="text" placeholder="e.g. 140%" /></div>
+            <div class="bfv-field"><label>Net Revenue Retention</label><input id="bfv-p-sp-nrr" type="text" placeholder="e.g. 118%" /><div class="bfv-field-hint">NRR — critical for B2B/subscription</div></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>Monthly Active Users</label><input id="bfv-p-sp-users" type="text" placeholder="e.g. 85,000" /></div>
+            <div class="bfv-field"><label>Paying Subscribers</label><input id="bfv-p-sp-paying" type="text" placeholder="e.g. 12,000" /></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>Monthly Churn Rate</label><input id="bfv-p-sp-churn" type="text" placeholder="e.g. 3.8%" /></div>
+            <div class="bfv-field"><label>Blended CAC</label><input id="bfv-p-sp-cac" type="text" placeholder="e.g. $32" /></div>
+          </div>
+          <div class="bfv-field-row">
+            <div class="bfv-field"><label>LTV : CAC</label><input id="bfv-p-sp-ltvcac" type="text" placeholder="e.g. 5.9x" /></div>
+            <div class="bfv-field"><label>Cash Runway</label><input id="bfv-p-sp-runway" type="text" placeholder="e.g. 18 months" /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bfv-step" id="bfv-ps5">
+        <div><div class="bfv-step-title">Deep Dive</div><div class="bfv-step-desc">Your pitch covers the what. This covers the why, the defensibility, and the honest risks.</div></div>
+        <hr class="bfv-divider" />
+        <div class="bfv-field" id="bfv-pf-why"><label>Why Now — and Why You? *</label><textarea id="bfv-p-why-now" placeholder="What has changed in the market, supply chain, or culture that makes this the right moment? And what specifically about your background makes you the right team?"></textarea><span class="bfv-field-error">Required</span></div>
+        <div class="bfv-field" id="bfv-pf-moat"><label>What makes your position hard to replicate? *</label><textarea id="bfv-p-moat" placeholder="Be specific: brand loyalty data, exclusive distribution, proprietary formulation, licensed IP, network effects — not just 'we have a head start'."></textarea><span class="bfv-field-error">Required</span></div>
+        <div class="bfv-field"><label>Describe your 3 best customers (or retail accounts)</label><textarea id="bfv-p-top-customers" placeholder="Who are they, how did you get them, and what keeps them buying?"></textarea></div>
+        <div class="bfv-field" id="bfv-pf-risks"><label>3 Biggest Risks to This Business *</label><textarea id="bfv-p-risks" placeholder="Be direct and honest. Include market risk, execution risk, and one you stay up at night about."></textarea><span class="bfv-field-error">Required</span></div>
+        <div class="bfv-field"><label>Use of Proceeds — specifically</label><textarea id="bfv-p-proceeds" placeholder="Break it down by allocation: e.g. 40% inventory build, 30% headcount (name the roles), 20% DTC marketing. What milestones does this get you to?"></textarea></div>
+      </div>
+
+      <div class="bfv-step" id="bfv-ps6">
         <div><div class="bfv-step-title">Final Details</div><div class="bfv-step-desc">Drop your deck and any final context.</div></div>
         <hr class="bfv-divider" />
         <div class="bfv-field"><label>Pitch Deck Link</label><input id="bfv-p-deck" type="text" placeholder="https://docsend.com/…" /><div class="bfv-field-hint">DocSend, Google Drive, Notion — any shareable link.</div></div>

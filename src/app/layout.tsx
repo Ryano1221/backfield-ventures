@@ -243,7 +243,7 @@ export default function RootLayout({
         {children}
         <BfvDrawers />
         <script dangerouslySetInnerHTML={{ __html: `(function(){
-  var ps = 1, is = 1, prs = 1, T = 4;
+  var ps = 1, is = 1, prs = 1, T = 4, PT = 6;
 
   window.bfvOpen = function(t) {
     document.getElementById('bfv-'+t).classList.add('bfv-open');
@@ -267,31 +267,45 @@ export default function RootLayout({
     return Array.from(sels).map(function(el){ return el.textContent.trim(); }).join(', ');
   }
 
+  function bfvTotalFor(type) { return type==='pitch' ? PT : T; }
+
   function bfvProgress(type, step) {
-    var pct = (step/T)*100;
+    var tot = bfvTotalFor(type);
+    var pct = (step/tot)*100;
     document.getElementById('bfv-'+(type==='pitch'?'p':'i')+'p').style.width = pct+'%';
     var pfx = type==='pitch' ? 'bfv-pl' : 'bfv-il';
     var activeClass = type==='pitch' ? 'active' : 'invest-active';
-    for(var i=1;i<=T;i++){
+    for(var i=1;i<=tot;i++){
       var l=document.getElementById(pfx+i);
+      if(!l) continue;
       l.classList.remove('active','invest-active','done');
       if(i<step) l.classList.add('done');
       if(i===step) l.classList.add(activeClass);
     }
     document.getElementById('bfv-'+(type==='pitch'?'p':'i')+'ctr').textContent =
-      String(step).padStart(2,'0')+' / '+String(T).padStart(2,'0');
+      String(step).padStart(2,'0')+' / '+String(tot).padStart(2,'0');
     document.getElementById('bfv-'+(type==='pitch'?'p':'i')+'back').style.display = step>1?'inline-flex':'none';
-    document.getElementById('bfv-'+(type==='pitch'?'p':'i')+'next').textContent = step===T?'Submit →':'Next →';
+    document.getElementById('bfv-'+(type==='pitch'?'p':'i')+'next').textContent = step===tot?'Submit →':'Next →';
   }
 
   function bfvShow(type, step) {
+    var tot = bfvTotalFor(type);
     var pfx = 'bfv-'+(type==='pitch'?'p':'i')+'s';
-    for(var i=1;i<=T;i++){
+    for(var i=1;i<=tot;i++){
       var el=document.getElementById(pfx+i);
       if(el) el.classList.remove('active');
     }
     var t=document.getElementById(pfx+step);
     if(t) t.classList.add('active');
+  }
+
+  function bfvShowMetrics() {
+    var sec=document.getElementById('bfv-p-sec');
+    var isSports=sec&&sec.value==='Sports';
+    var c=document.getElementById('bfv-p-metrics-cpg');
+    var s=document.getElementById('bfv-p-metrics-sports');
+    if(c)c.style.display=isSports?'none':'block';
+    if(s)s.style.display=isSports?'block':'none';
   }
 
   function bfvVal(id, fid) {
@@ -316,11 +330,11 @@ export default function RootLayout({
   function bfvPitchConfirm() {
     var email=document.getElementById('bfv-p-fe').value;
     document.getElementById('bfv-pconf-email').textContent=email;
-    for(var i=1;i<=T;i++){var el=document.getElementById('bfv-ps'+i);if(el)el.classList.remove('active');}
+    for(var i=1;i<=PT;i++){var el=document.getElementById('bfv-ps'+i);if(el)el.classList.remove('active');}
     document.getElementById('bfv-pconf').style.display='flex';
     document.getElementById('bfv-pfooter').style.display='none';
     document.getElementById('bfv-pp').style.width='100%';
-    for(var j=1;j<=T;j++){var l=document.getElementById('bfv-pl'+j);l.classList.remove('active');l.classList.add('done');}
+    for(var j=1;j<=PT;j++){var l=document.getElementById('bfv-pl'+j);if(l){l.classList.remove('active');l.classList.add('done');}}
   }
 
   function bfvInvestConfirm() {
@@ -338,31 +352,58 @@ export default function RootLayout({
       if(ps===1){var ok=bfvVal('bfv-p-co','bfv-pf-co')&bfvValSel('bfv-p-st','bfv-pf-st')&bfvVal('bfv-p-ol','bfv-pf-ol');if(!ok)return;}
       if(ps===2){var ok2=bfvVal('bfv-p-fn','bfv-pf-fn')&bfvVal('bfv-p-fr','bfv-pf-fr')&bfvValEmail('bfv-p-fe','bfv-pf-fe');if(!ok2)return;}
       if(ps===3){if(!bfvVal('bfv-p-pr','bfv-pf-pr'))return;}
-      if(ps===T){
+      if(ps===5){var ok5=bfvVal('bfv-p-why-now','bfv-pf-why')&bfvVal('bfv-p-moat','bfv-pf-moat')&bfvVal('bfv-p-risks','bfv-pf-risks');if(!ok5)return;}
+      if(ps===PT){
         var nextBtn=document.getElementById('bfv-pnext');
         nextBtn.textContent='Submitting…';
         nextBtn.disabled=true;
+        var gv=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
         var payload={
-          company: document.getElementById('bfv-p-co').value,
-          website: document.getElementById('bfv-p-web').value,
-          stage: document.getElementById('bfv-p-st').value,
-          sector: document.getElementById('bfv-p-sec').value,
-          oneLiner: document.getElementById('bfv-p-ol').value,
-          location: document.getElementById('bfv-p-loc').value,
-          founderName: document.getElementById('bfv-p-fn').value,
-          founderRole: document.getElementById('bfv-p-fr').value,
-          founderEmail: document.getElementById('bfv-p-fe').value,
-          linkedin: document.getElementById('bfv-p-li').value,
-          teamSize: document.getElementById('bfv-p-ts').value,
-          background: document.getElementById('bfv-p-bg').value,
-          problem: document.getElementById('bfv-p-pr').value,
-          solution: document.getElementById('bfv-p-sol').value,
-          traction: document.getElementById('bfv-p-tr').value,
-          raiseAmount: document.getElementById('bfv-p-ra').value,
-          raisedToDate: document.getElementById('bfv-p-rtd').value,
-          deckLink: document.getElementById('bfv-p-deck').value,
-          source: document.getElementById('bfv-p-src').value,
-          notes: document.getElementById('bfv-p-notes').value,
+          company: gv('bfv-p-co'),
+          website: gv('bfv-p-web'),
+          stage: gv('bfv-p-st'),
+          sector: gv('bfv-p-sec'),
+          oneLiner: gv('bfv-p-ol'),
+          location: gv('bfv-p-loc'),
+          founderName: gv('bfv-p-fn'),
+          founderRole: gv('bfv-p-fr'),
+          founderEmail: gv('bfv-p-fe'),
+          linkedin: gv('bfv-p-li'),
+          teamSize: gv('bfv-p-ts'),
+          background: gv('bfv-p-bg'),
+          problem: gv('bfv-p-pr'),
+          solution: gv('bfv-p-sol'),
+          traction: gv('bfv-p-tr'),
+          raiseAmount: gv('bfv-p-ra'),
+          raisedToDate: gv('bfv-p-rtd'),
+          deckLink: gv('bfv-p-deck'),
+          source: gv('bfv-p-src'),
+          notes: gv('bfv-p-notes'),
+          cpgRevenue: gv('bfv-p-cpg-rev'),
+          cpgGrossMargin: gv('bfv-p-cpg-gm'),
+          cpgVelocity: gv('bfv-p-cpg-vel'),
+          cpgDoors: gv('bfv-p-cpg-doors'),
+          cpgMomGrowth: gv('bfv-p-cpg-growth'),
+          cpgDtcPct: gv('bfv-p-cpg-dtc'),
+          cpgRepeatRate: gv('bfv-p-cpg-rep'),
+          cpgCac: gv('bfv-p-cpg-cac'),
+          cpgPayback: gv('bfv-p-cpg-payback'),
+          cpgRunway: gv('bfv-p-cpg-runway'),
+          spArr: gv('bfv-p-sp-arr'),
+          spGrossMargin: gv('bfv-p-sp-gm'),
+          spYoyGrowth: gv('bfv-p-sp-yoy'),
+          spNrr: gv('bfv-p-sp-nrr'),
+          spActiveUsers: gv('bfv-p-sp-users'),
+          spPaying: gv('bfv-p-sp-paying'),
+          spChurn: gv('bfv-p-sp-churn'),
+          spCac: gv('bfv-p-sp-cac'),
+          spLtvCac: gv('bfv-p-sp-ltvcac'),
+          spRunway: gv('bfv-p-sp-runway'),
+          whyNow: gv('bfv-p-why-now'),
+          moat: gv('bfv-p-moat'),
+          topCustomers: gv('bfv-p-top-customers'),
+          risks: gv('bfv-p-risks'),
+          useOfProceeds: gv('bfv-p-proceeds'),
         };
         fetch('/api/pitch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
           .then(function(){bfvPitchConfirm();})
@@ -370,8 +411,9 @@ export default function RootLayout({
         return;
       }
     }
-    ps=Math.max(1,Math.min(T,ps+d));
+    ps=Math.max(1,Math.min(PT,ps+d));
     bfvShow('pitch',ps); bfvProgress('pitch',ps);
+    if(ps===4) bfvShowMetrics();
     document.getElementById('bfv-pbody').scrollTop=0;
   };
 
