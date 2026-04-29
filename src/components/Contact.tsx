@@ -55,7 +55,7 @@ export default function Contact() {
                 <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <span className="contact__card-label">OPERATORS</span>
+            <span className="contact__card-label">OPERATORS/VC&apos;S</span>
             <h3 className="contact__card-title">Partner With Us</h3>
             <span className="contact__card-arrow">&rarr;</span>
           </button>
