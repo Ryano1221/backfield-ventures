@@ -1388,6 +1388,91 @@ body.js-ready .reveal-right {
 }
 
 /* ============================================================
+   PITCH PAGE — /pitch split-screen layout
+============================================================ */
+.pitch-layout {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  background: #000;
+  overflow: hidden;
+}
+
+.pitch-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 56px 56px 64px;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.pitch-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.pitch-hero__logo {
+  position: absolute;
+  top: 32px;
+  left: 56px;
+}
+
+.pitch-hero__headline {
+  font-family: var(--font-bebas);
+  font-size: clamp(56px, 7vw, 120px);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 28px;
+}
+
+.pitch-hero__sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.pitch-panel {
+  width: min(600px, 100vw);
+  height: 100%;
+  background: #111111;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  color: #f0ede8;
+}
+
+@media (max-width: 768px) {
+  .pitch-layout {
+    position: relative;
+    min-height: 100vh;
+  }
+  .pitch-hero {
+    display: none;
+  }
+  .pitch-panel {
+    width: 100%;
+    height: 100vh;
+    min-height: 100svh;
+    border-left: none;
+  }
+}
+
+/* ============================================================
    REDUCED MOTION
 ============================================================ */
 @media (prefers-reduced-motion: reduce) {
