@@ -354,7 +354,7 @@ export default function PitchForm() {
               {step === 4 && (
                 <div className="bfv-step active">
                   <div>
-                    <div className="bfv-step-title">CPG / Consumer Metrics</div>
+                    <div className="bfv-step-title">Metrics</div>
                     <div className="bfv-step-desc">Share what you have — nothing here is required.</div>
                   </div>
                   <hr className="bfv-divider" />
