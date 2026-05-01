@@ -70,6 +70,7 @@ export default function PitchForm() {
     if (step === 1) {
       if (!fields.company.trim()) errs.company = "Required";
       if (!fields.stage) errs.stage = "Required";
+      if (!fields.sector) errs.sector = "Required";
       if (!fields.oneLiner.trim()) errs.oneLiner = "Required";
     }
     if (step === 2) {
@@ -240,20 +241,21 @@ export default function PitchForm() {
                       </select>
                       <span className="bfv-field-error">Required</span>
                     </div>
-                    <div className="bfv-field">
-                      <label>Sector</label>
+                    <div className={`bfv-field${errors.sector ? " bfv-err" : ""}`}>
+                      <label>Sector *</label>
                       <select value={fields.sector} onChange={set("sector")}>
                         <option value="">Select sector</option>
+                        <option>CPG / Consumer</option>
+                        <option>Sports</option>
                         <option>B2B SaaS</option>
-                        <option>Consumer</option>
                         <option>Fintech</option>
                         <option>Health &amp; Bio</option>
                         <option>Deep Tech</option>
                         <option>Climate</option>
                         <option>Marketplace</option>
-                        <option>Sports</option>
                         <option>Other</option>
                       </select>
+                      <span className="bfv-field-error">Required</span>
                     </div>
                   </div>
                   <div className={`bfv-field${errors.oneLiner ? " bfv-err" : ""}`}>
