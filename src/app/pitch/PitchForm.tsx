@@ -59,11 +59,30 @@ export default function PitchForm() {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const val = e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
       setFields((f) => ({ ...f, [k]: val }));
+      setErrors((err) => ({ ...err, [k]: undefined }));
     };
   }
 
+  const [errors, setErrors] = useState<Partial<Record<keyof Fields, string>>>({});
+
   function validate(): boolean {
-    return true;
+    const errs: Partial<Record<keyof Fields, string>> = {};
+    if (step === 1) {
+      if (!fields.company.trim()) errs.company = "Required";
+      if (!fields.stage) errs.stage = "Required";
+      if (!fields.oneLiner.trim()) errs.oneLiner = "Required";
+    }
+    if (step === 2) {
+      if (!fields.founderName.trim()) errs.founderName = "Required";
+      if (!fields.founderRole.trim()) errs.founderRole = "Required";
+      if (!fields.founderEmail.trim() || !fields.founderEmail.includes("@"))
+        errs.founderEmail = fields.founderEmail ? "Valid email required" : "Required";
+    }
+    if (step === 3) {
+      if (!fields.problem.trim()) errs.problem = "Required";
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   }
 
   async function next() {
@@ -199,17 +218,18 @@ export default function PitchForm() {
                     <div className="bfv-step-desc">Tell us the basics about what you&apos;re building.</div>
                   </div>
                   <hr className="bfv-divider" />
-                  <div className="bfv-field">
-                    <label>Company Name</label>
+                  <div className={`bfv-field${errors.company ? " bfv-err" : ""}`}>
+                    <label>Company Name *</label>
                     <input type="text" placeholder="Acme Inc." value={fields.company} onChange={set("company")} />
+                    <span className="bfv-field-error">Required</span>
                   </div>
                   <div className="bfv-field">
                     <label>Website</label>
                     <input type="text" placeholder="https://acme.com" value={fields.website} onChange={set("website")} />
                   </div>
                   <div className="bfv-field-row">
-                    <div className="bfv-field">
-                      <label>Stage</label>
+                    <div className={`bfv-field${errors.stage ? " bfv-err" : ""}`}>
+                      <label>Stage *</label>
                       <select value={fields.stage} onChange={set("stage")}>
                         <option value="">Select stage</option>
                         <option>Pre-Seed</option>
@@ -218,6 +238,7 @@ export default function PitchForm() {
                         <option>Series B</option>
                         <option>Other</option>
                       </select>
+                      <span className="bfv-field-error">Required</span>
                     </div>
                     <div className="bfv-field">
                       <label>Sector</label>
@@ -235,10 +256,11 @@ export default function PitchForm() {
                       </select>
                     </div>
                   </div>
-                  <div className="bfv-field">
-                    <label>One-Liner</label>
+                  <div className={`bfv-field${errors.oneLiner ? " bfv-err" : ""}`}>
+                    <label>One-Liner *</label>
                     <input type="text" placeholder="We are the X for Y" value={fields.oneLiner} onChange={set("oneLiner")} />
                     <div className="bfv-field-hint">Describe your company in one sentence.</div>
+                    <span className="bfv-field-error">Required</span>
                   </div>
                   <div className="bfv-field">
                     <label>Location</label>
@@ -255,18 +277,21 @@ export default function PitchForm() {
                     <div className="bfv-step-desc">We invest in people first. Tell us about the founders.</div>
                   </div>
                   <hr className="bfv-divider" />
-                  <div className="bfv-field">
-                    <label>Your Name</label>
+                  <div className={`bfv-field${errors.founderName ? " bfv-err" : ""}`}>
+                    <label>Your Name *</label>
                     <input type="text" placeholder="Jane Smith" value={fields.founderName} onChange={set("founderName")} />
+                    <span className="bfv-field-error">Required</span>
                   </div>
                   <div className="bfv-field-row">
-                    <div className="bfv-field">
-                      <label>Your Role</label>
+                    <div className={`bfv-field${errors.founderRole ? " bfv-err" : ""}`}>
+                      <label>Your Role *</label>
                       <input type="text" placeholder="CEO / Co-founder" value={fields.founderRole} onChange={set("founderRole")} />
+                      <span className="bfv-field-error">Required</span>
                     </div>
-                    <div className="bfv-field">
-                      <label>Email</label>
+                    <div className={`bfv-field${errors.founderEmail ? " bfv-err" : ""}`}>
+                      <label>Email *</label>
                       <input type="email" placeholder="jane@acme.com" value={fields.founderEmail} onChange={set("founderEmail")} />
+                      <span className="bfv-field-error">{errors.founderEmail || "Required"}</span>
                     </div>
                   </div>
                   <div className="bfv-field">
@@ -303,13 +328,14 @@ export default function PitchForm() {
                     <div className="bfv-step-desc">Help us understand the problem you&apos;re solving.</div>
                   </div>
                   <hr className="bfv-divider" />
-                  <div className="bfv-field">
-                    <label>The Problem</label>
+                  <div className={`bfv-field${errors.problem ? " bfv-err" : ""}`}>
+                    <label>The Problem *</label>
                     <textarea
                       placeholder="What problem are you solving? Who feels it and how acutely?"
                       value={fields.problem}
                       onChange={set("problem")}
                     />
+                    <span className="bfv-field-error">Required</span>
                   </div>
                   <div className="bfv-field">
                     <label>Your Solution</label>
