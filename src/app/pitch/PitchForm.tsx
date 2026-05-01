@@ -22,9 +22,17 @@ type Fields = {
   background: string;
   problem: string;
   solution: string;
-  traction: string;
-  raiseAmount: string;
-  raisedToDate: string;
+  // CPG / Consumer metrics
+  revenueTtm: string;
+  grossMargin: string;
+  velocity: string;
+  retailDoors: string;
+  avgMomGrowth: string;
+  dtcRevenuePct: string;
+  repeatPurchaseRate: string;
+  dtcCac: string;
+  cacPayback: string;
+  cashRunway: string;
   deckLink: string;
   source: string;
   notes: string;
@@ -35,7 +43,9 @@ const EMPTY: Fields = {
   company: "", website: "", stage: "", sector: "", oneLiner: "", location: "",
   founderName: "", founderRole: "", founderEmail: "", linkedin: "", teamSize: "", background: "",
   problem: "", solution: "",
-  traction: "", raiseAmount: "", raisedToDate: "",
+  revenueTtm: "", grossMargin: "", velocity: "", retailDoors: "",
+  avgMomGrowth: "", dtcRevenuePct: "", repeatPurchaseRate: "", dtcCac: "",
+  cacPayback: "", cashRunway: "",
   deckLink: "", source: "", notes: "", agree: false,
 };
 
@@ -97,9 +107,18 @@ export default function PitchForm() {
             background: fields.background,
             problem: fields.problem,
             solution: fields.solution,
-            traction: fields.traction,
-            raiseAmount: fields.raiseAmount,
-            raisedToDate: fields.raisedToDate,
+            traction: [
+              fields.revenueTtm     && `Revenue (TTM): ${fields.revenueTtm}`,
+              fields.grossMargin    && `Gross Margin: ${fields.grossMargin}`,
+              fields.velocity       && `Velocity: ${fields.velocity}`,
+              fields.retailDoors    && `Retail Doors: ${fields.retailDoors}`,
+              fields.avgMomGrowth   && `Avg MoM Growth: ${fields.avgMomGrowth}`,
+              fields.dtcRevenuePct  && `DTC Revenue %: ${fields.dtcRevenuePct}`,
+              fields.repeatPurchaseRate && `Repeat Purchase Rate: ${fields.repeatPurchaseRate}`,
+              fields.dtcCac         && `DTC CAC: ${fields.dtcCac}`,
+              fields.cacPayback     && `CAC Payback: ${fields.cacPayback}`,
+              fields.cashRunway     && `Cash Runway: ${fields.cashRunway}`,
+            ].filter(Boolean).join("\n") || null,
             deckLink: fields.deckLink,
             source: fields.source,
             notes: fields.notes,
@@ -332,27 +351,63 @@ export default function PitchForm() {
               {step === 4 && (
                 <div className="bfv-step active">
                   <div>
-                    <div className="bfv-step-title">Metrics</div>
-                    <div className="bfv-step-desc">Show us where you stand.</div>
+                    <div className="bfv-step-title">CPG / Consumer Metrics</div>
+                    <div className="bfv-step-desc">Share what you have — nothing here is required.</div>
                   </div>
                   <hr className="bfv-divider" />
-                  <div className="bfv-field">
-                    <label>Traction</label>
-                    <textarea
-                      placeholder="Revenue, users, growth rate, key partnerships…"
-                      style={{ minHeight: 90 }}
-                      value={fields.traction}
-                      onChange={set("traction")}
-                    />
+                  <div className="bfv-field-row">
+                    <div className="bfv-field">
+                      <label>Revenue (TTM)</label>
+                      <input type="text" placeholder="e.g. $1.8M" value={fields.revenueTtm} onChange={set("revenueTtm")} />
+                      <div className="bfv-field-hint">Trailing 12 months, net of returns</div>
+                    </div>
+                    <div className="bfv-field">
+                      <label>Gross Margin</label>
+                      <input type="text" placeholder="e.g. 52%" value={fields.grossMargin} onChange={set("grossMargin")} />
+                      <div className="bfv-field-hint">After COGS, freight, co-man, packaging</div>
+                    </div>
                   </div>
                   <div className="bfv-field-row">
                     <div className="bfv-field">
-                      <label>Raise Amount</label>
-                      <input type="text" placeholder="$1.5M" value={fields.raiseAmount} onChange={set("raiseAmount")} />
+                      <label>Velocity</label>
+                      <input type="text" placeholder="e.g. $8.20/store/wk" value={fields.velocity} onChange={set("velocity")} />
+                      <div className="bfv-field-hint">Avg across all active doors</div>
                     </div>
                     <div className="bfv-field">
-                      <label>Raised to Date</label>
-                      <input type="text" placeholder="$250K" value={fields.raisedToDate} onChange={set("raisedToDate")} />
+                      <label>Retail Doors</label>
+                      <input type="text" placeholder="e.g. 420" value={fields.retailDoors} onChange={set("retailDoors")} />
+                    </div>
+                  </div>
+                  <div className="bfv-field-row">
+                    <div className="bfv-field">
+                      <label>Avg MoM Growth</label>
+                      <input type="text" placeholder="e.g. 13%" value={fields.avgMomGrowth} onChange={set("avgMomGrowth")} />
+                      <div className="bfv-field-hint">Average over last 6 months</div>
+                    </div>
+                    <div className="bfv-field">
+                      <label>DTC Revenue %</label>
+                      <input type="text" placeholder="e.g. 38%" value={fields.dtcRevenuePct} onChange={set("dtcRevenuePct")} />
+                    </div>
+                  </div>
+                  <div className="bfv-field-row">
+                    <div className="bfv-field">
+                      <label>Repeat Purchase Rate</label>
+                      <input type="text" placeholder="e.g. 46%" value={fields.repeatPurchaseRate} onChange={set("repeatPurchaseRate")} />
+                      <div className="bfv-field-hint">Reorder within 90 days (DTC)</div>
+                    </div>
+                    <div className="bfv-field">
+                      <label>DTC CAC</label>
+                      <input type="text" placeholder="e.g. $26" value={fields.dtcCac} onChange={set("dtcCac")} />
+                    </div>
+                  </div>
+                  <div className="bfv-field-row">
+                    <div className="bfv-field">
+                      <label>CAC Payback</label>
+                      <input type="text" placeholder="e.g. 3.5 months" value={fields.cacPayback} onChange={set("cacPayback")} />
+                    </div>
+                    <div className="bfv-field">
+                      <label>Cash Runway</label>
+                      <input type="text" placeholder="e.g. 14 months" value={fields.cashRunway} onChange={set("cashRunway")} />
                     </div>
                   </div>
                 </div>
