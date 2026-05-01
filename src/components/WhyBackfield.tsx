@@ -43,9 +43,9 @@ export default function WhyBackfield() {
         </h2>
 
         <p className="why__intro reveal-bottom">
-          Capital is table stakes. The most valuable thing we offer is the
-          network, judgment, and relentless follow-through that helps founders
-          navigate what comes after the term sheet.
+          The most valuable thing we offer is the network, judgment, and
+          relentless follow-through that helps founders navigate what comes
+          after the term sheet.
         </p>
 
         <div className="why__grid">
