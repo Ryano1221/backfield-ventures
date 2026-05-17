@@ -844,25 +844,36 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function TeamCard({photo,init,name,role,blurb}:{
-  photo?:string;init:string;name:string;role:string;blurb:string;
+function TeamCard({photo,init,name,role,blurb,number}:{
+  photo?:string;init:string;name:string;role:string;blurb:string;number:string;
 }) {
   return (
-    <div className="c3 wg" style={{background:"rgba(255,255,255,.035)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(24px,2.8vh,34px)",display:"flex",alignItems:"flex-start",gap:"clamp(20px,2.4vh,28px)",position:"relative",overflow:"hidden"}}>
-      {/* Photo on the left */}
-      {photo ? (
-        <img src={photo} alt={name} style={{width:"clamp(140px,16vh,180px)",height:"clamp(170px,20vh,220px)",objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.12)",flexShrink:0}}/>
-      ) : (
-        <div style={{width:"clamp(140px,16vh,180px)",height:"clamp(170px,20vh,220px)",border:"1px solid rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",flexShrink:0}}>
-          <span style={{fontFamily:BEBAS,fontSize:54,color:"#fff",letterSpacing:1.5}}>{init}</span>
-        </div>
-      )}
+    <div className="c3 wg" style={{background:"linear-gradient(135deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.02) 100%)",border:"1px solid rgba(255,255,255,.1)",display:"flex",alignItems:"stretch",position:"relative",overflow:"hidden",height:"100%"}}>
+      {/* Full-height photo on the left */}
+      <div style={{width:"42%",position:"relative",flexShrink:0,overflow:"hidden",background:"#0a0a0a"}}>
+        {photo ? (
+          <>
+            <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 22%",display:"block",filter:"contrast(1.05) saturate(.95)"}}/>
+            {/* dark vignette overlay for cinematic feel */}
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)",pointerEvents:"none"}}/>
+          </>
+        ) : (
+          <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.04)"}}>
+            <span style={{fontFamily:BEBAS,fontSize:"clamp(80px,10vh,120px)",color:"rgba(255,255,255,.4)",letterSpacing:2}}>{init}</span>
+          </div>
+        )}
+        {/* Floating number overlay bottom-left of photo */}
+        <div style={{position:"absolute",bottom:14,left:16,fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.7)",letterSpacing:3,textTransform:"uppercase",zIndex:2}}>{number}</div>
+      </div>
 
-      {/* Right: name, role, blurb */}
-      <div style={{display:"flex",flexDirection:"column",flex:1,minWidth:0}}>
-        <div style={{fontFamily:BEBAS,fontSize:"clamp(24px,3.2vh,36px)",color:"#fff",letterSpacing:2,lineHeight:1,marginBottom:4}}>{name}</div>
-        <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.55)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:"clamp(14px,1.8vh,20px)"}}>({role})</div>
-        <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"rgba(255,255,255,.72)",lineHeight:1.75}}>{blurb}</div>
+      {/* Right: content */}
+      <div style={{flex:1,minWidth:0,padding:"clamp(24px,3vh,40px) clamp(22px,2.8vh,36px)",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+        <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,56px)",color:"#fff",letterSpacing:1.5,lineHeight:.9,marginBottom:10}}>{name}</div>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:"clamp(18px,2.4vh,28px)"}}>
+          <div style={{width:24,height:2,background:"#fff",flexShrink:0}}/>
+          <div style={{fontFamily:MONO,fontSize:"clamp(8.5px,1.05vh,10.5px)",color:"rgba(255,255,255,.65)",letterSpacing:3,textTransform:"uppercase"}}>{role}</div>
+        </div>
+        <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"rgba(255,255,255,.74)",lineHeight:1.75}}>{blurb}</div>
       </div>
     </div>
   );
@@ -874,6 +885,7 @@ function TeamCard({photo,init,name,role,blurb}:{
 function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const team=[
     {
+      number:"01 — Founder",
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
@@ -881,6 +893,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       blurb:"Ryan Arnold is the Founder of Backfield Ventures. He is a serial entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. Prior to founding Backfield, Ryan was an Associate at 4th & 1 Ventures, where he ran investment operations across four SPVs and onboarded high-net-worth LPs, raising over $500,000 in committed capital. He also served as a Financial Analyst at the Trinity University Office of Investments, where he invested in PE & VC fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he was a Trinity Investing Competition winner, founded the Trinity Real Estate Club, and played football as an All-Conference defensive back.",
     },
     {
+      number:"02 — Partner",
       photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
