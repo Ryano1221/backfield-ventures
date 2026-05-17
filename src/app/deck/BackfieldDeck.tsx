@@ -844,37 +844,99 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function AdvisorCard({init,name,title,note,co,tags,highlight}:{init:string;name:string;title:string;note:string;co:string;tags:string[];highlight:string}) {
+function TeamCard({init,name,role,tagline,tags,highlight,bio,timeline,edu}:{
+  init:string;name:string;role:string;tagline:string;tags:string[];highlight:string;
+  bio:string;timeline:{co:string;title:string;when:string}[];edu:string[];
+}) {
   return (
-    <div className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(14px,2vh,24px) 18px",display:"flex",flexDirection:"column"}}>
-      <div style={{width:38,height:38,borderRadius:"50%",border:"1px solid rgba(255,255,255,.12)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:12,background:"rgba(255,255,255,.05)",flexShrink:0}}>
-        <span style={{fontFamily:BEBAS,fontSize:15,color:"rgba(255,255,255,.5)",letterSpacing:1}}>{init}</span>
+    <div className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(18px,2.4vh,30px) clamp(20px,2.4vh,28px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      {/* Top: avatar + name + role */}
+      <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14,flexShrink:0}}>
+        <div style={{width:54,height:54,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",flexShrink:0}}>
+          <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1.5}}>{init}</span>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
+          <div style={{fontFamily:BEBAS,fontSize:"clamp(22px,3vh,30px)",color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
+          <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:2.5,textTransform:"uppercase"}}>{role}</div>
+        </div>
       </div>
-      <div style={{fontFamily:BEBAS,fontSize:"clamp(16px,2.2vh,22px)",color:"#fff",letterSpacing:1,marginBottom:2}}>{name}</div>
-      <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.48)",letterSpacing:2,marginBottom:3,textTransform:"uppercase"}}>{co}</div>
-      <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.35)",fontSize:"clamp(10px,1.2vh,11px)",marginBottom:14,lineHeight:1.5}}>{title}</div>
+      <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.45)",fontSize:"clamp(11px,1.4vh,13px)",marginBottom:14,lineHeight:1.5}}>{tagline}</div>
+
       {/* Focus tags */}
-      <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
-        {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.1)",padding:"2px 7px",fontFamily:MONO,fontSize:7,letterSpacing:2.5,color:"rgba(255,255,255,.3)",textTransform:"uppercase"}}>{t}</span>)}
+      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
+        {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.2)",padding:"3px 8px",fontFamily:MONO,fontSize:7.5,letterSpacing:2.5,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>{t}</span>)}
       </div>
-      {/* Highlight stat */}
-      <div style={{flex:1,display:"flex",alignItems:"center",borderTop:"1px solid rgba(255,255,255,.06)",borderBottom:"1px solid rgba(255,255,255,.06)",padding:"12px 0",marginBottom:14}}>
-        <span style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.6vh,28px)",color:"rgba(255,255,255,.75)",letterSpacing:1}}>{highlight}</span>
+
+      {/* Highlight */}
+      <div style={{borderTop:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",padding:"12px 0",marginBottom:14}}>
+        <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Signature</div>
+        <span style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.6vh,26px)",color:"#fff",letterSpacing:1}}>{highlight}</span>
       </div>
-      <div style={{fontFamily:BODY,fontSize:"clamp(10.5px,1.3vh,12.5px)",color:"rgba(255,255,255,.45)",lineHeight:1.75}}>{note}</div>
+
+      {/* Bio */}
+      <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"rgba(255,255,255,.62)",lineHeight:1.7,marginBottom:14}}>{bio}</div>
+
+      {/* Timeline */}
+      <div style={{flex:1,minHeight:0,display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+        <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Experience</div>
+        {timeline.map((t,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8,paddingLeft:10,borderLeft:"1px solid rgba(255,255,255,.12)"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:1,minWidth:0,flex:1}}>
+              <span style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.6vh,15px)",color:"#fff",letterSpacing:.8,lineHeight:1.2}}>{t.co}</span>
+              <span style={{fontFamily:BODY,fontSize:"clamp(10px,1.2vh,12px)",color:"rgba(255,255,255,.48)",lineHeight:1.3}}>{t.title}</span>
+            </div>
+            <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.35)",letterSpacing:1.5,flexShrink:0,whiteSpace:"nowrap"}}>{t.when}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Education */}
+      <div style={{borderTop:"1px solid rgba(255,255,255,.06)",paddingTop:10,flexShrink:0}}>
+        <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Education</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+          {edu.map(e=><span key={e} style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.55)",letterSpacing:1.5}}>{e}</span>)}
+        </div>
+      </div>
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────
-   SLIDE 8 — ADVISORS
+   SLIDE 8 — TEAM
 ───────────────────────────────────────────── */
 function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
-  const people=[
-    {init:"AB",name:"Alex Bente", co:"ADvantage Sports",  title:"Founding Partner",          tags:["SPORTS M&A","GLOBAL NETWORK","FUND STRATEGY"],  highlight:"leAD Sports · Adidas Family Office", note:"Co-founded Adidas Family Office and leAD Sports. Unmatched access to the global sports investment ecosystem."},
-    {init:"MB",name:"Matt Bocci", co:"Amity Ventures",    title:"Principal",                 tags:["EARLY STAGE","B2C TECH","WEST COAST VC"],        highlight:"Arketa · Prive · Sully AI",          note:"Early-stage tech investor. Key deals: Arketa, Prive, Sully AI. Elite west coast venture network."},
-    {init:"JB",name:"Jaan Bains", co:"Saepio Capital",    title:"CEO & CIO",                 tags:["MACRO FINANCE","HEDGE FUNDS","CROSS-ASSET"],     highlight:"Former Blackstone · Multi-B AUM",    note:"Former Blackstone investor. Runs a global macro hedge fund with multi-billion cross-asset experience."},
-    {init:"BW",name:"Blake Wiley",co:"Access Capital",    title:"Co-Founder, $150M+ AUM",    tags:["CONSUMER VC","CPG / DTC","SPORTS TECH"],         highlight:"$150M+ AUM Deployed",               note:"Portfolio includes Liquid Death, Whoop, C4 Energy, Beyond Meat, Hims & Hers, and Tecovas."},
+  const team=[
+    {
+      init:"RA",
+      name:"Ryan Arnold",
+      role:"General Partner · Founder",
+      tagline:"Founder, operator, and investor. From building a venture-backed hardware company to deploying capital across early-stage deals.",
+      tags:["VC OPERATIONS","FP&A","FOUNDER-LED","CAPITAL FORMATION"],
+      highlight:"$500K+ raised · $1.7B endowment experience",
+      bio:"Co-founded and exited a venture-backed hardware startup. Built investment frameworks and ran SPV operations at 4th & 1 Ventures. Modeled portfolio strategy for Trinity's $1.7B endowment.",
+      timeline:[
+        {co:"4th & 1 Ventures",                 title:"Associate · Investment ops, 4 SPVs, $500K+ raised", when:"2023 — 2024"},
+        {co:"Trinity Office of Investments",    title:"Analyst · $1.7B endowment, allocation strategy",    when:"2023 — 2024"},
+        {co:"Wakescoot Watersports",            title:"Co-Founder & CEO · Venture-backed hardware, exit",  when:"2020 — 2023"},
+      ],
+      edu:["Trinity University","B.S. Finance","Trinity Football"],
+    },
+    {
+      init:"EL",
+      name:"Ethan Lavin",
+      role:"Partner · Operations",
+      tagline:"Seasoned CPG operator with deep international experience. Brings the brand-building muscle behind the consumer thesis.",
+      tags:["CPG","INT'L OPERATIONS","STRATEGY","M&A"],
+      highlight:"Impossible Foods EMEA · Georgetown MBA",
+      bio:"Scaled Impossible Foods across Europe and EMEA as Strategy & Ops Manager. Currently Engagement Manager at Norm Ai. Deep operating playbook across CPG, with the network and conviction to back the next generation of consumer brands.",
+      timeline:[
+        {co:"Norm Ai",                          title:"Engagement Manager",                                 when:"2025 — Present"},
+        {co:"Athena Intelligence",              title:"Ops & Strategy",                                     when:"2024 — 2025"},
+        {co:"Impossible Foods",                 title:"International Strategy & Ops Manager, EMEA",         when:"2023 — 2024"},
+        {co:"Spryker · Impossible Foods",       title:"M&A and Strategy MBA Interns",                       when:"2021 — 2022"},
+      ],
+      edu:["Georgetown MBA","Georgetown MSFS","Colorado College B.A."],
+    },
   ];
   return (
     <Dark>
@@ -882,13 +944,13 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <Logo size={30}/>
           <div style={{width:1,height:14,background:"rgba(255,255,255,.1)"}}/>
-          <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:"rgba(255,255,255,.48)"}}>08 — ADVISORS & NETWORK</span>
+          <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:"rgba(255,255,255,.48)"}}>08 — TEAM</span>
         </div>
-        <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>$2B+ CAPITAL DEPLOYED ACROSS NETWORK</span>
+        <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>OPERATORS BACKING OPERATORS</span>
       </div>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,20px)",flexShrink:0}}>THE ROOM IS ALREADY FULL.</div>
-      <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:2,flex:1,minHeight:0}}>
-        {people.map(p=><AdvisorCard key={p.name} {...p}/>)}
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,20px)",flexShrink:0}}>BUILT BY OPERATORS.</div>
+      <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
+        {team.map(p=><TeamCard key={p.name} {...p}/>)}
       </div>
       <Nav cur={8} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
     </Dark>
@@ -1412,53 +1474,107 @@ function MobileProcess() {
   );
 }
 
-/* ─── MOBILE 8: ADVISORS ─── */
+/* ─── MOBILE 8: TEAM ─── */
 function MobileAdvisors() {
-  const people=[
-    {init:"AB",name:"Alex Bente", co:"ADvantage Sports",  title:"Founding Partner",          tags:["SPORTS M&A","GLOBAL NETWORK","FUND STRATEGY"],  highlight:"leAD Sports · Adidas Family Office", note:"Co-founded Adidas Family Office and leAD Sports. Unmatched access to the global sports investment ecosystem."},
-    {init:"MB",name:"Matt Bocci", co:"Amity Ventures",    title:"Principal",                 tags:["EARLY STAGE","B2C TECH","WEST COAST VC"],        highlight:"Arketa · Prive · Sully AI",          note:"Early-stage tech investor. Key deals: Arketa, Prive, Sully AI. Elite west coast venture network."},
-    {init:"JB",name:"Jaan Bains", co:"Saepio Capital",    title:"CEO & CIO",                 tags:["MACRO FINANCE","HEDGE FUNDS","CROSS-ASSET"],     highlight:"Former Blackstone · Multi-B AUM",    note:"Former Blackstone investor. Runs a global macro hedge fund with multi-billion cross-asset experience."},
-    {init:"BW",name:"Blake Wiley",co:"Access Capital",    title:"Co-Founder, $150M+ AUM",    tags:["CONSUMER VC","CPG / DTC","SPORTS TECH"],         highlight:"$150M+ AUM Deployed",               note:"Portfolio includes Liquid Death, Whoop, C4 Energy, Beyond Meat, Hims & Hers, and Tecovas."},
+  const team=[
+    {
+      init:"RA",
+      name:"Ryan Arnold",
+      role:"General Partner · Founder",
+      tagline:"Founder, operator, and investor. From building a venture-backed hardware company to deploying capital across early-stage deals.",
+      tags:["VC OPS","FP&A","FOUNDER-LED","CAPITAL FORMATION"],
+      highlight:"$500K+ raised · $1.7B endowment experience",
+      bio:"Co-founded and exited a venture-backed hardware startup. Built investment frameworks and ran SPV operations at 4th & 1 Ventures. Modeled portfolio strategy for Trinity's $1.7B endowment.",
+      timeline:[
+        {co:"4th & 1 Ventures",                 title:"Associate · 4 SPVs, $500K+ raised",                 when:"2023 — 2024"},
+        {co:"Trinity Office of Investments",    title:"Analyst · $1.7B endowment",                          when:"2023 — 2024"},
+        {co:"Wakescoot Watersports",            title:"Co-Founder & CEO · Hardware, exit",                  when:"2020 — 2023"},
+      ],
+      edu:["Trinity University · B.S. Finance","Trinity Football"],
+    },
+    {
+      init:"EL",
+      name:"Ethan Lavin",
+      role:"Partner · Operations",
+      tagline:"Seasoned CPG operator with deep international experience. Brings the brand-building muscle behind the consumer thesis.",
+      tags:["CPG","INT'L OPS","STRATEGY","M&A"],
+      highlight:"Impossible Foods EMEA · Georgetown MBA",
+      bio:"Scaled Impossible Foods across Europe and EMEA as Strategy & Ops Manager. Currently Engagement Manager at Norm Ai. Deep operating playbook across CPG with the network to back the next generation of consumer brands.",
+      timeline:[
+        {co:"Norm Ai",                          title:"Engagement Manager",                                 when:"2025 — Present"},
+        {co:"Athena Intelligence",              title:"Ops & Strategy",                                     when:"2024 — 2025"},
+        {co:"Impossible Foods",                 title:"Int'l Strategy & Ops Manager, EMEA",                 when:"2023 — 2024"},
+        {co:"Spryker · Impossible Foods",       title:"M&A and Strategy MBA Interns",                       when:"2021 — 2022"},
+      ],
+      edu:["Georgetown MBA","Georgetown MSFS","Colorado College B.A."],
+    },
   ];
   return (
     <MobileSlide>
-      <MHeader n="08" label="ADVISORS & NETWORK"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:32,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
-        THE ROOM IS ALREADY FULL.
+      <MHeader n="08" label="TEAM"/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
+        BUILT BY OPERATORS.
       </div>
-      <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2,marginBottom:18}}>
-        $2B+ CAPITAL DEPLOYED ACROSS NETWORK
+      <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:2,marginBottom:18}}>
+        OPERATORS BACKING OPERATORS
       </div>
-      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:12}}>
-        {people.map(({init,name,co,title,tags,highlight,note})=>(
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:14}}>
+        {team.map(({init,name,role,tagline,tags,highlight,bio,timeline,edu})=>(
           <div key={name} style={{
             background:"rgba(255,255,255,.04)",
             border:"1px solid rgba(255,255,255,.09)",
-            padding:"18px 16px",
+            padding:"20px 16px",
             display:"flex",flexDirection:"column",
           }}>
+            {/* Avatar + name */}
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-              <div style={{
-                width:38,height:38,borderRadius:"50%",
-                border:"1px solid rgba(255,255,255,.12)",
-                background:"rgba(255,255,255,.05)",
-                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
-              }}>
-                <span style={{fontFamily:BEBAS,fontSize:15,color:"rgba(255,255,255,.5)",letterSpacing:1}}>{init}</span>
+              <div style={{width:46,height:46,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <span style={{fontFamily:BEBAS,fontSize:18,color:"#fff",letterSpacing:1.5}}>{init}</span>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
-                <div style={{fontFamily:BEBAS,fontSize:20,color:"#fff",letterSpacing:1,lineHeight:1.1}}>{name}</div>
-                <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.5)",letterSpacing:2,textTransform:"uppercase"}}>{co}</div>
+                <div style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
+                <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:2,textTransform:"uppercase"}}>{role}</div>
               </div>
             </div>
-            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.4)",fontSize:11.5,marginBottom:12,lineHeight:1.5}}>{title}</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
-              {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.12)",padding:"3px 7px",fontFamily:MONO,fontSize:7,letterSpacing:2,color:"rgba(255,255,255,.4)",textTransform:"uppercase"}}>{t}</span>)}
+
+            {/* Tagline */}
+            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.5)",fontSize:12.5,marginBottom:12,lineHeight:1.5}}>{tagline}</div>
+
+            {/* Tags */}
+            <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
+              {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 7px",fontFamily:MONO,fontSize:7.5,letterSpacing:2,color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{t}</span>)}
             </div>
-            <div style={{borderTop:"1px solid rgba(255,255,255,.06)",borderBottom:"1px solid rgba(255,255,255,.06)",padding:"10px 0",marginBottom:12}}>
-              <span style={{fontFamily:BEBAS,fontSize:20,color:"rgba(255,255,255,.78)",letterSpacing:1}}>{highlight}</span>
+
+            {/* Highlight */}
+            <div style={{borderTop:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",padding:"10px 0",marginBottom:12}}>
+              <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>Signature</div>
+              <span style={{fontFamily:BEBAS,fontSize:18,color:"#fff",letterSpacing:1}}>{highlight}</span>
             </div>
-            <div style={{fontFamily:BODY,fontSize:12.5,color:"rgba(255,255,255,.5)",lineHeight:1.65}}>{note}</div>
+
+            {/* Bio */}
+            <div style={{fontFamily:BODY,fontSize:12.5,color:"rgba(255,255,255,.6)",lineHeight:1.65,marginBottom:14}}>{bio}</div>
+
+            {/* Timeline */}
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>Experience</div>
+              {timeline.map((t,i)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8,paddingLeft:10,borderLeft:"1px solid rgba(255,255,255,.12)"}}>
+                  <div style={{display:"flex",flexDirection:"column",gap:1,minWidth:0,flex:1}}>
+                    <span style={{fontFamily:BEBAS,fontSize:13,color:"#fff",letterSpacing:.8,lineHeight:1.2}}>{t.co}</span>
+                    <span style={{fontFamily:BODY,fontSize:11,color:"rgba(255,255,255,.5)",lineHeight:1.3}}>{t.title}</span>
+                  </div>
+                  <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.4)",letterSpacing:1.5,flexShrink:0,whiteSpace:"nowrap"}}>{t.when}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Education */}
+            <div style={{borderTop:"1px solid rgba(255,255,255,.06)",paddingTop:10}}>
+              <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Education</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                {edu.map(e=><span key={e} style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.55)",letterSpacing:1.5}}>{e}</span>)}
+              </div>
+            </div>
           </div>
         ))}
       </div>
