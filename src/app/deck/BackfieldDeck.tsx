@@ -241,7 +241,9 @@ function ProgressBar({cur,total}:{cur:number;total:number}) {
 }
 
 function Logo({light,size=36}:{light?:boolean;size?:number}) {
-  return <img src="/logo-bw.png" alt="Backfield Ventures" style={{height:size,width:"auto",objectFit:"contain",filter:light?"none":"invert(1)",display:"block"}}/>;
+  // BV monogram logo. On dark backgrounds the black bg disappears and only white BV shows.
+  // On light backgrounds we invert so the white BV becomes black.
+  return <img src="/logo-bv.png" alt="Backfield Ventures" style={{height:size,width:size,objectFit:"contain",filter:light?"invert(1)":"none",display:"block"}}/>;
 }
 
 function DotNav({cur,total,onGo,light}:{cur:number;total:number;onGo:(n:number)=>void;light?:boolean}) {
