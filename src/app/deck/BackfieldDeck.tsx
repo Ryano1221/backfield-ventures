@@ -33,8 +33,10 @@ const CSS = `
   .c3l { transition:transform .28s ease,box-shadow .28s ease; transform-style:preserve-3d; }
   .c3l:hover { transform:perspective(900px) rotateX(-1deg) rotateY(2deg) translateY(-3px); box-shadow:0 16px 40px rgba(0,0,0,.1); }
 
-  .rh  { transition:background .15s; cursor:default; }
+  .rh  { transition:background .15s, border-left-color .15s; cursor:default; }
   .rh:hover  { background:rgba(255,255,255,.06) !important; }
+  .pipe-row:hover { border-left-color:#fff !important; }
+  .pipe-row { transition: background .15s, border-left-color .2s ease; }
   .rhl { transition:background .15s; cursor:default; }
   .rhl:hover { background:rgba(0,0,0,.05) !important; }
 
@@ -791,7 +793,7 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
         {deals.map(({desc,cat,rev,stage},i)=>(
-          <div key={i} className="rh c3 m-pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,alignItems:"center",flex:1,minHeight:0}}>
+          <div key={i} className="rh c3 m-pipe-row pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.06)",alignItems:"center",flex:1,minHeight:0}}>
             <div style={{padding:"0 14px",fontFamily:BODY,color:"rgba(255,255,255,.7)",fontSize:"clamp(11px,1.35vh,13px)",lineHeight:1.6}}>{desc}</div>
             <div style={{padding:"0 10px",fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.38)",letterSpacing:2,textTransform:"uppercase",lineHeight:1.3}}>{cat}</div>
             <div style={{padding:"0 10px"}}><span style={{fontFamily:BEBAS,fontSize:"clamp(15px,2vh,20px)",color:"#fff",letterSpacing:1}}>{rev}</span></div>
