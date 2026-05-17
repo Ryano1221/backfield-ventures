@@ -844,17 +844,21 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function TeamCard({init,name,role,tagline,tags,highlight,bio,timeline,edu}:{
-  init:string;name:string;role:string;tagline:string;tags:string[];highlight:string;
+function TeamCard({photo,init,name,role,tagline,tags,highlight,bio,timeline,edu}:{
+  photo?:string;init:string;name:string;role:string;tagline:string;tags:string[];highlight:string;
   bio:string;timeline:{co:string;title:string;when:string}[];edu:string[];
 }) {
   return (
     <div className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(18px,2.4vh,30px) clamp(20px,2.4vh,28px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       {/* Top: avatar + name + role */}
       <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14,flexShrink:0}}>
-        <div style={{width:54,height:54,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",flexShrink:0}}>
-          <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1.5}}>{init}</span>
-        </div>
+        {photo ? (
+          <img src={photo} alt={name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.18)",flexShrink:0}}/>
+        ) : (
+          <div style={{width:54,height:54,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",flexShrink:0}}>
+            <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1.5}}>{init}</span>
+          </div>
+        )}
         <div style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
           <div style={{fontFamily:BEBAS,fontSize:"clamp(22px,3vh,30px)",color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
           <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:2.5,textTransform:"uppercase"}}>{role}</div>
@@ -907,6 +911,7 @@ function TeamCard({init,name,role,tagline,tags,highlight,bio,timeline,edu}:{
 function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const team=[
     {
+      photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
       role:"General Partner · Founder",
@@ -922,6 +927,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       edu:["Trinity University","B.S. Finance","Trinity Football"],
     },
     {
+      photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
       role:"Partner · Operations",
@@ -1478,6 +1484,7 @@ function MobileProcess() {
 function MobileAdvisors() {
   const team=[
     {
+      photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
       role:"General Partner · Founder",
@@ -1493,6 +1500,7 @@ function MobileAdvisors() {
       edu:["Trinity University · B.S. Finance","Trinity Football"],
     },
     {
+      photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
       role:"Partner · Operations",
@@ -1519,7 +1527,7 @@ function MobileAdvisors() {
         OPERATORS BACKING OPERATORS
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:14}}>
-        {team.map(({init,name,role,tagline,tags,highlight,bio,timeline,edu})=>(
+        {team.map(({photo,init,name,role,tagline,tags,highlight,bio,timeline,edu})=>(
           <div key={name} style={{
             background:"rgba(255,255,255,.04)",
             border:"1px solid rgba(255,255,255,.09)",
@@ -1528,9 +1536,13 @@ function MobileAdvisors() {
           }}>
             {/* Avatar + name */}
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-              <div style={{width:46,height:46,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <span style={{fontFamily:BEBAS,fontSize:18,color:"#fff",letterSpacing:1.5}}>{init}</span>
-              </div>
+              {photo ? (
+                <img src={photo} alt={name} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.18)",flexShrink:0}}/>
+              ) : (
+                <div style={{width:46,height:46,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <span style={{fontFamily:BEBAS,fontSize:18,color:"#fff",letterSpacing:1.5}}>{init}</span>
+                </div>
+              )}
               <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
                 <div style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
                 <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:2,textTransform:"uppercase"}}>{role}</div>
