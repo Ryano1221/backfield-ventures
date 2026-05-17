@@ -844,36 +844,71 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function TeamCard({photo,init,name,role,blurb,number}:{
-  photo?:string;init:string;name:string;role:string;blurb:string;number:string;
+function TeamStat({raw,label,delay=0,last=false}:{raw:string;label:string;delay?:number;last?:boolean}) {
+  const m=raw.match(/^([^0-9]*)([0-9]+\.?[0-9]*)([^0-9]*)$/);
+  const pfx=m?.[1]??"", num=parseFloat(m?.[2]??"0"), sfx=m?.[3]??raw;
+  const decs=(m?.[2]??"").includes(".")?1:0;
+  const hasNum=!!m && !isNaN(num);
+  const v=useCountUp(hasNum?num:0,decs,160+delay);
+  return (
+    <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"clamp(10px,1.4vh,16px) 8px",borderRight:last?"none":"1px solid rgba(255,255,255,.08)",gap:4}}>
+      <div style={{fontFamily:BEBAS,fontSize:"clamp(22px,2.8vh,30px)",color:"#fff",letterSpacing:1,lineHeight:1}}>
+        {hasNum ? <>{pfx}{v}{sfx}</> : raw}
+      </div>
+      <div style={{fontFamily:MONO,fontSize:"clamp(7px,.85vh,8.5px)",color:"rgba(255,255,255,.5)",letterSpacing:2,textTransform:"uppercase",textAlign:"center",lineHeight:1.3}}>{label}</div>
+    </div>
+  );
+}
+
+function TeamCard({photo,init,name,role,blurb,number,partnerN,stats,tags}:{
+  photo?:string;init:string;name:string;role:string;blurb:string;number:string;partnerN:string;
+  stats:{v:string;l:string}[];tags:string[];
 }) {
   return (
-    <div className="c3 wg" style={{background:"linear-gradient(135deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.02) 100%)",border:"1px solid rgba(255,255,255,.1)",display:"flex",alignItems:"stretch",position:"relative",overflow:"hidden",height:"100%"}}>
-      {/* Full-height photo on the left */}
-      <div style={{width:"42%",position:"relative",flexShrink:0,overflow:"hidden",background:"#0a0a0a"}}>
-        {photo ? (
-          <>
-            <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 22%",display:"block",filter:"contrast(1.05) saturate(.95)"}}/>
-            {/* dark vignette overlay for cinematic feel */}
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)",pointerEvents:"none"}}/>
-          </>
-        ) : (
-          <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.04)"}}>
-            <span style={{fontFamily:BEBAS,fontSize:"clamp(80px,10vh,120px)",color:"rgba(255,255,255,.4)",letterSpacing:2}}>{init}</span>
+    <div className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",height:"100%"}}>
+      {/* Huge watermark partner number — matches Thesis card DNA */}
+      <div style={{position:"absolute",right:"clamp(-10px,-1vh,-4px)",top:"clamp(-20px,-2vh,-8px)",fontFamily:BEBAS,fontSize:"clamp(180px,22vh,260px)",color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>{partnerN}</div>
+
+      {/* Top half: photo + name/role/blurb */}
+      <div style={{display:"flex",alignItems:"stretch",flex:1,minHeight:0,position:"relative",zIndex:1}}>
+        {/* Photo on the left, full height */}
+        <div style={{width:"38%",position:"relative",flexShrink:0,overflow:"hidden",background:"#0a0a0a"}}>
+          {photo ? (
+            <>
+              <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 22%",display:"block",filter:"contrast(1.05) saturate(.95)"}}/>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)",pointerEvents:"none"}}/>
+            </>
+          ) : (
+            <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.04)"}}>
+              <span style={{fontFamily:BEBAS,fontSize:"clamp(80px,10vh,120px)",color:"rgba(255,255,255,.4)",letterSpacing:2}}>{init}</span>
+            </div>
+          )}
+          <div style={{position:"absolute",bottom:14,left:14,fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.7)",letterSpacing:3,textTransform:"uppercase",zIndex:2}}>{number}</div>
+        </div>
+
+        {/* Right content */}
+        <div style={{flex:1,minWidth:0,padding:"clamp(20px,2.6vh,32px) clamp(20px,2.6vh,30px) clamp(14px,1.8vh,22px)",display:"flex",flexDirection:"column"}}>
+          {/* Small numbered label like Thesis */}
+          <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.35)",letterSpacing:3,marginBottom:8}}>{partnerN}</div>
+          <div style={{fontFamily:BEBAS,fontSize:"clamp(32px,4.4vh,52px)",color:"#fff",letterSpacing:1.5,lineHeight:.9,marginBottom:8}}>{name}</div>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:"clamp(14px,2vh,22px)"}}>
+            <div style={{width:24,height:2,background:"#fff",flexShrink:0}}/>
+            <div style={{fontFamily:MONO,fontSize:"clamp(8px,1vh,10px)",color:"rgba(255,255,255,.6)",letterSpacing:3,textTransform:"uppercase"}}>{role}</div>
           </div>
-        )}
-        {/* Floating number overlay bottom-left of photo */}
-        <div style={{position:"absolute",bottom:14,left:16,fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.7)",letterSpacing:3,textTransform:"uppercase",zIndex:2}}>{number}</div>
+          <div style={{fontFamily:BODY,fontSize:"clamp(11px,1.35vh,13px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,flex:1,minHeight:0,overflow:"hidden"}}>{blurb}</div>
+        </div>
       </div>
 
-      {/* Right: content */}
-      <div style={{flex:1,minWidth:0,padding:"clamp(24px,3vh,40px) clamp(22px,2.8vh,36px)",display:"flex",flexDirection:"column",justifyContent:"center"}}>
-        <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,56px)",color:"#fff",letterSpacing:1.5,lineHeight:.9,marginBottom:10}}>{name}</div>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:"clamp(18px,2.4vh,28px)"}}>
-          <div style={{width:24,height:2,background:"#fff",flexShrink:0}}/>
-          <div style={{fontFamily:MONO,fontSize:"clamp(8.5px,1.05vh,10.5px)",color:"rgba(255,255,255,.65)",letterSpacing:3,textTransform:"uppercase"}}>{role}</div>
-        </div>
-        <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"rgba(255,255,255,.74)",lineHeight:1.75}}>{blurb}</div>
+      {/* Stats strip — like BigStat row on market slides */}
+      <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,.1)",position:"relative",zIndex:1,flexShrink:0}}>
+        {stats.map((s,i)=>(
+          <TeamStat key={i} raw={s.v} label={s.l} delay={i*120} last={i===stats.length-1}/>
+        ))}
+      </div>
+
+      {/* Tag chips footer */}
+      <div style={{display:"flex",flexWrap:"wrap",gap:5,padding:"clamp(10px,1.4vh,16px) clamp(16px,2vh,24px) clamp(14px,1.8vh,22px)",borderTop:"1px solid rgba(255,255,255,.07)",position:"relative",zIndex:1,flexShrink:0}}>
+        {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",fontFamily:MONO,fontSize:"clamp(7px,.85vh,8.5px)",letterSpacing:2.5,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>{t}</span>)}
       </div>
     </div>
   );
@@ -886,19 +921,33 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
   const team=[
     {
       number:"01 — Founder",
+      partnerN:"01",
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
       role:"Founder & General Partner",
-      blurb:"Ryan Arnold is the Founder of Backfield Ventures. He is a serial entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. Prior to founding Backfield, Ryan was an Associate at 4th & 1 Ventures, where he ran investment operations across four SPVs and onboarded high-net-worth LPs, raising over $500,000 in committed capital. He also served as a Financial Analyst at the Trinity University Office of Investments, where he invested in PE & VC fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he was a Trinity Investing Competition winner, founded the Trinity Real Estate Club, and played football as an All-Conference defensive back.",
+      blurb:"Serial entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to exit in 2023. At 4th & 1 Ventures, he ran investment operations across four SPVs and raised $500K+ in committed capital. At Trinity University's Office of Investments, he invested in PE & VC fund managers on behalf of the university's $2B endowment.",
+      stats:[
+        {v:"$500K+", l:"Capital Raised"},
+        {v:"$2B",    l:"Endowment AUM"},
+        {v:"1",      l:"Founder Exit"},
+      ],
+      tags:["FOUNDER-LED","VC OPERATIONS","FP&A","FUNDRAISING"],
     },
     {
       number:"02 — Partner",
+      partnerN:"02",
       photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
       role:"Partner",
-      blurb:"Ethan Lavin is a Partner at Backfield Ventures. He is a seasoned CPG operator and strategist with deep international experience. Previously, Ethan served as International Strategy & Operations Manager for EMEA at Impossible Foods, where he scaled distribution, pricing, and partnerships for one of the most iconic CPG brands of the decade. He is currently an Engagement Manager at Norm Ai, an enterprise AI compliance platform built for financial institutions, and previously held an Ops & Strategy role at Athena Intelligence. Ethan holds an MBA from Georgetown University's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
+      blurb:"Seasoned CPG operator and strategist with deep international experience. Scaled Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships across one of the most iconic CPG brands of the decade. Currently Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions. Previously ran Ops & Strategy at Athena Intelligence.",
+      stats:[
+        {v:"EMEA",   l:"Markets Scaled"},
+        {v:"3+",     l:"Degrees"},
+        {v:"7+ YRS", l:"CPG & Strategy"},
+      ],
+      tags:["CPG","INT'L OPERATIONS","STRATEGY","M&A"],
     },
   ];
   return (
@@ -911,8 +960,9 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>OPERATORS BACKING OPERATORS</span>
       </div>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,20px)",flexShrink:0}}>BUILT BY OPERATORS.</div>
-      <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
+      <div className="fu1" style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:8,flexShrink:0,textTransform:"uppercase"}}>TWO PARTNERS. ONE PLAYBOOK.</div>
+      <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,18px)",flexShrink:0}}>BUILT BY OPERATORS.</div>
+      <div className="fu3 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
         {team.map(p=><TeamCard key={p.name} {...p}/>)}
       </div>
       <Nav cur={8} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
