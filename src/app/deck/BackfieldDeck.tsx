@@ -926,6 +926,573 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
   );
 }
 
+/* ═════════════════════════════════════════════════════════════
+   ═══════════════  MOBILE SLIDE COMPONENTS  ═══════════════════
+   Dedicated, single-column, scrollable mobile versions.
+   Each slide is self-contained and does NOT share layout
+   with the desktop version.
+   ═════════════════════════════════════════════════════════════ */
+
+function MobileSlide({children,light}:{children:React.ReactNode;light?:boolean}) {
+  return (
+    <div style={{
+      minHeight:"100vh",
+      width:"100%",
+      padding:"24px 18px 110px",
+      overflowY:"auto",
+      overflowX:"hidden",
+      background:light?"#f0f0f0":"#000",
+      color:light?"#000":"#fff",
+      WebkitOverflowScrolling:"touch",
+      boxSizing:"border-box",
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function MHeader({n,label,light}:{n:string;label:string;light?:boolean}) {
+  return (
+    <div className="fu" style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
+      <Logo light={light} size={24}/>
+      <div style={{width:1,height:12,background:light?"rgba(0,0,0,.18)":"rgba(255,255,255,.18)"}}/>
+      <span style={{fontFamily:MONO,fontSize:8.5,letterSpacing:2.5,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)"}}>
+        {n} — {label}
+      </span>
+    </div>
+  );
+}
+
+/* ─── MOBILE 0: COVER ─── */
+function MobileCover() {
+  const metrics=[
+    {label:"FUND",       value:"FUND I"},
+    {label:"FUND SIZE",  value:"$20M–$25M"},
+    {label:"CATEGORIES", value:"CPG & SPORTS"},
+    {label:"STAGE",      value:"SEED / SERIES A"},
+  ];
+  return (
+    <MobileSlide>
+      <div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+        <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5}}>CONFIDENTIAL LP MATERIALS</span>
+        <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5}}>2026</span>
+      </div>
+      <div className="fu2" style={{display:"flex",alignItems:"center",justifyContent:"center",margin:"40px 0 32px"}}>
+        <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"min(78vw,320px)",height:"auto",objectFit:"contain",display:"block"}}/>
+      </div>
+      <div className="fu3" style={{
+        display:"grid",
+        gridTemplateColumns:"1fr 1fr",
+        border:"1px solid rgba(255,255,255,.1)",
+        marginTop:24,
+      }}>
+        {metrics.map(({label,value},i)=>(
+          <div key={label} style={{
+            padding:"16px 14px",
+            borderRight:i%2===0?"1px solid rgba(255,255,255,.08)":"none",
+            borderBottom:i<2?"1px solid rgba(255,255,255,.08)":"none",
+            display:"flex",flexDirection:"column",gap:6,
+          }}>
+            <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.5)",letterSpacing:2.5,textTransform:"uppercase"}}>{label}</span>
+            <span style={{fontFamily:BEBAS,fontSize:20,color:"#fff",letterSpacing:1,lineHeight:1}}>{value}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{marginTop:32,textAlign:"center",fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.3)",letterSpacing:2}}>
+        SWIPE OR TAP NEXT →
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 1: THESIS ─── */
+function MobileThesis() {
+  const panels=[
+    {n:"01",name:"CONSUMER",
+     sub:"Brands people return to — and tell their friends about.",
+     body:"Food, beverage, lifestyle, apparel. We back founders building repeat-purchase businesses with earned loyalty, clean cap tables, and cultural staying power.",
+     criteria:["Repeat-purchase over impulse buy","Founder-led with long-term vision","Brand equity > single product","Clear path to distribution at scale"],
+     tags:["CPG","DTC","FUNCTIONAL FOOD","LIFESTYLE","APPAREL"],
+     stat:"$2.3T",statLabel:"Global CPG Market"},
+    {n:"02",name:"SPORTS",
+     sub:"Where culture, competition, and capital converge.",
+     body:"Athlete brands, fan engagement, sports tech, performance analytics, wagering infrastructure — we understand sports from the field to the cap table.",
+     criteria:["Real IP, data moat, or media rights","Cross-category appeal beyond the sport","Gen Z fandom + media upside","Clear institutional exit path"],
+     tags:["ATHLETE BRANDS","SPORTS TECH","FAN ENGAGEMENT","ANALYTICS"],
+     stat:"$495B",statLabel:"Global Sports Market"},
+  ];
+  return (
+    <MobileSlide>
+      <MHeader n="01" label="INVESTMENT THESIS"/>
+      <div className="fu1" style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:3,marginBottom:18}}>
+        TWO CATEGORIES. DEEP CONVICTION.
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        {panels.map(({n,name,sub,body,criteria,tags,stat,statLabel})=>(
+          <div key={n} style={{
+            background:"rgba(255,255,255,.04)",
+            border:"1px solid rgba(255,255,255,.09)",
+            padding:"22px 18px",position:"relative",overflow:"hidden",
+          }}>
+            <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.32)",letterSpacing:2.5,marginBottom:6}}>{n}</div>
+            <div style={{fontFamily:BEBAS,fontSize:36,color:"#fff",letterSpacing:1.5,marginBottom:6,lineHeight:.95}}>{name}</div>
+            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.42)",fontSize:13,marginBottom:12,lineHeight:1.55}}>{sub}</div>
+            <div style={{fontFamily:BODY,color:"rgba(255,255,255,.6)",fontSize:13.5,lineHeight:1.65,marginBottom:14}}>{body}</div>
+            <div style={{borderTop:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",padding:"12px 0",marginBottom:14,display:"flex",flexDirection:"column",gap:8}}>
+              {criteria.map((c,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                  <div style={{width:4,height:4,background:"rgba(255,255,255,.4)",borderRadius:"50%",marginTop:7,flexShrink:0}}/>
+                  <span style={{fontFamily:BODY,fontSize:12.5,color:"rgba(255,255,255,.55)",lineHeight:1.55}}>{c}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:14}}>
+              {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 7px",fontFamily:MONO,fontSize:7,letterSpacing:2.5,color:"rgba(255,255,255,.5)",textTransform:"uppercase"}}>{t}</span>)}
+            </div>
+            <div style={{display:"flex",alignItems:"baseline",gap:10}}>
+              <span style={{fontFamily:BEBAS,fontSize:32,color:"#fff",letterSpacing:1}}>{stat}</span>
+              <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>{statLabel}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── Helpers for mobile market slides ─── */
+function MBigStat({raw,label,source,light}:{raw:string;label:string;source:string;light?:boolean}) {
+  const m=raw.match(/^([^0-9]*)([0-9]+\.?[0-9]*)([^0-9]*)$/);
+  const pfx=m?.[1]??"", num=parseFloat(m?.[2]??"0"), sfx=m?.[3]??"";
+  const decs=(m?.[2]??"").includes(".")?1:0;
+  const v=useCountUp(num,decs,160);
+  return (
+    <div style={{
+      padding:"14px 14px",
+      borderBottom:light?"1px solid rgba(0,0,0,.09)":"1px solid rgba(255,255,255,.07)",
+    }}>
+      <div style={{fontFamily:BEBAS,fontSize:38,lineHeight:.92,letterSpacing:1,color:light?"#000":"#fff"}}>{pfx}{v}{sfx}</div>
+      <div style={{fontFamily:MONO,fontSize:8.5,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)",marginTop:6,letterSpacing:2,textTransform:"uppercase"}}>{label}</div>
+      <div style={{fontFamily:MONO,fontSize:7,color:light?"rgba(0,0,0,.42)":"rgba(255,255,255,.38)",marginTop:3,letterSpacing:1.5}}>{source}</div>
+    </div>
+  );
+}
+
+function MDealCard({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,light,delay=0}:{
+  acquirer:string;aLogo?:string;target:string;tLogo:string;
+  value:string;valueNum:number;maxVal:number;cat:string;year:string;light?:boolean;delay?:number;
+}) {
+  const [w,setW]=useState(0);
+  useEffect(()=>{ const t=setTimeout(()=>setW((valueNum/maxVal)*100),delay+300); return()=>clearTimeout(t); },[valueNum,maxVal,delay]);
+  return (
+    <div style={{
+      padding:"14px 14px",
+      borderBottom:light?"1px solid rgba(0,0,0,.07)":"1px solid rgba(255,255,255,.06)",
+      background:light?"#fff":"transparent",
+      display:"flex",flexDirection:"column",gap:10,
+    }}>
+      {/* Row 1: acquirer → target */}
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"flex-start"}}>
+          {aLogo
+            ? <img src={aLogo} className={light?"logo-light":"logo-dark"} style={{height:22,maxWidth:100,objectFit:"contain",objectPosition:"left",opacity:light?.75:.85}} alt={acquirer}/>
+            : <span style={{fontFamily:BEBAS,fontSize:14,color:light?"#000":"#fff",letterSpacing:.5}}>{acquirer}</span>
+          }
+        </div>
+        <span style={{fontFamily:MONO,fontSize:11,color:light?"rgba(0,0,0,.3)":"rgba(255,255,255,.3)"}}>→</span>
+        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"flex-end"}}>
+          <img src={tLogo} className={light?"logo-light":"logo-dark"} style={{height:22,maxWidth:100,objectFit:"contain",objectPosition:"right",opacity:light?.65:.7}} alt={target}/>
+        </div>
+      </div>
+      {/* Row 2: value + cat + year */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
+        <div style={{display:"flex",alignItems:"baseline",gap:6}}>
+          <span style={{fontFamily:BEBAS,fontSize:22,color:light?"#000":"#fff",letterSpacing:1}}>{value}</span>
+          <span style={{fontFamily:MONO,fontSize:7.5,color:light?"rgba(0,0,0,.45)":"rgba(255,255,255,.42)"}}>{year}</span>
+        </div>
+        <span style={{fontFamily:MONO,fontSize:7,letterSpacing:2,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.45)",border:`1px solid ${light?"rgba(0,0,0,.2)":"rgba(255,255,255,.18)"}`,padding:"3px 6px",textTransform:"uppercase"}}>{cat}</span>
+      </div>
+      {/* Bar */}
+      <div style={{height:2.5,background:light?"rgba(0,0,0,.08)":"rgba(255,255,255,.06)"}}>
+        <div style={{height:"100%",width:`${w}%`,background:light?"#000":"#fff",transition:`width 1.2s cubic-bezier(.4,0,.2,1) ${delay}ms`}}/>
+      </div>
+    </div>
+  );
+}
+
+function MBrandCard({name,logo,light}:{name:string;logo:string;light?:boolean}) {
+  return (
+    <div style={{
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
+      background:light?"#fff":"rgba(255,255,255,.04)",
+      border:`1px solid ${light?"rgba(0,0,0,.09)":"rgba(255,255,255,.08)"}`,
+      padding:"14px 8px",minHeight:78,
+    }}>
+      <img src={logo} style={{height:24,maxWidth:72,objectFit:"contain",filter:light?"grayscale(1) brightness(.1)":"brightness(0) invert(1)",opacity:light?.85:.75}} alt={name}/>
+      <span style={{fontFamily:MONO,fontSize:7,color:light?"rgba(0,0,0,.45)":"rgba(255,255,255,.45)",letterSpacing:2,textTransform:"uppercase",textAlign:"center",lineHeight:1.3}}>{name}</span>
+    </div>
+  );
+}
+
+/* ─── MOBILE 2: CONSUMER MARKET ─── */
+function MobileConsumerMarket() {
+  const deals=[
+    {acquirer:"Kimberly-Clark",aLogo:"/logos/kimberly-clark.png",target:"Kenvue",tLogo:"/logos/kenvue.png",value:"$48.7B",valueNum:48.7,maxVal:50,cat:"PERSONAL CARE",year:"2025",delay:0},
+    {acquirer:"Mars",aLogo:"/logos/mars.svg",target:"Kellanova",tLogo:"/logos/kellanova.png",value:"$35.9B",valueNum:35.9,maxVal:50,cat:"SNACKING/CPG",year:"2024",delay:120},
+    {acquirer:"Keurig Dr Pepper",aLogo:"/logos/keurig.png",target:"JDE Peet's",tLogo:"/logos/jde-peets.png",value:"$23.0B",valueNum:23.0,maxVal:50,cat:"BEVERAGE",year:"2025",delay:240},
+    {acquirer:"Ferrero",aLogo:"/logos/ferrero.png",target:"WK Kellogg",tLogo:"/logos/wk-kellogg.svg",value:"$3.1B",valueNum:3.1,maxVal:50,cat:"FOOD",year:"2025",delay:360},
+  ];
+  const brands=[
+    {name:"Liquid Death",logo:"/logos/liquid-death.png"},
+    {name:"RXBAR",logo:"/logos/rxbar.png"},
+    {name:"Athletic Brewing",logo:"/logos/athletic-brewing.png"},
+    {name:"Hims & Hers",logo:"/logos/hims-hers.png"},
+    {name:"Tecovas",logo:"/logos/tecovas.png"},
+    {name:"C4 Energy",logo:"/logos/c4-energy.png"},
+  ];
+  return (
+    <MobileSlide>
+      <MHeader n="02" label="CONSUMER MARKET"/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:30,color:"#fff",lineHeight:.95,letterSpacing:1,marginBottom:8}}>
+        THE CONSUMER MARKET IS CONSOLIDATING FAST.
+      </div>
+      <div style={{fontFamily:BODY,color:"rgba(255,255,255,.45)",fontSize:13,lineHeight:1.6,marginBottom:20}}>
+        The biggest players are buying everyone. The window for early-stage brands is wider than ever.
+      </div>
+      {/* Stacked big stats */}
+      <div className="fu2" style={{borderTop:"1px solid rgba(255,255,255,.07)",marginBottom:24}}>
+        <MBigStat raw="$2.3T" label="Global CPG Market" source="ZION MARKET RESEARCH, 2024"/>
+        <MBigStat raw="15.4%" label="DTC E-Commerce CAGR 2024–33" source="INVESP / STATISTA, 2024"/>
+        <MBigStat raw="41%"   label="Consumer M&A Value Growth 2025" source="PWC GLOBAL M&A TRENDS, 2025"/>
+      </div>
+      {/* Deals */}
+      <div className="fu3" style={{marginBottom:24}}>
+        <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.45)",letterSpacing:2.5,marginBottom:8}}>
+          RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE
+        </div>
+        <div style={{border:"1px solid rgba(255,255,255,.08)",background:"rgba(255,255,255,.02)"}}>
+          {deals.map((d,i)=><MDealCard key={i} {...d}/>)}
+        </div>
+        <div style={{fontFamily:MONO,fontSize:6.5,color:"rgba(255,255,255,.18)",marginTop:6,letterSpacing:1.5}}>
+          SOURCES: PWC M&A TRENDS · FOOD DIVE · CNBC 2024–2025
+        </div>
+      </div>
+      {/* Brands */}
+      <div className="fu4">
+        <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.45)",letterSpacing:2.5,marginBottom:8}}>
+          VC-BACKED BREAKOUT BRANDS
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+          {brands.map((b,i)=><MBrandCard key={i} name={b.name} logo={b.logo}/>)}
+        </div>
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 3: SPORTS MARKET ─── */
+function MobileSportsMarket() {
+  const deals=[
+    {acquirer:"Silver Lake",aLogo:"/logos/silver-lake.svg",target:"Endeavor",tLogo:"/logos/endeavor.svg",value:"$13.0B",valueNum:13,maxVal:13,cat:"SPORTS MEDIA",year:"2024",delay:0},
+    {acquirer:"Private Investors",target:"LA Lakers",tLogo:"/logos/lakers.png",value:"$10.0B",valueNum:10,maxVal:13,cat:"FRANCHISE",year:"2025",delay:120},
+    {acquirer:"Endeavor",aLogo:"/logos/endeavor.svg",target:"WWE → TKO",tLogo:"/logos/wwe.png",value:"$9.3B",valueNum:9.3,maxVal:13,cat:"ENTERTAINMENT",year:"2023",delay:240},
+    {acquirer:"Private Investors",target:"Celtics",tLogo:"/logos/celtics.svg",value:"$6.1B",valueNum:6.1,maxVal:13,cat:"FRANCHISE",year:"2024",delay:360},
+  ];
+  const brands=[
+    {name:"WHOOP",logo:"/logos/whoop.png"},
+    {name:"Fanatics",logo:"/logos/fanatics.png"},
+    {name:"DraftKings",logo:"/logos/draftkings.png"},
+    {name:"Hudl",logo:"/logos/hudl.png"},
+    {name:"Overtime",logo:"/logos/overtime.webp"},
+    {name:"Sportradar",logo:"/logos/sportradar.png"},
+  ];
+  return (
+    <MobileSlide light>
+      <MHeader n="03" label="SPORTS MARKET" light/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:30,color:"#000",lineHeight:.95,letterSpacing:1,marginBottom:8}}>
+        SPORTS IS THE BEST INVESTMENT OF THE DECADE.
+      </div>
+      <div style={{fontFamily:BODY,color:"rgba(0,0,0,.5)",fontSize:13,lineHeight:1.6,marginBottom:20}}>
+        Record franchise valuations, $156B in M&A, and sports tech at escape velocity.
+      </div>
+      <div className="fu2" style={{borderTop:"1px solid rgba(0,0,0,.09)",marginBottom:24}}>
+        <MBigStat raw="$495B" label="Global Sports Market 2025" source="STATISTA SPORTS OUTLOOK, 2025" light/>
+        <MBigStat raw="21.9%" label="Sports Tech CAGR 2025–30" source="GRAND VIEW RESEARCH, 2024" light/>
+        <MBigStat raw="$156B" label="Sports M&A Deal Value 2025" source="DRAKE STAR SPORTS TECH REPORT" light/>
+      </div>
+      <div className="fu3" style={{marginBottom:24}}>
+        <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(0,0,0,.55)",letterSpacing:2.5,marginBottom:8}}>
+          RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE
+        </div>
+        <div style={{border:"1px solid rgba(0,0,0,.08)",background:"#fff"}}>
+          {deals.map((d,i)=><MDealCard key={i} {...d} light/>)}
+        </div>
+        <div style={{fontFamily:MONO,fontSize:6.5,color:"rgba(0,0,0,.28)",marginTop:6,letterSpacing:1.5}}>
+          SOURCES: DRAKE STAR · SPORTICO · AXIOS 2023–2025
+        </div>
+      </div>
+      <div className="fu4">
+        <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(0,0,0,.55)",letterSpacing:2.5,marginBottom:8}}>
+          VC-BACKED SPORTS TECH & MEDIA LEADERS
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+          {brands.map((b,i)=><MBrandCard key={i} name={b.name} logo={b.logo} light/>)}
+        </div>
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 4: SEPARATES ─── */
+function MobileSeparates() {
+  const items=[
+    {n:"01",l:"NETWORK-FIRST MODEL",b:"We don't just write checks — we build a portfolio of companies that support each other through partnerships, distribution, and strategic collaboration."},
+    {n:"02",l:"EXPERT-LED DILIGENCE",b:"Deep experience across technology, sports, and consumer sectors. Every deal runs through our proprietary scoring framework before a check is written."},
+    {n:"03",l:"ELITE DEAL FLOW",b:"Exclusive access to opportunities typically reserved for institutional investors — driven by relationships across CPG, media, sports, and emerging tech."},
+    {n:"04",l:"CONNECTED COMMUNITY",b:"A network of visionary influencers, investors, founders, and professionals aligned by shared goals with regular, transparent LP communication."},
+    {n:"05",l:"STRATEGIC ALIGNMENT",b:"Backfield integrates capital, influence, and shared values. Our LPs become embedded in every company we back — more than backers, true partners."},
+  ];
+  return (
+    <MobileSlide light>
+      <MHeader n="04" label="WHAT SEPARATES BACKFIELD" light/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#000",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
+        WE&apos;RE BUILT DIFFERENT.
+      </div>
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:8}}>
+        {items.map(({n,l,b})=>(
+          <div key={n} style={{background:"#fff",padding:"16px 16px",borderLeft:"3px solid #000"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+              <span style={{fontFamily:MONO,fontSize:8.5,color:"rgba(0,0,0,.42)",letterSpacing:2}}>{n}</span>
+              <div style={{fontFamily:BEBAS,fontSize:16,color:"#000",letterSpacing:2,textTransform:"uppercase",lineHeight:1.2}}>{l}</div>
+            </div>
+            <div style={{fontFamily:BODY,fontSize:13,color:"#444",lineHeight:1.65}}>{b}</div>
+          </div>
+        ))}
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 5: FUND DETAILS ─── */
+function MobileFundDetails() {
+  const hi=[
+    {v:"$20–25M",l:"Fund Target",sub:"Fund I"},
+    {v:"15–25",  l:"Portfolio Companies",sub:"Target"},
+    {v:"3–7 YRS",l:"Investment Horizon",sub:"+ Extensions"},
+  ];
+  const rows=[
+    ["FUND STRUCTURE",    "Delaware LP / Standard VC Terms"],
+    ["TARGET STAGE",      "Seed / Series A"],
+    ["INITIAL CHECK",     "$100K – $500K Per Company"],
+    ["RESERVE RATIO",     "~40% Reserved for Follow-On"],
+    ["MANAGEMENT FEE",    "2.0% Per Annum"],
+    ["CARRIED INTEREST",  "20% Above 8% Preferred Return"],
+    ["MIN. LP INVESTMENT","$50,000 (Accredited Investors Only)"],
+  ];
+  return (
+    <MobileSlide>
+      <MHeader n="05" label="FUND DETAILS"/>
+      <div className="fu1" style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+        {hi.map(({v,l,sub})=>(
+          <div key={l} style={{background:"#fff",padding:"18px 18px"}}>
+            <div style={{fontFamily:BEBAS,fontSize:36,color:"#000",lineHeight:.95,letterSpacing:1}}>{v}</div>
+            <div style={{fontFamily:BEBAS,fontSize:13,color:"rgba(0,0,0,.6)",marginTop:6,letterSpacing:3}}>{l}</div>
+            <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(0,0,0,.36)",marginTop:3,letterSpacing:2}}>{sub}</div>
+          </div>
+        ))}
+      </div>
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2}}>
+        {rows.map(([label,val],i)=>(
+          <div key={i} style={{
+            background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",
+            borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.07)"}`,
+            padding:"14px 16px",
+            display:"flex",flexDirection:"column",gap:5,
+          }}>
+            <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.42)",letterSpacing:2.5,textTransform:"uppercase"}}>{label}</div>
+            <div style={{fontFamily:BEBAS,fontSize:16,color:"#fff",letterSpacing:1}}>{val}</div>
+          </div>
+        ))}
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 6: PIPELINE ─── */
+function MobilePipeline() {
+  const deals=[
+    {desc:"Skincare brand supporting active lifestyles with athlete-focused product lines",     cat:"PERSONAL CARE",    src:"MD Network",      rev:"~$20M",  stage:"TERM SHEET"},
+    {desc:"Emerging sports team / league with strong brand identity and growth potential",      cat:"PRO SPORTS",       src:"Founder Network", rev:"~$10.5M", stage:"DUE DILIGENCE"},
+    {desc:"Wearable tech enhancing performance and recovery via real-time data tracking",       cat:"SPORTS TECH",      src:"Advisor Network", rev:"~$6.5M",  stage:"INTRO CALL"},
+    {desc:"Protein-infused overnight oats disrupting the functional breakfast category",        cat:"FUNCTIONAL FOODS", src:"Founder Network", rev:"~$3.3M",  stage:"EVALUATING"},
+  ];
+  const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
+  return (
+    <MobileSlide>
+      <MHeader n="06" label="DEAL PIPELINE"/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
+        ACTIVE PIPELINE.
+      </div>
+      <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.4)",letterSpacing:2.5,marginBottom:16}}>
+        DEAL FLOW ALREADY COMING TO US
+      </div>
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:10}}>
+        {deals.map(({desc,cat,src,rev,stage},i)=>(
+          <div key={i} style={{
+            background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",
+            borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,
+            padding:"14px 16px",display:"flex",flexDirection:"column",gap:12,
+          }}>
+            <div style={{fontFamily:BODY,color:"rgba(255,255,255,.75)",fontSize:13,lineHeight:1.55}}>{desc}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8,alignItems:"center"}}>
+              <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.42)",letterSpacing:2,border:"1px solid rgba(255,255,255,.16)",padding:"3px 7px",textTransform:"uppercase"}}>{cat}</span>
+              <span style={{fontFamily:MONO,fontSize:7.5,color:stageColor(stage),letterSpacing:1.5,border:`1px solid ${stageColor(stage)}`,padding:"3px 7px",textTransform:"uppercase"}}>{stage}</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:10,paddingTop:8,borderTop:"1px solid rgba(255,255,255,.06)"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:3}}>
+                <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.32)",letterSpacing:2}}>SOURCE</span>
+                <span style={{fontFamily:BODY,color:"rgba(255,255,255,.6)",fontSize:12}}>{src}</span>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
+                <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.32)",letterSpacing:2}}>NET REV</span>
+                <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1,lineHeight:1}}>{rev}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 7: PROCESS ─── */
+function MobileProcess() {
+  const steps=[
+    {n:"01",t:"DEAL SOURCING",       b:"Continuously evaluate top opportunities across CPG, sports, and consumer tech aligned with our thesis."},
+    {n:"02",t:"INITIAL ASSESSMENT",  b:"Grade company, founders, product, and market A+ to F using our proprietary investment scorecard."},
+    {n:"03",t:"DEEP DIVE ANALYSIS",  b:"In-depth diligence on financials, positioning, product differentiation, and risk factors."},
+    {n:"04",t:"INVESTMENT DECISION", b:"Swift, decisive calls with one GP. Key insights shared with LPs in regular fund updates."},
+    {n:"05",t:"CAPITAL DEPLOYMENT",  b:"Raise once. Deploy strategically over 3–5 years through structured capital calls."},
+    {n:"06",t:"ACCELERATE GROWTH",   b:"Advisors and partners help portfolio companies grow through connections and visibility."},
+    {n:"07",t:"LP ENGAGEMENT",       b:"Quarterly updates covering fund progress, new investments, and portfolio developments."},
+    {n:"08",t:"PERFORMANCE TRACKING",b:"Consistent KPI tracking with quarterly portfolio performance reporting to LPs."},
+    {n:"09",t:"EXIT STRATEGY",       b:"3–7 year exits targeting optimal returns. LPs fully informed throughout."},
+  ];
+  return (
+    <MobileSlide light>
+      <MHeader n="07" label="THE PROCESS" light/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#000",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
+        HOW WE WORK.
+      </div>
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:8}}>
+        {steps.map(({n,t,b},i)=>(
+          <div key={n} style={{
+            background:"#fff",
+            borderTop:`2px solid ${i===0?"#000":"rgba(0,0,0,.1)"}`,
+            padding:"14px 16px",
+            display:"flex",gap:14,alignItems:"flex-start",
+          }}>
+            <div style={{
+              width:34,height:34,borderRadius:"50%",
+              border:"1px solid rgba(0,0,0,.12)",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              flexShrink:0,
+            }}>
+              <span style={{fontFamily:BEBAS,fontSize:14,color:"rgba(0,0,0,.6)",letterSpacing:1}}>{n}</span>
+            </div>
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+              <span style={{fontFamily:BEBAS,fontSize:16,color:"#000",letterSpacing:1.5}}>{t}</span>
+              <span style={{fontFamily:BODY,fontSize:12.5,color:"#555",lineHeight:1.65}}>{b}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 8: ADVISORS ─── */
+function MobileAdvisors() {
+  const people=[
+    {init:"AB",name:"Alex Bente", co:"ADvantage Sports",  title:"Founding Partner",          tags:["SPORTS M&A","GLOBAL NETWORK","FUND STRATEGY"],  highlight:"leAD Sports · Adidas Family Office", note:"Co-founded Adidas Family Office and leAD Sports. Unmatched access to the global sports investment ecosystem."},
+    {init:"MB",name:"Matt Bocci", co:"Amity Ventures",    title:"Principal",                 tags:["EARLY STAGE","B2C TECH","WEST COAST VC"],        highlight:"Arketa · Prive · Sully AI",          note:"Early-stage tech investor. Key deals: Arketa, Prive, Sully AI. Elite west coast venture network."},
+    {init:"JB",name:"Jaan Bains", co:"Saepio Capital",    title:"CEO & CIO",                 tags:["MACRO FINANCE","HEDGE FUNDS","CROSS-ASSET"],     highlight:"Former Blackstone · Multi-B AUM",    note:"Former Blackstone investor. Runs a global macro hedge fund with multi-billion cross-asset experience."},
+    {init:"BW",name:"Blake Wiley",co:"Access Capital",    title:"Co-Founder, $150M+ AUM",    tags:["CONSUMER VC","CPG / DTC","SPORTS TECH"],         highlight:"$150M+ AUM Deployed",               note:"Portfolio includes Liquid Death, Whoop, C4 Energy, Beyond Meat, Hims & Hers, and Tecovas."},
+  ];
+  return (
+    <MobileSlide>
+      <MHeader n="08" label="ADVISORS & NETWORK"/>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:32,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
+        THE ROOM IS ALREADY FULL.
+      </div>
+      <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2,marginBottom:18}}>
+        $2B+ CAPITAL DEPLOYED ACROSS NETWORK
+      </div>
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:12}}>
+        {people.map(({init,name,co,title,tags,highlight,note})=>(
+          <div key={name} style={{
+            background:"rgba(255,255,255,.04)",
+            border:"1px solid rgba(255,255,255,.09)",
+            padding:"18px 16px",
+            display:"flex",flexDirection:"column",
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+              <div style={{
+                width:38,height:38,borderRadius:"50%",
+                border:"1px solid rgba(255,255,255,.12)",
+                background:"rgba(255,255,255,.05)",
+                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+              }}>
+                <span style={{fontFamily:BEBAS,fontSize:15,color:"rgba(255,255,255,.5)",letterSpacing:1}}>{init}</span>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+                <div style={{fontFamily:BEBAS,fontSize:20,color:"#fff",letterSpacing:1,lineHeight:1.1}}>{name}</div>
+                <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.5)",letterSpacing:2,textTransform:"uppercase"}}>{co}</div>
+              </div>
+            </div>
+            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.4)",fontSize:11.5,marginBottom:12,lineHeight:1.5}}>{title}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
+              {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.12)",padding:"3px 7px",fontFamily:MONO,fontSize:7,letterSpacing:2,color:"rgba(255,255,255,.4)",textTransform:"uppercase"}}>{t}</span>)}
+            </div>
+            <div style={{borderTop:"1px solid rgba(255,255,255,.06)",borderBottom:"1px solid rgba(255,255,255,.06)",padding:"10px 0",marginBottom:12}}>
+              <span style={{fontFamily:BEBAS,fontSize:20,color:"rgba(255,255,255,.78)",letterSpacing:1}}>{highlight}</span>
+            </div>
+            <div style={{fontFamily:BODY,fontSize:12.5,color:"rgba(255,255,255,.5)",lineHeight:1.65}}>{note}</div>
+          </div>
+        ))}
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 9: CLOSE ─── */
+function MobileClose() {
+  return (
+    <MobileSlide>
+      <div style={{
+        minHeight:"calc(100vh - 130px)",
+        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+        textAlign:"center",padding:"20px 4px",
+      }}>
+        <div className="fu" style={{marginBottom:24}}>
+          <Logo size={44}/>
+        </div>
+        <div className="fu1" style={{width:1,height:32,background:"rgba(255,255,255,.14)",marginBottom:24}}/>
+        <div className="fu2" style={{fontFamily:BEBAS,fontSize:54,color:"#fff",lineHeight:.9,letterSpacing:2,marginBottom:18}}>
+          LET&apos;S BUILD<br/>SOMETHING<br/>ICONIC.
+        </div>
+        <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",marginBottom:18}}/>
+        <div className="fu4" style={{fontFamily:BODY,color:"rgba(255,255,255,.5)",fontSize:14,lineHeight:1.75,maxWidth:340,marginBottom:36,padding:"0 8px"}}>
+          Backfield Ventures is raising Fund I — targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
+        </div>
+        <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.2)",letterSpacing:2,lineHeight:1.6}}>
+          BACKFIELDVENTURES.COM<br/>AUSTIN, TX · FUND I · 2026
+        </span>
+      </div>
+    </MobileSlide>
+  );
+}
+
 /* ─────────────────────────────────────────────
    APP SHELL
 ───────────────────────────────────────────── */
@@ -979,6 +1546,19 @@ export default function BackfieldDeck() {
     <CloseSlide     key={`s9-${key}`} onPrev={prev} onRestart={()=>go(0)} onGo={go} total={TOTAL}/>,
   ];
 
+  const mobileSlides=[
+    <MobileCover          key={`m0-${key}`}/>,
+    <MobileThesis         key={`m1-${key}`}/>,
+    <MobileConsumerMarket key={`m2-${key}`}/>,
+    <MobileSportsMarket   key={`m3-${key}`}/>,
+    <MobileSeparates      key={`m4-${key}`}/>,
+    <MobileFundDetails    key={`m5-${key}`}/>,
+    <MobilePipeline       key={`m6-${key}`}/>,
+    <MobileProcess        key={`m7-${key}`}/>,
+    <MobileAdvisors       key={`m8-${key}`}/>,
+    <MobileClose          key={`m9-${key}`}/>,
+  ];
+
   // Mobile-specific bottom nav bar with prev/dots/next, plus tap zones
   const MobileNav=()=>(
     <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:30,background:"linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,.85) 60%,rgba(0,0,0,0))",padding:"18px 16px 22px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,pointerEvents:"none"}}>
@@ -1009,8 +1589,8 @@ export default function BackfieldDeck() {
           onTouchEnd={onTouchEnd}
         >
           <ProgressBar cur={slide} total={TOTAL}/>
-          <div key={key} className={dir>0?"sR":"sL"} style={{position:"absolute",inset:0,paddingTop:2}}>
-            {slides[slide]}
+          <div key={key} className={dir>0?"sR":"sL"} style={{position:"absolute",top:2,left:0,right:0,bottom:0,overflow:"hidden"}}>
+            {mobileSlides[slide]}
           </div>
         </div>
         <MobileNav/>
