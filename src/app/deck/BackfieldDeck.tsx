@@ -758,7 +758,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
       {/* Detail rows */}
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:1.5,flex:1,minHeight:0}}>
         {rows.map(([label,val],i)=>(
-          <div key={i} className="rh m-fund-row" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.07)"}`,padding:"0 20px",minHeight:0}}>
+          <div key={i} className="rh m-fund-row pipe-row" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.07)",padding:"0 20px",minHeight:0}}>
             <div style={{fontFamily:MONO,fontSize:"clamp(7.5px,1vh,9.5px)",color:"rgba(255,255,255,.36)",letterSpacing:2.5,textTransform:"uppercase",minWidth:210,flexShrink:0}}>{label}</div>
             <div style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.7vh,16px)",color:"#fff",letterSpacing:1}}>{val}</div>
           </div>
