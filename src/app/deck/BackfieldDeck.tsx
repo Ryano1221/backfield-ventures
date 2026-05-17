@@ -844,62 +844,66 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function TeamCard({photo,init,name,role,tagline,tags,highlight,bio,timeline,edu}:{
-  photo?:string;init:string;name:string;role:string;tagline:string;tags:string[];highlight:string;
-  bio:string;timeline:{co:string;title:string;when:string}[];edu:string[];
+type TimelineItem = { co:string; title:string; when:string; loc?:string; desc:string };
+type EduItem = { school:string; degree:string; detail?:string };
+
+function TeamCard({photo,init,name,blurb,experience,education}:{
+  photo?:string;init:string;name:string;
+  blurb:string;
+  experience:TimelineItem[];
+  education:EduItem[];
 }) {
   return (
-    <div className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(18px,2.4vh,30px) clamp(20px,2.4vh,28px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
-      {/* Top: avatar + name + role */}
-      <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14,flexShrink:0}}>
+    <div className="c3 wg" style={{background:"rgba(255,255,255,.035)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(20px,2.6vh,32px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      {/* Header: large headshot + name */}
+      <div style={{display:"flex",alignItems:"center",gap:18,marginBottom:18,flexShrink:0,paddingBottom:16,borderBottom:"1px solid rgba(255,255,255,.08)"}}>
         {photo ? (
-          <img src={photo} alt={name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.18)",flexShrink:0}}/>
+          <img src={photo} alt={name} style={{width:80,height:80,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"2px solid rgba(255,255,255,.15)",flexShrink:0}}/>
         ) : (
-          <div style={{width:54,height:54,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",flexShrink:0}}>
-            <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1.5}}>{init}</span>
+          <div style={{width:80,height:80,borderRadius:"50%",border:"2px solid rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",flexShrink:0}}>
+            <span style={{fontFamily:BEBAS,fontSize:30,color:"#fff",letterSpacing:1.5}}>{init}</span>
           </div>
         )}
-        <div style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
-          <div style={{fontFamily:BEBAS,fontSize:"clamp(22px,3vh,30px)",color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
-          <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:2.5,textTransform:"uppercase"}}>{role}</div>
-        </div>
-      </div>
-      <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.45)",fontSize:"clamp(11px,1.4vh,13px)",marginBottom:14,lineHeight:1.5}}>{tagline}</div>
-
-      {/* Focus tags */}
-      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
-        {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.2)",padding:"3px 8px",fontFamily:MONO,fontSize:7.5,letterSpacing:2.5,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>{t}</span>)}
+        <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
       </div>
 
-      {/* Highlight */}
-      <div style={{borderTop:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",padding:"12px 0",marginBottom:14}}>
-        <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Signature</div>
-        <span style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.6vh,26px)",color:"#fff",letterSpacing:1}}>{highlight}</span>
-      </div>
+      {/* Blurb */}
+      <div style={{fontFamily:BODY,fontSize:"clamp(12px,1.45vh,14px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:18,flexShrink:0}}>{blurb}</div>
 
-      {/* Bio */}
-      <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"rgba(255,255,255,.62)",lineHeight:1.7,marginBottom:14}}>{bio}</div>
-
-      {/* Timeline */}
-      <div style={{flex:1,minHeight:0,display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
-        <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Experience</div>
-        {timeline.map((t,i)=>(
-          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8,paddingLeft:10,borderLeft:"1px solid rgba(255,255,255,.12)"}}>
-            <div style={{display:"flex",flexDirection:"column",gap:1,minWidth:0,flex:1}}>
-              <span style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.6vh,15px)",color:"#fff",letterSpacing:.8,lineHeight:1.2}}>{t.co}</span>
-              <span style={{fontFamily:BODY,fontSize:"clamp(10px,1.2vh,12px)",color:"rgba(255,255,255,.48)",lineHeight:1.3}}>{t.title}</span>
+      {/* Experience */}
+      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:18,flex:1,minHeight:0}}>
+        <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,textTransform:"uppercase"}}>Experience</div>
+        {experience.map((t,i)=>(
+          <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+            <div style={{width:34,height:34,flexShrink:0,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:6,height:6,background:"rgba(255,255,255,.5)",borderRadius:"50%"}}/>
             </div>
-            <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.35)",letterSpacing:1.5,flexShrink:0,whiteSpace:"nowrap"}}>{t.when}</span>
+            <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
+                <span style={{fontFamily:BEBAS,fontSize:"clamp(14px,1.7vh,17px)",color:"#fff",letterSpacing:.6,lineHeight:1.1}}>{t.co}</span>
+                <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:1.5,whiteSpace:"nowrap",flexShrink:0}}>{t.when}</span>
+              </div>
+              <span style={{fontFamily:BODY,fontStyle:"italic",fontSize:"clamp(11px,1.3vh,12.5px)",color:"rgba(255,255,255,.55)",lineHeight:1.4}}>{t.title}{t.loc?` · ${t.loc}`:""}</span>
+              <span style={{fontFamily:BODY,fontSize:"clamp(10.5px,1.25vh,12px)",color:"rgba(255,255,255,.5)",lineHeight:1.55,marginTop:2}}>{t.desc}</span>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Education */}
-      <div style={{borderTop:"1px solid rgba(255,255,255,.06)",paddingTop:10,flexShrink:0}}>
-        <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>Education</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-          {edu.map(e=><span key={e} style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.55)",letterSpacing:1.5}}>{e}</span>)}
-        </div>
+      <div style={{borderTop:"1px solid rgba(255,255,255,.08)",paddingTop:14,display:"flex",flexDirection:"column",gap:8,flexShrink:0}}>
+        <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,textTransform:"uppercase"}}>Education</div>
+        {education.map((e,i)=>(
+          <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+            <div style={{width:28,height:28,flexShrink:0,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:5,height:5,background:"rgba(255,255,255,.5)",borderRadius:"50%"}}/>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:1,flex:1}}>
+              <span style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.55vh,15px)",color:"#fff",letterSpacing:.6,lineHeight:1.1}}>{e.school}</span>
+              <span style={{fontFamily:BODY,fontStyle:"italic",fontSize:"clamp(10.5px,1.25vh,12px)",color:"rgba(255,255,255,.55)",lineHeight:1.3}}>{e.degree}{e.detail?` · ${e.detail}`:""}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -914,34 +918,32 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
-      role:"General Partner · Founder",
-      tagline:"Founder, operator, and investor. From building a venture-backed hardware company to deploying capital across early-stage deals.",
-      tags:["VC OPERATIONS","FP&A","FOUNDER-LED","CAPITAL FORMATION"],
-      highlight:"$500K+ raised · $1.7B endowment experience",
-      bio:"Co-founded and exited a venture-backed hardware startup. Built investment frameworks and ran SPV operations at 4th & 1 Ventures. Modeled portfolio strategy for Trinity's $1.7B endowment.",
-      timeline:[
-        {co:"4th & 1 Ventures",                 title:"Associate · Investment ops, 4 SPVs, $500K+ raised", when:"2023 — 2024"},
-        {co:"Trinity Office of Investments",    title:"Analyst · $1.7B endowment, allocation strategy",    when:"2023 — 2024"},
-        {co:"Wakescoot Watersports",            title:"Co-Founder & CEO · Venture-backed hardware, exit",  when:"2020 — 2023"},
+      blurb:"Founder of Backfield Ventures. Built and exited a venture-backed hardware company before moving into investing — leading SPV operations across early-stage deals at 4th & 1 Ventures and modeling portfolio strategy for Trinity's $1.7B endowment. Trinity Finance grad, former All-Conference defensive back, and a relentless operator who'd rather build the playbook than read one.",
+      experience:[
+        {co:"4th & 1 Ventures",                 title:"Associate",                     when:"2023 — 2024", loc:"Dallas, TX",      desc:"Led 4 SPVs and onboarded high-net-worth LPs, raising $500K+ in committed capital. Built diligence frameworks that improved decision quality by 40% and cut time-to-close by 15+ days."},
+        {co:"Trinity Office of Investments",    title:"Financial Analyst",             when:"2023 — 2024", loc:"San Antonio, TX", desc:"Built portfolio models and ran forecasting for the university's $1.7B endowment. Evaluated new asset classes and managers to support investment committee decisions."},
+        {co:"Wakescoot Watersports",            title:"Co-Founder & CEO",              when:"2020 — 2023", loc:"San Antonio, TX", desc:"Took a venture-backed hardware startup from zero to a successful exit. Owned GTM, pricing, FP&A, and ops end-to-end."},
       ],
-      edu:["Trinity University","B.S. Finance","Trinity Football"],
+      education:[
+        {school:"Trinity University",           degree:"B.S. Finance, Minor in Entrepreneurship", detail:"All-Conference DB · Investing Competition Winner"},
+      ],
     },
     {
       photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
-      role:"Partner · Operations",
-      tagline:"Seasoned CPG operator with deep international experience. Brings the brand-building muscle behind the consumer thesis.",
-      tags:["CPG","INT'L OPERATIONS","STRATEGY","M&A"],
-      highlight:"Impossible Foods EMEA · Georgetown MBA",
-      bio:"Scaled Impossible Foods across Europe and EMEA as Strategy & Ops Manager. Currently Engagement Manager at Norm Ai. Deep operating playbook across CPG, with the network and conviction to back the next generation of consumer brands.",
-      timeline:[
-        {co:"Norm Ai",                          title:"Engagement Manager",                                 when:"2025 — Present"},
-        {co:"Athena Intelligence",              title:"Ops & Strategy",                                     when:"2024 — 2025"},
-        {co:"Impossible Foods",                 title:"International Strategy & Ops Manager, EMEA",         when:"2023 — 2024"},
-        {co:"Spryker · Impossible Foods",       title:"M&A and Strategy MBA Interns",                       when:"2021 — 2022"},
+      blurb:"Operator at the heart of the consumer thesis. After scaling Impossible Foods across Europe and EMEA as Strategy & Ops Manager, Ethan is now Engagement Manager at Norm Ai. Georgetown MBA and MSFS with a deep passion for CPG — the kind of partner founders actually want in the room when they're scaling internationally.",
+      experience:[
+        {co:"Norm Ai",                          title:"Engagement Manager",                                when:"2025 — Present", loc:"New York, NY",        desc:"Leads enterprise engagements for an AI compliance platform built for financial institutions."},
+        {co:"Athena Intelligence",              title:"Ops & Strategy",                                    when:"2024 — 2025",    loc:"New York, NY",        desc:"Operations and go-to-market strategy at a venture-backed enterprise AI company."},
+        {co:"Impossible Foods",                 title:"International Strategy & Ops Manager, EMEA",        when:"2023 — 2024",    loc:"New York / EMEA",     desc:"Owned international strategy and operations across EMEA, scaling distribution, pricing, and partnerships for one of the most iconic CPG brands of the decade."},
+        {co:"Impossible Foods · Spryker",       title:"MBA Internships",                                   when:"2021 — 2022",    loc:"Washington, D.C.",    desc:"European sales and marketing at Impossible Foods. Strategic projects and M&A at Spryker."},
       ],
-      edu:["Georgetown MBA","Georgetown MSFS","Colorado College B.A."],
+      education:[
+        {school:"Georgetown McDonough",         degree:"MBA"},
+        {school:"Georgetown Walsh",             degree:"MS in Foreign Service"},
+        {school:"Colorado College",             degree:"B.A. Economics & German, Distinction"},
+      ],
     },
   ];
   return (
@@ -1487,105 +1489,97 @@ function MobileAdvisors() {
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
-      role:"General Partner · Founder",
-      tagline:"Founder, operator, and investor. From building a venture-backed hardware company to deploying capital across early-stage deals.",
-      tags:["VC OPS","FP&A","FOUNDER-LED","CAPITAL FORMATION"],
-      highlight:"$500K+ raised · $1.7B endowment experience",
-      bio:"Co-founded and exited a venture-backed hardware startup. Built investment frameworks and ran SPV operations at 4th & 1 Ventures. Modeled portfolio strategy for Trinity's $1.7B endowment.",
-      timeline:[
-        {co:"4th & 1 Ventures",                 title:"Associate · 4 SPVs, $500K+ raised",                 when:"2023 — 2024"},
-        {co:"Trinity Office of Investments",    title:"Analyst · $1.7B endowment",                          when:"2023 — 2024"},
-        {co:"Wakescoot Watersports",            title:"Co-Founder & CEO · Hardware, exit",                  when:"2020 — 2023"},
+      blurb:"Founder of Backfield Ventures. Built and exited a venture-backed hardware company before moving into investing — leading SPV operations at 4th & 1 Ventures and modeling portfolio strategy for Trinity's $1.7B endowment. Trinity Finance grad and former All-Conference defensive back.",
+      experience:[
+        {co:"4th & 1 Ventures",                 title:"Associate",                     when:"2023 — 2024", desc:"Led 4 SPVs and onboarded HNW LPs, raising $500K+ in committed capital. Built diligence frameworks that cut time-to-close by 15+ days."},
+        {co:"Trinity Office of Investments",    title:"Financial Analyst",             when:"2023 — 2024", desc:"Portfolio modeling and forecasting for the $1.7B endowment. Evaluated asset classes and managers for the IC."},
+        {co:"Wakescoot Watersports",            title:"Co-Founder & CEO",              when:"2020 — 2023", desc:"Took a venture-backed hardware startup from zero to a successful exit. Owned GTM, pricing, FP&A, and ops."},
       ],
-      edu:["Trinity University · B.S. Finance","Trinity Football"],
+      education:[
+        {school:"Trinity University",           degree:"B.S. Finance · Minor Entrepreneurship", detail:"All-Conference DB"},
+      ],
     },
     {
       photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
-      role:"Partner · Operations",
-      tagline:"Seasoned CPG operator with deep international experience. Brings the brand-building muscle behind the consumer thesis.",
-      tags:["CPG","INT'L OPS","STRATEGY","M&A"],
-      highlight:"Impossible Foods EMEA · Georgetown MBA",
-      bio:"Scaled Impossible Foods across Europe and EMEA as Strategy & Ops Manager. Currently Engagement Manager at Norm Ai. Deep operating playbook across CPG with the network to back the next generation of consumer brands.",
-      timeline:[
-        {co:"Norm Ai",                          title:"Engagement Manager",                                 when:"2025 — Present"},
-        {co:"Athena Intelligence",              title:"Ops & Strategy",                                     when:"2024 — 2025"},
-        {co:"Impossible Foods",                 title:"Int'l Strategy & Ops Manager, EMEA",                 when:"2023 — 2024"},
-        {co:"Spryker · Impossible Foods",       title:"M&A and Strategy MBA Interns",                       when:"2021 — 2022"},
+      blurb:"Operator at the heart of the consumer thesis. Scaled Impossible Foods across Europe and EMEA as Strategy & Ops Manager. Now Engagement Manager at Norm Ai. Georgetown MBA + MSFS with a deep passion for CPG.",
+      experience:[
+        {co:"Norm Ai",                          title:"Engagement Manager",                                when:"2025 — Present", desc:"Enterprise engagements for an AI compliance platform built for financial institutions."},
+        {co:"Athena Intelligence",              title:"Ops & Strategy",                                    when:"2024 — 2025",    desc:"Operations and go-to-market at a venture-backed enterprise AI company."},
+        {co:"Impossible Foods",                 title:"Int'l Strategy & Ops Manager, EMEA",                when:"2023 — 2024",    desc:"Owned international strategy and operations across EMEA — scaling distribution, pricing, and partnerships for one of the most iconic CPG brands of the decade."},
+        {co:"Impossible Foods · Spryker",       title:"MBA Internships",                                   when:"2021 — 2022",    desc:"European sales/marketing at Impossible Foods. Strategic projects and M&A at Spryker."},
       ],
-      edu:["Georgetown MBA","Georgetown MSFS","Colorado College B.A."],
+      education:[
+        {school:"Georgetown McDonough",         degree:"MBA"},
+        {school:"Georgetown Walsh",             degree:"MS in Foreign Service"},
+        {school:"Colorado College",             degree:"B.A. Economics & German, Distinction"},
+      ],
     },
   ];
   return (
     <MobileSlide>
       <MHeader n="08" label="TEAM"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
         BUILT BY OPERATORS.
       </div>
-      <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:2,marginBottom:18}}>
-        OPERATORS BACKING OPERATORS
-      </div>
-      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:14}}>
-        {team.map(({photo,init,name,role,tagline,tags,highlight,bio,timeline,edu})=>(
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:18}}>
+        {team.map(({photo,init,name,blurb,experience,education})=>(
           <div key={name} style={{
-            background:"rgba(255,255,255,.04)",
+            background:"rgba(255,255,255,.035)",
             border:"1px solid rgba(255,255,255,.09)",
-            padding:"20px 16px",
+            padding:"22px 18px",
             display:"flex",flexDirection:"column",
           }}>
-            {/* Avatar + name */}
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+            {/* Header */}
+            <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14,paddingBottom:14,borderBottom:"1px solid rgba(255,255,255,.08)"}}>
               {photo ? (
-                <img src={photo} alt={name} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.18)",flexShrink:0}}/>
+                <img src={photo} alt={name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:"2px solid rgba(255,255,255,.15)",flexShrink:0}}/>
               ) : (
-                <div style={{width:46,height:46,borderRadius:"50%",border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <span style={{fontFamily:BEBAS,fontSize:18,color:"#fff",letterSpacing:1.5}}>{init}</span>
+                <div style={{width:64,height:64,borderRadius:"50%",border:"2px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <span style={{fontFamily:BEBAS,fontSize:24,color:"#fff",letterSpacing:1.5}}>{init}</span>
                 </div>
               )}
-              <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
-                <div style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
-                <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:2,textTransform:"uppercase"}}>{role}</div>
-              </div>
+              <div style={{fontFamily:BEBAS,fontSize:26,color:"#fff",letterSpacing:1,lineHeight:1}}>{name}</div>
             </div>
 
-            {/* Tagline */}
-            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.5)",fontSize:12.5,marginBottom:12,lineHeight:1.5}}>{tagline}</div>
+            {/* Blurb */}
+            <div style={{fontFamily:BODY,fontSize:13,color:"rgba(255,255,255,.72)",lineHeight:1.65,marginBottom:18}}>{blurb}</div>
 
-            {/* Tags */}
-            <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
-              {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 7px",fontFamily:MONO,fontSize:7.5,letterSpacing:2,color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{t}</span>)}
-            </div>
-
-            {/* Highlight */}
-            <div style={{borderTop:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",padding:"10px 0",marginBottom:12}}>
-              <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>Signature</div>
-              <span style={{fontFamily:BEBAS,fontSize:18,color:"#fff",letterSpacing:1}}>{highlight}</span>
-            </div>
-
-            {/* Bio */}
-            <div style={{fontFamily:BODY,fontSize:12.5,color:"rgba(255,255,255,.6)",lineHeight:1.65,marginBottom:14}}>{bio}</div>
-
-            {/* Timeline */}
-            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
-              <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>Experience</div>
-              {timeline.map((t,i)=>(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8,paddingLeft:10,borderLeft:"1px solid rgba(255,255,255,.12)"}}>
-                  <div style={{display:"flex",flexDirection:"column",gap:1,minWidth:0,flex:1}}>
-                    <span style={{fontFamily:BEBAS,fontSize:13,color:"#fff",letterSpacing:.8,lineHeight:1.2}}>{t.co}</span>
-                    <span style={{fontFamily:BODY,fontSize:11,color:"rgba(255,255,255,.5)",lineHeight:1.3}}>{t.title}</span>
+            {/* Experience */}
+            <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:18}}>
+              <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,textTransform:"uppercase"}}>Experience</div>
+              {experience.map((t,i)=>(
+                <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <div style={{width:32,height:32,flexShrink:0,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:6,height:6,background:"rgba(255,255,255,.5)",borderRadius:"50%"}}/>
                   </div>
-                  <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.4)",letterSpacing:1.5,flexShrink:0,whiteSpace:"nowrap"}}>{t.when}</span>
+                  <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
+                      <span style={{fontFamily:BEBAS,fontSize:15,color:"#fff",letterSpacing:.6,lineHeight:1.1}}>{t.co}</span>
+                      <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:1.5,whiteSpace:"nowrap",flexShrink:0}}>{t.when}</span>
+                    </div>
+                    <span style={{fontFamily:BODY,fontStyle:"italic",fontSize:11.5,color:"rgba(255,255,255,.55)",lineHeight:1.3}}>{t.title}</span>
+                    <span style={{fontFamily:BODY,fontSize:11.5,color:"rgba(255,255,255,.5)",lineHeight:1.55,marginTop:2}}>{t.desc}</span>
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* Education */}
-            <div style={{borderTop:"1px solid rgba(255,255,255,.06)",paddingTop:10}}>
-              <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Education</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {edu.map(e=><span key={e} style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.55)",letterSpacing:1.5}}>{e}</span>)}
-              </div>
+            <div style={{borderTop:"1px solid rgba(255,255,255,.08)",paddingTop:14,display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,textTransform:"uppercase"}}>Education</div>
+              {education.map((e,i)=>(
+                <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <div style={{width:28,height:28,flexShrink:0,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:5,height:5,background:"rgba(255,255,255,.5)",borderRadius:"50%"}}/>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:1,flex:1}}>
+                    <span style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:.6,lineHeight:1.1}}>{e.school}</span>
+                    <span style={{fontFamily:BODY,fontStyle:"italic",fontSize:11.5,color:"rgba(255,255,255,.55)",lineHeight:1.3}}>{e.degree}{e.detail?` · ${e.detail}`:""}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
