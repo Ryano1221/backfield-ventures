@@ -936,7 +936,8 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
 function MobileSlide({children,light}:{children:React.ReactNode;light?:boolean}) {
   return (
     <div style={{
-      minHeight:"100vh",
+      position:"absolute",
+      inset:0,
       width:"100%",
       padding:"24px 18px 110px",
       overflowY:"auto",
@@ -944,6 +945,7 @@ function MobileSlide({children,light}:{children:React.ReactNode;light?:boolean})
       background:light?"#f0f0f0":"#000",
       color:light?"#000":"#fff",
       WebkitOverflowScrolling:"touch",
+      touchAction:"pan-y",
       boxSizing:"border-box",
     }}>
       {children}
