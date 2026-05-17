@@ -60,6 +60,78 @@ const CSS = `
   .logo-dark-soft { filter:invert(1) grayscale(1); }
   .logo-light { filter:brightness(0); }
   .logo-light-soft { filter:grayscale(1) brightness(.15); }
+
+  /* ─── MOBILE OVERRIDES ──────────────────────────── */
+  @media (max-width: 768px) {
+    /* Slide wrapper: scrollable, comfortable padding */
+    .slide-inner {
+      height:auto !important;
+      min-height:100vh !important;
+      overflow:visible !important;
+      padding:32px 18px !important;
+    }
+    /* Force any grid with class m-stack to a single column */
+    .m-stack {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: auto !important;
+      grid-auto-rows: auto !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+    .m-stack > * { min-height: 120px; }
+    /* 2-col deal+brand grids */
+    .m-stack-12 { grid-template-columns: 1fr !important; }
+    /* Hide on mobile */
+    .m-hide { display: none !important; }
+    /* BigStat rows: stack vertically */
+    .m-bigstats {
+      flex-direction: column !important;
+      min-height: auto !important;
+    }
+    .m-bigstats > div {
+      border-right: none !important;
+      border-bottom: 1px solid rgba(255,255,255,.07) !important;
+      padding: 16px 0 !important;
+    }
+    .m-bigstats.light > div {
+      border-bottom: 1px solid rgba(0,0,0,.08) !important;
+    }
+    /* Pipeline grid → stack */
+    .m-pipe-row {
+      grid-template-columns: 1fr !important;
+      gap: 8px !important;
+      padding: 14px !important;
+    }
+    .m-pipe-header { display: none !important; }
+    /* Fund details rows */
+    .m-fund-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      padding: 14px 16px !important;
+      min-height: auto !important;
+    }
+    /* Process & Separates rows */
+    .m-sep-row {
+      grid-template-columns: 1fr !important;
+      gap: 6px !important;
+      padding: 16px !important;
+    }
+    /* Cover metrics strip */
+    .m-cover-metrics {
+      grid-template-columns: 1fr 1fr !important;
+    }
+    .m-cover-metrics > div:nth-child(2n) { border-right: none !important; }
+    /* Body text scaling */
+    .m-prose { font-size: 14px !important; line-height: 1.7 !important; }
+    /* Smaller bottom nav */
+    .m-nav-btn { padding: 14px 22px !important; font-size: 12px !important; }
+    /* Force flex children that had min-height:0 to grow naturally */
+    .m-auto-h { height: auto !important; min-height: auto !important; }
+    /* Mobile-specific section spacing */
+    .m-section-divider {
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+  }
 `;
 
 /* ─────────────────────────────────────────────
@@ -135,6 +207,17 @@ function useParallax() {
   return p;
 }
 
+function useIsMobile(bp=768) {
+  const [m,setM]=useState(false);
+  useEffect(()=>{
+    const c=()=>setM(window.innerWidth<bp);
+    c();
+    window.addEventListener("resize",c);
+    return()=>window.removeEventListener("resize",c);
+  },[bp]);
+  return m;
+}
+
 /* ─────────────────────────────────────────────
    SHARED UI
 ───────────────────────────────────────────── */
@@ -173,7 +256,7 @@ function DotNav({cur,total,onGo,light}:{cur:number;total:number;onGo:(n:number)=
 
 function Nav({cur,total,onPrev,onNext,onGo,light}:{cur:number;total:number;onPrev?:()=>void;onNext?:()=>void;onGo:(n:number)=>void;light?:boolean}) {
   return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:8,flexShrink:0}}>
+    <div className="m-hide" style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:8,flexShrink:0}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <DotNav cur={cur} total={total} onGo={onGo} light={light}/>
         <span style={{fontFamily:MONO,fontSize:7.5,color:light?"rgba(0,0,0,.26)":"rgba(255,255,255,.2)",letterSpacing:2}}>{String(cur+1).padStart(2,"0")} / {String(total).padStart(2,"0")}</span>
@@ -368,7 +451,7 @@ function Cover({onNext,onGo,total}:{onNext:()=>void;onGo:(n:number)=>void;total:
 
       {/* fund metrics strip */}
       <div className="fu3" style={{flexShrink:0,borderTop:"1px solid rgba(255,255,255,.08)",marginBottom:12}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)"}}>
+        <div className="m-cover-metrics" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)"}}>
           {metrics.map(({label,value},i)=>(
             <div key={i} style={{padding:"16px 24px",borderRight:i<3?"1px solid rgba(255,255,255,.07)":"none",display:"flex",flexDirection:"column",gap:5}}>
               <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.48)",letterSpacing:3,textTransform:"uppercase"}}>{label}</span>
@@ -378,8 +461,8 @@ function Cover({onNext,onGo,total}:{onNext:()=>void;onGo:(n:number)=>void;total:
         </div>
       </div>
 
-      {/* bottom nav */}
-      <div className="fu4" style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+      {/* bottom nav (desktop only) */}
+      <div className="fu4 m-hide" style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <DotNav cur={0} total={total} onGo={onGo}/>
         <button className="bw" onClick={onNext}>VIEW DECK →</button>
       </div>
@@ -399,7 +482,7 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
       <div className="fu1" style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:8,flexShrink:0}}>TWO CATEGORIES. DEEP CONVICTION.</div>
 
       {/* Two category panels - fills remaining space */}
-      <div className="fu2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2,flex:1,minHeight:0}}>
+      <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2,flex:1,minHeight:0}}>
         {[
           {n:"01",name:"CONSUMER",
            sub:"Brands people return to — and tell their friends about.",
@@ -469,7 +552,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
       <Header n="02" label="CONSUMER MARKET" right="THE WINDOW IS OPEN NOW"/>
 
       {/* Stats row — full width, prominent numbers */}
-      <div className="fu1" style={{display:"flex",flexShrink:0,borderBottom:"1px solid rgba(255,255,255,.07)",marginBottom:12,paddingBottom:12,minHeight:"clamp(70px,10vh,100px)"}}>
+      <div className="fu1 m-bigstats" style={{display:"flex",flexShrink:0,borderBottom:"1px solid rgba(255,255,255,.07)",marginBottom:12,paddingBottom:12,minHeight:"clamp(70px,10vh,100px)"}}>
         <BigStat raw="$2.3T" label="Global CPG Market" source="ZION MARKET RESEARCH, 2024" delay={0}/>
         <BigStat raw="15.4%" label="DTC E-Commerce CAGR 2024–33" source="INVESP / STATISTA, 2024" delay={100}/>
         <BigStat raw="41%" label="Consumer M&A Value Growth 2025" source="PWC GLOBAL M&A TRENDS, 2025" delay={200}/>
@@ -480,7 +563,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
       </div>
 
       {/* M&A + brands */}
-      <div style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:20,flex:1,minHeight:0}}>
+      <div className="m-stack" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:20,flex:1,minHeight:0}}>
         <div className="fu2" style={{display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,marginBottom:6}}>RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE</div>
           <div style={{border:"1px solid rgba(255,255,255,.07)",background:"rgba(255,255,255,.02)",flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -490,7 +573,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
         </div>
         <div className="fu3" style={{display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,marginBottom:6}}>VC-BACKED BREAKOUT BRANDS</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
+          <div className="m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
             {brands.map((b,i)=><BrandCard key={i} name={b.name} logo={b.logo}/>)}
           </div>
         </div>
@@ -523,7 +606,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
       <Header n="03" label="SPORTS MARKET" light right="2025 WAS A RECORD YEAR"/>
 
       {/* Stats row */}
-      <div className="fu1" style={{display:"flex",flexShrink:0,borderBottom:"1px solid rgba(0,0,0,.07)",marginBottom:12,paddingBottom:12,minHeight:"clamp(70px,10vh,100px)"}}>
+      <div className="fu1 m-bigstats light" style={{display:"flex",flexShrink:0,borderBottom:"1px solid rgba(0,0,0,.07)",marginBottom:12,paddingBottom:12,minHeight:"clamp(70px,10vh,100px)"}}>
         <BigStat raw="$495B" label="Global Sports Market 2025" source="STATISTA SPORTS OUTLOOK, 2025" light delay={0}/>
         <BigStat raw="21.9%" label="Sports Tech CAGR 2025–30" source="GRAND VIEW RESEARCH, 2024" light delay={100}/>
         <BigStat raw="$156B" label="Sports M&A Deal Value 2025" source="DRAKE STAR SPORTS TECH REPORT" light delay={200}/>
@@ -533,7 +616,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:20,flex:1,minHeight:0}}>
+      <div className="m-stack" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:20,flex:1,minHeight:0}}>
         <div className="fu2" style={{display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.52)",letterSpacing:3,marginBottom:6}}>RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE</div>
           <div style={{border:"1px solid rgba(0,0,0,.08)",background:"#fff",flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -543,7 +626,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
         </div>
         <div className="fu3" style={{display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.52)",letterSpacing:3,marginBottom:6}}>VC-BACKED SPORTS TECH & MEDIA LEADERS</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
+          <div className="m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
             {brands.map((b,i)=><BrandCard key={i} name={b.name} logo={b.logo} light/>)}
           </div>
         </div>
@@ -570,7 +653,7 @@ function Separates({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;o
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,58px)",color:"#000",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(10px,1.5vh,18px)",flexShrink:0}}>WE&apos;RE BUILT DIFFERENT.</div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
         {items.map(({n,l,b},i)=>(
-          <div key={i} className="rhl" style={{background:"#fff",padding:"0 20px",display:"grid",gridTemplateColumns:"28px 200px 1fr",gap:16,alignItems:"center",flex:1,borderLeft:"3px solid transparent",transition:"border-color .2s"}}
+          <div key={i} className="rhl m-sep-row" style={{background:"#fff",padding:"0 20px",display:"grid",gridTemplateColumns:"28px 200px 1fr",gap:16,alignItems:"center",flex:1,borderLeft:"3px solid transparent",transition:"border-color .2s"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderLeftColor="#000";}}
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderLeftColor="transparent";}}>
             <span style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.42)",letterSpacing:2}}>{n}</span>
@@ -606,7 +689,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
     <Dark>
       <Header n="05" label="FUND DETAILS" right="CLEAN STRUCTURE. FAIR TERMS."/>
       {/* Hero numbers */}
-      <div className="fu1" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,marginBottom:10,flexShrink:0}}>
+      <div className="fu1 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,marginBottom:10,flexShrink:0}}>
         {hi.map(({v,l,sub})=>(
           <div key={l} className="c3" style={{background:"#fff",padding:"clamp(16px,2.2vh,26px) 24px"}}>
             <div style={{fontFamily:BEBAS,fontSize:"clamp(32px,5vh,52px)",color:"#000",lineHeight:.95,letterSpacing:1}}>{v}</div>
@@ -618,7 +701,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
       {/* Detail rows */}
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:1.5,flex:1,minHeight:0}}>
         {rows.map(([label,val],i)=>(
-          <div key={i} className="rh" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.07)"}`,padding:"0 20px",minHeight:0}}>
+          <div key={i} className="rh m-fund-row" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.07)"}`,padding:"0 20px",minHeight:0}}>
             <div style={{fontFamily:MONO,fontSize:"clamp(7.5px,1vh,9.5px)",color:"rgba(255,255,255,.36)",letterSpacing:2.5,textTransform:"uppercase",minWidth:210,flexShrink:0}}>{label}</div>
             <div style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.7vh,16px)",color:"#fff",letterSpacing:1}}>{val}</div>
           </div>
@@ -645,14 +728,14 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       <Header n="06" label="DEAL PIPELINE" right="DEAL FLOW ALREADY COMING TO US"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>ACTIVE PIPELINE.</div>
       {/* Table header */}
-      <div style={{display:"grid",gridTemplateColumns:"3fr 1.2fr 1fr .9fr .85fr",padding:"0 16px",marginBottom:4,flexShrink:0}}>
+      <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.2fr 1fr .9fr .85fr",padding:"0 16px",marginBottom:4,flexShrink:0}}>
         {["COMPANY DESCRIPTION","CATEGORY","SOURCE","NET REV","STAGE"].map(h=>(
           <span key={h} style={{fontFamily:MONO,fontSize:7,letterSpacing:2.5,color:"rgba(255,255,255,.2)"}}>{h}</span>
         ))}
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
         {deals.map(({desc,cat,src,rev,stage},i)=>(
-          <div key={i} className="rh c3" style={{display:"grid",gridTemplateColumns:"3fr 1.2fr 1fr .9fr .85fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,alignItems:"center",flex:1,minHeight:0}}>
+          <div key={i} className="rh c3 m-pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.2fr 1fr .9fr .85fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,alignItems:"center",flex:1,minHeight:0}}>
             <div style={{padding:"0 14px",fontFamily:BODY,color:"rgba(255,255,255,.7)",fontSize:"clamp(11px,1.35vh,13px)",lineHeight:1.6}}>{desc}</div>
             <div style={{padding:"0 10px",fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.38)",letterSpacing:2,textTransform:"uppercase",lineHeight:1.3}}>{cat}</div>
             <div style={{padding:"0 10px",fontFamily:BODY,color:"rgba(255,255,255,.32)",fontSize:12}}>{src}</div>
@@ -685,7 +768,7 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
     <Light>
       <Header n="07" label="THE PROCESS" light/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(32px,4.5vh,52px)",color:"#000",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>HOW WE WORK.</div>
-      <div className="fu2" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,flex:1,minHeight:0}}>
+      <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,flex:1,minHeight:0}}>
         {steps.map(({n,t,b},i)=>(
           <div key={n} className="c3l" style={{background:"#fff",borderTop:`2px solid ${i===0?"#000":"rgba(0,0,0,.1)"}`,padding:"clamp(10px,1.4vh,18px) 16px",display:"flex",flexDirection:"column",transition:"border-color .2s",overflow:"hidden"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderTopColor="#000";}}
@@ -747,7 +830,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>$2B+ CAPITAL DEPLOYED ACROSS NETWORK</span>
       </div>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,20px)",flexShrink:0}}>THE ROOM IS ALREADY FULL.</div>
-      <div className="fu2" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:2,flex:1,minHeight:0}}>
+      <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:2,flex:1,minHeight:0}}>
         {people.map(p=><AdvisorCard key={p.name} {...p}/>)}
       </div>
       <Nav cur={8} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
@@ -775,11 +858,11 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
         <div className="fu4" style={{fontFamily:BODY,color:"rgba(255,255,255,.42)",fontSize:"clamp(12px,1.6vh,15px)",lineHeight:1.85,maxWidth:440,margin:"0 auto",marginBottom:"clamp(20px,2.8vh,36px)"}}>
           Backfield Ventures is raising Fund I — targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
         </div>
-        <div className="fu5" style={{display:"flex",gap:9,justifyContent:"center",marginBottom:"clamp(16px,2.2vh,28px)"}}>
+        <div className="fu5 m-hide" style={{display:"flex",gap:9,justifyContent:"center",marginBottom:"clamp(16px,2.2vh,28px)"}}>
           <button className="bw" onClick={onRestart}>↩ START OVER</button>
           <button className="bo" onClick={onPrev}>← BACK</button>
         </div>
-        <div className="fu6" style={{display:"flex",justifyContent:"center",marginBottom:"clamp(10px,1.5vh,18px)"}}>
+        <div className="fu6 m-hide" style={{display:"flex",justifyContent:"center",marginBottom:"clamp(10px,1.5vh,18px)"}}>
           <DotNav cur={total-1} total={total} onGo={onGo}/>
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.14)",letterSpacing:2}}>BACKFIELDVENTURES.COM · AUSTIN, TX · FUND I · 2026</span>
@@ -793,6 +876,7 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
 ───────────────────────────────────────────── */
 export default function BackfieldDeck() {
   const TOTAL=10;
+  const isMobile=useIsMobile();
   const [slide,setSlide]=useState(0);
   const [dir,setDir]=useState(1);
   const [key,setKey]=useState(0);
@@ -802,21 +886,57 @@ export default function BackfieldDeck() {
   const prev=useCallback(()=>go(Math.max(slide-1,0)),[go,slide]);
 
   useEffect(()=>{
+    if(isMobile)return;
     const h=(e:KeyboardEvent)=>{ if(e.key==="ArrowRight"||e.key==="ArrowDown")next(); if(e.key==="ArrowLeft"||e.key==="ArrowUp")prev(); };
     window.addEventListener("keydown",h); return()=>window.removeEventListener("keydown",h);
-  },[next,prev]);
+  },[next,prev,isMobile]);
 
-  const shared={onNext:next,onPrev:prev,onGo:go,total:TOTAL};
-  const slides=[
+  // mobile nav uses no-op callbacks; desktop uses real navigation
+  const noop=()=>{};
+  const sharedDesktop={onNext:next,onPrev:prev,onGo:go,total:TOTAL};
+  const sharedMobile ={onNext:noop,onPrev:noop,onGo:noop,total:TOTAL};
+  const shared=isMobile?sharedMobile:sharedDesktop;
+
+  const allSlides=[
+    <Cover          key="s0" onNext={shared.onNext} onGo={shared.onGo} total={TOTAL}/>,
+    <Thesis         key="s1" {...shared}/>,
+    <ConsumerMarket key="s2" {...shared}/>,
+    <SportsMarket   key="s3" {...shared}/>,
+    <Separates      key="s4" {...shared}/>,
+    <FundDetails    key="s5" {...shared}/>,
+    <Pipeline       key="s6" {...shared}/>,
+    <Process        key="s7" {...shared}/>,
+    <Advisors       key="s8" {...shared}/>,
+    <CloseSlide     key="s9" onPrev={shared.onPrev} onRestart={()=>{}} onGo={shared.onGo} total={TOTAL}/>,
+  ];
+
+  if(isMobile) {
+    return (
+      <>
+        <style>{CSS}</style>
+        <div style={{background:"#000",minHeight:"100vh",fontFamily:BODY,color:"#fff"}}>
+          <Ticker/>
+          <div>
+            {allSlides.map((s,i)=>(
+              <div key={i} style={{position:"relative"}}>{s}</div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // desktop: paginated slide deck (re-key the active slide to retrigger animations)
+  const desktopSlides=[
     <Cover          key={`s0-${key}`} onNext={next} onGo={go} total={TOTAL}/>,
-    <Thesis         key={`s1-${key}`} {...shared}/>,
-    <ConsumerMarket key={`s2-${key}`} {...shared}/>,
-    <SportsMarket   key={`s3-${key}`} {...shared}/>,
-    <Separates      key={`s4-${key}`} {...shared}/>,
-    <FundDetails    key={`s5-${key}`} {...shared}/>,
-    <Pipeline       key={`s6-${key}`} {...shared}/>,
-    <Process        key={`s7-${key}`} {...shared}/>,
-    <Advisors       key={`s8-${key}`} {...shared}/>,
+    <Thesis         key={`s1-${key}`} {...sharedDesktop}/>,
+    <ConsumerMarket key={`s2-${key}`} {...sharedDesktop}/>,
+    <SportsMarket   key={`s3-${key}`} {...sharedDesktop}/>,
+    <Separates      key={`s4-${key}`} {...sharedDesktop}/>,
+    <FundDetails    key={`s5-${key}`} {...sharedDesktop}/>,
+    <Pipeline       key={`s6-${key}`} {...sharedDesktop}/>,
+    <Process        key={`s7-${key}`} {...sharedDesktop}/>,
+    <Advisors       key={`s8-${key}`} {...sharedDesktop}/>,
     <CloseSlide     key={`s9-${key}`} onPrev={prev} onRestart={()=>go(0)} onGo={go} total={TOTAL}/>,
   ];
 
@@ -832,7 +952,7 @@ export default function BackfieldDeck() {
           <ProgressBar cur={slide} total={TOTAL}/>
         </div>
         <div key={key} className={dir>0?"sR":"sL"} style={{flex:1,minHeight:0,overflow:"hidden"}}>
-          {slides[slide]}
+          {desktopSlides[slide]}
         </div>
       </div>
     </>
