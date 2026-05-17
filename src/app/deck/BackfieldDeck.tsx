@@ -772,11 +772,11 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
 ───────────────────────────────────────────── */
 function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const deals=[
-    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  src:"Direct Access",     rev:"$300M+",  stage:"TERM SHEET"},
-    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            src:"Founder Network",   rev:"~$3M",     stage:"DUE DILIGENCE"},
-    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       src:"Advisor Network",   rev:"~$4M",     stage:"INTRO CALL"},
-    {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                src:"Founder Network",   rev:"~$10.5M",  stage:"DUE DILIGENCE"},
-    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               src:"MD Network",        rev:"~$1.5M",   stage:"EVALUATING"},
+    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  rev:"$300M+",  stage:"TERM SHEET"},
+    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            rev:"~$3M",     stage:"DUE DILIGENCE"},
+    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       rev:"~$4M",     stage:"INTRO CALL"},
+    {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                rev:"~$10.5M",  stage:"DUE DILIGENCE"},
+    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               rev:"~$1.5M",   stage:"EVALUATING"},
   ];
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
@@ -784,17 +784,16 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       <Header n="06" label="DEAL PIPELINE" right="DEAL FLOW ALREADY COMING TO US"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>ACTIVE PIPELINE.</div>
       {/* Table header */}
-      <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.2fr 1fr .9fr .85fr",padding:"0 16px",marginBottom:4,flexShrink:0}}>
-        {["COMPANY DESCRIPTION","CATEGORY","SOURCE","NET REV","STAGE"].map(h=>(
+      <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",padding:"0 16px",marginBottom:4,flexShrink:0}}>
+        {["COMPANY DESCRIPTION","CATEGORY","NET REV","STAGE"].map(h=>(
           <span key={h} style={{fontFamily:MONO,fontSize:7,letterSpacing:2.5,color:"rgba(255,255,255,.2)"}}>{h}</span>
         ))}
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
-        {deals.map(({desc,cat,src,rev,stage},i)=>(
-          <div key={i} className="rh c3 m-pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.2fr 1fr .9fr .85fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,alignItems:"center",flex:1,minHeight:0}}>
+        {deals.map(({desc,cat,rev,stage},i)=>(
+          <div key={i} className="rh c3 m-pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,alignItems:"center",flex:1,minHeight:0}}>
             <div style={{padding:"0 14px",fontFamily:BODY,color:"rgba(255,255,255,.7)",fontSize:"clamp(11px,1.35vh,13px)",lineHeight:1.6}}>{desc}</div>
             <div style={{padding:"0 10px",fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.38)",letterSpacing:2,textTransform:"uppercase",lineHeight:1.3}}>{cat}</div>
-            <div style={{padding:"0 10px",fontFamily:BODY,color:"rgba(255,255,255,.32)",fontSize:12}}>{src}</div>
             <div style={{padding:"0 10px"}}><span style={{fontFamily:BEBAS,fontSize:"clamp(15px,2vh,20px)",color:"#fff",letterSpacing:1}}>{rev}</span></div>
             <div style={{padding:"0 10px"}}><span style={{fontFamily:MONO,fontSize:7,letterSpacing:1.5,color:stageColor(stage),border:`1px solid ${stageColor(stage)}`,padding:"3px 6px",textTransform:"uppercase"}}>{stage}</span></div>
           </div>
@@ -1324,11 +1323,11 @@ function MobileFundDetails() {
 /* ─── MOBILE 6: PIPELINE ─── */
 function MobilePipeline() {
   const deals=[
-    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  src:"Direct Access",     rev:"$300M+",  stage:"TERM SHEET"},
-    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            src:"Founder Network",   rev:"~$3M",     stage:"DUE DILIGENCE"},
-    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       src:"Advisor Network",   rev:"~$4M",     stage:"INTRO CALL"},
-    {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                src:"Founder Network",   rev:"~$10.5M",  stage:"DUE DILIGENCE"},
-    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               src:"MD Network",        rev:"~$1.5M",   stage:"EVALUATING"},
+    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  rev:"$300M+",  stage:"TERM SHEET"},
+    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            rev:"~$3M",     stage:"DUE DILIGENCE"},
+    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       rev:"~$4M",     stage:"INTRO CALL"},
+    {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                rev:"~$10.5M",  stage:"DUE DILIGENCE"},
+    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               rev:"~$1.5M",   stage:"EVALUATING"},
   ];
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
@@ -1341,7 +1340,7 @@ function MobilePipeline() {
         DEAL FLOW ALREADY COMING TO US
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:10}}>
-        {deals.map(({desc,cat,src,rev,stage},i)=>(
+        {deals.map(({desc,cat,rev,stage},i)=>(
           <div key={i} style={{
             background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",
             borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,
@@ -1352,11 +1351,7 @@ function MobilePipeline() {
               <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.42)",letterSpacing:2,border:"1px solid rgba(255,255,255,.16)",padding:"3px 7px",textTransform:"uppercase"}}>{cat}</span>
               <span style={{fontFamily:MONO,fontSize:7.5,color:stageColor(stage),letterSpacing:1.5,border:`1px solid ${stageColor(stage)}`,padding:"3px 7px",textTransform:"uppercase"}}>{stage}</span>
             </div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:10,paddingTop:8,borderTop:"1px solid rgba(255,255,255,.06)"}}>
-              <div style={{display:"flex",flexDirection:"column",gap:3}}>
-                <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.32)",letterSpacing:2}}>SOURCE</span>
-                <span style={{fontFamily:BODY,color:"rgba(255,255,255,.6)",fontSize:12}}>{src}</span>
-              </div>
+            <div style={{display:"flex",justifyContent:"flex-end",alignItems:"baseline",gap:10,paddingTop:8,borderTop:"1px solid rgba(255,255,255,.06)"}}>
               <div style={{display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
                 <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.32)",letterSpacing:2}}>NET REV</span>
                 <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1,lineHeight:1}}>{rev}</span>
