@@ -942,7 +942,9 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
       <div style={{position:"absolute",fontFamily:BEBAS,fontSize:"min(20vw,24vh)",color:"rgba(255,255,255,.013)",whiteSpace:"nowrap",top:"50%",left:"50%",transform:`translate(calc(-50% + ${m.x*-12}px),calc(-50% + ${m.y*-8}px))`,transition:"transform .9s ease",userSelect:"none",pointerEvents:"none",letterSpacing:6}}>BACKFIELD</div>
 
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",zIndex:10,position:"relative"}}>
-        <div className="fu" style={{marginBottom:"clamp(16px,2.2vh,28px)"}}><Logo size={54}/></div>
+        <div className="fu" style={{marginBottom:"clamp(16px,2.2vh,28px)"}}>
+          <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"clamp(260px,38vw,520px)",height:"auto",objectFit:"contain",display:"block"}}/>
+        </div>
         <div className="fu1" style={{width:1,height:"clamp(28px,4vh,48px)",background:"rgba(255,255,255,.12)",margin:"0 auto",marginBottom:"clamp(16px,2.2vh,28px)"}}/>
         <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(52px,9vh,100px)",color:"#fff",lineHeight:.86,letterSpacing:2,marginBottom:"clamp(10px,1.5vh,18px)"}}>
           LET&apos;S BUILD<br/>SOMETHING<br/>ICONIC.
@@ -1526,8 +1528,8 @@ function MobileClose() {
         display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
         textAlign:"center",padding:"20px 4px",
       }}>
-        <div className="fu" style={{marginBottom:24}}>
-          <Logo size={44}/>
+        <div className="fu" style={{marginBottom:24,width:"100%",display:"flex",justifyContent:"center"}}>
+          <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"min(78vw,300px)",height:"auto",objectFit:"contain",display:"block"}}/>
         </div>
         <div className="fu1" style={{width:1,height:32,background:"rgba(255,255,255,.14)",marginBottom:24}}/>
         <div className="fu2" style={{fontFamily:BEBAS,fontSize:54,color:"#fff",lineHeight:.9,letterSpacing:2,marginBottom:18}}>
