@@ -63,12 +63,14 @@ const CSS = `
 
   /* ─── MOBILE OVERRIDES ──────────────────────────── */
   @media (max-width: 768px) {
-    /* Slide wrapper: scrollable, comfortable padding */
+    /* Slide wrapper: full viewport height, internal vertical scroll, tighter padding */
     .slide-inner {
-      height:auto !important;
+      height:100vh !important;
       min-height:100vh !important;
-      overflow:visible !important;
-      padding:32px 18px !important;
+      overflow-y:auto !important;
+      overflow-x:hidden !important;
+      padding:20px 16px 80px !important;
+      -webkit-overflow-scrolling: touch;
     }
     /* Force any grid with class m-stack to a single column */
     .m-stack {
@@ -76,25 +78,34 @@ const CSS = `
       grid-template-rows: auto !important;
       grid-auto-rows: auto !important;
       flex-direction: column !important;
-      gap: 12px !important;
+      gap: 10px !important;
     }
-    .m-stack > * { min-height: 120px; }
-    /* 2-col deal+brand grids */
-    .m-stack-12 { grid-template-columns: 1fr !important; }
+    .m-stack > * { min-height: 100px; }
     /* Hide on mobile */
     .m-hide { display: none !important; }
-    /* BigStat rows: stack vertically */
+    /* BigStat rows: stack vertically, then put first 3 stats in a row */
     .m-bigstats {
+      display: flex !important;
       flex-direction: column !important;
       min-height: auto !important;
+      gap: 0 !important;
     }
     .m-bigstats > div {
       border-right: none !important;
       border-bottom: 1px solid rgba(255,255,255,.07) !important;
-      padding: 16px 0 !important;
+      padding: 14px 4px !important;
+      flex: none !important;
     }
     .m-bigstats.light > div {
       border-bottom: 1px solid rgba(0,0,0,.08) !important;
+    }
+    /* BigStat font sizes for mobile */
+    .m-bigstats > div > div:first-child {
+      font-size: 36px !important;
+    }
+    /* description text in 4th slot reduces font */
+    .m-bigstats > div:nth-child(4) > div:first-child {
+      font-size: 22px !important;
     }
     /* Pipeline grid → stack */
     .m-pipe-row {
@@ -109,28 +120,64 @@ const CSS = `
       align-items: flex-start !important;
       padding: 14px 16px !important;
       min-height: auto !important;
+      gap: 4px !important;
     }
     /* Process & Separates rows */
     .m-sep-row {
       grid-template-columns: 1fr !important;
-      gap: 6px !important;
-      padding: 16px !important;
+      gap: 4px !important;
+      padding: 14px !important;
     }
     /* Cover metrics strip */
     .m-cover-metrics {
       grid-template-columns: 1fr 1fr !important;
     }
-    .m-cover-metrics > div:nth-child(2n) { border-right: none !important; }
-    /* Body text scaling */
-    .m-prose { font-size: 14px !important; line-height: 1.7 !important; }
-    /* Smaller bottom nav */
-    .m-nav-btn { padding: 14px 22px !important; font-size: 12px !important; }
-    /* Force flex children that had min-height:0 to grow naturally */
-    .m-auto-h { height: auto !important; min-height: auto !important; }
-    /* Mobile-specific section spacing */
-    .m-section-divider {
-      border-top: 1px solid rgba(255,255,255,.08);
+    .m-cover-metrics > div { border-right: none !important; }
+    .m-cover-metrics > div:nth-child(odd) {
+      border-right: 1px solid rgba(255,255,255,.07) !important;
     }
+    /* Deal rows: completely restructure to vertical layout */
+    .m-deal-row {
+      grid-template-columns: 1fr !important;
+      gap: 8px !important;
+      padding: 14px 14px !important;
+    }
+    .m-deal-row .m-deal-companies {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      justify-content: flex-start !important;
+    }
+    .m-deal-row .m-deal-meta {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      flex-wrap: wrap !important;
+    }
+    .m-deal-logo { width: 56px !important; height: 22px !important; }
+    .m-deal-arrow { flex-direction: row !important; gap: 6px !important; }
+    .m-deal-arrow span:first-child { font-size: 12px !important; }
+    .m-deal-arrow span:last-child { font-size: 7px !important; }
+    /* Hide acquired text on mobile, just show arrow */
+    .m-deal-arrow span:last-child { display: none !important; }
+    /* Brand cards: 3x2 grid, but smaller */
+    .m-brand-grid {
+      grid-template-columns: 1fr 1fr 1fr !important;
+      grid-template-rows: auto !important;
+      gap: 6px !important;
+      min-height: auto !important;
+    }
+    .m-brand-grid > * {
+      min-height: 80px !important;
+      padding: 10px 6px !important;
+    }
+    /* AdvisorCard tweaks */
+    .m-advisor {
+      padding: 18px !important;
+    }
+    /* Body text scaling */
+    .m-prose { font-size: 13px !important; line-height: 1.6 !important; }
   }
 `;
 
@@ -323,31 +370,37 @@ function DealRow({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,del
   useEffect(()=>{ const t=setTimeout(()=>setW((valueNum/maxVal)*100),delay+300); return()=>clearTimeout(t); },[valueNum,maxVal,delay]);
   return (
     <div className="rh" style={{padding:"10px 16px",borderBottom:"1px solid rgba(255,255,255,.06)",flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
-      <div style={{display:"grid",gridTemplateColumns:"110px 64px 110px 1fr auto",alignItems:"center",gap:0,marginBottom:7}}>
-        {/* acquirer */}
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
-          {aLogo
-            ? <img src={aLogo} className="logo-dark" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.85}} alt={acquirer}/>
-            : <span style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:.5,textAlign:"center"}}>{acquirer}</span>
-          }
+      <div className="m-deal-row" style={{display:"grid",gridTemplateColumns:"110px 64px 110px 1fr auto",alignItems:"center",gap:0,marginBottom:7}}>
+        {/* companies group (display:contents on desktop, flex row on mobile) */}
+        <div className="m-deal-companies" style={{display:"contents"}}>
+          {/* acquirer */}
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
+            {aLogo
+              ? <img src={aLogo} className="logo-dark m-deal-logo" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.85}} alt={acquirer}/>
+              : <span style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:.5,textAlign:"center"}}>{acquirer}</span>
+            }
+          </div>
+          {/* acquired arrow */}
+          <div className="m-deal-arrow" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+            <span style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.25)"}}>→</span>
+            <span style={{fontFamily:MONO,fontSize:6,color:"rgba(255,255,255,.18)",letterSpacing:1.5,textTransform:"uppercase"}}>acquired</span>
+          </div>
+          {/* target */}
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
+            <img src={tLogo} className="logo-dark m-deal-logo" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.7}} alt={target}/>
+          </div>
         </div>
-        {/* acquired arrow */}
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          <span style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.25)"}}>→</span>
-          <span style={{fontFamily:MONO,fontSize:6,color:"rgba(255,255,255,.18)",letterSpacing:1.5,textTransform:"uppercase"}}>acquired</span>
-        </div>
-        {/* target */}
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
-          <img src={tLogo} className="logo-dark" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.7}} alt={target}/>
-        </div>
-        {/* category */}
-        <div style={{paddingLeft:16}}>
-          <span style={{fontFamily:MONO,fontSize:7,letterSpacing:2,color:"rgba(255,255,255,.2)",border:"1px solid rgba(255,255,255,.08)",padding:"2px 5px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{cat}</span>
-        </div>
-        {/* value + year */}
-        <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-          <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1}}>{value}</span>
-          <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.22)"}}>{year}</span>
+        {/* meta group (display:contents on desktop, flex row on mobile) */}
+        <div className="m-deal-meta" style={{display:"contents"}}>
+          {/* category */}
+          <div style={{paddingLeft:16}}>
+            <span style={{fontFamily:MONO,fontSize:7,letterSpacing:2,color:"rgba(255,255,255,.45)",border:"1px solid rgba(255,255,255,.18)",padding:"2px 5px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{cat}</span>
+          </div>
+          {/* value + year */}
+          <div style={{display:"flex",alignItems:"baseline",gap:6}}>
+            <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1}}>{value}</span>
+            <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.42)"}}>{year}</span>
+          </div>
         </div>
       </div>
       <div style={{height:2.5,background:"rgba(255,255,255,.06)",transformOrigin:"left"}}>
@@ -368,31 +421,30 @@ function DealRowLight({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,yea
   useEffect(()=>{ const t=setTimeout(()=>setW((valueNum/maxVal)*100),delay+300); return()=>clearTimeout(t); },[valueNum,maxVal,delay]);
   return (
     <div className="rhl" style={{padding:"10px 16px",borderBottom:"1px solid rgba(0,0,0,.07)",flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between"}}>
-      <div style={{display:"grid",gridTemplateColumns:"110px 64px 110px 1fr auto",alignItems:"center",gap:0,marginBottom:7}}>
-        {/* acquirer */}
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
-          {aLogo
-            ? <img src={aLogo} className="logo-light" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.75}} alt={acquirer}/>
-            : <span style={{fontFamily:BEBAS,fontSize:14,color:"#000",letterSpacing:.5,textAlign:"center"}}>{acquirer}</span>
-          }
+      <div className="m-deal-row" style={{display:"grid",gridTemplateColumns:"110px 64px 110px 1fr auto",alignItems:"center",gap:0,marginBottom:7}}>
+        <div className="m-deal-companies" style={{display:"contents"}}>
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
+            {aLogo
+              ? <img src={aLogo} className="logo-light m-deal-logo" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.75}} alt={acquirer}/>
+              : <span style={{fontFamily:BEBAS,fontSize:14,color:"#000",letterSpacing:.5,textAlign:"center"}}>{acquirer}</span>
+            }
+          </div>
+          <div className="m-deal-arrow" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+            <span style={{fontFamily:MONO,fontSize:9,color:"rgba(0,0,0,.22)"}}>→</span>
+            <span style={{fontFamily:MONO,fontSize:6,color:"rgba(0,0,0,.28)",letterSpacing:1.5,textTransform:"uppercase"}}>acquired</span>
+          </div>
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
+            <img src={tLogo} className="logo-light m-deal-logo" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.65}} alt={target}/>
+          </div>
         </div>
-        {/* acquired arrow */}
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          <span style={{fontFamily:MONO,fontSize:9,color:"rgba(0,0,0,.22)"}}>→</span>
-          <span style={{fontFamily:MONO,fontSize:6,color:"rgba(0,0,0,.28)",letterSpacing:1.5,textTransform:"uppercase"}}>acquired</span>
-        </div>
-        {/* target */}
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
-          <img src={tLogo} className="logo-light" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.65}} alt={target}/>
-        </div>
-        {/* category */}
-        <div style={{paddingLeft:16}}>
-          <span style={{fontFamily:MONO,fontSize:7,letterSpacing:2,color:"rgba(0,0,0,.3)",border:"1px solid rgba(0,0,0,.1)",padding:"2px 5px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{cat}</span>
-        </div>
-        {/* value + year */}
-        <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-          <span style={{fontFamily:BEBAS,fontSize:22,color:"#000",letterSpacing:1}}>{value}</span>
-          <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(0,0,0,.3)"}}>{year}</span>
+        <div className="m-deal-meta" style={{display:"contents"}}>
+          <div style={{paddingLeft:16}}>
+            <span style={{fontFamily:MONO,fontSize:7,letterSpacing:2,color:"rgba(0,0,0,.55)",border:"1px solid rgba(0,0,0,.2)",padding:"2px 5px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{cat}</span>
+          </div>
+          <div style={{display:"flex",alignItems:"baseline",gap:6}}>
+            <span style={{fontFamily:BEBAS,fontSize:22,color:"#000",letterSpacing:1}}>{value}</span>
+            <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(0,0,0,.45)"}}>{year}</span>
+          </div>
         </div>
       </div>
       <div style={{height:2.5,background:"rgba(0,0,0,.08)",transformOrigin:"left"}}>
@@ -576,7 +628,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
         </div>
         <div className="fu3" style={{display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,marginBottom:6}}>VC-BACKED BREAKOUT BRANDS</div>
-          <div className="m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
+          <div className="m-brand-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
             {brands.map((b,i)=><BrandCard key={i} name={b.name} logo={b.logo}/>)}
           </div>
         </div>
@@ -629,7 +681,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
         </div>
         <div className="fu3" style={{display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.52)",letterSpacing:3,marginBottom:6}}>VC-BACKED SPORTS TECH & MEDIA LEADERS</div>
-          <div className="m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
+          <div className="m-brand-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gridTemplateRows:"repeat(2,1fr)",gap:4,flex:1}}>
             {brands.map((b,i)=><BrandCard key={i} name={b.name} logo={b.logo} light/>)}
           </div>
         </div>
@@ -889,59 +941,82 @@ export default function BackfieldDeck() {
   const prev=useCallback(()=>go(Math.max(slide-1,0)),[go,slide]);
 
   useEffect(()=>{
-    if(isMobile)return;
     const h=(e:KeyboardEvent)=>{ if(e.key==="ArrowRight"||e.key==="ArrowDown")next(); if(e.key==="ArrowLeft"||e.key==="ArrowUp")prev(); };
     window.addEventListener("keydown",h); return()=>window.removeEventListener("keydown",h);
-  },[next,prev,isMobile]);
+  },[next,prev]);
 
-  // mobile nav uses no-op callbacks; desktop uses real navigation
-  const noop=()=>{};
-  const sharedDesktop={onNext:next,onPrev:prev,onGo:go,total:TOTAL};
-  const sharedMobile ={onNext:noop,onPrev:noop,onGo:noop,total:TOTAL};
-  const shared=isMobile?sharedMobile:sharedDesktop;
+  // Touch swipe handlers for mobile
+  const touch=useRef<{x:number;y:number;t:number}|null>(null);
+  const onTouchStart=useCallback((e:React.TouchEvent)=>{
+    const t=e.touches[0];
+    touch.current={x:t.clientX,y:t.clientY,t:Date.now()};
+  },[]);
+  const onTouchEnd=useCallback((e:React.TouchEvent)=>{
+    if(!touch.current)return;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-touch.current.x;
+    const dy=t.clientY-touch.current.y;
+    const dt=Date.now()-touch.current.t;
+    // Horizontal swipe: > 50px and faster than ~600ms and more horizontal than vertical
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy) && dt<600) {
+      if(dx<0) next(); else prev();
+    }
+    touch.current=null;
+  },[next,prev]);
 
-  const allSlides=[
-    <Cover          key="s0" onNext={shared.onNext} onGo={shared.onGo} total={TOTAL}/>,
-    <Thesis         key="s1" {...shared}/>,
-    <ConsumerMarket key="s2" {...shared}/>,
-    <SportsMarket   key="s3" {...shared}/>,
-    <Separates      key="s4" {...shared}/>,
-    <FundDetails    key="s5" {...shared}/>,
-    <Pipeline       key="s6" {...shared}/>,
-    <Process        key="s7" {...shared}/>,
-    <Advisors       key="s8" {...shared}/>,
-    <CloseSlide     key="s9" onPrev={shared.onPrev} onRestart={()=>{}} onGo={shared.onGo} total={TOTAL}/>,
+  const shared={onNext:next,onPrev:prev,onGo:go,total:TOTAL};
+
+  const slides=[
+    <Cover          key={`s0-${key}`} onNext={next} onGo={go} total={TOTAL}/>,
+    <Thesis         key={`s1-${key}`} {...shared}/>,
+    <ConsumerMarket key={`s2-${key}`} {...shared}/>,
+    <SportsMarket   key={`s3-${key}`} {...shared}/>,
+    <Separates      key={`s4-${key}`} {...shared}/>,
+    <FundDetails    key={`s5-${key}`} {...shared}/>,
+    <Pipeline       key={`s6-${key}`} {...shared}/>,
+    <Process        key={`s7-${key}`} {...shared}/>,
+    <Advisors       key={`s8-${key}`} {...shared}/>,
+    <CloseSlide     key={`s9-${key}`} onPrev={prev} onRestart={()=>go(0)} onGo={go} total={TOTAL}/>,
   ];
+
+  // Mobile-specific bottom nav bar with prev/dots/next, plus tap zones
+  const MobileNav=()=>(
+    <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:30,background:"linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,.85) 60%,rgba(0,0,0,0))",padding:"18px 16px 22px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,pointerEvents:"none"}}>
+      <button
+        onClick={prev}
+        disabled={slide===0}
+        style={{pointerEvents:"auto",fontFamily:BEBAS,fontSize:13,letterSpacing:2,padding:"10px 14px",background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",opacity:slide===0?.3:1,cursor:slide===0?"default":"pointer",minWidth:64}}
+      >← PREV</button>
+      <div style={{pointerEvents:"auto",fontFamily:MONO,fontSize:9,letterSpacing:2,color:"rgba(255,255,255,.5)"}}>
+        {String(slide+1).padStart(2,"0")} / {String(TOTAL).padStart(2,"0")}
+      </div>
+      <button
+        onClick={next}
+        disabled={slide===TOTAL-1}
+        style={{pointerEvents:"auto",fontFamily:BEBAS,fontSize:13,letterSpacing:2,padding:"10px 14px",background:"#fff",border:"1px solid #fff",color:"#000",opacity:slide===TOTAL-1?.3:1,cursor:slide===TOTAL-1?"default":"pointer",minWidth:64}}
+      >NEXT →</button>
+    </div>
+  );
 
   if(isMobile) {
     return (
       <>
         <style>{CSS}</style>
-        <div style={{background:"#000",minHeight:"100vh",fontFamily:BODY,color:"#fff"}}>
-          <Ticker/>
-          <div>
-            {allSlides.map((s,i)=>(
-              <div key={i} style={{position:"relative"}}>{s}</div>
-            ))}
+        <div style={{position:"fixed",inset:0,background:"#000",zIndex:0}}/>
+        <div
+          style={{position:"fixed",inset:0,fontFamily:BODY,zIndex:5,overflow:"hidden"}}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <ProgressBar cur={slide} total={TOTAL}/>
+          <div key={key} className={dir>0?"sR":"sL"} style={{position:"absolute",inset:0,paddingTop:2}}>
+            {slides[slide]}
           </div>
         </div>
+        <MobileNav/>
       </>
     );
   }
-
-  // desktop: paginated slide deck (re-key the active slide to retrigger animations)
-  const desktopSlides=[
-    <Cover          key={`s0-${key}`} onNext={next} onGo={go} total={TOTAL}/>,
-    <Thesis         key={`s1-${key}`} {...sharedDesktop}/>,
-    <ConsumerMarket key={`s2-${key}`} {...sharedDesktop}/>,
-    <SportsMarket   key={`s3-${key}`} {...sharedDesktop}/>,
-    <Separates      key={`s4-${key}`} {...sharedDesktop}/>,
-    <FundDetails    key={`s5-${key}`} {...sharedDesktop}/>,
-    <Pipeline       key={`s6-${key}`} {...sharedDesktop}/>,
-    <Process        key={`s7-${key}`} {...sharedDesktop}/>,
-    <Advisors       key={`s8-${key}`} {...sharedDesktop}/>,
-    <CloseSlide     key={`s9-${key}`} onPrev={prev} onRestart={()=>go(0)} onGo={go} total={TOTAL}/>,
-  ];
 
   return (
     <>
@@ -955,7 +1030,7 @@ export default function BackfieldDeck() {
           <ProgressBar cur={slide} total={TOTAL}/>
         </div>
         <div key={key} className={dir>0?"sR":"sL"} style={{flex:1,minHeight:0,overflow:"hidden"}}>
-          {desktopSlides[slide]}
+          {slides[slide]}
         </div>
       </div>
     </>
