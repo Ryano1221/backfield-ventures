@@ -772,10 +772,11 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
 ───────────────────────────────────────────── */
 function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const deals=[
-    {desc:"Skincare brand supporting active lifestyles with athlete-focused product lines",     cat:"PERSONAL CARE",    src:"MD Network",      rev:"~$20M",  stage:"TERM SHEET"},
-    {desc:"Emerging sports team / league with strong brand identity and growth potential",      cat:"PRO SPORTS",       src:"Founder Network", rev:"~$10.5M", stage:"DUE DILIGENCE"},
-    {desc:"Wearable tech enhancing performance and recovery via real-time data tracking",       cat:"SPORTS TECH",      src:"Advisor Network", rev:"~$6.5M",  stage:"INTRO CALL"},
-    {desc:"Protein-infused overnight oats disrupting the functional breakfast category",        cat:"FUNCTIONAL FOODS", src:"Founder Network", rev:"~$3.3M",  stage:"EVALUATING"},
+    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  src:"Direct Access",     rev:"$300M+",  stage:"TERM SHEET"},
+    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            src:"Founder Network",   rev:"~$3M",     stage:"DUE DILIGENCE"},
+    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       src:"Advisor Network",   rev:"~$4M",     stage:"INTRO CALL"},
+    {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                src:"Founder Network",   rev:"~$10.5M",  stage:"DUE DILIGENCE"},
+    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               src:"MD Network",        rev:"~$1.5M",   stage:"EVALUATING"},
   ];
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
@@ -1323,10 +1324,11 @@ function MobileFundDetails() {
 /* ─── MOBILE 6: PIPELINE ─── */
 function MobilePipeline() {
   const deals=[
-    {desc:"Skincare brand supporting active lifestyles with athlete-focused product lines",     cat:"PERSONAL CARE",    src:"MD Network",      rev:"~$20M",  stage:"TERM SHEET"},
-    {desc:"Emerging sports team / league with strong brand identity and growth potential",      cat:"PRO SPORTS",       src:"Founder Network", rev:"~$10.5M", stage:"DUE DILIGENCE"},
-    {desc:"Wearable tech enhancing performance and recovery via real-time data tracking",       cat:"SPORTS TECH",      src:"Advisor Network", rev:"~$6.5M",  stage:"INTRO CALL"},
-    {desc:"Protein-infused overnight oats disrupting the functional breakfast category",        cat:"FUNCTIONAL FOODS", src:"Founder Network", rev:"~$3.3M",  stage:"EVALUATING"},
+    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  src:"Direct Access",     rev:"$300M+",  stage:"TERM SHEET"},
+    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            src:"Founder Network",   rev:"~$3M",     stage:"DUE DILIGENCE"},
+    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       src:"Advisor Network",   rev:"~$4M",     stage:"INTRO CALL"},
+    {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                src:"Founder Network",   rev:"~$10.5M",  stage:"DUE DILIGENCE"},
+    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               src:"MD Network",        rev:"~$1.5M",   stage:"EVALUATING"},
   ];
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
