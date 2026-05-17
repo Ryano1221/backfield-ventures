@@ -200,14 +200,6 @@ export default function Hero() {
           BEHIND THE NEXT GENERATION OF SPORTS AND CONSUMER BRANDS
         </h2>
 
-        <div className="hero__ctas">
-          <a href="mailto:hello@backfieldventures.com" className="btn btn--filled">
-            SEND DECK
-          </a>
-          <a href="#focus" className="btn btn--outline">
-            OUR FOCUS
-          </a>
-        </div>
       </div>
     </section>
   );
