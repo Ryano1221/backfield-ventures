@@ -875,7 +875,7 @@ function TeamCard({photo,init,name,blurb,number,partnerN,tags}:{
           <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.35)",letterSpacing:3,marginBottom:10}}>{partnerN}</div>
           <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,54px)",color:"#fff",letterSpacing:1.5,lineHeight:.9,marginBottom:14}}>{name}</div>
           <div style={{width:32,height:2,background:"#fff",marginBottom:"clamp(16px,2.2vh,24px)"}}/>
-          <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"rgba(255,255,255,.74)",lineHeight:1.75,flex:1,minHeight:0,overflow:"hidden"}}>{blurb}</div>
+          <div style={{fontFamily:BODY,fontSize:"clamp(13px,1.7vh,17px)",color:"rgba(255,255,255,.78)",lineHeight:1.8,flex:1,minHeight:0,display:"flex",alignItems:"center"}}>{blurb}</div>
         </div>
       </div>
 
