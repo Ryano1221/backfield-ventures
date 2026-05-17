@@ -915,7 +915,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
-      blurb:"Ryan founded Backfield Ventures after building and exiting his own venture-backed hardware company. He brings the rare combination of founder, operator, and investor — having raised capital, run SPVs, and invested in private equity and VC fund managers on behalf of one of the country's larger university endowments.",
+      blurb:"Ryan founded Backfield Ventures after building and exiting his own venture-backed hardware company. He brings the rare combination of founder, operator, and investor — having raised capital, run SPVs, and invested in PE & VC fund managers on behalf of one of the country's larger university endowments.",
       stats:[
         {v:"$500K+",  l:"Capital Raised"},
         {v:"$2B",     l:"Endowment Invested"},
@@ -924,7 +924,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       highlights:[
         "Co-founded and exited a venture-backed hardware startup",
         "Led investment ops at 4th & 1 Ventures — 4 SPVs",
-        "Invested in private equity and VC fund managers for Trinity's $2B endowment",
+        "Invested in PE & VC fund managers for Trinity's $2B endowment",
         "Trinity Football · All-Conference defensive back",
         "Trinity Investing Competition winner",
         "Founded Trinity Real Estate Club (100+ members)",
@@ -1497,7 +1497,7 @@ function MobileAdvisors() {
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
-      blurb:"Ryan founded Backfield Ventures after building and exiting his own venture-backed hardware company. He brings the rare combination of founder, operator, and investor — having raised capital, run SPVs, and invested in private equity and VC fund managers on behalf of one of the country's larger university endowments.",
+      blurb:"Ryan founded Backfield Ventures after building and exiting his own venture-backed hardware company. He brings the rare combination of founder, operator, and investor — having raised capital, run SPVs, and invested in PE & VC fund managers on behalf of one of the country's larger university endowments.",
       stats:[
         {v:"$500K+", l:"Raised"},
         {v:"$2B",    l:"Endowment"},
@@ -1506,7 +1506,7 @@ function MobileAdvisors() {
       highlights:[
         "Co-founded and exited a venture-backed hardware startup",
         "Led investment ops at 4th & 1 Ventures — 4 SPVs",
-        "Invested in private equity and VC fund managers for Trinity's $2B endowment",
+        "Invested in PE & VC fund managers for Trinity's $2B endowment",
         "Trinity Football · All-Conference defensive back",
         "Trinity Investing Competition winner",
         "Founded Trinity Real Estate Club (100+ members)",
