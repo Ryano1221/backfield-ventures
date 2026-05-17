@@ -772,11 +772,11 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
 ───────────────────────────────────────────── */
 function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const deals=[
-    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  rev:"$300M+",  stage:"TERM SHEET"},
-    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            rev:"~$3M",     stage:"DUE DILIGENCE"},
-    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       rev:"~$4M",     stage:"INTRO CALL"},
+    {desc:"Secondary opportunity in a leading performance wearable brand at a steep discount to last private round",            cat:"SECONDARY · SPORTS TECH",  rev:"$300M+",  stage:"TERM SHEET"},
+    {desc:"Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                                cat:"WOMEN'S HEALTH",            rev:"~$3M",     stage:"DUE DILIGENCE"},
+    {desc:"Creator-led better-for-you chip brand; discounted valuation secured through our network",                             cat:"CPG · CREATOR BRAND",       rev:"~$4M",     stage:"INTRO CALL"},
     {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                rev:"~$10.5M",  stage:"DUE DILIGENCE"},
-    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               rev:"~$1.5M",   stage:"EVALUATING"},
+    {desc:"Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                            cat:"HEALTH TECH",               rev:"~$1.5M",   stage:"EVALUATING"},
   ];
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
@@ -1323,11 +1323,11 @@ function MobileFundDetails() {
 /* ─── MOBILE 6: PIPELINE ─── */
 function MobilePipeline() {
   const deals=[
-    {desc:"WHOOP — Secondary opportunity in the performance wearable category at a steep discount to last private round",       cat:"SECONDARY · SPORTS TECH",  rev:"$300M+",  stage:"TERM SHEET"},
-    {desc:"Amulet — Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                       cat:"WOMEN'S HEALTH",            rev:"~$3M",     stage:"DUE DILIGENCE"},
-    {desc:"Wavers — David Dobrik's better-for-you chip brand; discounted valuation secured through our creator network",         cat:"CPG · CREATOR BRAND",       rev:"~$4M",     stage:"INTRO CALL"},
+    {desc:"Secondary opportunity in a leading performance wearable brand at a steep discount to last private round",            cat:"SECONDARY · SPORTS TECH",  rev:"$300M+",  stage:"TERM SHEET"},
+    {desc:"Daily hormonal health gummies supporting women's wellness across the menstrual cycle",                                cat:"WOMEN'S HEALTH",            rev:"~$3M",     stage:"DUE DILIGENCE"},
+    {desc:"Creator-led better-for-you chip brand; discounted valuation secured through our network",                             cat:"CPG · CREATOR BRAND",       rev:"~$4M",     stage:"INTRO CALL"},
     {desc:"Emerging sports team / league with strong brand identity and growth potential",                                       cat:"PRO SPORTS",                rev:"~$10.5M",  stage:"DUE DILIGENCE"},
-    {desc:"Lectra — Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                   cat:"HEALTH TECH",               rev:"~$1.5M",   stage:"EVALUATING"},
+    {desc:"Wearable recovery device pairing conductive kinesiology tape with smart stimulation pods",                            cat:"HEALTH TECH",               rev:"~$1.5M",   stage:"EVALUATING"},
   ];
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
