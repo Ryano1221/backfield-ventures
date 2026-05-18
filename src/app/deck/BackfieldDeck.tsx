@@ -827,12 +827,12 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(32px,4.5vh,52px)",color:"#000",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>HOW WE WORK.</div>
       <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,flex:1,minHeight:0}}>
         {steps.map(({n,t,b},i)=>(
-          <div key={n} className="c3l" style={{background:"#fff",borderTop:`2px solid ${i===0?"#000":"rgba(0,0,0,.1)"}`,padding:"clamp(10px,1.4vh,18px) 16px",display:"flex",flexDirection:"column",transition:"border-color .2s",overflow:"hidden"}}
+          <div key={n} className="c3l" style={{background:"#fff",borderTop:`2px solid ${i===0?"#000":"rgba(0,0,0,.1)"}`,padding:"clamp(16px,2vh,26px) clamp(18px,2.2vh,26px)",display:"flex",flexDirection:"column",transition:"border-color .2s",overflow:"hidden"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderTopColor="#000";}}
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderTopColor=i===0?"#000":"rgba(0,0,0,.1)";}}>
-            <span style={{fontFamily:MONO,fontSize:9,color:"#bbb",marginBottom:8,letterSpacing:2}}>{n}</span>
-            <span style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.6vh,16px)",color:"#000",marginBottom:7,letterSpacing:1.5}}>{t}</span>
-            <span style={{fontFamily:BODY,fontSize:"clamp(10.5px,1.25vh,12.5px)",color:"#555",lineHeight:1.75,flex:1}}>{b}</span>
+            <span style={{fontFamily:MONO,fontSize:"clamp(10px,1.2vh,12px)",color:"#bbb",marginBottom:"clamp(10px,1.4vh,16px)",letterSpacing:2.5}}>{n}</span>
+            <span style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.4vh,26px)",color:"#000",marginBottom:"clamp(10px,1.3vh,14px)",letterSpacing:1.5,lineHeight:1}}>{t}</span>
+            <span style={{fontFamily:BODY,fontSize:"clamp(13px,1.65vh,17px)",color:"#444",lineHeight:1.7,flex:1,display:"flex",alignItems:"flex-start"}}>{b}</span>
           </div>
         ))}
       </div>
