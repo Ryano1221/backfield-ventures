@@ -606,11 +606,8 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
     <Dark>
       <Header n="02" label="WHY NOW" right="PHYSICAL > DIGITAL"/>
 
-      {/* Overline */}
-      <div className="fu1" style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:6,flexShrink:0,textTransform:"uppercase"}}>AI IS EATING THE WORLD. WE BACK WHAT IT CAN'T.</div>
-
       {/* Big headline */}
-      <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,58px)",color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>SOFTWARE GETS REPLACED.<br/>PEOPLE DON&apos;T.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(40px,5.8vh,68px)",color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>WHAT AI CAN&apos;T BUILD.</div>
 
       {/* Manifesto */}
       <div className="fu3" style={{fontFamily:BODY,fontSize:"clamp(13px,1.6vh,16px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:"clamp(16px,2vh,24px)",flexShrink:0,maxWidth:"min(1100px,92%)"}}>
@@ -1289,8 +1286,7 @@ function MobileWhyNow() {
   return (
     <MobileSlide>
       <MHeader n="02" label="WHY NOW"/>
-      <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:3,marginBottom:8,textTransform:"uppercase"}}>AI IS EATING THE WORLD. WE BACK WHAT IT CAN&apos;T.</div>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>SOFTWARE GETS REPLACED.<br/>PEOPLE DON&apos;T.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:40,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>WHAT AI CAN&apos;T BUILD.</div>
       <div className="fu2" style={{fontFamily:BODY,fontSize:13.5,color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:22}}>
         Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a can of Liquid Death in your hand, the smell of fresh sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
       </div>
