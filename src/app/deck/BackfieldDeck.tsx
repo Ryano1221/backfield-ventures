@@ -786,18 +786,18 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       <Header n="06" label="DEAL PIPELINE" right="DEAL FLOW ALREADY COMING TO US"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>ACTIVE PIPELINE.</div>
       {/* Table header */}
-      <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",padding:"0 16px",marginBottom:4,flexShrink:0}}>
+      <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",padding:"0 18px",marginBottom:6,flexShrink:0}}>
         {["COMPANY DESCRIPTION","CATEGORY","NET REV","STAGE"].map(h=>(
-          <span key={h} style={{fontFamily:MONO,fontSize:7,letterSpacing:2.5,color:"rgba(255,255,255,.2)"}}>{h}</span>
+          <span key={h} style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",letterSpacing:2.5,color:"rgba(255,255,255,.45)",textTransform:"uppercase"}}>{h}</span>
         ))}
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
         {deals.map(({desc,cat,rev,stage},i)=>(
           <div key={i} className="rh c3 m-pipe-row pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.06)",alignItems:"center",flex:1,minHeight:0}}>
-            <div style={{padding:"0 14px",fontFamily:BODY,color:"rgba(255,255,255,.7)",fontSize:"clamp(11px,1.35vh,13px)",lineHeight:1.6}}>{desc}</div>
-            <div style={{padding:"0 10px",fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.38)",letterSpacing:2,textTransform:"uppercase",lineHeight:1.3}}>{cat}</div>
-            <div style={{padding:"0 10px"}}><span style={{fontFamily:BEBAS,fontSize:"clamp(15px,2vh,20px)",color:"#fff",letterSpacing:1}}>{rev}</span></div>
-            <div style={{padding:"0 10px"}}><span style={{fontFamily:MONO,fontSize:7,letterSpacing:1.5,color:stageColor(stage),border:`1px solid ${stageColor(stage)}`,padding:"3px 6px",textTransform:"uppercase"}}>{stage}</span></div>
+            <div style={{padding:"0 18px",fontFamily:BODY,color:"rgba(255,255,255,.78)",fontSize:"clamp(14px,1.8vh,18px)",lineHeight:1.55}}>{desc}</div>
+            <div style={{padding:"0 14px",fontFamily:MONO,fontSize:"clamp(10px,1.25vh,12.5px)",color:"rgba(255,255,255,.55)",letterSpacing:2,textTransform:"uppercase",lineHeight:1.3}}>{cat}</div>
+            <div style={{padding:"0 14px"}}><span style={{fontFamily:BEBAS,fontSize:"clamp(22px,2.8vh,32px)",color:"#fff",letterSpacing:1}}>{rev}</span></div>
+            <div style={{padding:"0 14px"}}><span style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",letterSpacing:1.5,color:stageColor(stage),border:`1px solid ${stageColor(stage)}`,padding:"5px 10px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{stage}</span></div>
           </div>
         ))}
       </div>
