@@ -910,7 +910,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       init:"RA",
       name:"Ryan Arnold",
       blurb:"Ryan is a serial entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. At 4th & 1 Ventures, he ran investment operations across four SPVs and raised $500K+ in committed capital. At Trinity University's Office of Investments, he invested in PE & VC fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
-      tags:["FOUNDER-LED","VC OPERATIONS","FP&A","FUNDRAISING","DUE DILIGENCE"],
+      tags:["DEAL SOURCING","SPORTS & CPG","CONNECTING","FUNDRAISING","DUE DILIGENCE"],
     },
     {
       number:"02",
@@ -1470,7 +1470,7 @@ function MobileAdvisors() {
       init:"RA",
       name:"Ryan Arnold",
       blurb:"Ryan is a serial entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. At 4th & 1 Ventures, he ran investment operations across four SPVs and raised $500K+ in committed capital. At Trinity University's Office of Investments, he invested in PE & VC fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
-      tags:["FOUNDER-LED","VC OPS","FP&A","FUNDRAISING"],
+      tags:["DEAL SOURCING","SPORTS & CPG","CONNECTING","FUNDRAISING","DUE DILIGENCE"],
     },
     {
       partnerN:"02",
