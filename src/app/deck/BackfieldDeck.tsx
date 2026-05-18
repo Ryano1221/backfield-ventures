@@ -618,7 +618,7 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
       <div className="fu4 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
         {/* AI-VULNERABLE */}
         <div className="c3 wg" style={{background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.07)",padding:"clamp(20px,2.4vh,30px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",right:"clamp(-20px,-2vh,-8px)",top:"clamp(-30px,-3vh,-12px)",fontFamily:BEBAS,fontSize:"clamp(280px,38vh,440px)",color:"rgba(255,255,255,.04)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>×</div>
+          <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontFamily:BEBAS,fontSize:"clamp(380px,50vh,580px)",color:"rgba(255,255,255,.05)",lineHeight:1,letterSpacing:-8,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>×</div>
           <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
               <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
@@ -641,7 +641,7 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 
         {/* AI-PROTECTED */}
         <div className="c3 wg" style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.14)",padding:"clamp(20px,2.4vh,30px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",right:"clamp(-20px,-2vh,-8px)",top:"clamp(-30px,-3vh,-12px)",fontFamily:BEBAS,fontSize:"clamp(280px,38vh,440px)",color:"rgba(255,255,255,.045)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
+          <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontFamily:BEBAS,fontSize:"clamp(380px,50vh,580px)",color:"rgba(255,255,255,.055)",lineHeight:1,letterSpacing:-8,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
           <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
               <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
@@ -1293,7 +1293,7 @@ function MobileWhyNow() {
 
       {/* AI-Vulnerable */}
       <div style={{background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.07)",padding:"18px 16px",marginBottom:12,position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",right:-20,top:-30,fontFamily:BEBAS,fontSize:260,color:"rgba(255,255,255,.04)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>×</div>
+        <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontFamily:BEBAS,fontSize:340,color:"rgba(255,255,255,.05)",lineHeight:1,letterSpacing:-8,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>×</div>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
             <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
@@ -1316,7 +1316,7 @@ function MobileWhyNow() {
 
       {/* AI-Protected */}
       <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.14)",padding:"18px 16px",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",right:-20,top:-30,fontFamily:BEBAS,fontSize:260,color:"rgba(255,255,255,.045)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
+        <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontFamily:BEBAS,fontSize:340,color:"rgba(255,255,255,.055)",lineHeight:1,letterSpacing:-8,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
             <div style={{fontFamily:MONO,fontSize:9,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
