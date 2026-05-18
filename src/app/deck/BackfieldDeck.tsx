@@ -587,7 +587,92 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 }
 
 /* ─────────────────────────────────────────────
-   SLIDE 2 — CONSUMER MARKET
+   SLIDE 2 — WHY NOW (AI MOAT)
+───────────────────────────────────────────── */
+function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
+  const vulnerable=[
+    {h:"REPLICABLE OVERNIGHT",b:"Claude, Cursor, and ChatGPT can rebuild yesterday's $100M SaaS in an afternoon."},
+    {h:"FEATURES, NOT IDENTITY",b:"A workflow has no soul. Switching costs vanish the second a better model ships."},
+    {h:"DISTRIBUTION = CHASE",b:"Every channel is paid, every funnel is auctioned. Margins compress to zero."},
+    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and ship faster every quarter."},
+  ];
+  const protected_=[
+    {h:"PHYSICAL & EMOTIONAL",b:"You can't AI-generate the feeling of a can in your hand or 70K fans in a stadium."},
+    {h:"BRAND COMPOUNDS",b:"Equity built over a decade is the moat. Liquid Death isn't a recipe — it's an identity."},
+    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned, not bought."},
+    {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans."},
+  ];
+  return (
+    <Dark>
+      <Header n="02" label="WHY NOW" right="PHYSICAL > DIGITAL"/>
+
+      {/* Overline */}
+      <div className="fu1" style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:6,flexShrink:0,textTransform:"uppercase"}}>AI IS EATING THE WORLD. WE BACK WHAT IT CAN'T.</div>
+
+      {/* Big headline */}
+      <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,58px)",color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>SOFTWARE GETS REPLACED.<br/>PEOPLE DON&apos;T.</div>
+
+      {/* Manifesto */}
+      <div className="fu3" style={{fontFamily:BODY,fontSize:"clamp(13px,1.6vh,16px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:"clamp(16px,2vh,24px)",flexShrink:0,maxWidth:"min(1100px,92%)"}}>
+        Every SaaS company built in the last decade can now be rebuilt in an afternoon. The moat that took a decade to dig evaporates in a sprint. But you can&apos;t synthesize the feeling of a can of Liquid Death in your hand, the smell of fresh sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
+      </div>
+
+      {/* Two-column comparison */}
+      <div className="fu4 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
+        {/* AI-VULNERABLE */}
+        <div className="c3 wg" style={{background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.07)",padding:"clamp(20px,2.4vh,30px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",right:-4,top:-12,fontFamily:BEBAS,fontSize:"clamp(160px,20vh,240px)",color:"rgba(255,255,255,.02)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>×</div>
+          <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+              <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,80,80,.7)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
+              <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
+            </div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"rgba(255,255,255,.55)",letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>SAAS · SOFTWARE</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"clamp(10px,1.4vh,16px)",flex:1}}>
+              {vulnerable.map(({h,b},i)=>(
+                <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                  <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,80,80,.5)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:3,flex:1,minWidth:0}}>
+                    <div style={{fontFamily:BEBAS,fontSize:"clamp(14px,1.7vh,17px)",color:"rgba(255,255,255,.55)",letterSpacing:1.2}}>{h}</div>
+                    <div style={{fontFamily:BODY,fontSize:"clamp(12px,1.45vh,14.5px)",color:"rgba(255,255,255,.45)",lineHeight:1.55}}>{b}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* AI-PROTECTED */}
+        <div className="c3 wg" style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.14)",padding:"clamp(20px,2.4vh,30px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",right:-4,top:-12,fontFamily:BEBAS,fontSize:"clamp(160px,20vh,240px)",color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>✓</div>
+          <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+              <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
+              <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
+            </div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"#fff",letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>CPG · SPORTS</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"clamp(10px,1.4vh,16px)",flex:1}}>
+              {protected_.map(({h,b},i)=>(
+                <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                  <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:3,flex:1,minWidth:0}}>
+                    <div style={{fontFamily:BEBAS,fontSize:"clamp(14px,1.7vh,17px)",color:"#fff",letterSpacing:1.2}}>{h}</div>
+                    <div style={{fontFamily:BODY,fontSize:"clamp(12px,1.45vh,14.5px)",color:"rgba(255,255,255,.7)",lineHeight:1.55}}>{b}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Nav cur={2} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
+    </Dark>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SLIDE 3 — CONSUMER MARKET
 ───────────────────────────────────────────── */
 function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const deals=[
@@ -606,7 +691,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
   ];
   return (
     <Dark>
-      <Header n="02" label="CONSUMER MARKET" right="THE WINDOW IS OPEN NOW"/>
+      <Header n="03" label="CONSUMER MARKET" right="THE WINDOW IS OPEN NOW"/>
 
       {/* Stats row — full width, prominent numbers */}
       <div className="fu1 m-bigstats" style={{display:"flex",flexShrink:0,borderBottom:"1px solid rgba(255,255,255,.07)",marginBottom:12,paddingBottom:12,minHeight:"clamp(70px,10vh,100px)"}}>
@@ -635,13 +720,13 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
           </div>
         </div>
       </div>
-      <Nav cur={2} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
+      <Nav cur={3} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
     </Dark>
   );
 }
 
 /* ─────────────────────────────────────────────
-   SLIDE 3 — SPORTS MARKET
+   SLIDE 4 — SPORTS MARKET
 ───────────────────────────────────────────── */
 function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const deals=[
@@ -660,7 +745,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
   ];
   return (
     <Light>
-      <Header n="03" label="SPORTS MARKET" light right="2025 WAS A RECORD YEAR"/>
+      <Header n="04" label="SPORTS MARKET" light right="2025 WAS A RECORD YEAR"/>
 
       {/* Stats row */}
       <div className="fu1 m-bigstats light" style={{display:"flex",flexShrink:0,borderBottom:"1px solid rgba(0,0,0,.07)",marginBottom:12,paddingBottom:12,minHeight:"clamp(70px,10vh,100px)"}}>
@@ -688,7 +773,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
           </div>
         </div>
       </div>
-      <Nav cur={3} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo} light/>
+      <Nav cur={4} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo} light/>
     </Light>
   );
 }
@@ -706,7 +791,7 @@ function Separates({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;o
   ];
   return (
     <Light>
-      <Header n="04" label="WHAT SEPARATES BACKFIELD" light/>
+      <Header n="05" label="WHAT SEPARATES BACKFIELD" light/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,58px)",color:"#000",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(10px,1.5vh,18px)",flexShrink:0}}>WE&apos;RE BUILT DIFFERENT.</div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
         {items.map(({n,l,b},i)=>(
@@ -719,7 +804,7 @@ function Separates({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;o
           </div>
         ))}
       </div>
-      <Nav cur={4} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo} light/>
+      <Nav cur={5} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo} light/>
     </Light>
   );
 }
@@ -744,7 +829,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
   ];
   return (
     <Dark>
-      <Header n="05" label="FUND DETAILS" right="CLEAN STRUCTURE. FAIR TERMS."/>
+      <Header n="06" label="FUND DETAILS" right="CLEAN STRUCTURE. FAIR TERMS."/>
       {/* Hero numbers */}
       <div className="fu1 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,marginBottom:12,flexShrink:0}}>
         {hi.map(({v,l,sub})=>(
@@ -764,7 +849,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
           </div>
         ))}
       </div>
-      <Nav cur={5} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
+      <Nav cur={6} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
     </Dark>
   );
 }
@@ -783,7 +868,7 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
     <Dark>
-      <Header n="06" label="DEAL PIPELINE" right="DEAL FLOW ALREADY COMING TO US"/>
+      <Header n="07" label="DEAL PIPELINE" right="DEAL FLOW ALREADY COMING TO US"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>ACTIVE PIPELINE.</div>
       {/* Table header */}
       <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",padding:"0 18px",marginBottom:6,flexShrink:0}}>
@@ -801,7 +886,7 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
           </div>
         ))}
       </div>
-      <Nav cur={6} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
+      <Nav cur={7} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
     </Dark>
   );
 }
@@ -823,7 +908,7 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
   ];
   return (
     <Light>
-      <Header n="07" label="THE PROCESS" light/>
+      <Header n="08" label="THE PROCESS" light/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(32px,4.5vh,52px)",color:"#000",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>HOW WE WORK.</div>
       <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,flex:1,minHeight:0}}>
         {steps.map(({n,t,b},i)=>(
@@ -836,7 +921,7 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
           </div>
         ))}
       </div>
-      <Nav cur={7} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo} light/>
+      <Nav cur={8} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo} light/>
     </Light>
   );
 }
@@ -928,7 +1013,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <Logo size={30}/>
           <div style={{width:1,height:14,background:"rgba(255,255,255,.1)"}}/>
-          <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:"rgba(255,255,255,.48)"}}>08 — TEAM</span>
+          <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:"rgba(255,255,255,.48)"}}>09 — TEAM</span>
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>OPERATORS BACKING OPERATORS</span>
       </div>
@@ -937,7 +1022,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       <div className="fu3 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
         {team.map(p=><TeamCard key={p.name} {...p}/>)}
       </div>
-      <Nav cur={8} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
+      <Nav cur={9} total={total} onPrev={onPrev} onNext={onNext} onGo={onGo}/>
     </Dark>
   );
 }
@@ -1187,7 +1272,73 @@ function MBrandCard({name,logo,light}:{name:string;logo:string;light?:boolean}) 
   );
 }
 
-/* ─── MOBILE 2: CONSUMER MARKET ─── */
+/* ─── MOBILE 2: WHY NOW ─── */
+function MobileWhyNow() {
+  const vulnerable=[
+    {h:"REPLICABLE OVERNIGHT",b:"Claude, Cursor, and ChatGPT can rebuild yesterday's $100M SaaS in an afternoon."},
+    {h:"FEATURES, NOT IDENTITY",b:"A workflow has no soul. Switching costs vanish the moment a better model ships."},
+    {h:"DISTRIBUTION = CHASE",b:"Every channel is paid, every funnel auctioned. Margins compress to zero."},
+    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and ship faster every quarter."},
+  ];
+  const protected_=[
+    {h:"PHYSICAL & EMOTIONAL",b:"You can't AI-generate the feeling of a can in your hand or 70K fans in a stadium."},
+    {h:"BRAND COMPOUNDS",b:"Equity built over a decade is the moat. Liquid Death isn't a recipe — it's an identity."},
+    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned, not bought."},
+    {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans."},
+  ];
+  return (
+    <MobileSlide>
+      <MHeader n="02" label="WHY NOW"/>
+      <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:3,marginBottom:8,textTransform:"uppercase"}}>AI IS EATING THE WORLD. WE BACK WHAT IT CAN&apos;T.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>SOFTWARE GETS REPLACED.<br/>PEOPLE DON&apos;T.</div>
+      <div className="fu2" style={{fontFamily:BODY,fontSize:13.5,color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:22}}>
+        Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a can of Liquid Death in your hand, the smell of fresh sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
+      </div>
+
+      {/* AI-Vulnerable */}
+      <div style={{background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.07)",padding:"18px 16px",marginBottom:12,position:"relative",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+          <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,80,80,.7)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
+        </div>
+        <div style={{fontFamily:BEBAS,fontSize:24,color:"rgba(255,255,255,.55)",letterSpacing:1,marginBottom:14,lineHeight:.95}}>SAAS · SOFTWARE</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {vulnerable.map(({h,b},i)=>(
+            <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+              <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,80,80,.5)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+                <div style={{fontFamily:BEBAS,fontSize:14,color:"rgba(255,255,255,.55)",letterSpacing:1.2}}>{h}</div>
+                <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.45)",lineHeight:1.5}}>{b}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* AI-Protected */}
+      <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.14)",padding:"18px 16px",position:"relative",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+          <div style={{fontFamily:MONO,fontSize:9,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
+        </div>
+        <div style={{fontFamily:BEBAS,fontSize:24,color:"#fff",letterSpacing:1,marginBottom:14,lineHeight:.95}}>CPG · SPORTS</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {protected_.map(({h,b},i)=>(
+            <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+              <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+                <div style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:1.2}}>{h}</div>
+                <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.7)",lineHeight:1.5}}>{b}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </MobileSlide>
+  );
+}
+
+/* ─── MOBILE 3: CONSUMER MARKET ─── */
 function MobileConsumerMarket() {
   const deals=[
     {acquirer:"Kimberly-Clark",aLogo:"/logos/kimberly-clark.png",target:"Kenvue",tLogo:"/logos/kenvue.png",value:"$48.7B",valueNum:48.7,maxVal:50,cat:"PERSONAL CARE",year:"2025",delay:0},
@@ -1205,7 +1356,7 @@ function MobileConsumerMarket() {
   ];
   return (
     <MobileSlide>
-      <MHeader n="02" label="CONSUMER MARKET"/>
+      <MHeader n="03" label="CONSUMER MARKET"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:30,color:"#fff",lineHeight:.95,letterSpacing:1,marginBottom:8}}>
         THE CONSUMER MARKET IS CONSOLIDATING FAST.
       </div>
@@ -1261,7 +1412,7 @@ function MobileSportsMarket() {
   ];
   return (
     <MobileSlide light>
-      <MHeader n="03" label="SPORTS MARKET" light/>
+      <MHeader n="04" label="SPORTS MARKET" light/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:30,color:"#000",lineHeight:.95,letterSpacing:1,marginBottom:8}}>
         SPORTS IS THE BEST INVESTMENT OF THE DECADE.
       </div>
@@ -1307,7 +1458,7 @@ function MobileSeparates() {
   ];
   return (
     <MobileSlide light>
-      <MHeader n="04" label="WHAT SEPARATES BACKFIELD" light/>
+      <MHeader n="05" label="WHAT SEPARATES BACKFIELD" light/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#000",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
         WE&apos;RE BUILT DIFFERENT.
       </div>
@@ -1344,7 +1495,7 @@ function MobileFundDetails() {
   ];
   return (
     <MobileSlide>
-      <MHeader n="05" label="FUND DETAILS"/>
+      <MHeader n="06" label="FUND DETAILS"/>
       <div className="fu1" style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
         {hi.map(({v,l,sub})=>(
           <div key={l} style={{background:"#fff",padding:"18px 18px"}}>
@@ -1383,7 +1534,7 @@ function MobilePipeline() {
   const stageColor=(s:string)=>s==="TERM SHEET"?"rgba(255,255,255,.85)":s==="DUE DILIGENCE"?"rgba(255,255,255,.6)":"rgba(255,255,255,.35)";
   return (
     <MobileSlide>
-      <MHeader n="06" label="DEAL PIPELINE"/>
+      <MHeader n="07" label="DEAL PIPELINE"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
         ACTIVE PIPELINE.
       </div>
@@ -1430,7 +1581,7 @@ function MobileProcess() {
   ];
   return (
     <MobileSlide light>
-      <MHeader n="07" label="THE PROCESS" light/>
+      <MHeader n="08" label="THE PROCESS" light/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#000",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
         HOW WE WORK.
       </div>
@@ -1483,7 +1634,7 @@ function MobileAdvisors() {
   ];
   return (
     <MobileSlide>
-      <MHeader n="08" label="TEAM"/>
+      <MHeader n="09" label="TEAM"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
         TEAM.
       </div>
@@ -1573,7 +1724,7 @@ function MobileClose() {
    APP SHELL
 ───────────────────────────────────────────── */
 export default function BackfieldDeck() {
-  const TOTAL=10;
+  const TOTAL=11;
   const isMobile=useIsMobile();
   const [slide,setSlide]=useState(0);
   const [dir,setDir]=useState(1);
@@ -1610,29 +1761,31 @@ export default function BackfieldDeck() {
   const shared={onNext:next,onPrev:prev,onGo:go,total:TOTAL};
 
   const slides=[
-    <Cover          key={`s0-${key}`} onNext={next} onGo={go} total={TOTAL}/>,
-    <Thesis         key={`s1-${key}`} {...shared}/>,
-    <ConsumerMarket key={`s2-${key}`} {...shared}/>,
-    <SportsMarket   key={`s3-${key}`} {...shared}/>,
-    <Separates      key={`s4-${key}`} {...shared}/>,
-    <FundDetails    key={`s5-${key}`} {...shared}/>,
-    <Pipeline       key={`s6-${key}`} {...shared}/>,
-    <Process        key={`s7-${key}`} {...shared}/>,
-    <Advisors       key={`s8-${key}`} {...shared}/>,
-    <CloseSlide     key={`s9-${key}`} onPrev={prev} onRestart={()=>go(0)} onGo={go} total={TOTAL}/>,
+    <Cover          key={`s0-${key}`}  onNext={next} onGo={go} total={TOTAL}/>,
+    <Thesis         key={`s1-${key}`}  {...shared}/>,
+    <WhyNow         key={`s2-${key}`}  {...shared}/>,
+    <ConsumerMarket key={`s3-${key}`}  {...shared}/>,
+    <SportsMarket   key={`s4-${key}`}  {...shared}/>,
+    <Separates      key={`s5-${key}`}  {...shared}/>,
+    <FundDetails    key={`s6-${key}`}  {...shared}/>,
+    <Pipeline       key={`s7-${key}`}  {...shared}/>,
+    <Process        key={`s8-${key}`}  {...shared}/>,
+    <Advisors       key={`s9-${key}`}  {...shared}/>,
+    <CloseSlide     key={`s10-${key}`} onPrev={prev} onRestart={()=>go(0)} onGo={go} total={TOTAL}/>,
   ];
 
   const mobileSlides=[
     <MobileCover          key={`m0-${key}`}/>,
     <MobileThesis         key={`m1-${key}`}/>,
-    <MobileConsumerMarket key={`m2-${key}`}/>,
-    <MobileSportsMarket   key={`m3-${key}`}/>,
-    <MobileSeparates      key={`m4-${key}`}/>,
-    <MobileFundDetails    key={`m5-${key}`}/>,
-    <MobilePipeline       key={`m6-${key}`}/>,
-    <MobileProcess        key={`m7-${key}`}/>,
-    <MobileAdvisors       key={`m8-${key}`}/>,
-    <MobileClose          key={`m9-${key}`}/>,
+    <MobileWhyNow         key={`m2-${key}`}/>,
+    <MobileConsumerMarket key={`m3-${key}`}/>,
+    <MobileSportsMarket   key={`m4-${key}`}/>,
+    <MobileSeparates      key={`m5-${key}`}/>,
+    <MobileFundDetails    key={`m6-${key}`}/>,
+    <MobilePipeline       key={`m7-${key}`}/>,
+    <MobileProcess        key={`m8-${key}`}/>,
+    <MobileAdvisors       key={`m9-${key}`}/>,
+    <MobileClose          key={`m10-${key}`}/>,
   ];
 
   // Mobile-specific bottom nav bar with prev/dots/next, plus tap zones
