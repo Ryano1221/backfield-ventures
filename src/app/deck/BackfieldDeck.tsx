@@ -592,16 +592,14 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const vulnerable=[
     {h:"REPLICABLE OVERNIGHT",b:"Foundation models can rebuild a category-leading SaaS workflow in an afternoon. The product is the prompt."},
-    {h:"FEATURES, NOT IDENTITY",b:"Software has no soul. Switching costs vanish the second a faster, cheaper, or smarter model ships."},
+    {h:"NO IDENTITY, NO MOAT",b:"Software has no soul. Users switch the moment a faster or cheaper model ships — no ritual, no story, no reason to stay."},
     {h:"DISTRIBUTION = CHASE",b:"Every channel is paid and every funnel is auctioned. Margins compress to zero as AI floods the top of the funnel."},
-    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and outship every roadmap, every quarter, forever."},
-    {h:"NO MEMORY, NO LOYALTY",b:"Users switch the moment a better tool lands. There is no ritual, no story, no reason to stay."},
+    {h:"RACE TO ZERO",b:"AI-native competitors will undercut on price and outship every roadmap, every quarter, forever."},
   ];
   const protected_=[
     {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd — sensation can't be downloaded."},
     {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes — they're identities people defend."},
     {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships, retail buyers — earned over years, not bought in a quarter."},
-    {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans. Algorithms don't set taste."},
     {h:"OFFLINE DEFENSIBILITY",b:"Manufacturing, supply chains, packaging, IP, and exclusive deals are real moats AI can't ship a clone of."},
   ];
   return (
@@ -1275,16 +1273,14 @@ function MBrandCard({name,logo,light}:{name:string;logo:string;light?:boolean}) 
 function MobileWhyNow() {
   const vulnerable=[
     {h:"REPLICABLE OVERNIGHT",b:"Foundation models can rebuild a category-leading SaaS workflow in an afternoon."},
-    {h:"FEATURES, NOT IDENTITY",b:"Software has no soul. Switching costs vanish the moment a better model ships."},
+    {h:"NO IDENTITY, NO MOAT",b:"Software has no soul. Users switch the moment a faster or cheaper model ships."},
     {h:"DISTRIBUTION = CHASE",b:"Every channel is paid, every funnel auctioned. Margins compress to zero."},
-    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and outship every roadmap."},
-    {h:"NO MEMORY, NO LOYALTY",b:"Users switch the moment a better tool lands. No ritual, no story, no reason to stay."},
+    {h:"RACE TO ZERO",b:"AI-native competitors will undercut on price and outship every roadmap, forever."},
   ];
   const protected_=[
     {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd — sensation can't be downloaded."},
     {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes — they're identities people defend."},
     {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned over years, not bought in a quarter."},
-    {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans."},
     {h:"OFFLINE DEFENSIBILITY",b:"Manufacturing, packaging, IP, and exclusive deals are real moats AI can't ship a clone of."},
   ];
   return (
