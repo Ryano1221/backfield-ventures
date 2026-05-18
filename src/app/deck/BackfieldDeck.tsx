@@ -919,7 +919,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       init:"EL",
       name:"Ethan Lavin",
       blurb:"Ethan is a seasoned operator and strategist with CPG experience. He helped scale Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships. He is currently the Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions, and previously ran Ops & Strategy at Athena Intelligence. Ethan holds an MBA from Georgetown's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
-      tags:["CPG","INT'L OPERATIONS","STRATEGY","M&A","BRAND BUILDING"],
+      tags:["CPG","OPERATIONS","STRATEGY","DEAL SOURCING","DUE DILIGENCE"],
     },
   ];
   return (
@@ -1478,7 +1478,7 @@ function MobileAdvisors() {
       init:"EL",
       name:"Ethan Lavin",
       blurb:"Ethan is a seasoned operator and strategist with CPG experience. He helped scale Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships. He is currently the Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions, and previously ran Ops & Strategy at Athena Intelligence. Ethan holds an MBA from Georgetown's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
-      tags:["CPG","INT'L OPS","STRATEGY","M&A"],
+      tags:["CPG","OPERATIONS","STRATEGY","DEAL SOURCING","DUE DILIGENCE"],
     },
   ];
   return (
