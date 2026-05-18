@@ -591,16 +591,18 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 ───────────────────────────────────────────── */
 function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const vulnerable=[
-    {h:"REPLICABLE OVERNIGHT",b:"Claude, Cursor, and ChatGPT can rebuild yesterday's $100M SaaS in an afternoon."},
-    {h:"FEATURES, NOT IDENTITY",b:"A workflow has no soul. Switching costs vanish the second a better model ships."},
-    {h:"DISTRIBUTION = CHASE",b:"Every channel is paid, every funnel is auctioned. Margins compress to zero."},
-    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and ship faster every quarter."},
+    {h:"REPLICABLE OVERNIGHT",b:"Foundation models can rebuild a category-leading SaaS workflow in an afternoon. The product is the prompt."},
+    {h:"FEATURES, NOT IDENTITY",b:"Software has no soul. Switching costs vanish the second a faster, cheaper, or smarter model ships."},
+    {h:"DISTRIBUTION = CHASE",b:"Every channel is paid and every funnel is auctioned. Margins compress to zero as AI floods the top of the funnel."},
+    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and outship every roadmap, every quarter, forever."},
+    {h:"NO MEMORY, NO LOYALTY",b:"Users switch the moment a better tool lands. There is no ritual, no story, no reason to stay."},
   ];
   const protected_=[
-    {h:"PHYSICAL & EMOTIONAL",b:"You can't AI-generate the feeling of a can in your hand or 70K fans in a stadium."},
-    {h:"BRAND COMPOUNDS",b:"Equity built over a decade is the moat. Liquid Death isn't a recipe — it's an identity."},
-    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned, not bought."},
-    {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans."},
+    {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd — sensation can't be downloaded."},
+    {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes — they're identities people defend."},
+    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships, retail buyers — earned over years, not bought in a quarter."},
+    {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans. Algorithms don't set taste."},
+    {h:"OFFLINE DEFENSIBILITY",b:"Manufacturing, supply chains, packaging, IP, and exclusive deals are real moats AI can't ship a clone of."},
   ];
   return (
     <Dark>
@@ -611,7 +613,7 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 
       {/* Manifesto */}
       <div className="fu3" style={{fontFamily:BODY,fontSize:"clamp(13px,1.6vh,16px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:"clamp(16px,2vh,24px)",flexShrink:0,maxWidth:"min(1100px,92%)"}}>
-        Every SaaS company built in the last decade can now be rebuilt in an afternoon. The moat that took a decade to dig evaporates in a sprint. But you can&apos;t synthesize the feeling of a can of Liquid Death in your hand, the smell of fresh sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
+        Every SaaS company built in the last decade can now be rebuilt in an afternoon. The moat that took a decade to dig evaporates in a sprint. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
       </div>
 
       {/* Two-column comparison */}
@@ -625,13 +627,13 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
               <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
             </div>
             <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"rgba(255,255,255,.55)",letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>SAAS · SOFTWARE</div>
-            <div style={{display:"flex",flexDirection:"column",gap:"clamp(10px,1.4vh,16px)",flex:1}}>
+            <div style={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",gap:"clamp(10px,1.4vh,16px)",flex:1,minHeight:0}}>
               {vulnerable.map(({h,b},i)=>(
                 <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
                   <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,80,80,.5)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:3,flex:1,minWidth:0}}>
-                    <div style={{fontFamily:BEBAS,fontSize:"clamp(14px,1.7vh,17px)",color:"rgba(255,255,255,.55)",letterSpacing:1.2}}>{h}</div>
-                    <div style={{fontFamily:BODY,fontSize:"clamp(12px,1.45vh,14.5px)",color:"rgba(255,255,255,.45)",lineHeight:1.55}}>{b}</div>
+                    <div style={{fontFamily:BEBAS,fontSize:"clamp(16px,2vh,21px)",color:"rgba(255,255,255,.6)",letterSpacing:1.2}}>{h}</div>
+                    <div style={{fontFamily:BODY,fontSize:"clamp(12.5px,1.5vh,15.5px)",color:"rgba(255,255,255,.5)",lineHeight:1.55}}>{b}</div>
                   </div>
                 </div>
               ))}
@@ -648,13 +650,13 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
               <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
             </div>
             <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"#fff",letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>CPG · SPORTS</div>
-            <div style={{display:"flex",flexDirection:"column",gap:"clamp(10px,1.4vh,16px)",flex:1}}>
+            <div style={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",gap:"clamp(10px,1.4vh,16px)",flex:1,minHeight:0}}>
               {protected_.map(({h,b},i)=>(
                 <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
                   <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:3,flex:1,minWidth:0}}>
-                    <div style={{fontFamily:BEBAS,fontSize:"clamp(14px,1.7vh,17px)",color:"#fff",letterSpacing:1.2}}>{h}</div>
-                    <div style={{fontFamily:BODY,fontSize:"clamp(12px,1.45vh,14.5px)",color:"rgba(255,255,255,.7)",lineHeight:1.55}}>{b}</div>
+                    <div style={{fontFamily:BEBAS,fontSize:"clamp(16px,2vh,21px)",color:"#fff",letterSpacing:1.2}}>{h}</div>
+                    <div style={{fontFamily:BODY,fontSize:"clamp(12.5px,1.5vh,15.5px)",color:"rgba(255,255,255,.75)",lineHeight:1.55}}>{b}</div>
                   </div>
                 </div>
               ))}
@@ -1272,23 +1274,25 @@ function MBrandCard({name,logo,light}:{name:string;logo:string;light?:boolean}) 
 /* ─── MOBILE 2: WHY NOW ─── */
 function MobileWhyNow() {
   const vulnerable=[
-    {h:"REPLICABLE OVERNIGHT",b:"Claude, Cursor, and ChatGPT can rebuild yesterday's $100M SaaS in an afternoon."},
-    {h:"FEATURES, NOT IDENTITY",b:"A workflow has no soul. Switching costs vanish the moment a better model ships."},
+    {h:"REPLICABLE OVERNIGHT",b:"Foundation models can rebuild a category-leading SaaS workflow in an afternoon."},
+    {h:"FEATURES, NOT IDENTITY",b:"Software has no soul. Switching costs vanish the moment a better model ships."},
     {h:"DISTRIBUTION = CHASE",b:"Every channel is paid, every funnel auctioned. Margins compress to zero."},
-    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and ship faster every quarter."},
+    {h:"COMMODITIZED BY DESIGN",b:"AI-native competitors will undercut on price and outship every roadmap."},
+    {h:"NO MEMORY, NO LOYALTY",b:"Users switch the moment a better tool lands. No ritual, no story, no reason to stay."},
   ];
   const protected_=[
-    {h:"PHYSICAL & EMOTIONAL",b:"You can't AI-generate the feeling of a can in your hand or 70K fans in a stadium."},
-    {h:"BRAND COMPOUNDS",b:"Equity built over a decade is the moat. Liquid Death isn't a recipe — it's an identity."},
-    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned, not bought."},
+    {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd — sensation can't be downloaded."},
+    {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes — they're identities people defend."},
+    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned over years, not bought in a quarter."},
     {h:"TASTE, RITUAL, CULTURE",b:"What people drink, wear, watch, and root for is shaped by humans — for humans."},
+    {h:"OFFLINE DEFENSIBILITY",b:"Manufacturing, packaging, IP, and exclusive deals are real moats AI can't ship a clone of."},
   ];
   return (
     <MobileSlide>
       <MHeader n="02" label="WHY NOW"/>
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:40,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>WHAT AI CAN&apos;T BUILD.</div>
       <div className="fu2" style={{fontFamily:BODY,fontSize:13.5,color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:22}}>
-        Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a can of Liquid Death in your hand, the smell of fresh sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
+        Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
       </div>
 
       {/* AI-Vulnerable */}
