@@ -461,9 +461,9 @@ function DealRowLight({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,yea
 ───────────────────────────────────────────── */
 function BrandCard({name,logo,light}:{name:string;logo:string;light?:boolean}) {
   return (
-    <div className={light?"c3l":"c3 wg"} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,background:light?"#fff":"rgba(255,255,255,.04)",border:`1px solid ${light?"rgba(0,0,0,.09)":"rgba(255,255,255,.08)"}`,padding:"14px 12px",cursor:"default",height:"100%",boxSizing:"border-box"}}>
-      <img src={logo} style={{height:28,maxWidth:80,objectFit:"contain",filter:light?"grayscale(1) brightness(.1)":"brightness(0) invert(1)",opacity:light?.85:.75}} alt={name}/>
-      <span style={{fontFamily:MONO,fontSize:7.5,color:light?"rgba(0,0,0,.45)":"rgba(255,255,255,.45)",letterSpacing:2.5,textTransform:"uppercase",textAlign:"center",lineHeight:1.3}}>{name}</span>
+    <div className={light?"c3l":"c3 wg"} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"clamp(10px,1.4vh,16px)",background:light?"#fff":"rgba(255,255,255,.04)",border:`1px solid ${light?"rgba(0,0,0,.09)":"rgba(255,255,255,.08)"}`,padding:"clamp(16px,2vh,24px) clamp(14px,1.8vh,20px)",cursor:"default",height:"100%",boxSizing:"border-box"}}>
+      <img src={logo} style={{flex:1,minHeight:0,width:"100%",maxHeight:"clamp(60px,9vh,110px)",objectFit:"contain",filter:light?"grayscale(1) brightness(.1)":"brightness(0) invert(1)",opacity:light?.9:.82}} alt={name}/>
+      <span style={{fontFamily:MONO,fontSize:"clamp(8.5px,1.05vh,10.5px)",color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.55)",letterSpacing:2.5,textTransform:"uppercase",textAlign:"center",lineHeight:1.3,flexShrink:0}}>{name}</span>
     </div>
   );
 }
@@ -1258,13 +1258,13 @@ function MDealCard({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,l
 function MBrandCard({name,logo,light}:{name:string;logo:string;light?:boolean}) {
   return (
     <div style={{
-      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,
       background:light?"#fff":"rgba(255,255,255,.04)",
       border:`1px solid ${light?"rgba(0,0,0,.09)":"rgba(255,255,255,.08)"}`,
-      padding:"14px 8px",minHeight:78,
+      padding:"16px 10px",minHeight:110,
     }}>
-      <img src={logo} style={{height:24,maxWidth:72,objectFit:"contain",filter:light?"grayscale(1) brightness(.1)":"brightness(0) invert(1)",opacity:light?.85:.75}} alt={name}/>
-      <span style={{fontFamily:MONO,fontSize:7,color:light?"rgba(0,0,0,.45)":"rgba(255,255,255,.45)",letterSpacing:2,textTransform:"uppercase",textAlign:"center",lineHeight:1.3}}>{name}</span>
+      <img src={logo} style={{flex:1,minHeight:0,width:"100%",maxHeight:64,objectFit:"contain",filter:light?"grayscale(1) brightness(.1)":"brightness(0) invert(1)",opacity:light?.9:.82}} alt={name}/>
+      <span style={{fontFamily:MONO,fontSize:8,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.55)",letterSpacing:2,textTransform:"uppercase",textAlign:"center",lineHeight:1.3,flexShrink:0}}>{name}</span>
     </div>
   );
 }
