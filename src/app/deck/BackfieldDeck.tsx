@@ -879,9 +879,20 @@ function TeamCard({photo,init,name,blurb,number,partnerN,tags}:{
         </div>
       </div>
 
-      {/* Tag chips footer */}
-      <div style={{display:"flex",flexWrap:"wrap",gap:5,padding:"clamp(12px,1.6vh,18px) clamp(20px,2.4vh,28px) clamp(16px,2vh,24px)",borderTop:"1px solid rgba(255,255,255,.1)",position:"relative",zIndex:1,flexShrink:0}}>
-        {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",fontFamily:MONO,fontSize:"clamp(7px,.85vh,8.5px)",letterSpacing:2.5,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>{t}</span>)}
+      {/* Focus areas footer — editorial style with mono label + dot-separated bebas tags */}
+      <div style={{display:"flex",alignItems:"center",gap:"clamp(12px,1.6vh,18px)",padding:"clamp(14px,1.8vh,20px) clamp(20px,2.4vh,28px)",borderTop:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.025)",position:"relative",zIndex:1,flexShrink:0}}>
+        <div style={{fontFamily:MONO,fontSize:"clamp(7.5px,.95vh,9px)",color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",flexShrink:0}}>Focus</div>
+        <div style={{width:1,height:"clamp(14px,1.8vh,18px)",background:"rgba(255,255,255,.2)",flexShrink:0}}/>
+        <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",rowGap:6,flex:1,minWidth:0}}>
+          {tags.flatMap((t,i)=>{
+            const tagEl=<span key={t} style={{fontFamily:BEBAS,fontSize:"clamp(12px,1.5vh,16px)",letterSpacing:1.5,color:"rgba(255,255,255,.82)",textTransform:"uppercase",lineHeight:1,whiteSpace:"nowrap"}}>{t}</span>;
+            if(i===0) return [tagEl];
+            return [
+              <span key={`sep-${i}`} style={{margin:"0 clamp(10px,1.4vh,14px)",color:"rgba(255,255,255,.25)",fontFamily:MONO,fontSize:"clamp(10px,1.2vh,12px)",lineHeight:1}}>·</span>,
+              tagEl,
+            ];
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1507,9 +1518,20 @@ function MobileAdvisors() {
               {/* Blurb */}
               <div style={{fontFamily:BODY,fontSize:12.5,color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:16}}>{blurb}</div>
 
-              {/* Tags */}
-              <div style={{display:"flex",flexWrap:"wrap",gap:5,paddingTop:14,borderTop:"1px solid rgba(255,255,255,.1)"}}>
-                {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",fontFamily:MONO,fontSize:7.5,letterSpacing:2.5,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>{t}</span>)}
+              {/* Focus areas — editorial inline layout */}
+              <div style={{display:"flex",alignItems:"flex-start",gap:12,paddingTop:14,borderTop:"1px solid rgba(255,255,255,.12)"}}>
+                <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginTop:1,flexShrink:0}}>Focus</div>
+                <div style={{width:1,height:14,background:"rgba(255,255,255,.2)",marginTop:1,flexShrink:0}}/>
+                <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",rowGap:4,flex:1,minWidth:0}}>
+                  {tags.flatMap((t,i)=>{
+                    const tagEl=<span key={t} style={{fontFamily:BEBAS,fontSize:13,letterSpacing:1.3,color:"rgba(255,255,255,.82)",textTransform:"uppercase",lineHeight:1,whiteSpace:"nowrap"}}>{t}</span>;
+                    if(i===0) return [tagEl];
+                    return [
+                      <span key={`sep-${i}`} style={{margin:"0 9px",color:"rgba(255,255,255,.25)",fontFamily:MONO,fontSize:10,lineHeight:1}}>·</span>,
+                      tagEl,
+                    ];
+                  })}
+                </div>
               </div>
             </div>
           </div>
