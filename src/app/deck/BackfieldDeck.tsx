@@ -554,28 +554,28 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
            tags:["ATHLETE BRANDS","SPORTS TECH","FAN ENGAGEMENT","ANALYTICS"],
            stat:"$495B",statLabel:"Global Sports Market"},
         ].map(({n,name,sub,body,criteria,tags,stat,statLabel})=>(
-          <div key={n} className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(16px,2vh,26px) 24px",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",right:8,top:-4,fontFamily:BEBAS,fontSize:"clamp(100px,14vh,160px)",color:"rgba(255,255,255,.022)",lineHeight:1,userSelect:"none"}}>{n}</div>
-            <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.3)",letterSpacing:3,marginBottom:6}}>{n}</div>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.8vh,54px)",color:"#fff",letterSpacing:1,marginBottom:6,lineHeight:.9}}>{name}</div>
-            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.38)",fontSize:"clamp(11px,1.4vh,13px)",marginBottom:12,lineHeight:1.6}}>{sub}</div>
-            <div style={{fontFamily:BODY,color:"rgba(255,255,255,.5)",fontSize:"clamp(11px,1.35vh,13px)",lineHeight:1.8,marginBottom:14}}>{body}</div>
+          <div key={n} className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(22px,2.6vh,32px) clamp(26px,2.8vh,34px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",right:8,top:-8,fontFamily:BEBAS,fontSize:"clamp(120px,17vh,200px)",color:"rgba(255,255,255,.025)",lineHeight:1,userSelect:"none"}}>{n}</div>
+            <div style={{fontFamily:MONO,fontSize:"clamp(10px,1.2vh,12px)",color:"rgba(255,255,255,.5)",letterSpacing:3,marginBottom:8}}>{n}</div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(42px,5.6vh,66px)",color:"#fff",letterSpacing:1,marginBottom:10,lineHeight:.9}}>{name}</div>
+            <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.55)",fontSize:"clamp(14px,1.7vh,17px)",marginBottom:14,lineHeight:1.55}}>{sub}</div>
+            <div style={{fontFamily:BODY,color:"rgba(255,255,255,.7)",fontSize:"clamp(14px,1.75vh,17px)",lineHeight:1.7,marginBottom:18}}>{body}</div>
             {/* Investment criteria — fills the middle space */}
-            <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-evenly",borderTop:"1px solid rgba(255,255,255,.07)",borderBottom:"1px solid rgba(255,255,255,.07)",paddingTop:10,paddingBottom:10,marginBottom:14}}>
+            <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-evenly",borderTop:"1px solid rgba(255,255,255,.1)",borderBottom:"1px solid rgba(255,255,255,.1)",paddingTop:14,paddingBottom:14,marginBottom:18}}>
               {criteria.map((c,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:4,height:4,background:"rgba(255,255,255,.35)",flexShrink:0,borderRadius:"50%"}}/>
-                  <span style={{fontFamily:BODY,fontSize:"clamp(11px,1.35vh,13px)",color:"rgba(255,255,255,.48)",lineHeight:1.5}}>{c}</span>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:14}}>
+                  <div style={{width:5,height:5,background:"rgba(255,255,255,.55)",flexShrink:0,borderRadius:"50%"}}/>
+                  <span style={{fontFamily:BODY,fontSize:"clamp(13px,1.65vh,16.5px)",color:"rgba(255,255,255,.7)",lineHeight:1.5}}>{c}</span>
                 </div>
               ))}
             </div>
             <div>
-              <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:10}}>
-                {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"2px 7px",fontFamily:MONO,fontSize:7,letterSpacing:3,color:"rgba(255,255,255,.48)",textTransform:"uppercase"}}>{t}</span>)}
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
+                {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.22)",padding:"4px 10px",fontFamily:MONO,fontSize:"clamp(9px,1.05vh,10.5px)",letterSpacing:2.5,color:"rgba(255,255,255,.65)",textTransform:"uppercase"}}>{t}</span>)}
               </div>
-              <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-                <span style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.8vh,40px)",color:"#fff",letterSpacing:1}}>{stat}</span>
-                <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.32)",letterSpacing:2,textTransform:"uppercase"}}>{statLabel}</span>
+              <div style={{display:"flex",alignItems:"baseline",gap:14}}>
+                <span style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,52px)",color:"#fff",letterSpacing:1}}>{stat}</span>
+                <span style={{fontFamily:MONO,fontSize:"clamp(10px,1.2vh,12px)",color:"rgba(255,255,255,.45)",letterSpacing:2,textTransform:"uppercase"}}>{statLabel}</span>
               </div>
             </div>
           </div>
@@ -710,12 +710,12 @@ function Separates({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;o
       <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,58px)",color:"#000",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(10px,1.5vh,18px)",flexShrink:0}}>WE&apos;RE BUILT DIFFERENT.</div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:2,flex:1,minHeight:0}}>
         {items.map(({n,l,b},i)=>(
-          <div key={i} className="rhl m-sep-row" style={{background:"#fff",padding:"0 20px",display:"grid",gridTemplateColumns:"28px 200px 1fr",gap:16,alignItems:"center",flex:1,borderLeft:"3px solid transparent",transition:"border-color .2s"}}
+          <div key={i} className="rhl m-sep-row" style={{background:"#fff",padding:"0 28px",display:"grid",gridTemplateColumns:"42px 280px 1fr",gap:22,alignItems:"center",flex:1,borderLeft:"3px solid transparent",transition:"border-color .2s"}}
             onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderLeftColor="#000";}}
             onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderLeftColor="transparent";}}>
-            <span style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.42)",letterSpacing:2}}>{n}</span>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.6vh,16px)",color:"#000",letterSpacing:2,textTransform:"uppercase",lineHeight:1.2}}>{l}</div>
-            <div style={{fontFamily:BODY,fontSize:"clamp(11.5px,1.4vh,13.5px)",color:"#444",lineHeight:1.75}}>{b}</div>
+            <span style={{fontFamily:MONO,fontSize:"clamp(10px,1.25vh,12.5px)",color:"rgba(0,0,0,.42)",letterSpacing:2.5}}>{n}</span>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.3vh,24px)",color:"#000",letterSpacing:2,textTransform:"uppercase",lineHeight:1.15}}>{l}</div>
+            <div style={{fontFamily:BODY,fontSize:"clamp(14px,1.8vh,18px)",color:"#333",lineHeight:1.65}}>{b}</div>
           </div>
         ))}
       </div>
@@ -746,21 +746,21 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
     <Dark>
       <Header n="05" label="FUND DETAILS" right="CLEAN STRUCTURE. FAIR TERMS."/>
       {/* Hero numbers */}
-      <div className="fu1 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,marginBottom:10,flexShrink:0}}>
+      <div className="fu1 m-stack" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:2,marginBottom:12,flexShrink:0}}>
         {hi.map(({v,l,sub})=>(
-          <div key={l} className="c3" style={{background:"#fff",padding:"clamp(16px,2.2vh,26px) 24px"}}>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(32px,5vh,52px)",color:"#000",lineHeight:.95,letterSpacing:1}}>{v}</div>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(12px,1.4vh,14px)",color:"rgba(0,0,0,.6)",marginTop:8,letterSpacing:3}}>{l}</div>
-            <div style={{fontFamily:MONO,fontSize:7.5,color:"rgba(0,0,0,.36)",marginTop:3,letterSpacing:2}}>{sub}</div>
+          <div key={l} className="c3" style={{background:"#fff",padding:"clamp(20px,2.8vh,34px) clamp(24px,2.8vh,32px)"}}>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(40px,6vh,68px)",color:"#000",lineHeight:.95,letterSpacing:1}}>{v}</div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(15px,1.8vh,18px)",color:"rgba(0,0,0,.65)",marginTop:10,letterSpacing:3}}>{l}</div>
+            <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(0,0,0,.42)",marginTop:4,letterSpacing:2}}>{sub}</div>
           </div>
         ))}
       </div>
       {/* Detail rows */}
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:1.5,flex:1,minHeight:0}}>
         {rows.map(([label,val],i)=>(
-          <div key={i} className="rh m-fund-row pipe-row" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.07)",padding:"0 20px",minHeight:0}}>
-            <div style={{fontFamily:MONO,fontSize:"clamp(7.5px,1vh,9.5px)",color:"rgba(255,255,255,.36)",letterSpacing:2.5,textTransform:"uppercase",minWidth:210,flexShrink:0}}>{label}</div>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(13px,1.7vh,16px)",color:"#fff",letterSpacing:1}}>{val}</div>
+          <div key={i} className="rh m-fund-row pipe-row" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.07)",padding:"0 24px",minHeight:0}}>
+            <div style={{fontFamily:MONO,fontSize:"clamp(10px,1.25vh,12.5px)",color:"rgba(255,255,255,.5)",letterSpacing:2.5,textTransform:"uppercase",minWidth:260,flexShrink:0}}>{label}</div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(17px,2.2vh,24px)",color:"#fff",letterSpacing:1}}>{val}</div>
           </div>
         ))}
       </div>
