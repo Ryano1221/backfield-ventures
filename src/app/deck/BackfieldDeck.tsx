@@ -620,17 +620,17 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
       <div className="fu4 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
         {/* AI-VULNERABLE */}
         <div className="c3 wg" style={{background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.07)",padding:"clamp(20px,2.4vh,30px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",right:-4,top:-12,fontFamily:BEBAS,fontSize:"clamp(160px,20vh,240px)",color:"rgba(255,255,255,.02)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>×</div>
+          <div style={{position:"absolute",right:"clamp(-20px,-2vh,-8px)",top:"clamp(-30px,-3vh,-12px)",fontFamily:BEBAS,fontSize:"clamp(280px,38vh,440px)",color:"rgba(255,255,255,.04)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>×</div>
           <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-              <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,80,80,.7)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
+              <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
               <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
             </div>
             <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"rgba(255,255,255,.55)",letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>SAAS · SOFTWARE</div>
             <div style={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",gap:"clamp(10px,1.4vh,16px)",flex:1,minHeight:0}}>
               {vulnerable.map(({h,b},i)=>(
                 <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
-                  <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,80,80,.5)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
+                  <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.35)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:3,flex:1,minWidth:0}}>
                     <div style={{fontFamily:BEBAS,fontSize:"clamp(16px,2vh,21px)",color:"rgba(255,255,255,.6)",letterSpacing:1.2}}>{h}</div>
                     <div style={{fontFamily:BODY,fontSize:"clamp(12.5px,1.5vh,15.5px)",color:"rgba(255,255,255,.5)",lineHeight:1.55}}>{b}</div>
@@ -643,7 +643,7 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 
         {/* AI-PROTECTED */}
         <div className="c3 wg" style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.14)",padding:"clamp(20px,2.4vh,30px) clamp(22px,2.6vh,30px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",right:-4,top:-12,fontFamily:BEBAS,fontSize:"clamp(160px,20vh,240px)",color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>✓</div>
+          <div style={{position:"absolute",right:"clamp(-20px,-2vh,-8px)",top:"clamp(-30px,-3vh,-12px)",fontFamily:BEBAS,fontSize:"clamp(280px,38vh,440px)",color:"rgba(255,255,255,.045)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
           <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
               <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
@@ -1297,41 +1297,47 @@ function MobileWhyNow() {
 
       {/* AI-Vulnerable */}
       <div style={{background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.07)",padding:"18px 16px",marginBottom:12,position:"relative",overflow:"hidden"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-          <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,80,80,.7)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
-          <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
-        </div>
-        <div style={{fontFamily:BEBAS,fontSize:24,color:"rgba(255,255,255,.55)",letterSpacing:1,marginBottom:14,lineHeight:.95}}>SAAS · SOFTWARE</div>
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {vulnerable.map(({h,b},i)=>(
-            <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-              <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,80,80,.5)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
-              <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
-                <div style={{fontFamily:BEBAS,fontSize:14,color:"rgba(255,255,255,.55)",letterSpacing:1.2}}>{h}</div>
-                <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.45)",lineHeight:1.5}}>{b}</div>
+        <div style={{position:"absolute",right:-20,top:-30,fontFamily:BEBAS,fontSize:260,color:"rgba(255,255,255,.04)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>×</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase"}}>AI-Vulnerable</div>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
+          </div>
+          <div style={{fontFamily:BEBAS,fontSize:24,color:"rgba(255,255,255,.55)",letterSpacing:1,marginBottom:14,lineHeight:.95}}>SAAS · SOFTWARE</div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {vulnerable.map(({h,b},i)=>(
+              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+                  <div style={{fontFamily:BEBAS,fontSize:14,color:"rgba(255,255,255,.55)",letterSpacing:1.2}}>{h}</div>
+                  <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.45)",lineHeight:1.5}}>{b}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
       {/* AI-Protected */}
       <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.14)",padding:"18px 16px",position:"relative",overflow:"hidden"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-          <div style={{fontFamily:MONO,fontSize:9,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
-          <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
-        </div>
-        <div style={{fontFamily:BEBAS,fontSize:24,color:"#fff",letterSpacing:1,marginBottom:14,lineHeight:.95}}>CPG · SPORTS</div>
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {protected_.map(({h,b},i)=>(
-            <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-              <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
-              <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
-                <div style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:1.2}}>{h}</div>
-                <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.7)",lineHeight:1.5}}>{b}</div>
+        <div style={{position:"absolute",right:-20,top:-30,fontFamily:BEBAS,fontSize:260,color:"rgba(255,255,255,.045)",lineHeight:1,letterSpacing:-6,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <div style={{fontFamily:MONO,fontSize:9,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
+          </div>
+          <div style={{fontFamily:BEBAS,fontSize:24,color:"#fff",letterSpacing:1,marginBottom:14,lineHeight:.95}}>CPG · SPORTS</div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {protected_.map(({h,b},i)=>(
+              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
+                  <div style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:1.2}}>{h}</div>
+                  <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.7)",lineHeight:1.5}}>{b}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </MobileSlide>
