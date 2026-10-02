@@ -1041,6 +1041,26 @@ ul { list-style: none; }
   transform: translateX(4px);
 }
 
+.contact__handoff {
+  margin: 20px 0 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.contact__handoff a {
+  color: #888;
+  border-bottom: 1px solid #333;
+  padding-bottom: 2px;
+}
+
+.contact__handoff a:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
 .contact__email {
   margin-top: 64px;
   text-align: center;
@@ -1139,6 +1159,8 @@ ul { list-style: none; }
 
 .footer__nav-link:hover { color: #fff; }
 
+.footer__nav-link[aria-current="page"] { color: #f0ede8; }
+
 .footer__right {
   text-align: right;
   display: flex;
@@ -1229,6 +1251,7 @@ body.js-ready .reveal-right {
     border-bottom: 1px solid #222;
   }
   .contact__card:last-child { border-bottom: none; }
+  .contact__handoff { text-align: left; }
 
   .footer__inner {
     grid-template-columns: 1fr;

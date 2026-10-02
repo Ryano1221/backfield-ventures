@@ -80,6 +80,23 @@ export async function notifyInvest(d: Record<string, string>) {
   });
 }
 
+export async function notifyHandoffSubscribe(d: { email: string; source: string }) {
+  if (!resend) return false;
+  const to = process.env.HANDOFF_TO_EMAIL ?? TO;
+  const body = section(
+    "Subscribe",
+    row("Email", d.email) + row("Source", d.source) + row("List", d.source),
+  );
+  await resend.emails.send({
+    from: FROM,
+    to,
+    replyTo: d.email,
+    subject: `The Handoff subscribe: ${d.email}`,
+    html: wrap("The Handoff", "Subscribe", "#111827", body),
+  });
+  return true;
+}
+
 export async function notifyPartner(d: Record<string, string>) {
   if (!resend) return;
   const name = `${d.firstName} ${d.lastName}`.trim();
