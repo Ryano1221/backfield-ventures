@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -37,6 +38,7 @@ export default function Nav() {
           <li><a href="#why" className="nav__link">WHY</a></li>
           <li><a href="#philosophy" className="nav__link">PHILOSOPHY</a></li>
           <li><a href="#contact" className="nav__link">CONTACT</a></li>
+          <li><Link href="/handoff" className="nav__link">HANDOFF</Link></li>
         </ul>
 
         <div className="nav__cta-group">
@@ -63,6 +65,7 @@ export default function Nav() {
         <a href="#why" className="nav__mobile-link" onClick={closeMenu}>WHY</a>
         <a href="#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</a>
         <a href="#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</a>
+        <Link href="/handoff" className="nav__mobile-link" onClick={closeMenu}>HANDOFF</Link>
         <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
           PITCH <span className="bfv-arrow">→</span>
         </button>

@@ -1,11 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { notifyPitch } from "@/lib/notify";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabase } from "@/lib/supabase";
 
 const stageMap: Record<string, string> = {
   "Pre-Seed": "pre-seed",
@@ -15,6 +10,12 @@ const stageMap: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.error("pitch route missing supabase env");
+    return NextResponse.json({ ok: false }, { status: 500 });
+  }
+
   try {
     const d = await req.json();
 
