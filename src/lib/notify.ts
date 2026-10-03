@@ -80,12 +80,12 @@ export async function notifyInvest(d: Record<string, string>) {
   });
 }
 
-export async function notifyHandoffSubscribe(d: { email: string; source: string }) {
+export async function notifyHandoffSubscribe(d: { name: string; email: string; source: string }) {
   if (!resend) return false;
   const to = process.env.HANDOFF_TO_EMAIL ?? TO;
   const body = section(
     "Subscribe",
-    row("Email", d.email) + row("Source", d.source) + row("List", d.source),
+    row("Name", d.name) + row("Email", d.email) + row("Source", d.source) + row("List", d.source),
   );
   await resend.emails.send({
     from: FROM,

@@ -8,13 +8,15 @@ type Status = "idle" | "submitting" | "done" | "error";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function HandoffSubscribe() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const value = email.trim();
-    if (!EMAIL.test(value)) {
+    const nameValue = name.trim();
+    const emailValue = email.trim();
+    if (!nameValue || !EMAIL.test(emailValue)) {
       setStatus("error");
       return;
     }
@@ -24,7 +26,7 @@ export default function HandoffSubscribe() {
       const res = await fetch("/api/handoff-subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "subscribe", email: value }),
+        body: JSON.stringify({ type: "subscribe", name: nameValue, email: emailValue }),
       });
       if (!res.ok) {
         setStatus("error");
@@ -58,29 +60,43 @@ export default function HandoffSubscribe() {
               </p>
             ) : (
               <form className={styles.form} onSubmit={onSubmit} noValidate>
-                <div className={styles.row}>
-                  <label className={styles.field}>
-                    <span>Email *</span>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="you@example.com"
-                      required
-                      autoComplete="email"
-                      inputMode="email"
-                      value={email}
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-                        if (status === "error") setStatus("idle");
-                      }}
-                      aria-invalid={status === "error"}
-                      aria-describedby={status === "error" ? "handoff-email-error" : undefined}
-                    />
-                  </label>
-                </div>
+                <label className={styles.field}>
+                  <span>Name</span>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    autoComplete="name"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      if (status === "error") setStatus("idle");
+                    }}
+                    aria-invalid={status === "error"}
+                    aria-describedby={status === "error" ? "handoff-email-error" : undefined}
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span>Email *</span>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                    autoComplete="email"
+                    inputMode="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      if (status === "error") setStatus("idle");
+                    }}
+                    aria-invalid={status === "error"}
+                    aria-describedby={status === "error" ? "handoff-email-error" : undefined}
+                  />
+                </label>
                 {status === "error" ? (
                   <p id="handoff-email-error" className={styles.formError} role="alert">
-                    Enter a valid email and try again.
+                    Enter your name and a valid email and try again.
                   </p>
                 ) : null}
                 <button

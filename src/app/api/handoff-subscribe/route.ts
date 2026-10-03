@@ -11,19 +11,26 @@ const SOURCE = "handoff-public";
 // when BEEHIIV_API_KEY exists. Do not make Beehiiv the primary path.
 
 export async function POST(req: NextRequest) {
-  let body: { type?: unknown; email?: unknown };
+  let body: { type?: unknown; name?: unknown; email?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
+  const name = String(body.name ?? "").trim();
   const email = String(body.email ?? "").trim().toLowerCase();
-  if (body.type !== "subscribe" || email.length > 254 || !EMAIL.test(email)) {
+  if (
+    body.type !== "subscribe" ||
+    !name ||
+    name.length > 200 ||
+    email.length > 254 ||
+    !EMAIL.test(email)
+  ) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  const payload = { type: "subscribe" as const, email, source: SOURCE };
+  const payload = { type: "subscribe" as const, name, email, source: SOURCE };
 
   const webhook = process.env.HANDOFF_WEBHOOK_URL;
   if (webhook) {
@@ -34,7 +41,7 @@ export async function POST(req: NextRequest) {
     }).catch((error) => console.error("handoff webhook error", error));
   }
 
-  const sent = await notifyHandoffSubscribe({ email, source: SOURCE }).catch((error) => {
+  const sent = await notifyHandoffSubscribe({ name, email, source: SOURCE }).catch((error) => {
     console.error("handoff email error", error);
     return false;
   });
