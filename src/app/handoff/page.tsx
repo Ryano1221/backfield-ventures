@@ -40,6 +40,7 @@ export default function HandoffPage() {
         <section className={`${styles.section} ${styles.sectionFirst}`} aria-labelledby="dr-headline">
           <div className={styles.container}>
             <HandoffHero />
+            <HandoffSubscribe />
             <DealMosaic />
             <p className={styles.proofNote}>
               Five public, private brands shown as examples. Not pitches to Backfield. Not an investment offer.
@@ -47,7 +48,6 @@ export default function HandoffPage() {
             <HandoffMidCta />
           </div>
         </section>
-        <HandoffSubscribe />
       </main>
       <Footer />
       <HandoffDrawers />

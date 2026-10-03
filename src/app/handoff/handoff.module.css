@@ -342,8 +342,9 @@
   justify-content: flex-start;
 }
 
-.sectionSubscribe {
-  padding-top: 64px;
+.subscribeInline {
+  margin: 8px 0 0;
+  scroll-margin-top: 96px;
 }
 
 .subscribeWrap {
@@ -629,10 +630,6 @@
 
   .sectionFirst {
     padding-top: 136px;
-  }
-
-  .sectionSubscribe {
-    padding-top: 40px;
   }
 
   .row {

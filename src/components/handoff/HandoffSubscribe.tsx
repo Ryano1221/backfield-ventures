@@ -39,14 +39,9 @@ export default function HandoffSubscribe() {
   }
 
   return (
-    <section
-      className={`${styles.section} ${styles.sectionSubscribe}`}
-      id="subscribe"
-      aria-labelledby="dr-sub-h"
-    >
-      <div className={styles.container}>
-        <div className={styles.subscribeWrap}>
-          <div className={`${styles.card} ${styles.cardInevitable}`}>
+    <section id="subscribe" className={styles.subscribeInline} aria-labelledby="dr-sub-h">
+      <div className={styles.subscribeWrap}>
+        <div className={`${styles.card} ${styles.cardInevitable}`}>
             <span className={styles.cardKicker}>SUBSCRIBE</span>
             <h2 id="dr-sub-h" className={styles.cardTitle}>
               Get The Handoff
@@ -114,7 +109,6 @@ export default function HandoffSubscribe() {
                 </button>
               </form>
             )}
-          </div>
         </div>
       </div>
     </section>

@@ -12,9 +12,6 @@ export default function HandoffHero() {
       <p className={styles.lead}>
         Private sports and consumer brands worth a look. Click a card. Subscribe for the monthly issue.
       </p>
-      <a className={styles.btn} href="#subscribe">
-        Get the next Handoff <span aria-hidden="true">→</span>
-      </a>
     </>
   );
 }
