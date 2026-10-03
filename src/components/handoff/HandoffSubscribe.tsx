@@ -47,7 +47,7 @@ export default function HandoffSubscribe() {
               Get The Handoff
             </h2>
             <p className={styles.cardBody}>
-              One email a month about early sports and consumer brands worth a look.
+              One email a month about early sports and consumer brands.
             </p>
             {status === "done" ? (
               <p className={styles.thanks} role="status">

@@ -7,10 +7,10 @@ export default function HandoffHero() {
         <span className={styles.sectionNum}>05 · THE HANDOFF</span>
       </div>
       <h1 id="dr-headline" className={styles.sectionHeading}>
-        Early sports and consumer brands worth a look
+        Early sports and consumer brands
       </h1>
       <p className={styles.lead}>
-        Private sports and consumer brands worth a look. Click a card. Subscribe for the monthly issue.
+        Private sports and consumer brands. Click a card. Subscribe for the monthly issue.
       </p>
     </>
   );

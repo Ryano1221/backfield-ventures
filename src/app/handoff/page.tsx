@@ -12,12 +12,12 @@ import styles from "./handoff.module.css";
 
 export const metadata: Metadata = {
   title: "The Handoff | Backfield Ventures",
-  description: "Early sports and consumer brands worth a look. Monthly writeups.",
+  description: "Early sports and consumer brands. Monthly writeups.",
   alternates: { canonical: "https://backfieldventures.com/handoff" },
   robots: { index: true, follow: true },
   openGraph: {
     title: "The Handoff | Backfield Ventures",
-    description: "Early sports and consumer brands worth a look. Monthly writeups.",
+    description: "Early sports and consumer brands. Monthly writeups.",
     url: "https://backfieldventures.com/handoff",
     siteName: "Backfield Ventures",
     type: "website",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The Handoff | Backfield Ventures",
-    description: "Early sports and consumer brands worth a look. Monthly writeups.",
+    description: "Early sports and consumer brands. Monthly writeups.",
   },
 };
 
