@@ -47,12 +47,14 @@ export default function HandoffSubscribe() {
           <div className={`${styles.card} ${styles.cardInevitable}`}>
             <span className={styles.cardKicker}>SUBSCRIBE</span>
             <h2 id="dr-sub-h" className={styles.cardTitle}>
-              Get the next Handoff
+              Get The Handoff
             </h2>
-            <p className={styles.cardBody}>One email a month. Full writeups. No spray.</p>
+            <p className={styles.cardBody}>
+              One email a month about early sports and consumer brands worth a look. Your email is enough.
+            </p>
             {status === "done" ? (
               <p className={styles.thanks} role="status">
-                Thanks. We have your email.
+                Thanks. We have your email for the next monthly Handoff.
               </p>
             ) : (
               <form className={styles.form} onSubmit={onSubmit} noValidate>
@@ -90,7 +92,7 @@ export default function HandoffSubscribe() {
                     "Sending"
                   ) : (
                     <>
-                      Get the next Handoff <span aria-hidden="true">→</span>
+                      Send me The Handoff <span aria-hidden="true">→</span>
                     </>
                   )}
                 </button>
