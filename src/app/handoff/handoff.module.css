@@ -348,10 +348,7 @@
 }
 
 .subscribeWrap {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 40px;
-  align-items: start;
+  display: block;
 }
 
 .card {
@@ -398,7 +395,20 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.formRow .btn {
+  white-space: nowrap;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 .row {
@@ -614,9 +624,6 @@
     grid-column: span 6;
   }
 
-  .subscribeWrap {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 900px) {
@@ -632,8 +639,14 @@
     padding-top: 136px;
   }
 
-  .row {
+  .row,
+  .formRow {
     grid-template-columns: 1fr;
+  }
+
+  .formRow .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .dealCardFeatured,

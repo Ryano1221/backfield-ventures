@@ -55,58 +55,60 @@ export default function HandoffSubscribe() {
               </p>
             ) : (
               <form className={styles.form} onSubmit={onSubmit} noValidate>
-                <label className={styles.field}>
-                  <span>Name</span>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    autoComplete="name"
-                    value={name}
-                    onChange={(event) => {
-                      setName(event.target.value);
-                      if (status === "error") setStatus("idle");
-                    }}
-                    aria-invalid={status === "error"}
-                    aria-describedby={status === "error" ? "handoff-email-error" : undefined}
-                  />
-                </label>
-                <label className={styles.field}>
-                  <span>Email *</span>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    required
-                    autoComplete="email"
-                    inputMode="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      if (status === "error") setStatus("idle");
-                    }}
-                    aria-invalid={status === "error"}
-                    aria-describedby={status === "error" ? "handoff-email-error" : undefined}
-                  />
-                </label>
+                <div className={styles.formRow}>
+                  <label className={styles.field}>
+                    <span>Name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      autoComplete="name"
+                      value={name}
+                      onChange={(event) => {
+                        setName(event.target.value);
+                        if (status === "error") setStatus("idle");
+                      }}
+                      aria-invalid={status === "error"}
+                      aria-describedby={status === "error" ? "handoff-email-error" : undefined}
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span>Email *</span>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="you@example.com"
+                      required
+                      autoComplete="email"
+                      inputMode="email"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        if (status === "error") setStatus("idle");
+                      }}
+                      aria-invalid={status === "error"}
+                      aria-describedby={status === "error" ? "handoff-email-error" : undefined}
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    className={`${styles.btn} ${styles.btnFilled}`}
+                    disabled={status === "submitting"}
+                  >
+                    {status === "submitting" ? (
+                      "Sending"
+                    ) : (
+                      <>
+                        Send me The Handoff <span aria-hidden="true">→</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 {status === "error" ? (
                   <p id="handoff-email-error" className={styles.formError} role="alert">
                     Enter your name and a valid email and try again.
                   </p>
                 ) : null}
-                <button
-                  type="submit"
-                  className={`${styles.btn} ${styles.btnFilled}`}
-                  disabled={status === "submitting"}
-                >
-                  {status === "submitting" ? (
-                    "Sending"
-                  ) : (
-                    <>
-                      Send me The Handoff <span aria-hidden="true">→</span>
-                    </>
-                  )}
-                </button>
               </form>
             )}
         </div>
