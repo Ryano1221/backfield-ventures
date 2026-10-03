@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
+import LeftBar from "@/components/LeftBar";
+import Nav from "@/components/Nav";
+import ParticleBackground from "@/components/ParticleBackground";
 import DealMosaic from "@/components/handoff/DealMosaic";
 import HandoffDrawers from "@/components/handoff/HandoffDrawers";
 import HandoffHero from "@/components/handoff/HandoffHero";
 import HandoffMidCta from "@/components/handoff/HandoffMidCta";
-import HandoffNav from "@/components/handoff/HandoffNav";
 import HandoffSubscribe from "@/components/handoff/HandoffSubscribe";
 import styles from "./handoff.module.css";
 
@@ -30,13 +32,12 @@ export const metadata: Metadata = {
 
 export default function HandoffPage() {
   return (
-    <div className={styles.page}>
-      <aside className={styles.leftBar} aria-hidden="true">
-        <span className={styles.leftBarLabel}>The Handoff</span>
-      </aside>
-      <HandoffNav />
-      <main id="handoff-main">
-        <section className={styles.section} aria-labelledby="dr-headline">
+    <>
+      <ParticleBackground />
+      <LeftBar />
+      <Nav />
+      <main id="handoff-main" className={styles.main}>
+        <section className={`${styles.section} ${styles.sectionFirst}`} aria-labelledby="dr-headline">
           <div className={styles.container}>
             <HandoffHero />
             <DealMosaic />
@@ -50,6 +51,6 @@ export default function HandoffPage() {
       </main>
       <Footer />
       <HandoffDrawers />
-    </div>
+    </>
   );
 }

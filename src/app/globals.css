@@ -299,6 +299,8 @@ ul { list-style: none; }
   transition: color 0.2s;
 }
 .nav__link:hover { color: #fff; }
+.nav__link[aria-current="page"],
+.nav__mobile-link[aria-current="page"] { color: #fff; }
 
 .nav__cta {
   font-family: var(--font-mono);

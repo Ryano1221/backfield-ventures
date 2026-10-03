@@ -1,76 +1,14 @@
-.page {
-  color: #fff;
-  background: #000;
+.main {
+  position: relative;
+  z-index: 1;
 }
 
-.leftBar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--left-bar-w);
-  border-right: 1px solid #1a1a1a;
-  background: #000;
-  z-index: 210;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 32px;
+.sectionFirst {
+  padding-top: 192px;
 }
 
-.leftBarLabel {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-family: var(--font-mono);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-size: 10px;
-  color: #444;
-}
-
-.nav {
-  background: #000;
-  border-bottom: 1px solid #1a1a1a;
-  position: sticky;
-  top: 0;
-  z-index: 40;
-}
-
-.navInner {
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 0 48px;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.navLogo {
-  filter: invert(1);
-  height: 28px;
-  width: auto;
-  display: block;
-}
-
-.navLinks {
-  list-style: none;
-  display: flex;
-  gap: 28px;
-  margin: 0;
-  padding: 0;
-}
-
-.navLink {
-  font-family: var(--font-mono);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-size: 11px;
-  color: #888;
-}
-
-.navLink:hover {
-  color: #fff;
+.sectionFirst::before {
+  display: none;
 }
 
 .container {
@@ -681,13 +619,16 @@
 }
 
 @media (max-width: 900px) {
-  .navInner,
   .container {
     padding: 0 24px;
   }
 
   .section {
     padding: 64px 0;
+  }
+
+  .sectionFirst {
+    padding-top: 136px;
   }
 
   .sectionSubscribe {
@@ -702,16 +643,6 @@
   .dealCardSupport,
   .dealCardRow {
     grid-column: span 12;
-  }
-
-  .navLinks {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .leftBar {
-    display: none;
   }
 }
 

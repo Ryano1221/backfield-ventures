@@ -46,7 +46,7 @@ export default function HandoffDrawers() {
   useEffect(() => {
     const lock = [
       document.getElementById("handoff-main"),
-      document.getElementById("handoff-nav"),
+      document.getElementById("nav"),
       document.querySelector("footer.footer"),
     ].filter((node): node is HTMLElement => node instanceof HTMLElement);
 
