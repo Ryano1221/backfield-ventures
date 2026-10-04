@@ -5,7 +5,9 @@ export type HandoffBrandId =
   | "parch"
   | "lectra"
   | "unwind"
-  | "puntr";
+  | "puntr"
+  | "spade"
+  | "stillers";
 
 export type HandoffBrand = {
   id: HandoffBrandId;
@@ -194,6 +196,54 @@ export const brands: HandoffBrand[] = [
       'PUNTR is a Los Angeles sports pick\'em. The public site titles it "Sports Pick\'em - Free Daily Challenges & Cash Prizes." The live product is daily skill-based challenges linked to real sporting events: users make predictions across sports, build a performance record, and compete in repeatable formats. It is framed as participation rather than sports viewing, and as a companion to the wider sports experience rather than a replacement for live broadcasts.',
       "One current format is a free Daily Challenge of 10 picks across sport. Each pick carries a different difficulty, and rankings use both accuracy and difficulty. Paid solo challenges run in eligible markets, where users enter fixed challenges for prizes. The company says this is not a prediction-market exchange: no contract trading, and no need for another participant to take the opposite side.",
       'Longer-term direction, described as not yet available across the current product, includes more tailored challenges, relevant live moments, statistics, notifications, and suggestions on people to follow. Brad Hunt leads engineering, AI, live data, product architecture, and design. Founded by Australians. The public site links Instagram and TikTok @playpuntr and X @puntrplay. Public site: puntr.us. No invented user counts.',
+    ],
+  },
+  {
+    id: "spade",
+    name: "Spade",
+    tag: "Drink · Soda",
+    meta: "San Diego · Zero-sugar soda · drinkspade.com",
+    hook: "A soda with the sugar taken out.",
+    teaser:
+      "All-natural, zero-sugar, zero-calorie soda with electrolytes. Guava, Yuzu-Lime, and Kiwi-Strawberry in Walmart's Modern Soda set.",
+    siteUrl: "https://www.drinkspade.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/spade.webp",
+    heroAlt: "Spade Guava, Yuzu-Lime, and Kiwi-Strawberry cans",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/spade.webp",
+    logoAlt: "Spade wordmark",
+    logoWidth: 543,
+    logoHeight: 131,
+    writeup: [
+      "Spade is a San Diego better-for-you soda. The public site calls it all natural, with no sugar, zero calories, and electrolytes. A December 2025 release says each can uses six ingredients, with no artificial ingredients or preservatives, and is sweetened with a stevia extract.",
+      "The retail story is a shelf story: 245 Walmart stores across California beginning January 5, 2026, in the Modern Soda set, in Guava, Yuzu-Lime, and Kiwi-Strawberry. The same release names Fresh Thyme, Bristol Farms, Foodland, select Albertsons banners (United and Market Street), and Amazon. Blake Berman is CEO and co-founder. The public site also sells Blueberry Açaí, Dr. Spade, and Modern Cola.",
+      "Instagram, TikTok, and X: @drinkspade. Public materials: drinkspade.com. No invented follower counts or sell-through figures.",
+    ],
+  },
+  {
+    id: "stillers",
+    name: "Stiller's Soda",
+    tag: "Drink · Soda",
+    meta: "US · Classic soda · stillerssoda.com",
+    hook: "The classic can, made lighter.",
+    teaser:
+      "Ben Stiller and Alex Doman. Root Beer, Lemon Lime, and Shirley Temple, at 30 calories and 7 grams of sugar.",
+    siteUrl: "https://stillerssoda.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/stillers.webp",
+    heroAlt: "Stiller's Soda Lemon Lime can",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/stillers.webp",
+    logoAlt: "Stiller's Soda logo",
+    logoWidth: 900,
+    logoHeight: 247,
+    writeup: [
+      "Stiller's Soda is a nostalgic better-for-you soda from Ben Stiller and Alex Doman. The September 2025 launch named three flavors: Root Beer, Lemon Lime, and Shirley Temple. Each 12-ounce can has 30 calories and 7 grams of sugar, from cane sugar, stevia, and monk fruit, plus vitamins D, B12, and C. The public site calls it all natural and low in calories, and also shops Shirley Cola.",
+      "The public site points to Whole Foods Market, Walmart, Target, and Amazon. A January 2026 Food Business News piece places the line in Target nationwide, Whole Foods Market in New York, Connecticut, and New Jersey, and Walmart in the Northeast.",
+      "Instagram and X: @stillerssoda. YouTube: @stillerssoda. Public materials: stillerssoda.com. No invented sales figures.",
     ],
   },
 ];

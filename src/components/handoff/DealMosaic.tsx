@@ -3,9 +3,13 @@ import { brands, type HandoffBrandId } from "./brands";
 import DealCard from "./DealCard";
 
 const sections: { id: string; title: string; ids: HandoffBrandId[] }[] = [
-  { id: "sports", title: "Sports", ids: ["omorpho", "lectra", "puntr"] },
-  { id: "food", title: "Food", ids: ["kreatures", "foli"] },
-  { id: "drink", title: "Drink", ids: ["parch", "unwind"] },
+  { id: "apparel", title: "Apparel", ids: ["omorpho"] },
+  { id: "sports", title: "Sports", ids: ["lectra", "puntr"] },
+  {
+    id: "food-and-beverage",
+    title: "Food and beverage",
+    ids: ["kreatures", "foli", "parch", "unwind", "spade", "stillers"],
+  },
 ];
 
 export default function DealMosaic() {
@@ -18,7 +22,15 @@ export default function DealMosaic() {
           <h2 id={`group-${section.id}`} className={styles.proofLabel}>
             {section.title}
           </h2>
-          <div className={styles.proofCards}>
+          <div
+            className={`${styles.proofCards} ${
+              section.ids.length === 1
+                ? styles.proofCards1
+                : section.ids.length === 2
+                  ? styles.proofCards2
+                  : styles.proofCards3
+            }`}
+          >
             {section.ids.map((id) => {
               const brand = byId.get(id);
               return brand ? <DealCard key={brand.id} brand={brand} /> : null;
