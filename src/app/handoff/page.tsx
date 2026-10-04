@@ -43,7 +43,7 @@ export default function HandoffPage() {
             <HandoffSubscribe />
             <DealMosaic />
             <p className={styles.proofNote}>
-              Five public, private brands shown as examples. Not pitches to Backfield. Not an investment offer.
+              Public brands we think are impressive. Not an investment offer.
             </p>
             <HandoffMidCta />
           </div>
