@@ -10,7 +10,7 @@ export default function HandoffHero() {
         Early sports and consumer brands
       </h1>
       <p className={styles.lead}>
-        Private sports and consumer brands. Click a card. Subscribe for the monthly issue.
+        Welcome to The Handoff. Standout early sports and consumer brands, sent to people who want them. Join the list. Or ask to be featured.
       </p>
     </>
   );
