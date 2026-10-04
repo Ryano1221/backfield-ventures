@@ -1,4 +1,11 @@
-export type HandoffBrandId = "omorpho" | "kreatures" | "foli" | "parch" | "lectra";
+export type HandoffBrandId =
+  | "omorpho"
+  | "kreatures"
+  | "foli"
+  | "parch"
+  | "lectra"
+  | "unwind"
+  | "puntr";
 
 export type HandoffBrand = {
   id: HandoffBrandId;
@@ -139,6 +146,54 @@ export const brands: HandoffBrand[] = [
       "Lectra is a wearable recovery platform built from two parts: CytoTape, a conductive kinesiology tape with embedded electrode patterns, and Myto, a small rechargeable pod that snaps onto the tape and connects to a phone.",
       "It is wire-free muscle stimulation you can wear in daily life: apply the tape, snap the pod, control intensity and programs in the Lectra app. Site framing positions it for general wellness recovery, not as a medical device.",
       "Oregon Sports Angels has written about the company around conductive tape plus wireless stimulation. Public materials: lectra.tech. No invented clinical outcomes or sales figures.",
+    ],
+  },
+  {
+    id: "unwind",
+    name: "Unwind",
+    tag: "Drink · Functional",
+    meta: "US · Sparkling calm · tryunwindco.com",
+    hook: "Turn the noise down, in a can.",
+    teaser:
+      "Functional calm sparkling drink from Nowadays founders Justin Tidwell and Anthony Puterman. Approximately 1,000 Walmart stores, with TikTok Shop in mid-October.",
+    siteUrl: "https://tryunwindco.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/unwind.webp",
+    heroAlt: "Unwind sparkling cans in five flavors",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/unwind.webp",
+    logoAlt: "Unwind logo",
+    logoWidth: 520,
+    logoHeight: 240,
+    writeup: [
+      "Unwind is a functional sparkling drink for everyday calm, from Nowadays founders Justin Tidwell and Anthony Puterman. Each 12-ounce can pairs flavor with magnesium L-threonate (Magtein) and L-theanine, with zero caffeine, low sugar, and low calories. Five varieties: Berry, Cherry, Citrus, Tropical, and Spicy Lime. Suggested retail pricing begins at $2.79 a can and $10.99 a four-pack.",
+      "The debut is a retail shelf story: approximately 1,000 Walmart stores nationwide, plus Walmart.com, with TikTok Shop to follow in mid-October for direct-to-consumer shipping. The Walmart launch is described as the first phase, with additional national retail rollouts scheduled for early 2027. The brand is based in Irvine, Calif. The public site lists 25 calories and frames the line as sparkling calm.",
+      "Instagram and TikTok: @tryunwind. Public materials: tryunwindco.com. No invented follower counts or sell-through figures.",
+    ],
+  },
+  {
+    id: "puntr",
+    name: "PUNTR",
+    tag: "Sports · Pick'em",
+    meta: "LA · Sports challenges · puntr.us",
+    hook: "Ten picks. A free daily challenge.",
+    teaser:
+      "Los Angeles sports pick'em. Free daily challenges and cash prizes, plus paid solo challenges in eligible markets.",
+    siteUrl: "https://www.puntr.us/",
+    layout: "row",
+    heroSrc: "/handoff/brands/puntr.webp",
+    heroAlt: "PUNTR sports pick slip on a phone",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/puntr.webp",
+    logoAlt: "PUNTR mark",
+    logoWidth: 511,
+    logoHeight: 453,
+    writeup: [
+      'PUNTR is a Los Angeles sports pick\'em. The public site titles it "Sports Pick\'em - Free Daily Challenges & Cash Prizes." The live product is daily skill-based challenges linked to real sporting events: users make predictions across sports, build a performance record, and compete in repeatable formats. It is framed as participation rather than sports viewing, and as a companion to the wider sports experience rather than a replacement for live broadcasts.',
+      "One current format is a free Daily Challenge of 10 picks across sport. Each pick carries a different difficulty, and rankings use both accuracy and difficulty. Paid solo challenges run in eligible markets, where users enter fixed challenges for prizes. The company says this is not a prediction-market exchange: no contract trading, and no need for another participant to take the opposite side.",
+      'Longer-term direction, described as not yet available across the current product, includes more tailored challenges, relevant live moments, statistics, notifications, and suggestions on people to follow. Brad Hunt leads engineering, AI, live data, product architecture, and design. Founded by Australians. The public site links Instagram and TikTok @playpuntr and X @puntrplay. Public site: puntr.us. No invented user counts.',
     ],
   },
 ];
