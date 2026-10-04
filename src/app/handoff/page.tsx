@@ -43,7 +43,7 @@ export default function HandoffPage() {
             <HandoffSubscribe />
             <DealMosaic />
             <p className={styles.proofNote}>
-              Public brands we think are impressive. Not an investment offer.
+              Brands we think are impressive. Not an investment offer.
             </p>
             <HandoffMidCta />
           </div>
