@@ -4,11 +4,11 @@ import DealCard from "./DealCard";
 
 const sections: { id: string; title: string; ids: HandoffBrandId[] }[] = [
   { id: "apparel", title: "Apparel", ids: ["omorpho"] },
-  { id: "sports", title: "Sports", ids: ["lectra", "puntr"] },
+  { id: "sports", title: "Sports", ids: ["lectra", "puntr", "growl"] },
   {
     id: "food-and-beverage",
     title: "Food and beverage",
-    ids: ["kreatures", "foli", "parch", "unwind", "spade", "stillers"],
+    ids: ["kreatures", "foli", "parch", "unwind", "spade", "stillers", "drumroll", "lastcrumb"],
   },
 ];
 

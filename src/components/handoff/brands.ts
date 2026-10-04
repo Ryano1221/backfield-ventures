@@ -7,7 +7,10 @@ export type HandoffBrandId =
   | "unwind"
   | "puntr"
   | "spade"
-  | "stillers";
+  | "stillers"
+  | "growl"
+  | "drumroll"
+  | "lastcrumb";
 
 export type HandoffBrand = {
   id: HandoffBrandId;
@@ -49,7 +52,7 @@ export const brands: HandoffBrand[] = [
     logoWidth: 250,
     logoHeight: 33,
     writeup: [
-      "Omorpho builds micro-weighted training apparel. G-Wear tops, shorts, and tights, plus the G-Vest line, use patented MicroLoad polymer spheres distributed through the garment so load sits in the fabric instead of a bulky vest silhouette.",
+      "Omorpho builds micro-weighted training apparel. G-Wear tops and tights use patented MicroLoad polymer and polyurethane spheres distributed through the garment, so the load sits in the fabric instead of a bulky vest silhouette. The G-Vest line uses stainless-steel bearings under the MicroLoad name.",
       "Site framing covers run, walk, and train use cases, and weighted items are listed as HSA/FSA eligible. The product photographs as athletic kit first and a training tool second, which is why it holds the featured slot on this mosaic.",
       "Public coverage has treated the weighted-apparel approach as a product story (including Men's Health review framing). No invented athlete counts or growth metrics here. Public materials: omorpho.com.",
     ],
@@ -85,7 +88,7 @@ export const brands: HandoffBrand[] = [
     meta: "London · Interlocking glass · foliclub.com",
     hook: "The bottles that lock into one object.",
     teaser:
-      "Olive oil, French dressing, chilli oil, and aged balsamic in a proprietary interlocking glass set meant to live on the counter.",
+      "Olive oil, French dressing, chilli oil, and mature balsamic vinegar of Modena in a proprietary interlocking glass set meant to live on the counter.",
     siteUrl: "https://foliclub.com/",
     layout: "row",
     heroSrc: "/handoff/brands/foli.webp",
@@ -98,8 +101,8 @@ export const brands: HandoffBrand[] = [
     logoHeight: 526,
     writeup: [
       "FOLI is a London pantry brand built around sculptural glass bottles that interlock into one counter object. The system is the story: olive oil, dressings, and balsamic that look designed to stay out, not hide in a cupboard.",
-      "SKUs visible on site include Extra Virgin Olive Oil, Classic French Salad Dressing, Chilli Infused Olive Oil, Mature Balsamic Vinegar, plus sets and hampers. Founder Nohra Currie has spoken publicly about the packaging architecture.",
-      "Trade signals on the brand site include Harrods stocking and London Packaging Week / award finalist badges. No invented retail door counts. Public materials: foliclub.com.",
+      "The shop lists Premium Extra Virgin Olive Oil, Premium French Salad Dressing, Premium Chilli Infused Olive Oil, and Premium Mature Balsamic Vinegar, plus the Premium Classic Trio and the Premium Classic & Chilli Trio. Founder Nohra Currie has spoken publicly about the packaging architecture.",
+      "Trade signals on the brand site include Harrods stocking and 2026 award-finalist badges. A September 2026 post on the site says FOLI won Everyday Homeware (Under £50) at the London Packaging Week Innovation Awards for the Set of Essential Premium Dressings. No invented retail door counts. Public materials: foliclub.com.",
     ],
   },
   {
@@ -121,8 +124,8 @@ export const brands: HandoffBrand[] = [
     logoWidth: 300,
     logoHeight: 78,
     writeup: [
-      'Parch makes non-alcoholic sparkling agave cocktails with a Sonoran desert visual system. Brand story pages lean on desert botanicals and the line "if it grows together, it goes together."',
-      "Product names on the public site include Desert Margarita, Sedona Spritz, Prickly Paloma, and Spiced Piñarita (verify live SKUs at publish time). Packaging is the card stop: cream label, burnt-orange can, botanical seal.",
+      'Parch makes non-alcoholic sparkling agave cocktails with a Sonoran desert visual system. Brand story pages lean on desert botanicals and the line "what grows together, goes together."',
+      "Product names on the public site include Desert Margarita, Sedona Spritz, Prickly Paloma, and Spiced Piñarita (verify live SKUs at publish time).",
       "Quieter than the most famous NA aperitif names, which is the point for this mosaic. Do not invent sell-through or celebrity attachment claims. Public materials: drinkparch.com.",
     ],
   },
@@ -130,7 +133,7 @@ export const brands: HandoffBrand[] = [
     id: "lectra",
     name: "Lectra",
     tag: "Sports · Recovery tech",
-    meta: "US · Conductive KT tape + stim · lectra.tech",
+    meta: "US · Conductive kinesiology tape · lectra.tech",
     hook: "Kinesiology tape that carries a current.",
     teaser:
       "CytoTape conductive kinesiology tape plus a snap-on Myto pod for wireless muscle stimulation controlled from your phone.",
@@ -147,7 +150,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Lectra is a wearable recovery platform built from two parts: CytoTape, a conductive kinesiology tape with embedded electrode patterns, and Myto, a small rechargeable pod that snaps onto the tape and connects to a phone.",
       "It is wire-free muscle stimulation you can wear in daily life: apply the tape, snap the pod, control intensity and programs in the Lectra app. Site framing positions it for general wellness recovery, not as a medical device.",
-      "Oregon Sports Angels has written about the company around conductive tape plus wireless stimulation. Public materials: lectra.tech. No invented clinical outcomes or sales figures.",
+      "Public materials: lectra.tech. No invented clinical outcomes or sales figures.",
     ],
   },
   {
@@ -179,9 +182,9 @@ export const brands: HandoffBrand[] = [
     name: "PUNTR",
     tag: "Sports · Pick'em",
     meta: "LA · Sports challenges · puntr.us",
-    hook: "Ten picks. A free daily challenge.",
+    hook: "A free daily multi-pick challenge.",
     teaser:
-      "Los Angeles sports pick'em. Free daily challenges and cash prizes, plus paid solo challenges in eligible markets.",
+      "Los Angeles sports pick'em. Free daily challenges and cash prizes, plus paid challenges in eligible markets.",
     siteUrl: "https://www.puntr.us/",
     layout: "row",
     heroSrc: "/handoff/brands/puntr.webp",
@@ -194,7 +197,7 @@ export const brands: HandoffBrand[] = [
     logoHeight: 453,
     writeup: [
       'PUNTR is a Los Angeles sports pick\'em. The public site titles it "Sports Pick\'em - Free Daily Challenges & Cash Prizes." The live product is daily skill-based challenges linked to real sporting events: users make predictions across sports, build a performance record, and compete in repeatable formats. It is framed as participation rather than sports viewing, and as a companion to the wider sports experience rather than a replacement for live broadcasts.',
-      "One current format is a free Daily Challenge of 10 picks across sport. Each pick carries a different difficulty, and rankings use both accuracy and difficulty. Paid solo challenges run in eligible markets, where users enter fixed challenges for prizes. The company says this is not a prediction-market exchange: no contract trading, and no need for another participant to take the opposite side.",
+      "One current format is a free daily multi-pick challenge across sport. Each pick carries a different difficulty, and rankings use both accuracy and difficulty. Paid challenges run in eligible markets, where users enter fixed challenges for prizes.",
       'Longer-term direction, described as not yet available across the current product, includes more tailored challenges, relevant live moments, statistics, notifications, and suggestions on people to follow. Brad Hunt leads engineering, AI, live data, product architecture, and design. Founded by Australians. The public site links Instagram and TikTok @playpuntr and X @puntrplay. Public site: puntr.us. No invented user counts.',
     ],
   },
@@ -217,8 +220,8 @@ export const brands: HandoffBrand[] = [
     logoWidth: 543,
     logoHeight: 131,
     writeup: [
-      "Spade is a San Diego better-for-you soda. The public site calls it all natural, with no sugar, zero calories, and electrolytes. A December 2025 release says each can uses six ingredients, with no artificial ingredients or preservatives, and is sweetened with a stevia extract.",
-      "The retail story is a shelf story: 245 Walmart stores across California beginning January 5, 2026, in the Modern Soda set, in Guava, Yuzu-Lime, and Kiwi-Strawberry. The same release names Fresh Thyme, Bristol Farms, Foodland, select Albertsons banners (United and Market Street), and Amazon. Blake Berman is CEO and co-founder. The public site also sells Blueberry Açaí, Dr. Spade, and Modern Cola.",
+      "Spade is a San Diego better-for-you soda. The public site calls it all natural, with no sugar, zero calories, and electrolytes. A December 2025 release says each can uses six ingredients, with no artificial sweeteners or preservatives, and is sweetened with a stevia extract.",
+      "The retail story is a shelf story: 245 Walmart stores across California beginning January 5, 2026, in the Modern Soda set, in Guava, Yuzu-Lime, and Kiwi-Strawberry. The same release names Fresh Thyme, Bristol Farms, Foodland, select Albertsons banners (United and Market Street), and Amazon. Blake Berman is CEO and co-founder. The public site also sells Blueberry Açaí, Dr. Spade, and Cola.",
       "Instagram, TikTok, and X: @drinkspade. Public materials: drinkspade.com. No invented follower counts or sell-through figures.",
     ],
   },
@@ -244,6 +247,78 @@ export const brands: HandoffBrand[] = [
       "Stiller's Soda is a nostalgic better-for-you soda from Ben Stiller and Alex Doman. The September 2025 launch named three flavors: Root Beer, Lemon Lime, and Shirley Temple. Each 12-ounce can has 30 calories and 7 grams of sugar, from cane sugar, stevia, and monk fruit, plus vitamins D, B12, and C. The public site calls it all natural and low in calories, and also shops Shirley Cola.",
       "The public site points to Whole Foods Market, Walmart, Target, and Amazon. A January 2026 Food Business News piece places the line in Target nationwide, Whole Foods Market in New York, Connecticut, and New Jersey, and Walmart in the Northeast.",
       "Instagram and X: @stillerssoda. YouTube: @stillerssoda. Public materials: stillerssoda.com. No invented sales figures.",
+    ],
+  },
+  {
+    id: "growl",
+    name: "GROWL",
+    tag: "Sports · AI trainer",
+    meta: "Home training · joingrowl.com",
+    hook: "A coach at human scale.",
+    teaser:
+      "A life-size, human-like AI personal trainer for the home. The site calls the current coach an early prototype, with a waitlist.",
+    siteUrl: "https://www.joingrowl.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/growl.webp",
+    heroAlt: "GROWL life-size AI trainer in a home",
+    heroWidth: 1600,
+    heroHeight: 900,
+    logoSrc: "/handoff/logos/growl.webp",
+    logoAlt: "GROWL wordmark",
+    logoWidth: 1400,
+    logoHeight: 293,
+    writeup: [
+      "GROWL is a life-size, human-like AI personal trainer meant for the home. The public site describes a projected coach at human scale, an interactive touch surface, 3D motion tracking, and AI vision, hearing, and generative coaching with 360° feedback on each rep. Disciplines listed on the site include boxing, strength, Pilates, yoga, recovery, and gaming. The company says this is an early prototype of a fully generative coach, with a waitlist and a showroom visit.",
+      "The site frames the trainer as something for a whole household, kids included, and designed to live in the home rather than a garage. Cyril Gane, interim UFC heavyweight champion, appears as an early user. Press named on the site includes TechCrunch, The Verge, Fast Company, and Athletech News. The footer reads GROWL (BoxCo Interactive, Inc.).",
+      "Instagram and TikTok: @joingrowl. Public materials: joingrowl.com. No invented user counts.",
+    ],
+  },
+  {
+    id: "drumroll",
+    name: "Drumroll",
+    tag: "Food · Donuts",
+    meta: "Plant-based donuts · eatdrumroll.com",
+    hook: "A donut with the protein left in.",
+    teaser:
+      "Fluffy, cakey, plant-based donuts. Gluten-free and grain-free, with 10 grams of protein and 1 gram of sugar.",
+    siteUrl: "https://eatdrumroll.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/drumroll.webp",
+    heroAlt: "Drumroll chocolate glazed plant-based donut",
+    heroWidth: 1600,
+    heroHeight: 900,
+    logoSrc: "/handoff/logos/drumroll.webp",
+    logoAlt: "Drumroll wordmark",
+    logoWidth: 1400,
+    logoHeight: 186,
+    writeup: [
+      "Drumroll Snacks makes plant-based donuts: fluffy, cakey, and glazed. The homepage lists the line as gluten-free and grain-free, with 10 grams of protein, 1 gram of sugar, and 190 calories. Product copy also lists 8 grams of net carbs. The catalog names chocolate, vanilla, and strawberry.",
+      "The chocolate glazed page describes simple, plant-based ingredients and says the donuts are perishable and meant to stay refrigerated. The homepage line is “Donuts for the people.”",
+      "Instagram: @drumrollsnacks. TikTok: @drumrolldonuts. Public materials: eatdrumroll.com. No invented retail door counts.",
+    ],
+  },
+  {
+    id: "lastcrumb",
+    name: "Last Crumb",
+    tag: "Food · Cookies",
+    meta: "Brooklyn · Ships nationwide · lastcrumb.com",
+    hook: "Cookies that take three days.",
+    teaser:
+      "Handcrafted cookies from Brooklyn, with a Williamsburg shop and nationwide shipping. The Core Collection is a dozen, assorted by the head baker.",
+    siteUrl: "https://lastcrumb.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/lastcrumb.webp",
+    heroAlt: "Last Crumb chocolate chip cookie",
+    heroWidth: 1600,
+    heroHeight: 900,
+    logoSrc: "/handoff/logos/lastcrumb.webp",
+    logoAlt: "Last Crumb wordmark",
+    logoWidth: 1200,
+    logoHeight: 254,
+    writeup: [
+      "Last Crumb makes handcrafted cookies in Brooklyn and ships nationwide. The public site says the cookies are handcrafted over three days, and a Williamsburg shop at 144 N 8th Street bakes them fresh daily. The page title calls them the best cookies in Brooklyn.",
+      "The Core Collection is a dozen, listed at $120, assorted by the head baker. Flavors named on the homepage include The O.G., The Madonna, When Life Gives You Lemons, The Floor Is Lava, Macadamnia, and S'mores Sans Campfire.",
+      "Instagram and TikTok: @lastcrumb. X: @LastCrumbCookie. Public materials: lastcrumb.com. No invented order counts.",
     ],
   },
 ];
