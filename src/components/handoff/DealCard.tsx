@@ -43,7 +43,7 @@ export default function DealCard({ brand }: { brand: HandoffBrand }) {
       </div>
       <div className={styles.dealCardBody}>
         <span className={styles.dealCardTag}>{brand.tag}</span>
-        <h2 className={styles.dealCardName}>{brand.name}</h2>
+        <h3 className={styles.dealCardName}>{brand.name}</h3>
         <p className={styles.dealCardMeta}>{brand.meta}</p>
         <p className={styles.dealCardHook}>{brand.hook}</p>
         <p className={styles.dealCardTeaser}>{brand.teaser}</p>
