@@ -3,12 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="supported-color-schemes" content="dark">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>You're on the roster | The Handoff</title>
 <style>
 body{margin:0!important;padding:0!important;background:#070707}table{border-collapse:collapse}img{display:block;border:0;outline:none;text-decoration:none}
 @media screen and (max-width:600px){.outer-pad{padding:12px 10px!important}.brand-pad{padding:22px 22px 8px!important}.content-pad{padding-left:22px!important;padding-right:22px!important}.headline{font-size:32px!important;line-height:1.06!important}.body-copy{font-size:16px!important;line-height:1.55!important}}
+.logo-dark{display:none!important;max-height:0;overflow:hidden;mso-hide:all;}
+@media (prefers-color-scheme: dark){
+  .logo-light{display:none!important;}
+  .logo-dark{display:block!important;max-height:none!important;overflow:visible!important;}
+}
+[data-ogsc] .logo-light,[data-ogsb] .logo-light{display:none!important;}
+[data-ogsc] .logo-dark,[data-ogsb] .logo-dark{display:block!important;max-height:none!important;overflow:visible!important;}
 </style>
 </head>
 <body bgcolor="#070707" style="margin:0;padding:0;background-color:#070707;">
@@ -17,7 +24,10 @@ body{margin:0!important;padding:0!important;background:#070707}table{border-coll
 <tr><td align="center" class="outer-pad" style="padding:24px 12px 30px;">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" bgcolor="#111111" style="width:100%;max-width:560px;background-color:#111111;border:1px solid #242424;">
 <tr><td class="brand-pad" style="padding:26px 30px 6px;">
-<img src="https://www.backfieldventures.com/logo-cover.png" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">
+<img class="logo-light" src="https://www.backfieldventures.com/logo-text.png" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">
+<!--[if !mso]><!-->
+<img class="logo-dark" src="https://www.backfieldventures.com/logo-cover.png" width="176" alt="Backfield Ventures" style="display:none;width:176px;max-width:60%;height:auto;">
+<!--<![endif]-->
 <p style="margin:14px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.2;letter-spacing:3px;text-transform:uppercase;color:#a8a8a8;">THE HANDOFF</p>
 </td></tr>
 <tr><td class="content-pad" style="padding:22px 30px 0;">

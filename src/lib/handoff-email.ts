@@ -1,17 +1,22 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Locked subscriber HTML from Ryan. The logo src is the site wordmark, not a data URI.
+// Locked subscriber HTML from Ryan. Light mode uses the black wordmark; dark mode swaps in the white one.
 const ROSTER_HTML = readFileSync(join(process.cwd(), "src/lib/handoff-roster-email.html"), "utf8");
 
-const LOGO_SRC = "https://www.backfieldventures.com/logo-cover.png";
-const LOGO_TAG = `<img src="${LOGO_SRC}" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">`;
+const LOGO_LIGHT =
+  '<img class="logo-light" src="https://www.backfieldventures.com/logo-text.png" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">';
+const LOGO_DARK =
+  '<img class="logo-dark" src="https://www.backfieldventures.com/logo-cover.png" width="176" alt="Backfield Ventures" style="display:none;width:176px;max-width:60%;height:auto;">';
 
 function logoTag(html: string) {
-  if (!html.includes(LOGO_TAG) || html.includes("data:image")) {
+  if (!html.includes(LOGO_LIGHT) || !html.includes(LOGO_DARK) || html.includes("data:image")) {
     throw new Error("handoff email missing Backfield Ventures logo");
   }
-  return LOGO_TAG;
+  if (!html.includes("prefers-color-scheme: dark") || !html.includes("data-ogsc") || !html.includes("data-ogsb")) {
+    throw new Error("handoff email missing dark-mode logo swap");
+  }
+  return LOGO_LIGHT + LOGO_DARK;
 }
 
 const SOURCE_LOGO = logoTag(ROSTER_HTML);
