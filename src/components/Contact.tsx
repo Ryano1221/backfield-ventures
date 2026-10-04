@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Contact() {
   return (
     <section className="contact section" id="contact">
@@ -61,6 +63,10 @@ export default function Contact() {
           </button>
 
         </div>
+
+        <p className="contact__handoff reveal-bottom">
+          <Link href="/handoff">Follow The Handoff</Link>
+        </p>
 
         <div className="contact__email reveal-bottom">
           <a

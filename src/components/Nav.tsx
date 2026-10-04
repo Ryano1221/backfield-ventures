@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const onHandoff = usePathname() === "/handoff";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -21,7 +24,7 @@ export default function Nav() {
       className={`nav${scrolled ? " scrolled" : ""}${menuOpen ? " menu-open" : ""}`}
     >
       <div className="nav__inner">
-        <a href="#" className="nav__brand" aria-label="Backfield Ventures Home">
+        <Link href="/" className="nav__brand" aria-label="Backfield Ventures Home">
           <Image
             src="/logo-text.png"
             alt="Backfield Ventures"
@@ -30,13 +33,18 @@ export default function Nav() {
             className="nav__logo-img"
             priority
           />
-        </a>
+        </Link>
 
         <ul className="nav__links">
-          <li><a href="#focus" className="nav__link">THESIS</a></li>
-          <li><a href="#why" className="nav__link">WHY</a></li>
-          <li><a href="#philosophy" className="nav__link">PHILOSOPHY</a></li>
-          <li><a href="#contact" className="nav__link">CONTACT</a></li>
+          <li><Link href="/#focus" className="nav__link">THESIS</Link></li>
+          <li><Link href="/#why" className="nav__link">WHY</Link></li>
+          <li><Link href="/#philosophy" className="nav__link">PHILOSOPHY</Link></li>
+          <li><Link href="/#contact" className="nav__link">CONTACT</Link></li>
+          <li>
+            <Link href="/handoff" className="nav__link" aria-current={onHandoff ? "page" : undefined}>
+              HANDOFF
+            </Link>
+          </li>
         </ul>
 
         <div className="nav__cta-group">
@@ -59,10 +67,11 @@ export default function Nav() {
       </div>
 
       <div className="nav__mobile-menu">
-        <a href="#focus" className="nav__mobile-link" onClick={closeMenu}>THESIS</a>
-        <a href="#why" className="nav__mobile-link" onClick={closeMenu}>WHY</a>
-        <a href="#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</a>
-        <a href="#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</a>
+        <Link href="/#focus" className="nav__mobile-link" onClick={closeMenu}>THESIS</Link>
+        <Link href="/#why" className="nav__mobile-link" onClick={closeMenu}>WHY</Link>
+        <Link href="/#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</Link>
+        <Link href="/#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</Link>
+        <Link href="/handoff" className="nav__mobile-link" onClick={closeMenu} aria-current={onHandoff ? "page" : undefined}>HANDOFF</Link>
         <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
           PITCH <span className="bfv-arrow">→</span>
         </button>
