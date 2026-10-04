@@ -5,9 +5,8 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SOURCE = "handoff-public";
 
 // Self-hosted subscribe for The Handoff.
-// Sends a confirmation to the address on the form, then notifies Ryan.
-// Success requires Resend to accept the confirmation.
-// Does not write a list. Beehiiv is not called.
+// Sends the locked confirmation to the address on the form, then the internal notice.
+// Success requires Resend to accept both. Beehiiv is not called.
 
 export async function POST(req: NextRequest) {
   let body: { type?: unknown; name?: unknown; email?: unknown };

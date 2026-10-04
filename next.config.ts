@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  outputFileTracingIncludes: {
+    "/api/handoff-subscribe": ["./src/lib/handoff-roster-email.html"],
+  },
 };
 
 export default nextConfig;

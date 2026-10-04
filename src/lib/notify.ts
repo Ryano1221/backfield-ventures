@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import {
   HANDOFF_CONFIRMATION_SUBJECT,
+  HANDOFF_FROM,
   handoffConfirmationText,
   handoffNoticeText,
   renderHandoffConfirmation,
@@ -87,12 +88,6 @@ export async function notifyInvest(d: Record<string, string>) {
   });
 }
 
-function handoffFromAddress() {
-  const from = process.env.RESEND_FROM?.trim() ?? "";
-  if (!from || /onboarding@resend\.dev/i.test(from)) return null;
-  return from;
-}
-
 async function sendHandoffEmail(params: {
   to: string;
   subject: string;
@@ -100,11 +95,10 @@ async function sendHandoffEmail(params: {
   text: string;
   replyTo?: string;
 }) {
-  const from = handoffFromAddress();
-  if (!resend || !from) return false;
+  if (!resend) return false;
   try {
     const { data, error } = await resend.emails.send({
-      from,
+      from: HANDOFF_FROM,
       to: params.to,
       subject: params.subject,
       html: params.html,
@@ -139,10 +133,7 @@ export async function notifyHandoffSubscribe(d: { name: string; email: string; s
     html: renderHandoffNotice(d),
     text: handoffNoticeText(d),
   });
-  if (!noticed) {
-    console.error("handoff notice failed", { email: d.email });
-  }
-  return true;
+  return noticed;
 }
 
 export async function notifyPartner(d: Record<string, string>) {
