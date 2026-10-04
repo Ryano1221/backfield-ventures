@@ -1,16 +1,17 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Locked subscriber HTML from Ryan. The Backfield Ventures logo is the data URI on the img in this file.
+// Locked subscriber HTML from Ryan. The logo src is the site wordmark, not a data URI.
 const ROSTER_HTML = readFileSync(join(process.cwd(), "src/lib/handoff-roster-email.html"), "utf8");
 
-const LOGO_RE =
-  /<img src="data:image\/png;base64,[A-Za-z0-9+/=]+" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">/;
+const LOGO_SRC = "https://www.backfieldventures.com/logo-cover.png";
+const LOGO_TAG = `<img src="${LOGO_SRC}" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">`;
 
 function logoTag(html: string) {
-  const match = html.match(LOGO_RE);
-  if (!match) throw new Error("handoff email missing Backfield Ventures logo");
-  return match[0];
+  if (!html.includes(LOGO_TAG) || html.includes("data:image")) {
+    throw new Error("handoff email missing Backfield Ventures logo");
+  }
+  return LOGO_TAG;
 }
 
 const SOURCE_LOGO = logoTag(ROSTER_HTML);
