@@ -5,10 +5,9 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SOURCE = "handoff-public";
 
 // Self-hosted subscribe for The Handoff.
-// Notifies via the same Resend helper as pitch, invest, and partner.
-// Does not write those lists. Beehiiv is not called.
-// If self-hosted mail is not enough later, Beehiiv can be added behind an explicit flag
-// when BEEHIIV_API_KEY exists. Do not make Beehiiv the primary path.
+// Sends a confirmation to the address on the form, then notifies Ryan.
+// Success requires Resend to accept the confirmation.
+// Does not write a list. Beehiiv is not called.
 
 export async function POST(req: NextRequest) {
   let body: { type?: unknown; name?: unknown; email?: unknown };
@@ -32,15 +31,6 @@ export async function POST(req: NextRequest) {
 
   const payload = { type: "subscribe" as const, name, email, source: SOURCE };
 
-  const webhook = process.env.HANDOFF_WEBHOOK_URL;
-  if (webhook) {
-    await fetch(webhook, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).catch((error) => console.error("handoff webhook error", error));
-  }
-
   const sent = await notifyHandoffSubscribe({ name, email, source: SOURCE }).catch((error) => {
     console.error("handoff email error", error);
     return false;
@@ -48,6 +38,16 @@ export async function POST(req: NextRequest) {
 
   if (!sent) {
     console.log("handoff-subscribe", payload);
+    return NextResponse.json({ ok: false }, { status: 500 });
+  }
+
+  const webhook = process.env.HANDOFF_WEBHOOK_URL;
+  if (webhook) {
+    await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch((error) => console.error("handoff webhook error", error));
   }
 
   return NextResponse.json({ ok: true });
