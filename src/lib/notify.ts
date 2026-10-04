@@ -1,4 +1,11 @@
 import { Resend } from "resend";
+import {
+  HANDOFF_CONFIRMATION_SUBJECT,
+  handoffConfirmationText,
+  handoffNoticeText,
+  renderHandoffConfirmation,
+  renderHandoffNotice,
+} from "@/lib/handoff-email";
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
@@ -80,20 +87,61 @@ export async function notifyInvest(d: Record<string, string>) {
   });
 }
 
+function handoffFromAddress() {
+  const from = process.env.RESEND_FROM?.trim() ?? "";
+  if (!from || /onboarding@resend\.dev/i.test(from)) return null;
+  return from;
+}
+
+async function sendHandoffEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+}) {
+  const from = handoffFromAddress();
+  if (!resend || !from) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+      text: params.text,
+      replyTo: params.replyTo,
+    });
+    if (error || !data?.id) {
+      console.error("handoff email error", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("handoff email error", error);
+    return false;
+  }
+}
+
 export async function notifyHandoffSubscribe(d: { name: string; email: string; source: string }) {
-  if (!resend) return false;
-  const to = process.env.HANDOFF_TO_EMAIL ?? TO;
-  const body = section(
-    "Subscribe",
-    row("Name", d.name) + row("Email", d.email) + row("Source", d.source) + row("List", d.source),
-  );
-  await resend.emails.send({
-    from: FROM,
-    to,
-    replyTo: d.email,
-    subject: `The Handoff subscribe: ${d.email}`,
-    html: wrap("The Handoff", "Subscribe", "#111827", body),
+  const confirmed = await sendHandoffEmail({
+    to: d.email,
+    subject: HANDOFF_CONFIRMATION_SUBJECT,
+    html: renderHandoffConfirmation(d.name),
+    text: handoffConfirmationText(d.name),
   });
+  if (!confirmed) return false;
+
+  const noticeTo = process.env.HANDOFF_TO_EMAIL?.trim() || TO;
+  const noticed = await sendHandoffEmail({
+    to: noticeTo,
+    replyTo: d.email,
+    subject: `The Handoff subscribe: ${d.email.replace(/[\r\n]/g, "")}`,
+    html: renderHandoffNotice(d),
+    text: handoffNoticeText(d),
+  });
+  if (!noticed) {
+    console.error("handoff notice failed", { email: d.email });
+  }
   return true;
 }
 
