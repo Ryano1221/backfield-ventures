@@ -1,14 +1,50 @@
-const PAGE_LEAD =
-  "Welcome to The Handoff. Standout early sports and consumer brands, sent to people who want them.";
-const SIGNUP_LINE = "One email a month about early sports and consumer brands.";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+// Locked subscriber HTML from Ryan. The Backfield Ventures logo is the data URI on the img in this file.
+const ROSTER_HTML = readFileSync(join(process.cwd(), "src/lib/handoff-roster-email.html"), "utf8");
+
+const LOGO_RE =
+  /<img src="data:image\/png;base64,[A-Za-z0-9+/=]+" width="176" alt="Backfield Ventures" style="width:176px;max-width:60%;height:auto;">/;
+
+function logoTag(html: string) {
+  const match = html.match(LOGO_RE);
+  if (!match) throw new Error("handoff email missing Backfield Ventures logo");
+  return match[0];
+}
+
+const SOURCE_LOGO = logoTag(ROSTER_HTML);
+
+function withLockedLogo(html: string) {
+  if (logoTag(html) !== SOURCE_LOGO) {
+    throw new Error("handoff email logo does not match the locked HTML");
+  }
+  return html;
+}
+
+function replaceOnce(html: string, from: string, to: string) {
+  const parts = html.split(from);
+  if (parts.length !== 2) {
+    throw new Error("locked roster HTML no longer matches the expected copy");
+  }
+  return parts[0] + to + parts[1];
+}
+
+function replaceSpan(html: string, start: string, end: string, replacement: string) {
+  const startAt = html.indexOf(start);
+  const endAt = startAt < 0 ? -1 : html.indexOf(end, startAt);
+  if (startAt < 0 || endAt < 0) {
+    throw new Error("locked roster HTML no longer matches the expected copy");
+  }
+  return html.slice(0, startAt) + replacement + html.slice(endAt + end.length);
+}
+
+const GREETING = ">Ryan,</p>";
 const LOCKED_LINE = "Brands we think are impressive. Not an investment offer.";
-const HANDOFF_URL = "https://backfieldventures.com/handoff";
+const HANDOFF_URL = "https://www.backfieldventures.com/handoff";
 
-export const HANDOFF_CONFIRMATION_SUBJECT = "You're on The Handoff";
-
-const DISPLAY = "'Bebas Neue', 'Arial Narrow', Impact, 'Haettenschweiler', sans-serif";
-const MONO = "'Space Mono', 'IBM Plex Mono', 'Courier New', Courier, monospace";
-const BODY = "'Switzer', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+export const HANDOFF_CONFIRMATION_SUBJECT = "You're on the roster.";
+export const HANDOFF_FROM = "The Handoff <pitches@info.backfieldventures.com>";
 
 export function escapeHtml(value: string) {
   return value
@@ -23,114 +59,68 @@ function cleanLine(value: string) {
   return value.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function shell(opts: { preheader: string; kicker: string; headline: string; body: string }) {
-  // headline is trusted markup from this file. Subscriber text is escaped before it reaches body.
-  const preheader = escapeHtml(opts.preheader);
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <meta name="supported-color-schemes" content="dark">
-  <title>The Handoff</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Space+Mono:wght@400;700&amp;display=swap">
-  <style>
-    :root { color-scheme: dark; supported-color-schemes: dark; }
-    body { margin: 0; padding: 0; background: #000000; -webkit-text-size-adjust: 100%; }
-    @media only screen and (max-width: 600px) {
-      .handoff-pad { padding-left: 22px !important; padding-right: 22px !important; }
-      .handoff-headline { font-size: 52px !important; }
-    }
-  </style>
-</head>
-<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#000000;opacity:0;">
-    ${preheader}${"&nbsp;&zwnj;".repeat(12)}
-  </div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#000000" style="background:#000000;border-collapse:collapse;">
-    <tr>
-      <td align="center" style="padding:48px 16px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="width:100%;max-width:600px;background:#0a0a0a;border:1px solid #222222;border-collapse:collapse;">
-          <tr>
-            <td width="3" bgcolor="#f0ede8" rowspan="2" style="width:3px;background:#f0ede8;font-size:0;line-height:0;">&nbsp;</td>
-            <td class="handoff-pad" bgcolor="#0a0a0a" style="padding:48px 40px 28px;background:#0a0a0a;">
-              <p style="margin:0 0 18px;font-family:${MONO};font-size:11px;line-height:1.4;letter-spacing:0.18em;text-transform:uppercase;color:#f0ede8;">${escapeHtml(opts.kicker)}</p>
-              <h1 class="handoff-headline" style="margin:0 0 28px;font-family:${DISPLAY};font-size:68px;font-weight:400;line-height:0.88;letter-spacing:0.01em;color:#ffffff;">${opts.headline}</h1>
-              ${opts.body}
-            </td>
-          </tr>
-          <tr>
-            <td class="handoff-pad" bgcolor="#0a0a0a" style="padding:22px 40px 36px;background:#0a0a0a;border-top:1px solid #1f1f1f;">
-              <p style="margin:0 0 18px;font-family:${MONO};font-size:10px;line-height:1.6;letter-spacing:0.1em;text-transform:uppercase;color:#6e6a64;">${LOCKED_LINE}</p>
-              <a href="${HANDOFF_URL}" style="font-family:${MONO};font-size:11px;line-height:1.4;letter-spacing:0.16em;text-transform:uppercase;color:#f0ede8;text-decoration:none;">Backfield Ventures</a>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-
-function prose(text: string, margin: string) {
-  return `<p style="margin:${margin};font-family:${BODY};font-size:17px;font-weight:400;line-height:1.7;color:#c8c4bc;">${text}</p>`;
-}
-
 export function renderHandoffConfirmation(name: string) {
   const safeName = escapeHtml(cleanLine(name));
-  return shell({
-    preheader: SIGNUP_LINE,
-    kicker: "The Handoff",
-    headline: "You're on<br>the list.",
-    body: [
-      `<p style="margin:0 0 18px;font-family:${BODY};font-size:20px;font-weight:400;line-height:1.4;color:#f0ede8;">${safeName}.</p>`,
-      prose(PAGE_LEAD, "0 0 14px"),
-      prose(SIGNUP_LINE, "0"),
-    ].join(""),
-  });
+  return withLockedLogo(replaceOnce(ROSTER_HTML, GREETING, `>${safeName},</p>`));
 }
 
 export function handoffConfirmationText(name: string) {
   return [
-    `${cleanLine(name)}.`,
+    `${cleanLine(name)},`,
     "",
-    PAGE_LEAD,
+    "Welcome to The Handoff, the monthly newsletter from Backfield Ventures.",
     "",
-    SIGNUP_LINE,
+    "In football, a quarterback hands the ball to a running back. Here, we hand our research to you: the sports and consumer brands we're watching, why they stand out, and the signals we think others might miss.",
+    "",
+    "One useful read each month.",
+    "Your first handoff is coming soon.",
     "",
     LOCKED_LINE,
     "",
-    "Backfield Ventures",
     HANDOFF_URL,
   ].join("\n");
 }
 
-function noticeField(label: string, value: string, last = false) {
-  const gap = last ? "0" : "0 0 22px";
-  return `<p style="margin:0 0 6px;font-family:${MONO};font-size:10px;line-height:1.4;letter-spacing:0.16em;text-transform:uppercase;color:#8a8680;">${escapeHtml(label)}</p>
-<p style="margin:${gap};font-family:${BODY};font-size:18px;line-height:1.4;color:#f0ede8;">${value}</p>`;
-}
-
 export function renderHandoffNotice(d: { name: string; email: string; source: string }) {
+  const safeName = escapeHtml(cleanLine(d.name));
   const email = cleanLine(d.email);
-  const emailHtml = `<a href="mailto:${encodeURIComponent(email)}" style="color:#f0ede8;text-decoration:none;">${escapeHtml(email)}</a>`;
-  return shell({
-    preheader: `${cleanLine(d.name)} · ${email}`,
-    kicker: "Internal",
-    headline: "New subscriber",
-    body: [
-      noticeField("Name", escapeHtml(cleanLine(d.name))),
-      noticeField("Email", emailHtml),
-      noticeField("Source", escapeHtml(cleanLine(d.source)), true),
-    ].join(""),
-  });
+  const safeEmail = escapeHtml(email);
+  const emailHtml = `<a href="mailto:${encodeURIComponent(email)}" style="color:#b7b7b7;text-decoration:underline;">${safeEmail}</a>`;
+
+  let html = ROSTER_HTML;
+  html = replaceOnce(
+    html,
+    "<title>You're on the roster | The Handoff</title>",
+    "<title>Someone joined | The Handoff</title>",
+  );
+  html = replaceOnce(
+    html,
+    "From our backfield to your inbox. The brands and insights we are watching, handed off monthly.",
+    `${safeName} joined The Handoff.`,
+  );
+  html = replaceOnce(html, ">FROM OUR BACKFIELD TO YOUR INBOX.</p>", ">INTERNAL</p>");
+  html = replaceOnce(html, ">You're on the roster.</h1>", ">Someone joined.</h1>");
+  html = replaceSpan(
+    html,
+    '<p class="body-copy" style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:#f4f1ea;">',
+    "might miss.</p>",
+    `<p class="body-copy" style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:#f4f1ea;">Someone joined The Handoff.</p>`,
+  );
+  html = replaceSpan(
+    html,
+    '<p style="margin:0 0 7px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;font-weight:700;color:#f4f1ea;">',
+    "Your first handoff is coming soon.</p>",
+    `<p style="margin:0 0 7px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;font-weight:700;color:#f4f1ea;">Name</p>
+<p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#b7b7b7;">${safeName}</p>
+<p style="margin:0 0 7px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;font-weight:700;color:#f4f1ea;">Email</p>
+<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#b7b7b7;">${emailHtml}</p>`,
+  );
+  return withLockedLogo(html);
 }
 
 export function handoffNoticeText(d: { name: string; email: string; source: string }) {
   return [
-    "New subscriber",
+    "Someone joined The Handoff.",
     "",
     "Name",
     cleanLine(d.name),
@@ -138,12 +128,8 @@ export function handoffNoticeText(d: { name: string; email: string; source: stri
     "Email",
     cleanLine(d.email),
     "",
-    "Source",
-    cleanLine(d.source),
-    "",
     LOCKED_LINE,
     "",
-    "Backfield Ventures",
     HANDOFF_URL,
   ].join("\n");
 }
