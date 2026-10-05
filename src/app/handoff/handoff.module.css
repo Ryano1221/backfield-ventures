@@ -106,11 +106,47 @@
 }
 
 .proof {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin: 56px 0 12px;
-  align-items: stretch;
+}
+
+.proofGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 0 8px;
+  border-top: 1px solid rgba(240, 237, 232, 0.22);
+}
+
+.proofLabel {
+  margin: 0;
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f0ede8;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.proofCards {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.proofCards1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.proofCards2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.proofCards3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .dealCard {
@@ -654,6 +690,17 @@
   .dealCardRow {
     grid-column: span 12;
   }
+
+  .proofCards2,
+  .proofCards3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.proofCards .dealCardFeatured,
+.proofCards .dealCardSupport,
+.proofCards .dealCardRow {
+  grid-column: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
