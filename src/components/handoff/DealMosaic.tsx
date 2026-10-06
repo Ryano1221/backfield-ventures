@@ -3,7 +3,7 @@ import { brands, type HandoffBrandId } from "./brands";
 import DealCard from "./DealCard";
 
 const sections: { id: string; title: string; ids: HandoffBrandId[] }[] = [
-  { id: "apparel", title: "Apparel", ids: ["omorpho"] },
+  { id: "apparel", title: "Apparel", ids: ["omorpho", "bandit", "halfdays"] },
   { id: "sports", title: "Sports", ids: ["lectra", "puntr", "growl"] },
   {
     id: "food-and-beverage",
