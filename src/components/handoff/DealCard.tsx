@@ -8,8 +8,6 @@ const layoutClass = {
 } as const;
 
 export default function DealCard({ brand }: { brand: HandoffBrand }) {
-  const contain = brand.imageFit === "contain";
-
   return (
     <button
       type="button"
@@ -19,7 +17,7 @@ export default function DealCard({ brand }: { brand: HandoffBrand }) {
       aria-controls={`drawer-${brand.id}`}
       aria-expanded="false"
     >
-      <div className={`${styles.dealCardMedia} ${contain ? styles.dealCardMediaContain : ""}`}>
+      <div className={styles.dealCardMedia}>
         <Image
           className={styles.dealCardImg}
           src={brand.heroSrc}
