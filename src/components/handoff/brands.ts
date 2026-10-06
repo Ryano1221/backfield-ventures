@@ -20,7 +20,7 @@ export type HandoffBrand = {
   hook: string;
   teaser: string;
   siteUrl: string;
-  layout: "featured" | "support" | "row";
+  layout: "support" | "row";
   heroSrc: string;
   heroAlt: string;
   heroWidth: number;
@@ -42,7 +42,7 @@ export const brands: HandoffBrand[] = [
     teaser:
       "Micro-weighted training gear that adds load without a bulky vest silhouette. Built for runs, walks, and bodyweight work.",
     siteUrl: "https://omorpho.com/",
-    layout: "featured",
+    layout: "row",
     heroSrc: "/handoff/brands/omorpho.webp",
     heroAlt: "Omorpho micro-weighted training gear",
     heroWidth: 1600,
@@ -53,7 +53,7 @@ export const brands: HandoffBrand[] = [
     logoHeight: 33,
     writeup: [
       "Omorpho builds micro-weighted training apparel. G-Wear tops and tights use patented MicroLoad polymer and polyurethane spheres distributed through the garment, so the load sits in the fabric instead of a bulky vest silhouette. The G-Vest line uses stainless-steel bearings under the MicroLoad name.",
-      "Site framing covers run, walk, and train use cases, and weighted items are listed as HSA/FSA eligible. The product photographs as athletic kit first and a training tool second, which is why it holds the featured slot on this mosaic.",
+      "Site framing covers run, walk, and train use cases, and weighted items are listed as HSA/FSA eligible. The product photographs as athletic kit first and a training tool second.",
       "Public coverage has treated the weighted-apparel approach as a product story (including Men's Health review framing).",
     ],
   },

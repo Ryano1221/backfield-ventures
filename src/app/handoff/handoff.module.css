@@ -137,10 +137,6 @@
   min-width: 0;
 }
 
-.proofCards1 {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 .proofCards2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -177,16 +173,6 @@
   box-shadow: 0 0 0 2px #000, 0 0 0 3px #f0ede8;
 }
 
-.dealCardFeatured {
-  grid-column: span 8;
-  border-color: rgba(240, 237, 232, 0.35);
-}
-
-.dealCardFeatured:hover,
-.dealCardFeatured:focus-visible {
-  border-color: rgba(240, 237, 232, 0.75);
-}
-
 .dealCardSupport,
 .dealCardRow {
   grid-column: span 4;
@@ -218,20 +204,6 @@
   inset: 0;
   background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
   pointer-events: none;
-}
-
-.dealCardBadge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 2;
-  font-family: var(--font-mono);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-size: 9px;
-  color: #0a0a0a;
-  background: #f0ede8;
-  padding: 6px 10px;
 }
 
 .dealCardAccent {
@@ -292,10 +264,6 @@
   font-weight: 400;
 }
 
-.dealCardFeatured .dealCardName {
-  font-size: clamp(42px, 4.5vw, 64px);
-}
-
 .dealCardMeta {
   font-family: var(--font-mono);
   letter-spacing: 0.08em;
@@ -333,18 +301,6 @@
   min-height: 2.8em;
 }
 
-.dealCardFeatured .dealCardTeaser {
-  font-size: 15px;
-  color: #777;
-  -webkit-line-clamp: 3;
-  min-height: 3.9em;
-}
-
-.dealCardFeatured .dealCardHook {
-  font-size: clamp(18px, 1.6vw, 22px);
-  color: #eee;
-}
-
 .dealCardCta {
   font-family: var(--font-mono);
   letter-spacing: 0.14em;
@@ -357,8 +313,7 @@
   gap: 8px;
 }
 
-.dealCard:hover .dealCardCta,
-.dealCardFeatured .dealCardCta {
+.dealCard:hover .dealCardCta {
   color: #fff;
 }
 
@@ -651,15 +606,10 @@
 }
 
 @media (max-width: 1100px) {
-  .dealCardFeatured {
-    grid-column: span 12;
-  }
-
   .dealCardSupport,
   .dealCardRow {
     grid-column: span 6;
   }
-
 }
 
 @media (max-width: 900px) {
@@ -685,7 +635,6 @@
     justify-content: center;
   }
 
-  .dealCardFeatured,
   .dealCardSupport,
   .dealCardRow {
     grid-column: span 12;
@@ -697,7 +646,6 @@
   }
 }
 
-.proofCards .dealCardFeatured,
 .proofCards .dealCardSupport,
 .proofCards .dealCardRow {
   grid-column: auto;

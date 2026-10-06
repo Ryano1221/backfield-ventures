@@ -24,11 +24,7 @@ export default function DealMosaic() {
           </h2>
           <div
             className={`${styles.proofCards} ${
-              section.ids.length === 1
-                ? styles.proofCards1
-                : section.ids.length === 2
-                  ? styles.proofCards2
-                  : styles.proofCards3
+              section.ids.length === 2 ? styles.proofCards2 : styles.proofCards3
             }`}
           >
             {section.ids.map((id) => {
