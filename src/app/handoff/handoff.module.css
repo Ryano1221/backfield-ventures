@@ -198,6 +198,20 @@
   transform: scale(1.03);
 }
 
+.dealCardMediaContain {
+  background: #f3f3f1;
+}
+
+.dealCardMediaContain .dealCardImg,
+.dealCard:hover .dealCardMediaContain .dealCardImg {
+  object-fit: contain;
+  transform: none;
+}
+
+.dealCardMediaContain::after {
+  display: none;
+}
+
 .dealCardMedia::after {
   content: "";
   position: absolute;
@@ -228,12 +242,13 @@
 }
 
 .dealCardLogo {
-  max-height: 28px;
-  max-width: 148px;
+  max-height: 32px;
+  max-width: 100%;
   width: auto;
   height: auto;
   display: block;
   object-fit: contain;
+  object-position: center;
 }
 
 .dealCardBody {

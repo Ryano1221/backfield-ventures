@@ -31,6 +31,8 @@ export type HandoffBrand = {
   logoAlt: string;
   logoWidth: number;
   logoHeight: number;
+  /** Show the whole photo. Use for 4:5 and original product shots. */
+  imageFit?: "cover" | "contain";
   writeup: string[];
 };
 
@@ -69,14 +71,15 @@ export const brands: HandoffBrand[] = [
       "Brooklyn running apparel made with the New York running community, from a Greenpoint storefront outward.",
     siteUrl: "https://www.banditrunning.com/",
     layout: "row",
-    heroSrc: "/handoff/brands/bandit.webp",
-    heroAlt: "Bandit runner in black kit",
-    heroWidth: 1600,
-    heroHeight: 1200,
+    heroSrc: "/handoff/brands/bandit-socks.webp",
+    heroAlt: "Bandit white running socks",
+    heroWidth: 1200,
+    heroHeight: 1440,
+    imageFit: "contain",
     logoSrc: "/handoff/logos/bandit.webp",
     logoAlt: "Bandit Running logo",
-    logoWidth: 726,
-    logoHeight: 152,
+    logoWidth: 758,
+    logoHeight: 184,
     writeup: [
       "Bandit Running makes performance running apparel in Brooklyn. Founder Tim West started it in a basement apartment in 2020. The first product was cushioned running socks in white and black, packed by hand. The about page says the New York running community, including friends from Brooklyn Track Club, carried those early socks, and the line is now head-to-toe apparel.",
       "The name comes from Bobbi Gibb, who raced the 1966 Boston Marathon before women were allowed to compete. West calls her the original bandit. Community is the working method: fabrics and fits come from runner feedback and wear-testing, and Greenpoint Runners meets for four easy miles on Saturday mornings, then coffee and bagels.",
@@ -93,14 +96,15 @@ export const brands: HandoffBrand[] = [
       "Olympian-founded ski and mountain apparel from Colorado, made so more women can own the mountain, from the slope into year-round outdoor kit.",
     siteUrl: "https://halfdays.com/",
     layout: "row",
-    heroSrc: "/handoff/brands/halfdays.webp",
-    heroAlt: "Halfdays Georgie puffer jacket",
-    heroWidth: 1600,
-    heroHeight: 1200,
+    heroSrc: "/handoff/brands/halfdays-jacket.webp",
+    heroAlt: "Halfdays Nellie packable puffer jacket",
+    heroWidth: 1200,
+    heroHeight: 1800,
+    imageFit: "contain",
     logoSrc: "/handoff/logos/halfdays.webp",
     logoAlt: "Halfdays logo",
-    logoWidth: 690,
-    logoHeight: 168,
+    logoWidth: 722,
+    logoHeight: 200,
     writeup: [
       "Halfdays makes women's ski and mountain apparel. The homepage frames it as technical kit with inclusive sizing, and pushes back on hard-core outdoor culture. The line on the site is \"bye-bye, boys club.\" The brand says it is Olympian-founded and designed in Colorado.",
       "Co-founder Kiley McKinnon started Halfdays after competing in men's ski wear at the 2018 Winter Olympics, tired of unisex fits that were really cut for men. She launched with co-founders Ariana and Karelle. The about page says the company launched in 2020, ski is where it started, and the line has since expanded into outdoor apparel for the mountain year-round, for every level of skier.",
