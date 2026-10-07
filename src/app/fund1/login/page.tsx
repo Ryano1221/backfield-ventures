@@ -72,7 +72,7 @@ export default function Fund1LoginPage() {
         <div style={{width:"100%",maxWidth:420,textAlign:"center"}}>
           <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"100%",maxWidth:280,height:"auto",marginBottom:36,display:"block",marginLeft:"auto",marginRight:"auto"}}/>
           <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.42)",letterSpacing:4,marginBottom:14,textTransform:"uppercase"}}>Fund I — Confidential</div>
-          <div style={{fontFamily:BEBAS,fontSize:42,color:"#fff",letterSpacing:2,lineHeight:.9,marginBottom:8}}>RESTRICTED ACCESS</div>
+          <div style={{fontFamily:BEBAS,fontSize:42,color:"var(--bf-cream)",letterSpacing:2,lineHeight:.9,marginBottom:8}}>RESTRICTED ACCESS</div>
           <div style={{fontFamily:BODY,color:"rgba(255,255,255,.5)",fontSize:13,lineHeight:1.6,marginBottom:32}}>Enter the access password to view the Fund I materials.</div>
 
           <form onSubmit={submit} style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -87,7 +87,7 @@ export default function Fund1LoginPage() {
                 fontSize:13,
                 letterSpacing:3,
                 textAlign:"center",
-                color:"#fff",
+                color:"var(--bf-cream)",
                 background:"rgba(255,255,255,.04)",
                 border:`1.5px solid ${err?"#ff5555":"rgba(255,255,255,.18)"}`,
                 padding:"16px 20px",
@@ -103,7 +103,7 @@ export default function Fund1LoginPage() {
                 fontSize:14,
                 letterSpacing:3,
                 color:"#000",
-                background:"#fff",
+                background:"var(--bf-cream)",
                 border:"none",
                 padding:"14px 30px",
                 cursor:loading||!password?"not-allowed":"pointer",
