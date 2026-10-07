@@ -1,5 +1,7 @@
 export type HandoffBrandId =
   | "omorpho"
+  | "bandit"
+  | "halfdays"
   | "kreatures"
   | "foli"
   | "parch"
@@ -20,7 +22,7 @@ export type HandoffBrand = {
   hook: string;
   teaser: string;
   siteUrl: string;
-  layout: "featured" | "support" | "row";
+  layout: "support" | "row";
   heroSrc: string;
   heroAlt: string;
   heroWidth: number;
@@ -42,7 +44,7 @@ export const brands: HandoffBrand[] = [
     teaser:
       "Micro-weighted training gear that adds load without a bulky vest silhouette. Built for runs, walks, and bodyweight work.",
     siteUrl: "https://omorpho.com/",
-    layout: "featured",
+    layout: "row",
     heroSrc: "/handoff/brands/omorpho.webp",
     heroAlt: "Omorpho micro-weighted training gear",
     heroWidth: 1600,
@@ -53,8 +55,56 @@ export const brands: HandoffBrand[] = [
     logoHeight: 33,
     writeup: [
       "Omorpho builds micro-weighted training apparel. G-Wear tops and tights use patented MicroLoad polymer and polyurethane spheres distributed through the garment, so the load sits in the fabric instead of a bulky vest silhouette. The G-Vest line uses stainless-steel bearings under the MicroLoad name.",
-      "Site framing covers run, walk, and train use cases, and weighted items are listed as HSA/FSA eligible. The product photographs as athletic kit first and a training tool second, which is why it holds the featured slot on this mosaic.",
-      "Public coverage has treated the weighted-apparel approach as a product story (including Men's Health review framing). No invented athlete counts or growth metrics here. Public materials: omorpho.com.",
+      "Site framing covers run, walk, and train use cases, and weighted items are listed as HSA/FSA eligible. The product photographs as athletic kit first and a training tool second.",
+      "Public coverage has treated the weighted-apparel approach as a product story (including Men's Health review framing).",
+    ],
+  },
+  {
+    id: "bandit",
+    name: "Bandit Running",
+    tag: "Apparel · Running",
+    meta: "Brooklyn · Running apparel · banditrunning.com",
+    hook: "Running kit built inside a run crew.",
+    teaser:
+      "Brooklyn running apparel made with the New York running community, from a Greenpoint storefront outward.",
+    siteUrl: "https://www.banditrunning.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/bandit-shorts.webp",
+    heroAlt: "Bandit CoolGrid 5 inch run shorts",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/bandit.webp",
+    logoAlt: "Bandit Running logo",
+    logoWidth: 758,
+    logoHeight: 184,
+    writeup: [
+      "Bandit Running makes performance running apparel in Brooklyn. Founder Tim West started it in a basement apartment in 2020. The first product was cushioned running socks in white and black, packed by hand. The about page says the New York running community, including friends from Brooklyn Track Club, carried those early socks, and the line is now head-to-toe apparel.",
+      "The name comes from Bobbi Gibb, who raced the 1966 Boston Marathon before women were allowed to compete. West calls her the original bandit. Community is the working method: fabrics and fits come from runner feedback and wear-testing, and Greenpoint Runners meets for four easy miles on Saturday mornings, then coffee and bagels.",
+      "The brand opened a headquarters and a Brooklyn store in Greenpoint. Co-founders named on the site include Nick West and Ardith Singh, chief design officer. The Nova Crop, a running top with fuel pockets, is listed among TIME Magazine's Best Inventions of 2024. Instagram: @bandit.",
+    ],
+  },
+  {
+    id: "halfdays",
+    name: "Halfdays",
+    tag: "Apparel · Ski",
+    meta: "Colorado · Women's ski · halfdays.com",
+    hook: "A mountain kit cut for women.",
+    teaser:
+      "Olympian-founded ski and mountain apparel from Colorado, made so more women can own the mountain, from the slope into year-round outdoor kit.",
+    siteUrl: "https://halfdays.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/halfdays-louise.webp",
+    heroAlt: "Halfdays Louise jacket on a snowy ridge",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/halfdays.webp",
+    logoAlt: "Halfdays logo",
+    logoWidth: 722,
+    logoHeight: 200,
+    writeup: [
+      "Halfdays makes women's ski and mountain apparel. The homepage frames it as technical kit with inclusive sizing, and pushes back on hard-core outdoor culture. The line on the site is \"bye-bye, boys club.\" The brand says it is Olympian-founded and designed in Colorado.",
+      "Co-founder Kiley McKinnon started Halfdays after competing in men's ski wear at the 2018 Winter Olympics, tired of unisex fits that were really cut for men. She launched with co-founders Ariana and Karelle. The about page says the company launched in 2020, ski is where it started, and the line has since expanded into outdoor apparel for the mountain year-round, for every level of skier.",
+      "The public timeline names a first spring and summer collection, Nordstrom, REI, and a flagship on Walnut Street in Denver. Instagram and TikTok: @halfdays.",
     ],
   },
   {
@@ -78,7 +128,6 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Kreatures of Habit makes clean, plant-based daily fuel. Meal One is high-protein overnight oats (site claims include 30g plant-based protein, probiotics, and Omega-3, with no added sugar). The Daily Bar is a plant-based protein bar with 3g creatine built in.",
       "Brand framing is blunt: no seed oils, no artificial sweeteners, nothing fake, ingredients you can pronounce. Founder Michael Chernow built the line after years as a chef and athlete looking for a breakfast that was clean, convenient, and worth repeating every day.",
-      "This is the US food brand (kreaturesofhabit.com), not the India apparel label with a similar name. Facts only from the public site. No invented sell-through numbers. Public materials: kreaturesofhabit.com.",
     ],
   },
   {
@@ -102,7 +151,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "FOLI is a London pantry brand built around sculptural glass bottles that interlock into one counter object. The system is the story: olive oil, dressings, and balsamic that look designed to stay out, not hide in a cupboard.",
       "The shop lists Premium Extra Virgin Olive Oil, Premium French Salad Dressing, Premium Chilli Infused Olive Oil, and Premium Mature Balsamic Vinegar, plus the Premium Classic Trio and the Premium Classic & Chilli Trio. Founder Nohra Currie has spoken publicly about the packaging architecture.",
-      "Trade signals on the brand site include Harrods stocking and 2026 award-finalist badges. A September 2026 post on the site says FOLI won Everyday Homeware (Under £50) at the London Packaging Week Innovation Awards for the Set of Essential Premium Dressings. No invented retail door counts. Public materials: foliclub.com.",
+      "Trade signals on the brand site include Harrods stocking and 2026 award-finalist badges. A September 2026 post on the site says FOLI won Everyday Homeware (Under £50) at the London Packaging Week Innovation Awards for the Set of Essential Premium Dressings.",
     ],
   },
   {
@@ -125,8 +174,8 @@ export const brands: HandoffBrand[] = [
     logoHeight: 78,
     writeup: [
       'Parch makes non-alcoholic sparkling agave cocktails with a Sonoran desert visual system. Brand story pages lean on desert botanicals and the line "what grows together, goes together."',
-      "Product names on the public site include Desert Margarita, Sedona Spritz, Prickly Paloma, and Spiced Piñarita (verify live SKUs at publish time).",
-      "Quieter than the most famous NA aperitif names, which is the point for this mosaic. Do not invent sell-through or celebrity attachment claims. Public materials: drinkparch.com.",
+      "Product names on the public site include Desert Margarita, Sedona Spritz, Prickly Paloma, and Spiced Piñarita.",
+      "Quieter than the most famous NA aperitif names, which is the point for this mosaic.",
     ],
   },
   {
@@ -150,7 +199,6 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Lectra is a wearable recovery platform built from two parts: CytoTape, a conductive kinesiology tape with embedded electrode patterns, and Myto, a small rechargeable pod that snaps onto the tape and connects to a phone.",
       "It is wire-free muscle stimulation you can wear in daily life: apply the tape, snap the pod, control intensity and programs in the Lectra app. Site framing positions it for general wellness recovery, not as a medical device.",
-      "Public materials: lectra.tech. No invented clinical outcomes or sales figures.",
     ],
   },
   {
@@ -174,7 +222,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Unwind is a functional sparkling drink for everyday calm, from Nowadays founders Justin Tidwell and Anthony Puterman. Each 12-ounce can pairs flavor with magnesium L-threonate (Magtein) and L-theanine, with zero caffeine, low sugar, and low calories. Five varieties: Berry, Cherry, Citrus, Tropical, and Spicy Lime. Suggested retail pricing begins at $2.79 a can and $10.99 a four-pack.",
       "The debut is a retail shelf story: approximately 1,000 Walmart stores nationwide, plus Walmart.com, with TikTok Shop to follow in mid-October for direct-to-consumer shipping. The Walmart launch is described as the first phase, with additional national retail rollouts scheduled for early 2027. The brand is based in Irvine, Calif. The public site lists 25 calories and frames the line as sparkling calm.",
-      "Instagram and TikTok: @tryunwind. Public materials: tryunwindco.com. No invented follower counts or sell-through figures.",
+      "Instagram and TikTok: @tryunwind.",
     ],
   },
   {
@@ -198,7 +246,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       'PUNTR is a Los Angeles sports pick\'em. The public site titles it "Sports Pick\'em - Free Daily Challenges & Cash Prizes." The live product is daily skill-based challenges linked to real sporting events: users make predictions across sports, build a performance record, and compete in repeatable formats. It is framed as participation rather than sports viewing, and as a companion to the wider sports experience rather than a replacement for live broadcasts.',
       "One current format is a free daily multi-pick challenge across sport. Each pick carries a different difficulty, and rankings use both accuracy and difficulty. Paid challenges run in eligible markets, where users enter fixed challenges for prizes.",
-      'Longer-term direction, described as not yet available across the current product, includes more tailored challenges, relevant live moments, statistics, notifications, and suggestions on people to follow. Brad Hunt leads engineering, AI, live data, product architecture, and design. Founded by Australians. The public site links Instagram and TikTok @playpuntr and X @puntrplay. Public site: puntr.us. No invented user counts.',
+      'Longer-term direction, described as not yet available across the current product, includes more tailored challenges, relevant live moments, statistics, notifications, and suggestions on people to follow. Brad Hunt leads engineering, AI, live data, product architecture, and design. Founded by Australians. The public site links Instagram and TikTok @playpuntr and X @puntrplay.',
     ],
   },
   {
@@ -222,7 +270,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Spade is a San Diego better-for-you soda. The public site calls it all natural, with no sugar, zero calories, and electrolytes. A December 2025 release says each can uses six ingredients, with no artificial sweeteners or preservatives, and is sweetened with a stevia extract.",
       "The retail story is a shelf story: 245 Walmart stores across California beginning January 5, 2026, in the Modern Soda set, in Guava, Yuzu-Lime, and Kiwi-Strawberry. The same release names Fresh Thyme, Bristol Farms, Foodland, select Albertsons banners (United and Market Street), and Amazon. Blake Berman is CEO and co-founder. The public site also sells Blueberry Açaí, Dr. Spade, and Cola.",
-      "Instagram, TikTok, and X: @drinkspade. Public materials: drinkspade.com. No invented follower counts or sell-through figures.",
+      "Instagram, TikTok, and X: @drinkspade.",
     ],
   },
   {
@@ -246,7 +294,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Stiller's Soda is a nostalgic better-for-you soda from Ben Stiller and Alex Doman. The September 2025 launch named three flavors: Root Beer, Lemon Lime, and Shirley Temple. Each 12-ounce can has 30 calories and 7 grams of sugar, from cane sugar, stevia, and monk fruit, plus vitamins D, B12, and C. The public site calls it all natural and low in calories, and also shops Shirley Cola.",
       "The public site points to Whole Foods Market, Walmart, Target, and Amazon. A January 2026 Food Business News piece places the line in Target nationwide, Whole Foods Market in New York, Connecticut, and New Jersey, and Walmart in the Northeast.",
-      "Instagram and X: @stillerssoda. YouTube: @stillerssoda. Public materials: stillerssoda.com. No invented sales figures.",
+      "Instagram and X: @stillerssoda. YouTube: @stillerssoda.",
     ],
   },
   {
@@ -270,7 +318,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "GROWL is a life-size, human-like AI personal trainer meant for the home. The public site describes a projected coach at human scale, an interactive touch surface, 3D motion tracking, and AI vision, hearing, and generative coaching with 360° feedback on each rep. Disciplines listed on the site include boxing, strength, Pilates, yoga, recovery, and gaming. The company says this is an early prototype of a fully generative coach, with a waitlist and a showroom visit.",
       "The site frames the trainer as something for a whole household, kids included, and designed to live in the home rather than a garage. Cyril Gane, interim UFC heavyweight champion, appears as an early user. Press named on the site includes TechCrunch, The Verge, Fast Company, and Athletech News. The footer reads GROWL (BoxCo Interactive, Inc.).",
-      "Instagram and TikTok: @joingrowl. Public materials: joingrowl.com. No invented user counts.",
+      "Instagram and TikTok: @joingrowl.",
     ],
   },
   {
@@ -294,7 +342,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Drumroll Snacks makes plant-based donuts: fluffy, cakey, and glazed. The homepage lists the line as gluten-free and grain-free, with 10 grams of protein, 1 gram of sugar, and 190 calories. Product copy also lists 8 grams of net carbs. The catalog names chocolate, vanilla, and strawberry.",
       "The chocolate glazed page describes simple, plant-based ingredients and says the donuts are perishable and meant to stay refrigerated. The homepage line is “Donuts for the people.”",
-      "Instagram: @drumrollsnacks. TikTok: @drumrolldonuts. Public materials: eatdrumroll.com. No invented retail door counts.",
+      "Instagram: @drumrollsnacks. TikTok: @drumrolldonuts.",
     ],
   },
   {
@@ -318,7 +366,7 @@ export const brands: HandoffBrand[] = [
     writeup: [
       "Last Crumb makes handcrafted cookies in Brooklyn and ships nationwide. The public site says the cookies are handcrafted over three days, and a Williamsburg shop at 144 N 8th Street bakes them fresh daily. The page title calls them the best cookies in Brooklyn.",
       "The Core Collection is a dozen, listed at $120, assorted by the head baker. Flavors named on the homepage include The O.G., The Madonna, When Life Gives You Lemons, The Floor Is Lava, Macadamnia, and S'mores Sans Campfire.",
-      "Instagram and TikTok: @lastcrumb. X: @LastCrumbCookie. Public materials: lastcrumb.com. No invented order counts.",
+      "Instagram and TikTok: @lastcrumb. X: @LastCrumbCookie.",
     ],
   },
 ];
