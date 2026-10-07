@@ -22,7 +22,7 @@ export default function Contact() {
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M3 8l9 6 9-6M3 6h18v12H3V6z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="M3 8l9 6 9-6M3 6h18v12H3V6z" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinejoin="round" />
               </svg>
             </div>
             <span className="contact__card-label">FOUNDERS</span>
@@ -37,8 +37,8 @@ export default function Contact() {
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="7" width="20" height="14" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                <rect x="2" y="7" width="20" height="14" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
             <span className="contact__card-label">INVESTORS</span>
@@ -53,8 +53,8 @@ export default function Contact() {
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <span className="contact__card-label">OPERATORS/VC&apos;S</span>

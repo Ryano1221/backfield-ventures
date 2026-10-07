@@ -2,7 +2,7 @@
 
 /* ================================================================
    BACKFIELD VENTURES — globals.css
-   Pure black & white. Sports broadcast × CPG packaging energy.
+   Black ground, brand cream chrome. Sports broadcast × CPG packaging.
    ================================================================ */
 
 /* ============================================================
@@ -15,6 +15,9 @@
 
   /* Left bar width */
   --left-bar-w: 52px;
+
+  /* Brand cream — contrast chrome on black. Replaces pure white. */
+  --bf-cream: #f0ede8;
 }
 
 /* ============================================================
@@ -33,7 +36,7 @@ html {
 
 body {
   background: #000;
-  color: #fff;
+  color: var(--bf-cream);
   font-family: var(--font-body);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -159,7 +162,7 @@ ul { list-style: none; }
   letter-spacing: 0.01em;
   font-weight: 400;
   margin-bottom: 72px;
-  color: #fff;
+  color: var(--bf-cream);
 }
 
 /* ============================================================
@@ -177,22 +180,22 @@ ul { list-style: none; }
 }
 
 .btn--filled {
-  background: #fff;
+  background: var(--bf-cream);
   color: #000;
-  border: 1px solid #fff;
+  border: 1px solid var(--bf-cream);
 }
 .btn--filled:hover {
   background: #000;
-  color: #fff;
+  color: var(--bf-cream);
 }
 
 .btn--outline {
   background: transparent;
-  color: #fff;
-  border: 1px solid #fff;
+  color: var(--bf-cream);
+  border: 1px solid var(--bf-cream);
 }
 .btn--outline:hover {
-  background: #fff;
+  background: var(--bf-cream);
   color: #000;
 }
 
@@ -298,9 +301,9 @@ ul { list-style: none; }
   text-transform: uppercase;
   transition: color 0.2s;
 }
-.nav__link:hover { color: #fff; }
+.nav__link:hover { color: var(--bf-cream); }
 .nav__link[aria-current="page"],
-.nav__mobile-link[aria-current="page"] { color: #fff; }
+.nav__mobile-link[aria-current="page"] { color: var(--bf-cream); }
 
 .nav__cta {
   font-family: var(--font-mono);
@@ -308,14 +311,14 @@ ul { list-style: none; }
   letter-spacing: 0.12em;
   padding: 10px 22px;
   border: 1px solid #333;
-  color: #fff;
+  color: var(--bf-cream);
   text-transform: uppercase;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 .nav__cta:hover {
-  background: #fff;
+  background: var(--bf-cream);
   color: #000;
-  border-color: #fff;
+  border-color: var(--bf-cream);
 }
 
 .nav__hamburger {
@@ -331,7 +334,7 @@ ul { list-style: none; }
   display: block;
   width: 24px;
   height: 1px;
-  background: #fff;
+  background: var(--bf-cream);
 }
 
 .nav__mobile-menu {
@@ -350,13 +353,13 @@ ul { list-style: none; }
   text-transform: uppercase;
   transition: color 0.2s;
 }
-.nav__mobile-link:hover { color: #fff; }
+.nav__mobile-link:hover { color: var(--bf-cream); }
 
 .nav__mobile-cta {
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.12em;
-  color: #fff;
+  color: var(--bf-cream);
   padding: 16px 24px;
   background: #111;
   text-transform: uppercase;
@@ -415,7 +418,7 @@ ul { list-style: none; }
   font-size: clamp(52px, 8vw, 120px);
   line-height: 0.9;
   letter-spacing: 0.01em;
-  color: #fff;
+  color: var(--bf-cream);
   margin-bottom: 48px;
   display: block;
 }
@@ -467,8 +470,8 @@ ul { list-style: none; }
    TICKER
 ============================================================ */
 .ticker {
-  border-top: 1px solid #fff;
-  border-bottom: 1px solid #fff;
+  border-top: 1px solid var(--bf-cream);
+  border-bottom: 1px solid var(--bf-cream);
   overflow: hidden;
   white-space: nowrap;
   height: 44px;
@@ -509,7 +512,7 @@ ul { list-style: none; }
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.12em;
-  color: #fff;
+  color: var(--bf-cream);
   text-transform: uppercase;
   padding: 0 16px;
   display: inline-flex;
@@ -518,7 +521,7 @@ ul { list-style: none; }
 }
 
 .ticker__dot {
-  color: #fff;
+  color: var(--bf-cream);
   font-size: 10px;
 }
 
@@ -552,7 +555,7 @@ ul { list-style: none; }
 }
 
 .focus__col:hover {
-  border-color: #fff;
+  border-color: var(--bf-cream);
 }
 
 .focus__col::after {
@@ -590,7 +593,7 @@ ul { list-style: none; }
   letter-spacing: 0.03em;
   font-weight: 400;
   margin-bottom: 12px;
-  color: #fff;
+  color: var(--bf-cream);
 }
 
 .focus__col-sub {
@@ -678,7 +681,7 @@ ul { list-style: none; }
   font-family: var(--font-bebas);
   font-size: 28px;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: var(--bf-cream);
 }
 
 .stage__tag {
@@ -693,8 +696,8 @@ ul { list-style: none; }
 }
 
 .stage__tag--primary {
-  border: 1px solid #fff;
-  color: #fff;
+  border: 1px solid var(--bf-cream);
+  color: var(--bf-cream);
 }
 
 .stage__tag--selective {
@@ -760,7 +763,7 @@ ul { list-style: none; }
   font-size: clamp(56px, 9vw, 140px);
   line-height: 0.9;
   letter-spacing: 0.02em;
-  color: #fff;
+  color: var(--bf-cream);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -842,7 +845,7 @@ ul { list-style: none; }
 }
 
 .why__card:hover::before {
-  background: #fff;
+  background: var(--bf-cream);
 }
 
 .why__num {
@@ -860,7 +863,7 @@ ul { list-style: none; }
   letter-spacing: 0.04em;
   font-weight: 400;
   margin-bottom: 16px;
-  color: #fff;
+  color: var(--bf-cream);
   line-height: 1;
 }
 
@@ -899,7 +902,7 @@ ul { list-style: none; }
   left: 0;
   width: 3px;
   height: 0;
-  background: #fff;
+  background: var(--bf-cream);
   transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -946,7 +949,7 @@ ul { list-style: none; }
   letter-spacing: 0.02em;
   font-weight: 400;
   margin-bottom: 16px;
-  color: #fff;
+  color: var(--bf-cream);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1006,7 +1009,7 @@ ul { list-style: none; }
 
 .contact__card:hover {
   background: #111;
-  outline-color: #fff;
+  outline-color: var(--bf-cream);
 }
 
 .contact__card-icon {
@@ -1027,7 +1030,7 @@ ul { list-style: none; }
   font-size: 32px;
   letter-spacing: 0.04em;
   font-weight: 400;
-  color: #fff;
+  color: var(--bf-cream);
 }
 
 .contact__card-arrow {
@@ -1039,7 +1042,7 @@ ul { list-style: none; }
 }
 
 .contact__card:hover .contact__card-arrow {
-  color: #fff;
+  color: var(--bf-cream);
   transform: translateX(4px);
 }
 
@@ -1059,8 +1062,8 @@ ul { list-style: none; }
 }
 
 .contact__handoff a:hover {
-  color: #fff;
-  border-bottom-color: #fff;
+  color: var(--bf-cream);
+  border-bottom-color: var(--bf-cream);
 }
 
 .contact__email {
@@ -1075,7 +1078,7 @@ ul { list-style: none; }
   font-family: var(--font-mono);
   font-size: clamp(14px, 2.2vw, 28px);
   letter-spacing: 0.05em;
-  color: #fff;
+  color: var(--bf-cream);
   text-transform: lowercase;
   transition: color 0.2s;
   text-decoration: underline;
@@ -1084,7 +1087,7 @@ ul { list-style: none; }
 }
 
 .contact__email-link:hover {
-  text-decoration-color: #fff;
+  text-decoration-color: var(--bf-cream);
 }
 
 .contact__social {
@@ -1102,7 +1105,7 @@ ul { list-style: none; }
 }
 
 .contact__social-link:hover {
-  color: #fff;
+  color: var(--bf-cream);
 }
 
 /* ============================================================
@@ -1159,7 +1162,7 @@ ul { list-style: none; }
   transition: color 0.2s;
 }
 
-.footer__nav-link:hover { color: #fff; }
+.footer__nav-link:hover { color: var(--bf-cream); }
 
 .footer__nav-link[aria-current="page"] { color: #f0ede8; }
 
@@ -1453,7 +1456,7 @@ body.js-ready .reveal-right {
   font-size: clamp(56px, 7vw, 120px);
   line-height: 0.92;
   letter-spacing: 0.01em;
-  color: #fff;
+  color: var(--bf-cream);
   position: relative;
   z-index: 1;
   margin-bottom: 28px;

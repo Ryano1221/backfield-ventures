@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 const BEBAS = "var(--font-bebas, 'Bebas Neue', sans-serif)";
 const MONO  = "var(--font-mono, 'Space Mono', monospace)";
 const BODY  = "Switzer, 'Helvetica Neue', Arial, sans-serif";
+const CREAM = "var(--bf-cream, #f0ede8)";
 
 /* ─────────────────────────────────────────────
    GLOBAL CSS
@@ -35,16 +36,16 @@ const CSS = `
 
   .rh  { transition:background .15s, border-left-color .15s; cursor:default; }
   .rh:hover  { background:rgba(255,255,255,.06) !important; }
-  .pipe-row:hover { border-left-color:#fff !important; }
+  .pipe-row:hover { border-left-color:${CREAM} !important; }
   .pipe-row { transition: background .15s, border-left-color .2s ease; }
   .rhl { transition:background .15s; cursor:default; }
   .rhl:hover { background:rgba(0,0,0,.05) !important; }
 
-  .bw  { background:#fff; color:#000; border:none; font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:opacity .18s,transform .18s; }
+  .bw  { background:${CREAM}; color:#000; border:none; font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:opacity .18s,transform .18s; }
   .bw:hover  { opacity:.78; transform:translateY(-2px); }
-  .bo  { background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.3); font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:border-color .18s,transform .18s; }
-  .bo:hover  { border-color:#fff; transform:translateY(-2px); }
-  .bb  { background:#000; color:#fff; border:1.5px solid #000; font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:opacity .18s,transform .18s; }
+  .bo  { background:transparent; color:${CREAM}; border:1.5px solid rgba(255,255,255,.3); font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:border-color .18s,transform .18s; }
+  .bo:hover  { border-color:${CREAM}; transform:translateY(-2px); }
+  .bb  { background:#000; color:${CREAM}; border:1.5px solid #000; font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:opacity .18s,transform .18s; }
   .bb:hover  { opacity:.72; transform:translateY(-2px); }
   .bbl { background:transparent; color:#000; border:1.5px solid rgba(0,0,0,.28); font-family:${BEBAS}; font-size:13px; letter-spacing:3px; padding:12px 30px; cursor:pointer; transition:border-color .18s,transform .18s; }
   .bbl:hover { border-color:#000; transform:translateY(-2px); }
@@ -284,7 +285,7 @@ function Ticker() {
 function ProgressBar({cur,total}:{cur:number;total:number}) {
   return (
     <div style={{height:1.5,background:"rgba(255,255,255,.07)",flexShrink:0,zIndex:20}}>
-      <div style={{height:"100%",width:`${((cur+1)/total)*100}%`,background:"#fff",transition:"width .5s cubic-bezier(.4,0,.2,1)"}}/>
+      <div style={{height:"100%",width:`${((cur+1)/total)*100}%`,background:CREAM,transition:"width .5s cubic-bezier(.4,0,.2,1)"}}/>
     </div>
   );
 }
@@ -300,7 +301,7 @@ function DotNav({cur,total,onGo,light}:{cur:number;total:number;onGo:(n:number)=
   return (
     <div style={{display:"flex",gap:5,alignItems:"center"}}>
       {Array.from({length:total}).map((_,i)=>(
-        <div key={i} className="dot" onClick={()=>onGo(i)} style={{width:i===cur?22:5,height:4,background:i===cur?(light?"#000":"#fff"):(light?"rgba(0,0,0,.14)":"rgba(255,255,255,.18)")}}/>
+        <div key={i} className="dot" onClick={()=>onGo(i)} style={{width:i===cur?22:5,height:4,background:i===cur?(light?"#000":CREAM):(light?"rgba(0,0,0,.14)":"rgba(255,255,255,.18)")}}/>
       ))}
     </div>
   );
@@ -354,7 +355,7 @@ function BigStat({raw,label,source,light,delay=0}:{raw:string;label:string;sourc
   const v=useCountUp(num,decs,160+delay);
   return (
     <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 24px",borderRight:light?"1px solid rgba(0,0,0,.08)":"1px solid rgba(255,255,255,.07)"}}>
-      <div style={{fontFamily:BEBAS,fontSize:"clamp(38px,5.5vh,68px)",lineHeight:.9,letterSpacing:1,color:light?"#000":"#fff"}}>{pfx}{v}{sfx}</div>
+      <div style={{fontFamily:BEBAS,fontSize:"clamp(38px,5.5vh,68px)",lineHeight:.9,letterSpacing:1,color:light?"#000":CREAM}}>{pfx}{v}{sfx}</div>
       <div style={{fontFamily:MONO,fontSize:8,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)",marginTop:6,letterSpacing:2,textTransform:"uppercase",lineHeight:1.4}}>{label}</div>
       <div style={{fontFamily:MONO,fontSize:7,color:light?"rgba(0,0,0,.42)":"rgba(255,255,255,.38)",marginTop:4,letterSpacing:1.5}}>{source}</div>
     </div>
@@ -379,7 +380,7 @@ function DealRow({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,del
           <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
             {aLogo
               ? <img src={aLogo} className="logo-dark m-deal-logo" style={{height:28,maxWidth:100,objectFit:"contain",objectPosition:"center",opacity:.85}} alt={acquirer}/>
-              : <span style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:.5,textAlign:"center"}}>{acquirer}</span>
+              : <span style={{fontFamily:BEBAS,fontSize:14,color:CREAM,letterSpacing:.5,textAlign:"center"}}>{acquirer}</span>
             }
           </div>
           {/* acquired arrow */}
@@ -400,13 +401,13 @@ function DealRow({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,del
           </div>
           {/* value + year */}
           <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-            <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1}}>{value}</span>
+            <span style={{fontFamily:BEBAS,fontSize:22,color:CREAM,letterSpacing:1}}>{value}</span>
             <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.42)"}}>{year}</span>
           </div>
         </div>
       </div>
       <div style={{height:2.5,background:"rgba(255,255,255,.06)",transformOrigin:"left"}}>
-        <div style={{height:"100%",width:`${w}%`,background:"#fff",transition:`width 1.4s cubic-bezier(.4,0,.2,1) ${delay}ms`}}/>
+        <div style={{height:"100%",width:`${w}%`,background:CREAM,transition:`width 1.4s cubic-bezier(.4,0,.2,1) ${delay}ms`}}/>
       </div>
     </div>
   );
@@ -512,7 +513,7 @@ function Cover({onNext,onGo,total}:{onNext:()=>void;onGo:(n:number)=>void;total:
           {metrics.map(({label,value},i)=>(
             <div key={i} style={{padding:"16px 24px",borderRight:i<3?"1px solid rgba(255,255,255,.07)":"none",display:"flex",flexDirection:"column",gap:5}}>
               <span style={{fontFamily:MONO,fontSize:7.5,color:"rgba(255,255,255,.48)",letterSpacing:3,textTransform:"uppercase"}}>{label}</span>
-              <span style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.4vh,26px)",color:"#fff",letterSpacing:1,lineHeight:1}}>{value}</span>
+              <span style={{fontFamily:BEBAS,fontSize:"clamp(18px,2.4vh,26px)",color:CREAM,letterSpacing:1,lineHeight:1}}>{value}</span>
             </div>
           ))}
         </div>
@@ -557,7 +558,7 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
           <div key={n} className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",padding:"clamp(22px,2.6vh,32px) clamp(26px,2.8vh,34px)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",right:8,top:-8,fontFamily:BEBAS,fontSize:"clamp(120px,17vh,200px)",color:"rgba(255,255,255,.025)",lineHeight:1,userSelect:"none"}}>{n}</div>
             <div style={{fontFamily:MONO,fontSize:"clamp(10px,1.2vh,12px)",color:"rgba(255,255,255,.5)",letterSpacing:3,marginBottom:8}}>{n}</div>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(42px,5.6vh,66px)",color:"#fff",letterSpacing:1,marginBottom:10,lineHeight:.9}}>{name}</div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(42px,5.6vh,66px)",color:CREAM,letterSpacing:1,marginBottom:10,lineHeight:.9}}>{name}</div>
             <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.55)",fontSize:"clamp(14px,1.7vh,17px)",marginBottom:14,lineHeight:1.55}}>{sub}</div>
             <div style={{fontFamily:BODY,color:"rgba(255,255,255,.7)",fontSize:"clamp(14px,1.75vh,17px)",lineHeight:1.7,marginBottom:18}}>{body}</div>
             {/* Investment criteria — fills the middle space */}
@@ -574,7 +575,7 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
                 {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.22)",padding:"4px 10px",fontFamily:MONO,fontSize:"clamp(9px,1.05vh,10.5px)",letterSpacing:2.5,color:"rgba(255,255,255,.65)",textTransform:"uppercase"}}>{t}</span>)}
               </div>
               <div style={{display:"flex",alignItems:"baseline",gap:14}}>
-                <span style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,52px)",color:"#fff",letterSpacing:1}}>{stat}</span>
+                <span style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,52px)",color:CREAM,letterSpacing:1}}>{stat}</span>
                 <span style={{fontFamily:MONO,fontSize:"clamp(10px,1.2vh,12px)",color:"rgba(255,255,255,.45)",letterSpacing:2,textTransform:"uppercase"}}>{statLabel}</span>
               </div>
             </div>
@@ -607,11 +608,11 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
       <Header n="02" label="WHY NOW" right="PHYSICAL > DIGITAL"/>
 
       {/* Big headline */}
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(40px,5.8vh,68px)",color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>WHAT AI CAN&apos;T BUILD.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(40px,5.8vh,68px)",color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>WHAT AI CAN&apos;T BUILD.</div>
 
       {/* Manifesto */}
       <div className="fu3" style={{fontFamily:BODY,fontSize:"clamp(13px,1.6vh,16px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:"clamp(16px,2vh,24px)",flexShrink:0,maxWidth:"min(1100px,92%)"}}>
-        Every SaaS company built in the last decade can now be rebuilt in an afternoon. The moat that took a decade to dig evaporates in a sprint. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
+        Every SaaS company built in the last decade can now be rebuilt in an afternoon. The moat that took a decade to dig evaporates in a sprint. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:CREAM,fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
       </div>
 
       {/* Two-column comparison */}
@@ -644,16 +645,16 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
           <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontFamily:BEBAS,fontSize:"clamp(380px,50vh,580px)",color:"rgba(255,255,255,.055)",lineHeight:1,letterSpacing:-8,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
           <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%"}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-              <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
+              <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:CREAM,letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
               <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
             </div>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:"#fff",letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>CPG · SPORTS</div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.4vh,38px)",color:CREAM,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",lineHeight:.95}}>CPG · SPORTS</div>
             <div style={{display:"flex",flexDirection:"column",justifyContent:"space-evenly",gap:"clamp(10px,1.4vh,16px)",flex:1,minHeight:0}}>
               {protected_.map(({h,b},i)=>(
                 <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
                   <div style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:4}}>0{i+1}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:3,flex:1,minWidth:0}}>
-                    <div style={{fontFamily:BEBAS,fontSize:"clamp(16px,2vh,21px)",color:"#fff",letterSpacing:1.2}}>{h}</div>
+                    <div style={{fontFamily:BEBAS,fontSize:"clamp(16px,2vh,21px)",color:CREAM,letterSpacing:1.2}}>{h}</div>
                     <div style={{fontFamily:BODY,fontSize:"clamp(12.5px,1.5vh,15.5px)",color:"rgba(255,255,255,.75)",lineHeight:1.55}}>{b}</div>
                   </div>
                 </div>
@@ -696,7 +697,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
         <BigStat raw="15.4%" label="DTC E-Commerce CAGR 2024–33" source="INVESP / STATISTA, 2024" delay={100}/>
         <BigStat raw="41%" label="Consumer M&A Value Growth 2025" source="PWC GLOBAL M&A TRENDS, 2025" delay={200}/>
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 24px"}}>
-          <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.5vh,40px)",color:"#fff",lineHeight:.9,letterSpacing:1}}>THE CONSUMER MARKET IS<br/>CONSOLIDATING FAST.</div>
+          <div style={{fontFamily:BEBAS,fontSize:"clamp(26px,3.5vh,40px)",color:CREAM,lineHeight:.9,letterSpacing:1}}>THE CONSUMER MARKET IS<br/>CONSOLIDATING FAST.</div>
           <div style={{fontFamily:BODY,color:"rgba(255,255,255,.38)",fontSize:"clamp(10px,1.3vh,12.5px)",lineHeight:1.65,marginTop:8}}>The biggest players are buying everyone. The window for early-stage brands is wider than ever.</div>
         </div>
       </div>
@@ -842,7 +843,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
         {rows.map(([label,val],i)=>(
           <div key={i} className="rh m-fund-row pipe-row" style={{display:"flex",alignItems:"center",flex:1,background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.07)",padding:"0 24px",minHeight:0}}>
             <div style={{fontFamily:MONO,fontSize:"clamp(10px,1.25vh,12.5px)",color:"rgba(255,255,255,.5)",letterSpacing:2.5,textTransform:"uppercase",minWidth:260,flexShrink:0}}>{label}</div>
-            <div style={{fontFamily:BEBAS,fontSize:"clamp(17px,2.2vh,24px)",color:"#fff",letterSpacing:1}}>{val}</div>
+            <div style={{fontFamily:BEBAS,fontSize:"clamp(17px,2.2vh,24px)",color:CREAM,letterSpacing:1}}>{val}</div>
           </div>
         ))}
       </div>
@@ -866,7 +867,7 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
   return (
     <Dark>
       <Header n="07" label="DEAL PIPELINE" right="DEAL FLOW ALREADY COMING TO US"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>ACTIVE PIPELINE.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:CREAM,lineHeight:.88,letterSpacing:1,marginBottom:"clamp(8px,1.2vh,14px)",flexShrink:0}}>ACTIVE PIPELINE.</div>
       {/* Table header */}
       <div className="m-pipe-header" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",padding:"0 18px",marginBottom:6,flexShrink:0}}>
         {["COMPANY DESCRIPTION","CATEGORY","NET REV","STAGE"].map(h=>(
@@ -878,7 +879,7 @@ function Pipeline({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
           <div key={i} className="rh c3 m-pipe-row pipe-row" style={{display:"grid",gridTemplateColumns:"3fr 1.4fr 1fr 1fr",background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",borderLeft:"2px solid rgba(255,255,255,.06)",alignItems:"center",flex:1,minHeight:0}}>
             <div style={{padding:"0 18px",fontFamily:BODY,color:"rgba(255,255,255,.78)",fontSize:"clamp(14px,1.8vh,18px)",lineHeight:1.55}}>{desc}</div>
             <div style={{padding:"0 14px",fontFamily:MONO,fontSize:"clamp(10px,1.25vh,12.5px)",color:"rgba(255,255,255,.55)",letterSpacing:2,textTransform:"uppercase",lineHeight:1.3}}>{cat}</div>
-            <div style={{padding:"0 14px"}}><span style={{fontFamily:BEBAS,fontSize:"clamp(22px,2.8vh,32px)",color:"#fff",letterSpacing:1}}>{rev}</span></div>
+            <div style={{padding:"0 14px"}}><span style={{fontFamily:BEBAS,fontSize:"clamp(22px,2.8vh,32px)",color:CREAM,letterSpacing:1}}>{rev}</span></div>
             <div style={{padding:"0 14px"}}><span style={{fontFamily:MONO,fontSize:"clamp(9px,1.1vh,11px)",letterSpacing:1.5,color:stageColor(stage),border:`1px solid ${stageColor(stage)}`,padding:"5px 10px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{stage}</span></div>
           </div>
         ))}
@@ -955,8 +956,8 @@ function TeamCard({photo,init,name,blurb,number,partnerN,tags}:{
         <div style={{flex:1,minWidth:0,padding:"clamp(24px,3vh,36px) clamp(22px,2.8vh,32px) clamp(18px,2.2vh,28px)",display:"flex",flexDirection:"column"}}>
           {/* Small numbered label like Thesis */}
           <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.35)",letterSpacing:3,marginBottom:10}}>{partnerN}</div>
-          <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,54px)",color:"#fff",letterSpacing:1.5,lineHeight:.9,marginBottom:14}}>{name}</div>
-          <div style={{width:32,height:2,background:"#fff",marginBottom:"clamp(16px,2.2vh,24px)"}}/>
+          <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,54px)",color:CREAM,letterSpacing:1.5,lineHeight:.9,marginBottom:14}}>{name}</div>
+          <div style={{width:32,height:2,background:CREAM,marginBottom:"clamp(16px,2.2vh,24px)"}}/>
           <div style={{fontFamily:BODY,fontSize:"clamp(15px,2vh,21px)",color:"rgba(255,255,255,.8)",lineHeight:1.7,flex:1,minHeight:0,display:"flex",alignItems:"center"}}>{blurb}</div>
         </div>
       </div>
@@ -1015,7 +1016,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>OPERATORS BACKING OPERATORS</span>
       </div>
       <div className="fu1" style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:8,flexShrink:0,textTransform:"uppercase"}}>TWO PARTNERS. ONE PLAYBOOK.</div>
-      <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:"#fff",lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,18px)",flexShrink:0}}>TEAM.</div>
+      <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:CREAM,lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,18px)",flexShrink:0}}>TEAM.</div>
       <div className="fu3 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
         {team.map(p=><TeamCard key={p.name} {...p}/>)}
       </div>
@@ -1039,7 +1040,7 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
           <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"clamp(260px,38vw,520px)",height:"auto",objectFit:"contain",display:"block"}}/>
         </div>
         <div className="fu1" style={{width:1,height:"clamp(28px,4vh,48px)",background:"rgba(255,255,255,.12)",margin:"0 auto",marginBottom:"clamp(16px,2.2vh,28px)"}}/>
-        <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(52px,9vh,100px)",color:"#fff",lineHeight:.86,letterSpacing:2,marginBottom:"clamp(10px,1.5vh,18px)"}}>
+        <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(52px,9vh,100px)",color:CREAM,lineHeight:.86,letterSpacing:2,marginBottom:"clamp(10px,1.5vh,18px)"}}>
           LET&apos;S BUILD<br/>SOMETHING<br/>ICONIC.
         </div>
         <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",margin:"0 auto",marginBottom:"clamp(10px,1.5vh,18px)"}}/>
@@ -1076,7 +1077,7 @@ function MobileSlide({children,light}:{children:React.ReactNode;light?:boolean})
       overflowY:"auto",
       overflowX:"hidden",
       background:light?"#f0f0f0":"#000",
-      color:light?"#000":"#fff",
+      color:light?"#000":CREAM,
       WebkitOverflowScrolling:"touch",
       touchAction:"pan-y",
       boxSizing:"border-box",
@@ -1129,7 +1130,7 @@ function MobileCover() {
             display:"flex",flexDirection:"column",gap:6,
           }}>
             <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.5)",letterSpacing:2.5,textTransform:"uppercase"}}>{label}</span>
-            <span style={{fontFamily:BEBAS,fontSize:20,color:"#fff",letterSpacing:1,lineHeight:1}}>{value}</span>
+            <span style={{fontFamily:BEBAS,fontSize:20,color:CREAM,letterSpacing:1,lineHeight:1}}>{value}</span>
           </div>
         ))}
       </div>
@@ -1170,7 +1171,7 @@ function MobileThesis() {
             padding:"22px 18px",position:"relative",overflow:"hidden",
           }}>
             <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.32)",letterSpacing:2.5,marginBottom:6}}>{n}</div>
-            <div style={{fontFamily:BEBAS,fontSize:36,color:"#fff",letterSpacing:1.5,marginBottom:6,lineHeight:.95}}>{name}</div>
+            <div style={{fontFamily:BEBAS,fontSize:36,color:CREAM,letterSpacing:1.5,marginBottom:6,lineHeight:.95}}>{name}</div>
             <div style={{fontFamily:BODY,fontStyle:"italic",color:"rgba(255,255,255,.42)",fontSize:13,marginBottom:12,lineHeight:1.55}}>{sub}</div>
             <div style={{fontFamily:BODY,color:"rgba(255,255,255,.6)",fontSize:13.5,lineHeight:1.65,marginBottom:14}}>{body}</div>
             <div style={{borderTop:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",padding:"12px 0",marginBottom:14,display:"flex",flexDirection:"column",gap:8}}>
@@ -1185,7 +1186,7 @@ function MobileThesis() {
               {tags.map(t=><span key={t} style={{border:"1px solid rgba(255,255,255,.18)",padding:"3px 7px",fontFamily:MONO,fontSize:7,letterSpacing:2.5,color:"rgba(255,255,255,.5)",textTransform:"uppercase"}}>{t}</span>)}
             </div>
             <div style={{display:"flex",alignItems:"baseline",gap:10}}>
-              <span style={{fontFamily:BEBAS,fontSize:32,color:"#fff",letterSpacing:1}}>{stat}</span>
+              <span style={{fontFamily:BEBAS,fontSize:32,color:CREAM,letterSpacing:1}}>{stat}</span>
               <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>{statLabel}</span>
             </div>
           </div>
@@ -1206,7 +1207,7 @@ function MBigStat({raw,label,source,light}:{raw:string;label:string;source:strin
       padding:"14px 14px",
       borderBottom:light?"1px solid rgba(0,0,0,.09)":"1px solid rgba(255,255,255,.07)",
     }}>
-      <div style={{fontFamily:BEBAS,fontSize:38,lineHeight:.92,letterSpacing:1,color:light?"#000":"#fff"}}>{pfx}{v}{sfx}</div>
+      <div style={{fontFamily:BEBAS,fontSize:38,lineHeight:.92,letterSpacing:1,color:light?"#000":CREAM}}>{pfx}{v}{sfx}</div>
       <div style={{fontFamily:MONO,fontSize:8.5,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)",marginTop:6,letterSpacing:2,textTransform:"uppercase"}}>{label}</div>
       <div style={{fontFamily:MONO,fontSize:7,color:light?"rgba(0,0,0,.42)":"rgba(255,255,255,.38)",marginTop:3,letterSpacing:1.5}}>{source}</div>
     </div>
@@ -1231,7 +1232,7 @@ function MDealCard({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,l
         <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"flex-start"}}>
           {aLogo
             ? <img src={aLogo} className={light?"logo-light":"logo-dark"} style={{height:22,maxWidth:100,objectFit:"contain",objectPosition:"left",opacity:light?.75:.85}} alt={acquirer}/>
-            : <span style={{fontFamily:BEBAS,fontSize:14,color:light?"#000":"#fff",letterSpacing:.5}}>{acquirer}</span>
+            : <span style={{fontFamily:BEBAS,fontSize:14,color:light?"#000":CREAM,letterSpacing:.5}}>{acquirer}</span>
           }
         </div>
         <span style={{fontFamily:MONO,fontSize:11,color:light?"rgba(0,0,0,.3)":"rgba(255,255,255,.3)"}}>→</span>
@@ -1242,14 +1243,14 @@ function MDealCard({acquirer,aLogo,target,tLogo,value,valueNum,maxVal,cat,year,l
       {/* Row 2: value + cat + year */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
         <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-          <span style={{fontFamily:BEBAS,fontSize:22,color:light?"#000":"#fff",letterSpacing:1}}>{value}</span>
+          <span style={{fontFamily:BEBAS,fontSize:22,color:light?"#000":CREAM,letterSpacing:1}}>{value}</span>
           <span style={{fontFamily:MONO,fontSize:7.5,color:light?"rgba(0,0,0,.45)":"rgba(255,255,255,.42)"}}>{year}</span>
         </div>
         <span style={{fontFamily:MONO,fontSize:7,letterSpacing:2,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.45)",border:`1px solid ${light?"rgba(0,0,0,.2)":"rgba(255,255,255,.18)"}`,padding:"3px 6px",textTransform:"uppercase"}}>{cat}</span>
       </div>
       {/* Bar */}
       <div style={{height:2.5,background:light?"rgba(0,0,0,.08)":"rgba(255,255,255,.06)"}}>
-        <div style={{height:"100%",width:`${w}%`,background:light?"#000":"#fff",transition:`width 1.2s cubic-bezier(.4,0,.2,1) ${delay}ms`}}/>
+        <div style={{height:"100%",width:`${w}%`,background:light?"#000":CREAM,transition:`width 1.2s cubic-bezier(.4,0,.2,1) ${delay}ms`}}/>
       </div>
     </div>
   );
@@ -1286,9 +1287,9 @@ function MobileWhyNow() {
   return (
     <MobileSlide>
       <MHeader n="02" label="WHY NOW"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:40,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>WHAT AI CAN&apos;T BUILD.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:40,color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:18}}>WHAT AI CAN&apos;T BUILD.</div>
       <div className="fu2" style={{fontFamily:BODY,fontSize:13.5,color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:22}}>
-        Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:"#fff",fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
+        Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:CREAM,fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
       </div>
 
       {/* AI-Vulnerable */}
@@ -1319,16 +1320,16 @@ function MobileWhyNow() {
         <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontFamily:BEBAS,fontSize:340,color:"rgba(255,255,255,.055)",lineHeight:1,letterSpacing:-8,userSelect:"none",pointerEvents:"none",zIndex:0,fontWeight:300}}>✓</div>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-            <div style={{fontFamily:MONO,fontSize:9,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
+            <div style={{fontFamily:MONO,fontSize:9,color:CREAM,letterSpacing:3,textTransform:"uppercase"}}>AI-Protected</div>
             <div style={{flex:1,height:1,background:"rgba(255,255,255,.18)"}}/>
           </div>
-          <div style={{fontFamily:BEBAS,fontSize:24,color:"#fff",letterSpacing:1,marginBottom:14,lineHeight:.95}}>CPG · SPORTS</div>
+          <div style={{fontFamily:BEBAS,fontSize:24,color:CREAM,letterSpacing:1,marginBottom:14,lineHeight:.95}}>CPG · SPORTS</div>
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             {protected_.map(({h,b},i)=>(
               <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
                 <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.55)",letterSpacing:1.5,flexShrink:0,marginTop:3}}>0{i+1}</div>
                 <div style={{display:"flex",flexDirection:"column",gap:2,flex:1,minWidth:0}}>
-                  <div style={{fontFamily:BEBAS,fontSize:14,color:"#fff",letterSpacing:1.2}}>{h}</div>
+                  <div style={{fontFamily:BEBAS,fontSize:14,color:CREAM,letterSpacing:1.2}}>{h}</div>
                   <div style={{fontFamily:BODY,fontSize:12,color:"rgba(255,255,255,.7)",lineHeight:1.5}}>{b}</div>
                 </div>
               </div>
@@ -1359,7 +1360,7 @@ function MobileConsumerMarket() {
   return (
     <MobileSlide>
       <MHeader n="03" label="CONSUMER MARKET"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:30,color:"#fff",lineHeight:.95,letterSpacing:1,marginBottom:8}}>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:30,color:CREAM,lineHeight:.95,letterSpacing:1,marginBottom:8}}>
         THE CONSUMER MARKET IS CONSOLIDATING FAST.
       </div>
       <div style={{fontFamily:BODY,color:"rgba(255,255,255,.45)",fontSize:13,lineHeight:1.6,marginBottom:20}}>
@@ -1511,12 +1512,12 @@ function MobileFundDetails() {
         {rows.map(([label,val],i)=>(
           <div key={i} style={{
             background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",
-            borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.07)"}`,
+            borderLeft:`2px solid ${i===0?CREAM:"rgba(255,255,255,.07)"}`,
             padding:"14px 16px",
             display:"flex",flexDirection:"column",gap:5,
           }}>
             <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.42)",letterSpacing:2.5,textTransform:"uppercase"}}>{label}</div>
-            <div style={{fontFamily:BEBAS,fontSize:16,color:"#fff",letterSpacing:1}}>{val}</div>
+            <div style={{fontFamily:BEBAS,fontSize:16,color:CREAM,letterSpacing:1}}>{val}</div>
           </div>
         ))}
       </div>
@@ -1537,7 +1538,7 @@ function MobilePipeline() {
   return (
     <MobileSlide>
       <MHeader n="07" label="DEAL PIPELINE"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:6}}>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:6}}>
         ACTIVE PIPELINE.
       </div>
       <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.4)",letterSpacing:2.5,marginBottom:16}}>
@@ -1547,7 +1548,7 @@ function MobilePipeline() {
         {deals.map(({desc,cat,rev,stage},i)=>(
           <div key={i} style={{
             background:i%2===0?"rgba(255,255,255,.04)":"rgba(255,255,255,.02)",
-            borderLeft:`2px solid ${i===0?"#fff":"rgba(255,255,255,.06)"}`,
+            borderLeft:`2px solid ${i===0?CREAM:"rgba(255,255,255,.06)"}`,
             padding:"14px 16px",display:"flex",flexDirection:"column",gap:12,
           }}>
             <div style={{fontFamily:BODY,color:"rgba(255,255,255,.75)",fontSize:13,lineHeight:1.55}}>{desc}</div>
@@ -1558,7 +1559,7 @@ function MobilePipeline() {
             <div style={{display:"flex",justifyContent:"flex-end",alignItems:"baseline",gap:10,paddingTop:8,borderTop:"1px solid rgba(255,255,255,.06)"}}>
               <div style={{display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
                 <span style={{fontFamily:MONO,fontSize:7,color:"rgba(255,255,255,.32)",letterSpacing:2}}>NET REV</span>
-                <span style={{fontFamily:BEBAS,fontSize:22,color:"#fff",letterSpacing:1,lineHeight:1}}>{rev}</span>
+                <span style={{fontFamily:BEBAS,fontSize:22,color:CREAM,letterSpacing:1,lineHeight:1}}>{rev}</span>
               </div>
             </div>
           </div>
@@ -1637,7 +1638,7 @@ function MobileAdvisors() {
   return (
     <MobileSlide>
       <MHeader n="09" label="TEAM"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:"#fff",lineHeight:.9,letterSpacing:1,marginBottom:18}}>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:34,color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:18}}>
         TEAM.
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:18}}>
@@ -1658,13 +1659,13 @@ function MobileAdvisors() {
                   <img src={photo} alt={name} style={{width:104,height:128,objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.12)",flexShrink:0}}/>
                 ) : (
                   <div style={{width:104,height:128,border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontFamily:BEBAS,fontSize:36,color:"#fff",letterSpacing:1.5}}>{init}</span>
+                    <span style={{fontFamily:BEBAS,fontSize:36,color:CREAM,letterSpacing:1.5}}>{init}</span>
                   </div>
                 )}
                 <div style={{display:"flex",flexDirection:"column",flex:1,minWidth:0}}>
                   <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:3,marginBottom:8}}>{partnerN}</div>
-                  <div style={{fontFamily:BEBAS,fontSize:26,color:"#fff",letterSpacing:1.5,lineHeight:.95,marginBottom:10}}>{name}</div>
-                  <div style={{width:28,height:2,background:"#fff"}}/>
+                  <div style={{fontFamily:BEBAS,fontSize:26,color:CREAM,letterSpacing:1.5,lineHeight:.95,marginBottom:10}}>{name}</div>
+                  <div style={{width:28,height:2,background:CREAM}}/>
                 </div>
               </div>
 
@@ -1707,7 +1708,7 @@ function MobileClose() {
           <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"min(78vw,300px)",height:"auto",objectFit:"contain",display:"block"}}/>
         </div>
         <div className="fu1" style={{width:1,height:32,background:"rgba(255,255,255,.14)",marginBottom:24}}/>
-        <div className="fu2" style={{fontFamily:BEBAS,fontSize:54,color:"#fff",lineHeight:.9,letterSpacing:2,marginBottom:18}}>
+        <div className="fu2" style={{fontFamily:BEBAS,fontSize:54,color:CREAM,lineHeight:.9,letterSpacing:2,marginBottom:18}}>
           LET&apos;S BUILD<br/>SOMETHING<br/>ICONIC.
         </div>
         <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",marginBottom:18}}/>
@@ -1796,7 +1797,7 @@ export default function BackfieldDeck() {
       <button
         onClick={prev}
         disabled={slide===0}
-        style={{pointerEvents:"auto",fontFamily:BEBAS,fontSize:13,letterSpacing:2,padding:"10px 14px",background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",opacity:slide===0?.3:1,cursor:slide===0?"default":"pointer",minWidth:64}}
+        style={{pointerEvents:"auto",fontFamily:BEBAS,fontSize:13,letterSpacing:2,padding:"10px 14px",background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:CREAM,opacity:slide===0?.3:1,cursor:slide===0?"default":"pointer",minWidth:64}}
       >← PREV</button>
       <div style={{pointerEvents:"auto",fontFamily:MONO,fontSize:9,letterSpacing:2,color:"rgba(255,255,255,.5)"}}>
         {String(slide+1).padStart(2,"0")} / {String(TOTAL).padStart(2,"0")}
@@ -1804,7 +1805,7 @@ export default function BackfieldDeck() {
       <button
         onClick={next}
         disabled={slide===TOTAL-1}
-        style={{pointerEvents:"auto",fontFamily:BEBAS,fontSize:13,letterSpacing:2,padding:"10px 14px",background:"#fff",border:"1px solid #fff",color:"#000",opacity:slide===TOTAL-1?.3:1,cursor:slide===TOTAL-1?"default":"pointer",minWidth:64}}
+        style={{pointerEvents:"auto",fontFamily:BEBAS,fontSize:13,letterSpacing:2,padding:"10px 14px",background:CREAM,border:`1px solid ${CREAM}`,color:"#000",opacity:slide===TOTAL-1?.3:1,cursor:slide===TOTAL-1?"default":"pointer",minWidth:64}}
       >NEXT →</button>
     </div>
   );
