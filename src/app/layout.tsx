@@ -246,11 +246,15 @@ export default function RootLayout({
   var ps = 1, is = 1, prs = 1, T = 4, PT = 6;
 
   window.bfvOpen = function(t) {
-    document.getElementById('bfv-'+t).classList.add('bfv-open');
+    var el = document.getElementById('bfv-'+t);
+    if (!el) return;
+    el.classList.add('bfv-open');
     document.body.style.overflow = 'hidden';
   };
   window.bfvClose = function(t) {
-    document.getElementById('bfv-'+t).classList.remove('bfv-open');
+    var el = document.getElementById('bfv-'+t);
+    if (!el) return;
+    el.classList.remove('bfv-open');
     document.body.style.overflow = '';
   };
   window.bfvRadio = function(gid, el) {
