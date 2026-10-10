@@ -51,9 +51,6 @@ export default function Nav() {
           <button className="bfv-btn" onClick={() => (window as any).bfvOpen('pitch')}>
             PITCH <span className="bfv-arrow">→</span>
           </button>
-          <button className="bfv-btn" onClick={() => (window as any).bfvOpen('invest')}>
-            INVEST <span className="bfv-arrow">→</span>
-          </button>
         </div>
 
         <button
@@ -74,9 +71,6 @@ export default function Nav() {
         <Link href="/handoff" className="nav__mobile-link" onClick={closeMenu} aria-current={onHandoff ? "page" : undefined}>HANDOFF</Link>
         <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
           PITCH <span className="bfv-arrow">→</span>
-        </button>
-        <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('invest'); }}>
-          INVEST <span className="bfv-arrow">→</span>
         </button>
       </div>
     </nav>

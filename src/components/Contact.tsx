@@ -32,22 +32,6 @@ export default function Contact() {
 
           <button
             className="contact__card reveal-bottom"
-            aria-label="Contact Backfield Ventures about LP opportunities"
-            onClick={() => (window as any).bfvOpen('invest')}
-          >
-            <div className="contact__card-icon" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="7" width="20" height="14" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="var(--bf-cream)" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="contact__card-label">INVESTORS</span>
-            <h3 className="contact__card-title">LP Inquiries</h3>
-            <span className="contact__card-arrow">&rarr;</span>
-          </button>
-
-          <button
-            className="contact__card reveal-bottom"
             aria-label="Partner with Backfield Ventures"
             onClick={() => (window as any).bfvPartnerOpen()}
           >
