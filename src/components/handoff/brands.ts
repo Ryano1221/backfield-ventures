@@ -10,7 +10,8 @@ export type HandoffBrandId =
   | "stillers"
   | "growl"
   | "drumroll"
-  | "lastcrumb";
+  | "lastcrumb"
+  | "protein-pints";
 
 export type HandoffBrand = {
   id: HandoffBrandId;
@@ -317,6 +318,32 @@ export const brands: HandoffBrand[] = [
       "Last Crumb makes handcrafted cookies in Brooklyn and ships nationwide. The public site says the cookies are handcrafted over three days, and a Williamsburg shop at 144 N 8th Street bakes them fresh daily. The page title calls them the best cookies in Brooklyn.",
       "The Core Collection is a dozen, listed at $120, assorted by the head baker. Flavors named on the homepage include The O.G., The Madonna, When Life Gives You Lemons, The Floor Is Lava, Macadamnia, and S'mores Sans Campfire.",
       "Instagram and TikTok: @lastcrumb. X: @LastCrumbCookie.",
+    ],
+  },
+  {
+    id: "protein-pints",
+    name: "Protein Pints",
+    tag: "Food · Ice cream",
+    meta: "Hudsonville, MI · High-protein ice cream · proteinpints.com",
+    hook: "PROTEIN IN THE FREEZER.",
+    teaser:
+      "Protein Pints is a high-protein ice cream started by two childhood friends from Hudsonville, Michigan, who began with a tabletop ice cream maker in 2022. Every pint has 30 grams of protein, and the new Protein Pops put the same idea into a chocolate-dipped bar. Olympic gymnast Brody Malone is part of the brand's athlete Collective.",
+    siteUrl: "https://proteinpints.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/protein-pints.jpg",
+    heroAlt: "Protein Pints chocolate pint",
+    heroWidth: 1600,
+    heroHeight: 1200,
+    logoSrc: "/handoff/logos/protein-pints.webp",
+    logoAlt: "Protein Pints logo",
+    logoWidth: 1200,
+    logoHeight: 496,
+    writeup: [
+      "Protein Pints is a high-protein ice cream started by two childhood friends from Hudsonville, Michigan, who began with a tabletop ice cream maker in 2022. Every pint has 30 grams of protein, and the new Protein Pops put the same idea into a chocolate-dipped bar. Olympic gymnast Brody Malone is part of the brand's athlete Collective.",
+      "Started in Hudsonville, MI, 2022",
+      "30g protein in every pint",
+      "Protein Pops, chocolate-dipped bar",
+      "Athlete Collective, Brody Malone",
     ],
   },
 ];
