@@ -336,8 +336,8 @@ export const brands: HandoffBrand[] = [
     heroHeight: 1200,
     logoSrc: "/handoff/logos/protein-pints.webp",
     logoAlt: "Protein Pints logo",
-    logoWidth: 1200,
-    logoHeight: 496,
+    logoWidth: 1884,
+    logoHeight: 658,
     writeup: [
       "Protein Pints is a high-protein ice cream started by two childhood friends from Hudsonville, Michigan, who began with a tabletop ice cream maker in 2022. Every pint has 30 grams of protein, and the new Protein Pops put the same idea into a chocolate-dipped bar. Olympic gymnast Brody Malone is part of the brand's athlete Collective.",
       "Started in Hudsonville, MI, 2022",
