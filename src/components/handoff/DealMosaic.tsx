@@ -8,7 +8,7 @@ const sections: { id: string; title: string; ids: HandoffBrandId[] }[] = [
   {
     id: "food-and-beverage",
     title: "Food and beverage",
-    ids: ["kreatures", "foli", "parch", "unwind", "spade", "stillers", "drumroll", "lastcrumb", "protein-pints"],
+    ids: ["kreatures", "foli", "parch", "unwind", "spade", "stillers", "drumroll", "lastcrumb", "protein-pints", "lelick"],
   },
 ];
 

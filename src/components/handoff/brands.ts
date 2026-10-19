@@ -11,7 +11,8 @@ export type HandoffBrandId =
   | "growl"
   | "drumroll"
   | "lastcrumb"
-  | "protein-pints";
+  | "protein-pints"
+  | "lelick";
 
 export type HandoffBrand = {
   id: HandoffBrandId;
@@ -344,6 +345,32 @@ export const brands: HandoffBrand[] = [
       "30g protein in every pint",
       "Protein Pops, chocolate-dipped bar",
       "Athlete Collective, Brody Malone",
+    ],
+  },
+  {
+    id: "lelick",
+    name: "Le Lick",
+    tag: "Food · Candy",
+    meta: "Houston, TX · Electrolyte lollipops · enjoylelick.com",
+    hook: "Electrolytes on a stick.",
+    teaser:
+      "Le Lick makes electrolyte lollipops in Houston, built for hydration before, during and after a workout. Each 10-gram pop carries sodium, potassium, magnesium and calcium, sweetened with organic cane sugar and clover honey and finished with Himalayan pink salt. Flavors come in Creamy, Tart and Juicy boxes, from Pink Lemonade to Spicy Mango.",
+    siteUrl: "https://enjoylelick.com/",
+    layout: "row",
+    heroSrc: "/handoff/brands/lelick.webp",
+    heroAlt: "Le Lick electrolyte lollipops",
+    heroWidth: 1600,
+    heroHeight: 900,
+    logoSrc: "/handoff/logos/lelick.webp",
+    logoAlt: "Le Lick wordmark",
+    logoWidth: 712,
+    logoHeight: 256,
+    writeup: [
+      "Le Lick makes electrolyte lollipops in Houston, built for hydration before, during and after a workout. Each 10-gram pop carries sodium, potassium, magnesium and calcium, sweetened with organic cane sugar and clover honey and finished with Himalayan pink salt. Flavors come in Creamy, Tart and Juicy boxes, from Pink Lemonade to Spicy Mango.",
+      "180 mg sodium, 170 mg potassium per pop",
+      "25 calories, 5 g sugar",
+      "Kosher certified, made in the USA",
+      "One pop for kids, two for athletes",
     ],
   },
 ];
