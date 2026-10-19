@@ -36,7 +36,7 @@ export default function WhyBackfield() {
     <section className="section" id="why">
       <div className="container">
         <div className="section-label reveal-bottom">
-          <span className="section-num">02 &mdash; WHY BACKFIELD</span>
+          <span className="section-num">02 · WHY BACKFIELD</span>
         </div>
         <h2 className="section-heading reveal-bottom">
           What we bring<br />beyond capital.

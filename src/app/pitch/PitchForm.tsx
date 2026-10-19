@@ -200,7 +200,7 @@ export default function PitchForm() {
               <div className="bfv-confirm-title">Pitch Received</div>
               <p className="bfv-confirm-body">
                 Thank you for reaching out. We review every submission and will be in touch if
-                there&apos;s a fit — typically within 2–3 weeks.
+                there&apos;s a fit, typically within 2–3 weeks.
               </p>
               <div className="bfv-confirm-detail">
                 Backfield Ventures · {fields.founderEmail}
@@ -355,7 +355,7 @@ export default function PitchForm() {
                 <div className="bfv-step active">
                   <div>
                     <div className="bfv-step-title">Metrics</div>
-                    <div className="bfv-step-desc">Share what you have — nothing here is required.</div>
+                    <div className="bfv-step-desc">Share what you have. Nothing here is required.</div>
                   </div>
                   <hr className="bfv-divider" />
                   <div className="bfv-field-row">
@@ -432,7 +432,7 @@ export default function PitchForm() {
                       value={fields.deckLink}
                       onChange={set("deckLink")}
                     />
-                    <div className="bfv-field-hint">DocSend, Google Drive, Notion — any shareable link.</div>
+                    <div className="bfv-field-hint">DocSend, Google Drive, Notion: any shareable link.</div>
                   </div>
                   <div className="bfv-field">
                     <label>How did you hear about us?</label>

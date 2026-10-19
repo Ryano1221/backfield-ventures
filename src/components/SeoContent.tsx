@@ -23,7 +23,7 @@ export default function SeoContent() {
             fontFamily: "var(--font-montserrat), system-ui, sans-serif",
           }}
         >
-          Backfield Ventures is an early-stage venture capital firm focused on consumer brands and sports companies. We provide venture capital for consumer brands at the seed stage — from DTC startups to community-driven platforms — and sports venture capital across the full ecosystem, from sports tech investment to fan platforms and media.
+          Backfield Ventures is an early-stage venture capital firm focused on consumer brands and sports companies. We provide venture capital for consumer brands at the seed stage, from DTC startups to community-driven platforms, and sports venture capital across the full ecosystem, from sports tech investment to fan platforms and media.
         </p>
         <p
           style={{

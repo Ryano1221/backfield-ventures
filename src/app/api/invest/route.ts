@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Activity log — full submission snapshot
     const snap = [
-      `LP / investor inquiry — ${d.firstName} ${d.lastName} (${d.email})`,
+      `LP / investor inquiry: ${d.firstName} ${d.lastName} (${d.email})`,
       "",
       d.accreditedStatus   ? `Accredited investor status: ${d.accreditedStatus}` : null,
       d.investorType       ? `Investor type: ${d.investorType}` : null,

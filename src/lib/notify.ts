@@ -60,7 +60,7 @@ function wrap(subject: string, badge: string, badgeColor: string, body: string) 
 
 export async function notifyPitch(d: Record<string, string>) {
   if (!resend) return;
-  const subject = `${d.company}${d.stage ? ` — ${d.stage}` : ""}`;
+  const subject = `${d.company}${d.stage ? `: ${d.stage}` : ""}`;
   const body =
     section("Company", row("Name", d.company) + row("Website", d.website) + row("Stage", d.stage) + row("Sector", d.sector) + row("One-liner", d.oneLiner) + row("Location", d.location)) +
     section("Founder", row("Name", d.founderName) + row("Email", d.founderEmail) + row("Role", d.founderRole) + row("LinkedIn", d.linkedin) + row("Background", d.background) + row("Team size", d.teamSize)) +
@@ -68,7 +68,7 @@ export async function notifyPitch(d: Record<string, string>) {
     section("Meta", row("Source", d.source) + row("Notes", d.notes));
   await resend.emails.send({
     from: FROM, to: TO, replyTo: d.founderEmail || undefined,
-    subject: `New Pitch — ${subject}`,
+    subject: `New Pitch: ${subject}`,
     html: wrap(subject, "New Pitch", "#111827", body),
   });
 }
@@ -83,7 +83,7 @@ export async function notifyInvest(d: Record<string, string>) {
     section("Meta", row("Source", d.source) + row("Referred by", d.referral) + row("Preferred contact", d.preferredContact) + row("Notes", d.notes));
   await resend.emails.send({
     from: FROM, to: TO, replyTo: d.email || undefined,
-    subject: `New LP Inquiry — ${name}`,
+    subject: `New LP Inquiry: ${name}`,
     html: wrap(name, "LP Inquiry", "#1d4ed8", body),
   });
 }
@@ -146,7 +146,7 @@ export async function notifyPartner(d: Record<string, string>) {
     section("Meta", row("Why Backfield", d.whyBackfield) + row("Source", d.source) + row("Referred by", d.referral) + row("Notes", d.notes));
   await resend.emails.send({
     from: FROM, to: TO, replyTo: d.email || undefined,
-    subject: `New Partner Inquiry — ${name}`,
+    subject: `New Partner Inquiry: ${name}`,
     html: wrap(name, "Partner", "#7c3aed", body),
   });
 }

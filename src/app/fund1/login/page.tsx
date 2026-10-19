@@ -71,7 +71,7 @@ export default function Fund1LoginPage() {
       <div style={{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,fontFamily:BODY,padding:24}}>
         <div style={{width:"100%",maxWidth:420,textAlign:"center"}}>
           <img src="/logo-cover.png" alt="Backfield Ventures" style={{width:"100%",maxWidth:280,height:"auto",marginBottom:36,display:"block",marginLeft:"auto",marginRight:"auto"}}/>
-          <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.42)",letterSpacing:4,marginBottom:14,textTransform:"uppercase"}}>Fund I — Confidential</div>
+          <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.42)",letterSpacing:4,marginBottom:14,textTransform:"uppercase"}}>Fund I · Confidential</div>
           <div style={{fontFamily:BEBAS,fontSize:42,color:"var(--bf-cream)",letterSpacing:2,lineHeight:.9,marginBottom:8}}>RESTRICTED ACCESS</div>
           <div style={{fontFamily:BODY,color:"rgba(255,255,255,.5)",fontSize:13,lineHeight:1.6,marginBottom:32}}>Enter the access password to view the Fund I materials.</div>
 

@@ -60,7 +60,7 @@ const overlayHtml = `
       </div>
 
       <div class="bfv-step" id="bfv-ps4">
-        <div><div class="bfv-step-title">Key Metrics</div><div class="bfv-step-desc">Numbers we need to score your submission. Be precise — skip anything not yet applicable.</div></div>
+        <div><div class="bfv-step-title">Key Metrics</div><div class="bfv-step-desc">Numbers we need to score your submission. Be precise. Skip anything not yet applicable.</div></div>
         <hr class="bfv-divider" />
         <div id="bfv-p-metrics-cpg">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(240,237,232,0.35);margin-bottom:14px;">CPG / Consumer Metrics</div>
@@ -93,7 +93,7 @@ const overlayHtml = `
           </div>
           <div class="bfv-field-row">
             <div class="bfv-field"><label>YoY Revenue Growth</label><input id="bfv-p-sp-yoy" type="text" placeholder="e.g. 140%" /></div>
-            <div class="bfv-field"><label>Net Revenue Retention</label><input id="bfv-p-sp-nrr" type="text" placeholder="e.g. 118%" /><div class="bfv-field-hint">NRR — critical for B2B/subscription</div></div>
+            <div class="bfv-field"><label>Net Revenue Retention</label><input id="bfv-p-sp-nrr" type="text" placeholder="e.g. 118%" /><div class="bfv-field-hint">NRR: critical for B2B/subscription</div></div>
           </div>
           <div class="bfv-field-row">
             <div class="bfv-field"><label>Monthly Active Users</label><input id="bfv-p-sp-users" type="text" placeholder="e.g. 85,000" /></div>
@@ -113,17 +113,17 @@ const overlayHtml = `
       <div class="bfv-step" id="bfv-ps5">
         <div><div class="bfv-step-title">Deep Dive</div><div class="bfv-step-desc">Your pitch covers the what. This covers the why, the defensibility, and the honest risks.</div></div>
         <hr class="bfv-divider" />
-        <div class="bfv-field" id="bfv-pf-why"><label>Why Now — and Why You? *</label><textarea id="bfv-p-why-now" placeholder="What has changed in the market, supply chain, or culture that makes this the right moment? And what specifically about your background makes you the right team?"></textarea><span class="bfv-field-error">Required</span></div>
-        <div class="bfv-field" id="bfv-pf-moat"><label>What makes your position hard to replicate? *</label><textarea id="bfv-p-moat" placeholder="Be specific: brand loyalty data, exclusive distribution, proprietary formulation, licensed IP, network effects — not just 'we have a head start'."></textarea><span class="bfv-field-error">Required</span></div>
+        <div class="bfv-field" id="bfv-pf-why"><label>Why Now, and Why You? *</label><textarea id="bfv-p-why-now" placeholder="What has changed in the market, supply chain, or culture that makes this the right moment? And what specifically about your background makes you the right team?"></textarea><span class="bfv-field-error">Required</span></div>
+        <div class="bfv-field" id="bfv-pf-moat"><label>What makes your position hard to replicate? *</label><textarea id="bfv-p-moat" placeholder="Be specific: brand loyalty data, exclusive distribution, proprietary formulation, licensed IP, network effects, not just 'we have a head start'."></textarea><span class="bfv-field-error">Required</span></div>
         <div class="bfv-field"><label>Describe your 3 best customers (or retail accounts)</label><textarea id="bfv-p-top-customers" placeholder="Who are they, how did you get them, and what keeps them buying?"></textarea></div>
         <div class="bfv-field" id="bfv-pf-risks"><label>3 Biggest Risks to This Business *</label><textarea id="bfv-p-risks" placeholder="Be direct and honest. Include market risk, execution risk, and one you stay up at night about."></textarea><span class="bfv-field-error">Required</span></div>
-        <div class="bfv-field"><label>Use of Proceeds — specifically</label><textarea id="bfv-p-proceeds" placeholder="Break it down by allocation: e.g. 40% inventory build, 30% headcount (name the roles), 20% DTC marketing. What milestones does this get you to?"></textarea></div>
+        <div class="bfv-field"><label>Use of Proceeds, specifically</label><textarea id="bfv-p-proceeds" placeholder="Break it down by allocation: e.g. 40% inventory build, 30% headcount (name the roles), 20% DTC marketing. What milestones does this get you to?"></textarea></div>
       </div>
 
       <div class="bfv-step" id="bfv-ps6">
         <div><div class="bfv-step-title">Final Details</div><div class="bfv-step-desc">Drop your deck and any final context.</div></div>
         <hr class="bfv-divider" />
-        <div class="bfv-field"><label>Pitch Deck Link</label><input id="bfv-p-deck" type="text" placeholder="https://docsend.com/…" /><div class="bfv-field-hint">DocSend, Google Drive, Notion — any shareable link.</div></div>
+        <div class="bfv-field"><label>Pitch Deck Link</label><input id="bfv-p-deck" type="text" placeholder="https://docsend.com/…" /><div class="bfv-field-hint">DocSend, Google Drive, Notion: any shareable link.</div></div>
         <div class="bfv-field"><label>How did you hear about us?</label><select id="bfv-p-src"><option value="">Select one</option><option>Referral / Intro</option><option>Portfolio</option><option>Social media</option><option>Event / Conference</option><option>Cold outreach</option><option>Other</option></select></div>
         <div class="bfv-field"><label>Anything else?</label><textarea id="bfv-p-notes" placeholder="Any context that doesn't fit above…" style="min-height:80px;"></textarea></div>
         <div class="bfv-field"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;"><input type="checkbox" id="bfv-p-agree" style="width:auto;flex-shrink:0;margin-top:2px;" /><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:rgba(240,237,232,0.5);line-height:1.5;">I understand that submission does not guarantee a response, and that Backfield Ventures may share this information internally for evaluation.</span></label></div>
@@ -132,7 +132,7 @@ const overlayHtml = `
       <div class="bfv-confirm" id="bfv-pconf" style="display:none;">
         <div class="bfv-confirm-icon">✓</div>
         <div class="bfv-confirm-title">Pitch Received</div>
-        <p class="bfv-confirm-body">Thank you for reaching out. We review every submission and will be in touch if there's a fit — typically within 2–3 weeks.</p>
+        <p class="bfv-confirm-body">Thank you for reaching out. We review every submission and will be in touch if there's a fit, typically within 2–3 weeks.</p>
         <div class="bfv-confirm-detail">Backfield Ventures · <span id="bfv-pconf-email"></span></div>
         <button class="bfv-btn-sm" onclick="bfvClose('pitch')" style="margin-top:8px;">Close ✕</button>
       </div>
@@ -247,16 +247,16 @@ const overlayHtml = `
           <div class="bfvp-radio-group" id="bfvp-role">
             <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Advisor to portfolio companies</div></div>
             <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Strategic advisor to Backfield Ventures</div></div>
-            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Both &mdash; open to either</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Both: open to either</div></div>
             <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-role',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Just want to connect / stay in touch</div></div>
           </div>
         </div>
         <div class="bfvp-field"><label>Time Commitment</label>
           <div class="bfvp-radio-group" id="bfvp-time">
-            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Light touch &mdash; 1&ndash;2 hrs/month</div></div>
-            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Active &mdash; a few hrs/week</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Light touch: 1&ndash;2 hrs/month</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Active: a few hrs/week</div></div>
             <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Embedded / Fractional exec role</div></div>
-            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Flexible &mdash; depends on fit</div></div>
+            <div class="bfvp-ropt" onclick="bfvpRadio('bfvp-time',this)"><div class="bfvp-rdot"></div><div class="bfvp-opt-text">Flexible: depends on fit</div></div>
           </div>
         </div>
         <div class="bfvp-field"><label>Compensation Preference</label>

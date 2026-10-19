@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Activity log — full submission snapshot
     const snap = [
-      `Partner inquiry — ${d.firstName} ${d.lastName} (${d.email})`,
+      `Partner inquiry: ${d.firstName} ${d.lastName} (${d.email})`,
       "",
       d.background          ? `Operator background: ${d.background}` : null,
       "",
