@@ -927,8 +927,8 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function TeamCard({photo,init,name,blurb,number,partnerN,role,tags}:{
-  photo?:string;init:string;name:string;blurb:string;number:string;partnerN:string;role?:string;tags:string[];
+function TeamCard({photo,init,name,blurb,number,partnerN,role,tags,objectPosition="center 22%"}:{
+  photo?:string;init:string;name:string;blurb:string;number:string;partnerN:string;role?:string;tags:string[];objectPosition?:string;
 }) {
   const kicker = role ?? partnerN;
   return (
@@ -942,7 +942,7 @@ function TeamCard({photo,init,name,blurb,number,partnerN,role,tags}:{
         <div style={{width:"38%",position:"relative",flexShrink:0,overflow:"hidden",background:"#0a0a0a"}}>
           {photo ? (
             <>
-              <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 22%",display:"block",filter:"contrast(1.05) saturate(.95)"}}/>
+              <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition,display:"block",filter:"contrast(1.05) saturate(.95)"}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)",pointerEvents:"none"}}/>
             </>
           ) : (
@@ -991,6 +991,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       number:"01",
       partnerN:"01",
       photo:"/team-ryan.jpg",
+      objectPosition:"center",
       init:"RA",
       name:"Ryan Arnold",
       blurb:"Ryan is an entrepreneur and seasoned investor: Founder of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. He has proven operational excellence as the founding Director of Operations at Task Wizard, a high-growth commercial real estate services startup. As a venture associate, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, Nowadays, and Drumroll Snacks. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
@@ -1623,6 +1624,7 @@ function MobileAdvisors() {
     {
       partnerN:"01",
       photo:"/team-ryan.jpg",
+      objectPosition:"center",
       init:"RA",
       name:"Ryan Arnold",
       blurb:"Ryan is an entrepreneur and seasoned investor: Founder of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. He has proven operational excellence as the founding Director of Operations at Task Wizard, a high-growth commercial real estate services startup. As a venture associate, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, Nowadays, and Drumroll Snacks. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
@@ -1645,7 +1647,7 @@ function MobileAdvisors() {
         TEAM.
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:18}}>
-        {team.map(({partnerN,role,photo,init,name,blurb,tags})=>(
+        {team.map(({partnerN,role,photo,objectPosition="center top",init,name,blurb,tags})=>(
           <div key={name} style={{
             background:"rgba(255,255,255,.04)",
             border:"1px solid rgba(255,255,255,.09)",
@@ -1659,7 +1661,7 @@ function MobileAdvisors() {
               {/* Photo + name */}
               <div style={{display:"flex",gap:14,marginBottom:18,alignItems:"flex-start"}}>
                 {photo ? (
-                  <img src={photo} alt={name} style={{width:104,height:128,objectFit:"cover",objectPosition:"center top",border:"1px solid rgba(255,255,255,.12)",flexShrink:0}}/>
+                  <img src={photo} alt={name} style={{width:104,height:128,objectFit:"cover",objectPosition,border:"1px solid rgba(255,255,255,.12)",flexShrink:0}}/>
                 ) : (
                   <div style={{width:104,height:128,border:"1px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                     <span style={{fontFamily:BEBAS,fontSize:36,color:CREAM,letterSpacing:1.5}}>{init}</span>
