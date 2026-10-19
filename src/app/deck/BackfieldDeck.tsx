@@ -959,7 +959,7 @@ function TeamCard({photo,init,name,blurb,number,partnerN,role,tags}:{
           <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.35)",letterSpacing:3,marginBottom:10}}>{kicker}</div>
           <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,54px)",color:CREAM,letterSpacing:1.5,lineHeight:.9,marginBottom:14}}>{name}</div>
           <div style={{width:32,height:2,background:CREAM,marginBottom:"clamp(16px,2.2vh,24px)"}}/>
-          <div style={{fontFamily:BODY,fontSize:"clamp(15px,2vh,21px)",color:"rgba(255,255,255,.8)",lineHeight:1.7,flex:1,minHeight:0,display:"flex",alignItems:"center"}}>{blurb}</div>
+          <div style={{fontFamily:BODY,fontSize:"clamp(14px,1.85vh,19px)",color:"rgba(255,255,255,.8)",lineHeight:1.55,flex:1,minHeight:0,display:"flex",alignItems:"center"}}>{blurb}</div>
         </div>
       </div>
 
