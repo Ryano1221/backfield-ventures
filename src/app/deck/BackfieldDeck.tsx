@@ -991,7 +991,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       number:"01",
       partnerN:"01",
       photo:"/team-ryan.jpg",
-      objectPosition:"center",
+      objectPosition:"53% 25%",
       init:"RA",
       name:"Ryan Arnold",
       blurb:"Ryan is an entrepreneur and seasoned investor: Founder of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. He has proven operational excellence as the founding Director of Operations at Task Wizard, a high-growth commercial real estate services startup. As a venture associate, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, Nowadays, and Drumroll Snacks. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
@@ -1624,7 +1624,7 @@ function MobileAdvisors() {
     {
       partnerN:"01",
       photo:"/team-ryan.jpg",
-      objectPosition:"center",
+      objectPosition:"53% center",
       init:"RA",
       name:"Ryan Arnold",
       blurb:"Ryan is an entrepreneur and seasoned investor: Founder of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. He has proven operational excellence as the founding Director of Operations at Task Wizard, a high-growth commercial real estate services startup. As a venture associate, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, Nowadays, and Drumroll Snacks. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
