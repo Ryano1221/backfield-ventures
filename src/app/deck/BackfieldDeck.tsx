@@ -823,7 +823,7 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
     ["RESERVE RATIO",     "~40% Reserved for Follow-On"],
     ["MANAGEMENT FEE",    "2.0% Per Annum"],
     ["CARRIED INTEREST",  "20% Above 8% Preferred Return"],
-    ["MIN. LP INVESTMENT","$50,000 (Accredited Investors Only)"],
+    ["MIN. LP INVESTMENT","$200,000 (Accredited Investors Only)"],
   ];
   return (
     <Dark>
@@ -927,13 +927,14 @@ function Process({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onG
 /* ─────────────────────────────────────────────
    ADVISOR CARD
 ───────────────────────────────────────────── */
-function TeamCard({photo,init,name,blurb,number,partnerN,tags}:{
-  photo?:string;init:string;name:string;blurb:string;number:string;partnerN:string;tags:string[];
+function TeamCard({photo,init,name,blurb,number,partnerN,role,tags}:{
+  photo?:string;init:string;name:string;blurb:string;number:string;partnerN:string;role?:string;tags:string[];
 }) {
+  const kicker = role ?? partnerN;
   return (
     <div className="c3 wg" style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",height:"100%"}}>
       {/* Huge watermark partner number — matches Thesis card DNA */}
-      <div style={{position:"absolute",right:"clamp(-10px,-1vh,-4px)",top:"clamp(-20px,-2vh,-8px)",fontFamily:BEBAS,fontSize:"clamp(180px,22vh,260px)",color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>{partnerN}</div>
+      {partnerN ? <div style={{position:"absolute",right:"clamp(-10px,-1vh,-4px)",top:"clamp(-20px,-2vh,-8px)",fontFamily:BEBAS,fontSize:"clamp(180px,22vh,260px)",color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>{partnerN}</div> : null}
 
       {/* Top: photo + name/blurb */}
       <div style={{display:"flex",alignItems:"stretch",flex:1,minHeight:0,position:"relative",zIndex:1}}>
@@ -955,7 +956,7 @@ function TeamCard({photo,init,name,blurb,number,partnerN,tags}:{
         {/* Right content */}
         <div style={{flex:1,minWidth:0,padding:"clamp(24px,3vh,36px) clamp(22px,2.8vh,32px) clamp(18px,2.2vh,28px)",display:"flex",flexDirection:"column"}}>
           {/* Small numbered label like Thesis */}
-          <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.35)",letterSpacing:3,marginBottom:10}}>{partnerN}</div>
+          <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.35)",letterSpacing:3,marginBottom:10}}>{kicker}</div>
           <div style={{fontFamily:BEBAS,fontSize:"clamp(34px,4.6vh,54px)",color:CREAM,letterSpacing:1.5,lineHeight:.9,marginBottom:14}}>{name}</div>
           <div style={{width:32,height:2,background:CREAM,marginBottom:"clamp(16px,2.2vh,24px)"}}/>
           <div style={{fontFamily:BODY,fontSize:"clamp(15px,2vh,21px)",color:"rgba(255,255,255,.8)",lineHeight:1.7,flex:1,minHeight:0,display:"flex",alignItems:"center"}}>{blurb}</div>
@@ -996,12 +997,13 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       tags:["DEAL SOURCING","SPORTS & CPG","CONNECTING","FUNDRAISING","DUE DILIGENCE"],
     },
     {
-      number:"02",
-      partnerN:"02",
+      number:"ADVISOR",
+      partnerN:"",
+      role:"ADVISOR",
       photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
-      blurb:"Ethan is a seasoned operator and strategist with CPG experience. He helped scale Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships. He is currently the Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions, and previously ran Ops & Strategy at Athena Intelligence. Ethan holds an MBA from Georgetown's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
+      blurb:"Ethan is a seasoned operator and strategist with deep startup and CPG experience. He helped scale Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships. He is currently the Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions, and previously ran Ops & Strategy at Athena Intelligence. Ethan holds an MBA from Georgetown's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
       tags:["CPG","OPERATIONS","STRATEGY","DEAL SOURCING","DUE DILIGENCE"],
     },
   ];
@@ -1015,7 +1017,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>OPERATORS BACKING OPERATORS</span>
       </div>
-      <div className="fu1" style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:8,flexShrink:0,textTransform:"uppercase"}}>TWO PARTNERS. ONE PLAYBOOK.</div>
+      <div className="fu1" style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.55)",letterSpacing:4,marginBottom:8,flexShrink:0,textTransform:"uppercase"}}>ONE PARTNER. ONE ADVISOR.</div>
       <div className="fu2" style={{fontFamily:BEBAS,fontSize:"clamp(36px,5vh,56px)",color:CREAM,lineHeight:.88,letterSpacing:1,marginBottom:"clamp(12px,1.5vh,18px)",flexShrink:0}}>TEAM.</div>
       <div className="fu3 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,flex:1,minHeight:0}}>
         {team.map(p=><TeamCard key={p.name} {...p}/>)}
@@ -1494,7 +1496,7 @@ function MobileFundDetails() {
     ["RESERVE RATIO",     "~40% Reserved for Follow-On"],
     ["MANAGEMENT FEE",    "2.0% Per Annum"],
     ["CARRIED INTEREST",  "20% Above 8% Preferred Return"],
-    ["MIN. LP INVESTMENT","$50,000 (Accredited Investors Only)"],
+    ["MIN. LP INVESTMENT","$200,000 (Accredited Investors Only)"],
   ];
   return (
     <MobileSlide>
@@ -1627,11 +1629,12 @@ function MobileAdvisors() {
       tags:["DEAL SOURCING","SPORTS & CPG","CONNECTING","FUNDRAISING","DUE DILIGENCE"],
     },
     {
-      partnerN:"02",
+      partnerN:"",
+      role:"ADVISOR",
       photo:"/team-ethan.jpg",
       init:"EL",
       name:"Ethan Lavin",
-      blurb:"Ethan is a seasoned operator and strategist with CPG experience. He helped scale Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships. He is currently the Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions, and previously ran Ops & Strategy at Athena Intelligence. Ethan holds an MBA from Georgetown's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
+      blurb:"Ethan is a seasoned operator and strategist with deep startup and CPG experience. He helped scale Impossible Foods across EMEA as International Strategy & Operations Manager, leading distribution, pricing, and partnerships. He is currently the Engagement Manager at Norm Ai, the enterprise AI compliance platform built for financial institutions, and previously ran Ops & Strategy at Athena Intelligence. Ethan holds an MBA from Georgetown's McDonough School of Business and an MS in Foreign Service from Georgetown's Walsh School. He earned a B.A. in Economics and German from Colorado College, graduating with Distinction.",
       tags:["CPG","OPERATIONS","STRATEGY","DEAL SOURCING","DUE DILIGENCE"],
     },
   ];
@@ -1642,7 +1645,7 @@ function MobileAdvisors() {
         TEAM.
       </div>
       <div className="fu2" style={{display:"flex",flexDirection:"column",gap:18}}>
-        {team.map(({partnerN,photo,init,name,blurb,tags})=>(
+        {team.map(({partnerN,role,photo,init,name,blurb,tags})=>(
           <div key={name} style={{
             background:"rgba(255,255,255,.04)",
             border:"1px solid rgba(255,255,255,.09)",
@@ -1650,7 +1653,7 @@ function MobileAdvisors() {
             position:"relative",overflow:"hidden",
           }}>
             {/* Huge watermark partner number */}
-            <div style={{position:"absolute",right:-10,top:-16,fontFamily:BEBAS,fontSize:180,color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>{partnerN}</div>
+            {partnerN ? <div style={{position:"absolute",right:-10,top:-16,fontFamily:BEBAS,fontSize:180,color:"rgba(255,255,255,.025)",lineHeight:1,letterSpacing:-4,userSelect:"none",pointerEvents:"none",zIndex:0}}>{partnerN}</div> : null}
 
             <div style={{position:"relative",zIndex:1,padding:"22px 18px",display:"flex",flexDirection:"column"}}>
               {/* Photo + name */}
@@ -1663,7 +1666,7 @@ function MobileAdvisors() {
                   </div>
                 )}
                 <div style={{display:"flex",flexDirection:"column",flex:1,minWidth:0}}>
-                  <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:3,marginBottom:8}}>{partnerN}</div>
+                  <div style={{fontFamily:MONO,fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:3,marginBottom:8}}>{role ?? partnerN}</div>
                   <div style={{fontFamily:BEBAS,fontSize:26,color:CREAM,letterSpacing:1.5,lineHeight:.95,marginBottom:10}}>{name}</div>
                   <div style={{width:28,height:2,background:CREAM}}/>
                 </div>
