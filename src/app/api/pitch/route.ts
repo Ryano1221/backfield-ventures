@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Activity log — full submission snapshot
     const snap = [
-      `Inbound pitch — ${d.founderName} (${d.founderEmail})`,
+      `Inbound pitch: ${d.founderName} (${d.founderEmail})`,
       "",
       d.oneLiner      ? `One-liner: ${d.oneLiner}` : null,
       "",
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
       d.source        ? `Source: ${d.source}` : null,
       d.notes         ? `Additional notes: ${d.notes}` : null,
       "",
-      (d.cpgRevenue || d.spArr) ? "— Metrics —" : null,
+      (d.cpgRevenue || d.spArr) ? "Metrics" : null,
       d.cpgRevenue    ? `Revenue (TTM): ${d.cpgRevenue}` : null,
       d.cpgGrossMargin ? `Gross Margin: ${d.cpgGrossMargin}` : null,
       d.cpgVelocity   ? `Velocity: ${d.cpgVelocity}` : null,
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
       d.spGrossMargin ? `Gross Margin: ${d.spGrossMargin}` : null,
       d.spNrr         ? `NRR: ${d.spNrr}` : null,
       "",
-      (d.whyNow || d.moat || d.risks) ? "— Deep Dive —" : null,
+      (d.whyNow || d.moat || d.risks) ? "Deep Dive" : null,
       d.whyNow        ? `Why Now / Why Us: ${d.whyNow}` : null,
       d.moat          ? `Moat: ${d.moat}` : null,
       d.risks         ? `Key Risks: ${d.risks}` : null,

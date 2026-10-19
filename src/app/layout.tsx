@@ -20,7 +20,7 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: "Backfield Ventures | Austin VC | Sports & CPG Venture Capital",
   description:
-    "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company — let's talk.",
+    "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company, let's talk.",
   applicationName: "Backfield Ventures",
   metadataBase: new URL("https://backfieldventures.com"),
   alternates: {
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Backfield Ventures | Austin VC | Sports & CPG Venture Capital",
     description:
-      "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company — let's talk.",
+      "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company, let's talk.",
     url: "https://backfieldventures.com",
     siteName: "Backfield Ventures",
     type: "website",
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Backfield Ventures | Austin VC | Sports & CPG Venture Capital",
     description:
-      "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company — let's talk.",
+      "Austin, TX venture capital firm investing in sports, CPG, and consumer brands. Pre-Seed to Series A. If you're building the next great consumer or sports company, let's talk.",
     // twitter:image falls back to og:image
   },
   robots: {
@@ -209,7 +209,7 @@ const jsonLd = {
           name: "How can operators or partners work with Backfield Ventures?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "If you work in consumer or sports and want to explore collaboration — for portfolio companies or in a broader capacity — reach out at hello@backfieldventures.com with the subject 'Partnership'.",
+            text: "If you work in consumer or sports and want to explore collaboration, for portfolio companies or in a broader capacity, reach out at hello@backfieldventures.com with the subject 'Partnership'.",
           },
         },
       ],

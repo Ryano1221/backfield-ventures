@@ -3,7 +3,7 @@ export default function Focus() {
     <section className="section" id="focus">
       <div className="container">
         <div className="section-label reveal-bottom">
-          <span className="section-num">01 &mdash; INVESTMENT FOCUS</span>
+          <span className="section-num">01 · INVESTMENT FOCUS</span>
         </div>
         <h2 className="section-heading reveal-bottom">
           Two categories.<br />Deep conviction in both.
@@ -18,11 +18,11 @@ export default function Focus() {
               <h3 className="focus__col-title">CONSUMER</h3>
               <p className="focus__col-sub"><em>Brands people return to</em></p>
               <ul className="focus__list">
-                <li>&mdash; Direct-to-consumer brands</li>
-                <li>&mdash; Consumer health &amp; wellness</li>
-                <li>&mdash; Community-driven platforms</li>
-                <li>&mdash; Modern lifestyle brands</li>
-                <li>&mdash; Commerce &amp; marketplaces</li>
+                <li>· Direct-to-consumer brands</li>
+                <li>· Consumer health &amp; wellness</li>
+                <li>· Community-driven platforms</li>
+                <li>· Modern lifestyle brands</li>
+                <li>· Commerce &amp; marketplaces</li>
               </ul>
             </div>
           </div>
@@ -34,11 +34,11 @@ export default function Focus() {
               <h3 className="focus__col-title">SPORTS</h3>
               <p className="focus__col-sub"><em>Where passion becomes platform</em></p>
               <ul className="focus__list">
-                <li>&mdash; Fan engagement &amp; experiences</li>
-                <li>&mdash; Athlete brands &amp; ventures</li>
-                <li>&mdash; Sports technology</li>
-                <li>&mdash; Media &amp; streaming</li>
-                <li>&mdash; Sports data &amp; analytics</li>
+                <li>· Fan engagement &amp; experiences</li>
+                <li>· Athlete brands &amp; ventures</li>
+                <li>· Sports technology</li>
+                <li>· Media &amp; streaming</li>
+                <li>· Sports data &amp; analytics</li>
               </ul>
             </div>
           </div>
@@ -46,7 +46,7 @@ export default function Focus() {
         </div>
 
         <p className="focus__adjacent reveal-bottom">
-          <strong>ADJACENT</strong> &mdash; We back exceptional founders outside these themes when the opportunity is clear.
+          <strong>ADJACENT</strong>: We back exceptional founders outside these themes when the opportunity is clear.
         </p>
       </div>
     </section>

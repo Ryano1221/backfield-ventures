@@ -22,7 +22,7 @@ export default function Philosophy() {
     <section className="section" id="philosophy">
       <div className="container">
         <div className="section-label reveal-bottom">
-          <span className="section-num">03 &mdash; HOW WE THINK</span>
+          <span className="section-num">03 · HOW WE THINK</span>
         </div>
         <h2 className="section-heading reveal-bottom">
           The beliefs that<br />drive every decision.

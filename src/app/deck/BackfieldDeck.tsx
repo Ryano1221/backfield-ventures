@@ -329,7 +329,7 @@ function Header({n,label,light,right}:{n:string;label:string;light?:boolean;righ
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <Logo light={light} size={30}/>
         <div style={{width:1,height:14,background:light?"rgba(0,0,0,.1)":"rgba(255,255,255,.1)"}}/>
-        <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)"}}>{n} — {label}</span>
+        <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)"}}>{n} · {label}</span>
       </div>
       {right&&<span style={{fontFamily:MONO,fontSize:8,color:light?"rgba(0,0,0,.5)":"rgba(255,255,255,.42)",letterSpacing:2}}>{right}</span>}
     </div>
@@ -543,14 +543,14 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
       <div className="fu2 m-stack" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2,flex:1,minHeight:0}}>
         {[
           {n:"01",name:"CONSUMER",
-           sub:"Brands people return to — and tell their friends about.",
+           sub:"Brands people return to, and tell their friends about.",
            body:"Food, beverage, lifestyle, apparel. We back founders building repeat-purchase businesses with earned loyalty, clean cap tables, and cultural staying power.",
            criteria:["Repeat-purchase over impulse buy","Founder-led with long-term vision","Brand equity > single product","Clear path to distribution at scale"],
            tags:["CPG","DTC","FUNCTIONAL FOOD","LIFESTYLE","APPAREL"],
            stat:"$2.3T",statLabel:"Global CPG Market"},
           {n:"02",name:"SPORTS",
            sub:"Where culture, competition, and capital converge.",
-           body:"Athlete brands, fan engagement, sports tech, performance analytics, wagering infrastructure — we understand sports from the field to the cap table.",
+           body:"Athlete brands, fan engagement, sports tech, performance analytics, wagering infrastructure: we understand sports from the field to the cap table.",
            criteria:["Real IP, data moat, or media rights","Cross-category appeal beyond the sport","Gen Z fandom + media upside","Clear institutional exit path"],
            tags:["ATHLETE BRANDS","SPORTS TECH","FAN ENGAGEMENT","ANALYTICS"],
            stat:"$495B",statLabel:"Global Sports Market"},
@@ -593,14 +593,14 @@ function Thesis({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
 function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const vulnerable=[
     {h:"REPLICABLE OVERNIGHT",b:"Foundation models can rebuild a category-leading SaaS workflow in an afternoon. The product is the prompt."},
-    {h:"NO IDENTITY, NO MOAT",b:"Software has no soul. Users switch the moment a faster or cheaper model ships — no ritual, no story, no reason to stay."},
+    {h:"NO IDENTITY, NO MOAT",b:"Software has no soul. Users switch the moment a faster or cheaper model ships: no ritual, no story, no reason to stay."},
     {h:"DISTRIBUTION = CHASE",b:"Every channel is paid and every funnel is auctioned. Margins compress to zero as AI floods the top of the funnel."},
     {h:"RACE TO ZERO",b:"AI-native competitors will undercut on price and outship every roadmap, every quarter, forever."},
   ];
   const protected_=[
-    {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd — sensation can't be downloaded."},
-    {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes — they're identities people defend."},
-    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships, retail buyers — earned over years, not bought in a quarter."},
+    {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd: sensation can't be downloaded."},
+    {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes. They're identities people defend."},
+    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships, retail buyers: earned over years, not bought in a quarter."},
     {h:"OFFLINE DEFENSIBILITY",b:"Manufacturing, supply chains, packaging, IP, and exclusive deals are real moats AI can't ship a clone of."},
   ];
   return (
@@ -608,7 +608,7 @@ function WhyNow({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo
       <Header n="02" label="WHY NOW" right="PHYSICAL > DIGITAL"/>
 
       {/* Big headline */}
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(40px,5.8vh,68px)",color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>WHAT AI CAN&apos;T BUILD.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:"clamp(40px,5.8vh,68px)",color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:"clamp(14px,1.8vh,22px)",flexShrink:0}}>WHAT AI CAN&apos;T BUILD</div>
 
       {/* Manifesto */}
       <div className="fu3" style={{fontFamily:BODY,fontSize:"clamp(13px,1.6vh,16px)",color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:"clamp(16px,2vh,24px)",flexShrink:0,maxWidth:"min(1100px,92%)"}}>
@@ -705,7 +705,7 @@ function ConsumerMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>v
       {/* M&A + brands */}
       <div className="m-stack" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:20,flex:1,minHeight:0}}>
         <div className="fu2" style={{display:"flex",flexDirection:"column",minHeight:0}}>
-          <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,marginBottom:6}}>RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE</div>
+          <div style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.45)",letterSpacing:3,marginBottom:6}}>RECENT M&A: BAR WIDTH = RELATIVE DEAL SIZE</div>
           <div style={{border:"1px solid rgba(255,255,255,.07)",background:"rgba(255,255,255,.02)",flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
             {deals.map((d,i)=><DealRow key={i} {...d}/>)}
           </div>
@@ -758,7 +758,7 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
 
       <div className="m-stack" style={{display:"grid",gridTemplateColumns:"1.4fr 1fr",gap:20,flex:1,minHeight:0}}>
         <div className="fu2" style={{display:"flex",flexDirection:"column",minHeight:0}}>
-          <div style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.52)",letterSpacing:3,marginBottom:6}}>RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE</div>
+          <div style={{fontFamily:MONO,fontSize:8,color:"rgba(0,0,0,.52)",letterSpacing:3,marginBottom:6}}>RECENT M&A: BAR WIDTH = RELATIVE DEAL SIZE</div>
           <div style={{border:"1px solid rgba(0,0,0,.08)",background:"#fff",flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
             {deals.map((d,i)=><DealRowLight key={i} {...d}/>)}
           </div>
@@ -781,11 +781,11 @@ function SportsMarket({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>voi
 ───────────────────────────────────────────── */
 function Separates({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const items=[
-    {n:"01",l:"NETWORK-FIRST MODEL",b:"We don't just write checks — we build a portfolio of companies that support each other through partnerships, distribution, and strategic collaboration."},
+    {n:"01",l:"NETWORK-FIRST MODEL",b:"We don't just write checks. We build a portfolio of companies that support each other through partnerships, distribution, and strategic collaboration."},
     {n:"02",l:"EXPERT-LED DILIGENCE",b:"Deep experience across technology, sports, and consumer sectors. Every deal runs through our proprietary scoring framework before a check is written."},
-    {n:"03",l:"ELITE DEAL FLOW",b:"Exclusive access to opportunities typically reserved for institutional investors — driven by relationships across CPG, media, sports, and emerging tech."},
+    {n:"03",l:"ELITE DEAL FLOW",b:"Exclusive access to opportunities typically reserved for institutional investors, driven by relationships across CPG, media, sports, and emerging tech."},
     {n:"04",l:"CONNECTED COMMUNITY",b:"A network of visionary influencers, investors, founders, and professionals aligned by shared goals with regular, transparent LP communication."},
-    {n:"05",l:"STRATEGIC ALIGNMENT",b:"Backfield integrates capital, influence, and shared values. Our LPs become embedded in every company we back — more than backers, true partners."},
+    {n:"05",l:"STRATEGIC ALIGNMENT",b:"Backfield integrates capital, influence, and shared values. Our LPs become embedded in every company we back: more than backers, true partners."},
   ];
   return (
     <Light>
@@ -993,7 +993,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
-      blurb:"Ryan is an entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. At 4th & 1 Ventures, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, and Nowadays. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
+      blurb:"Ryan is an entrepreneur and seasoned investor: Founder of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. He has proven operational excellence as the founding Director of Operations at Task Wizard, a high-growth commercial real estate services startup. At 4th & 1 Ventures, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, Nowadays, and Drumroll. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
       tags:["DEAL SOURCING","SPORTS & CPG","CONNECTING","FUNDRAISING","DUE DILIGENCE"],
     },
     {
@@ -1013,7 +1013,7 @@ function Advisors({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;on
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <Logo size={30}/>
           <div style={{width:1,height:14,background:"rgba(255,255,255,.1)"}}/>
-          <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:"rgba(255,255,255,.48)"}}>09 — TEAM</span>
+          <span style={{fontFamily:MONO,fontSize:8,letterSpacing:3,color:"rgba(255,255,255,.48)"}}>09 · TEAM</span>
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.42)",letterSpacing:2}}>OPERATORS BACKING OPERATORS</span>
       </div>
@@ -1047,7 +1047,7 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
         </div>
         <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",margin:"0 auto",marginBottom:"clamp(10px,1.5vh,18px)"}}/>
         <div className="fu4" style={{fontFamily:BODY,color:"rgba(255,255,255,.42)",fontSize:"clamp(12px,1.6vh,15px)",lineHeight:1.85,maxWidth:440,margin:"0 auto",marginBottom:"clamp(20px,2.8vh,36px)"}}>
-          Backfield Ventures is raising Fund I — targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
+          Backfield Ventures is raising Fund I, targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
         </div>
         <div className="fu5 m-hide" style={{display:"flex",gap:9,justifyContent:"center",marginBottom:"clamp(16px,2.2vh,28px)"}}>
           <button className="bw" onClick={onRestart}>↩ START OVER</button>
@@ -1095,7 +1095,7 @@ function MHeader({n,label,light}:{n:string;label:string;light?:boolean}) {
       <Logo light={light} size={24}/>
       <div style={{width:1,height:12,background:light?"rgba(0,0,0,.18)":"rgba(255,255,255,.18)"}}/>
       <span style={{fontFamily:MONO,fontSize:8.5,letterSpacing:2.5,color:light?"rgba(0,0,0,.55)":"rgba(255,255,255,.5)"}}>
-        {n} — {label}
+        {n} · {label}
       </span>
     </div>
   );
@@ -1147,14 +1147,14 @@ function MobileCover() {
 function MobileThesis() {
   const panels=[
     {n:"01",name:"CONSUMER",
-     sub:"Brands people return to — and tell their friends about.",
+     sub:"Brands people return to, and tell their friends about.",
      body:"Food, beverage, lifestyle, apparel. We back founders building repeat-purchase businesses with earned loyalty, clean cap tables, and cultural staying power.",
      criteria:["Repeat-purchase over impulse buy","Founder-led with long-term vision","Brand equity > single product","Clear path to distribution at scale"],
      tags:["CPG","DTC","FUNCTIONAL FOOD","LIFESTYLE","APPAREL"],
      stat:"$2.3T",statLabel:"Global CPG Market"},
     {n:"02",name:"SPORTS",
      sub:"Where culture, competition, and capital converge.",
-     body:"Athlete brands, fan engagement, sports tech, performance analytics, wagering infrastructure — we understand sports from the field to the cap table.",
+     body:"Athlete brands, fan engagement, sports tech, performance analytics, wagering infrastructure: we understand sports from the field to the cap table.",
      criteria:["Real IP, data moat, or media rights","Cross-category appeal beyond the sport","Gen Z fandom + media upside","Clear institutional exit path"],
      tags:["ATHLETE BRANDS","SPORTS TECH","FAN ENGAGEMENT","ANALYTICS"],
      stat:"$495B",statLabel:"Global Sports Market"},
@@ -1281,15 +1281,15 @@ function MobileWhyNow() {
     {h:"RACE TO ZERO",b:"AI-native competitors will undercut on price and outship every roadmap, forever."},
   ];
   const protected_=[
-    {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd — sensation can't be downloaded."},
-    {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes — they're identities people defend."},
-    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships — earned over years, not bought in a quarter."},
+    {h:"PHYSICAL & EMOTIONAL",b:"A product in your hand, a flavor on your tongue, the roar of a crowd: sensation can't be downloaded."},
+    {h:"BRAND COMPOUNDS",b:"Equity earned over a decade is the moat. Iconic brands aren't recipes. They're identities people defend."},
+    {h:"DISTRIBUTION = RELATIONSHIP",b:"Shelf space, fan loyalty, athlete partnerships: earned over years, not bought in a quarter."},
     {h:"OFFLINE DEFENSIBILITY",b:"Manufacturing, packaging, IP, and exclusive deals are real moats AI can't ship a clone of."},
   ];
   return (
     <MobileSlide>
       <MHeader n="02" label="WHY NOW"/>
-      <div className="fu1" style={{fontFamily:BEBAS,fontSize:40,color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:18}}>WHAT AI CAN&apos;T BUILD.</div>
+      <div className="fu1" style={{fontFamily:BEBAS,fontSize:40,color:CREAM,lineHeight:.9,letterSpacing:1,marginBottom:18}}>WHAT AI CAN&apos;T BUILD</div>
       <div className="fu2" style={{fontFamily:BODY,fontSize:13.5,color:"rgba(255,255,255,.72)",lineHeight:1.7,marginBottom:22}}>
         Every SaaS company built in the last decade can now be rebuilt in an afternoon. But you can&apos;t synthesize the feeling of a product in your hand, the smell of a new pair of sneakers, or the roar of a crowd. <span style={{color:CREAM,fontWeight:600}}>Consumer and sports brands are protected by something AI can&apos;t generate: human connection, taste, ritual, and identity.</span>
       </div>
@@ -1377,7 +1377,7 @@ function MobileConsumerMarket() {
       {/* Deals */}
       <div className="fu3" style={{marginBottom:24}}>
         <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(255,255,255,.45)",letterSpacing:2.5,marginBottom:8}}>
-          RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE
+          RECENT M&A: BAR WIDTH = RELATIVE DEAL SIZE
         </div>
         <div style={{border:"1px solid rgba(255,255,255,.08)",background:"rgba(255,255,255,.02)"}}>
           {deals.map((d,i)=><MDealCard key={i} {...d}/>)}
@@ -1431,7 +1431,7 @@ function MobileSportsMarket() {
       </div>
       <div className="fu3" style={{marginBottom:24}}>
         <div style={{fontFamily:MONO,fontSize:8.5,color:"rgba(0,0,0,.55)",letterSpacing:2.5,marginBottom:8}}>
-          RECENT M&A — BAR WIDTH = RELATIVE DEAL SIZE
+          RECENT M&A: BAR WIDTH = RELATIVE DEAL SIZE
         </div>
         <div style={{border:"1px solid rgba(0,0,0,.08)",background:"#fff"}}>
           {deals.map((d,i)=><MDealCard key={i} {...d} light/>)}
@@ -1455,11 +1455,11 @@ function MobileSportsMarket() {
 /* ─── MOBILE 4: SEPARATES ─── */
 function MobileSeparates() {
   const items=[
-    {n:"01",l:"NETWORK-FIRST MODEL",b:"We don't just write checks — we build a portfolio of companies that support each other through partnerships, distribution, and strategic collaboration."},
+    {n:"01",l:"NETWORK-FIRST MODEL",b:"We don't just write checks. We build a portfolio of companies that support each other through partnerships, distribution, and strategic collaboration."},
     {n:"02",l:"EXPERT-LED DILIGENCE",b:"Deep experience across technology, sports, and consumer sectors. Every deal runs through our proprietary scoring framework before a check is written."},
-    {n:"03",l:"ELITE DEAL FLOW",b:"Exclusive access to opportunities typically reserved for institutional investors — driven by relationships across CPG, media, sports, and emerging tech."},
+    {n:"03",l:"ELITE DEAL FLOW",b:"Exclusive access to opportunities typically reserved for institutional investors, driven by relationships across CPG, media, sports, and emerging tech."},
     {n:"04",l:"CONNECTED COMMUNITY",b:"A network of visionary influencers, investors, founders, and professionals aligned by shared goals with regular, transparent LP communication."},
-    {n:"05",l:"STRATEGIC ALIGNMENT",b:"Backfield integrates capital, influence, and shared values. Our LPs become embedded in every company we back — more than backers, true partners."},
+    {n:"05",l:"STRATEGIC ALIGNMENT",b:"Backfield integrates capital, influence, and shared values. Our LPs become embedded in every company we back: more than backers, true partners."},
   ];
   return (
     <MobileSlide light>
@@ -1625,7 +1625,7 @@ function MobileAdvisors() {
       photo:"/team-ryan.jpg",
       init:"RA",
       name:"Ryan Arnold",
-      blurb:"Ryan is an entrepreneur and seasoned investor — co-founder and former CEO of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. At 4th & 1 Ventures, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, and Nowadays. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
+      blurb:"Ryan is an entrepreneur and seasoned investor: Founder of Wakescoot Watersports, a venture-backed hardware startup he built from zero to a successful exit in 2023. He has proven operational excellence as the founding Director of Operations at Task Wizard, a high-growth commercial real estate services startup. At 4th & 1 Ventures, he underwrote and ran investment operations across SPVs and raised committed capital for investments like Liquid Death, Slate Milk, Nowadays, and Drumroll. At Trinity University's Office of Investments, he invested in Private Equity & Venture Capital fund managers on behalf of the university's $2B endowment. Ryan holds a B.S. in Finance from Trinity University, where he played football as an All-Conference defensive back.",
       tags:["DEAL SOURCING","SPORTS & CPG","CONNECTING","FUNDRAISING","DUE DILIGENCE"],
     },
     {
@@ -1716,7 +1716,7 @@ function MobileClose() {
         </div>
         <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",marginBottom:18}}/>
         <div className="fu4" style={{fontFamily:BODY,color:"rgba(255,255,255,.5)",fontSize:14,lineHeight:1.75,maxWidth:340,marginBottom:36,padding:"0 8px"}}>
-          Backfield Ventures is raising Fund I — targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
+          Backfield Ventures is raising Fund I, targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.2)",letterSpacing:2,lineHeight:1.6}}>
           BACKFIELDVENTURES.COM<br/>AUSTIN, TX · FUND I · 2026

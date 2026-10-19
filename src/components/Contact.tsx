@@ -7,7 +7,7 @@ export default function Contact() {
     <section className="contact section" id="contact">
       <div className="container">
         <div className="section-label reveal-bottom">
-          <span className="section-num">04 &mdash; GET IN TOUCH</span>
+          <span className="section-num">04 · GET IN TOUCH</span>
         </div>
         <h2 className="section-heading reveal-bottom">
           Connect<br />with us.
