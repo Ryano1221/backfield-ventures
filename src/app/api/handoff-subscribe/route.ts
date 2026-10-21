@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { notifyHandoffSubscribe } from "@/lib/notify";
+import { addHandoffContact, notifyHandoffSubscribe } from "@/lib/notify";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SOURCE = "handoff-public";
+const TEST_SOURCE = "handoff-TEST";
 
 function chicagoReceived(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -50,8 +51,12 @@ async function fileHandoffSubscriber(fields: { name: string; email: string; sour
 }
 
 // Self-hosted subscribe for The Handoff.
-// Sends the locked confirmation to the address on the form, then the internal notice.
-// Success requires Resend to accept both, then the sheet row to be accepted.
+// Order matters: record the signup first (sheet row + Resend contact in the
+// Handoff segment), then send the confirmation and the internal notice.
+// A failed email no longer loses the signup.
+// Test mode: send header x-handoff-test equal to HANDOFF_TEST_TOKEN. The row is
+// written with source "handoff-TEST", the contact goes to HANDOFF_TEST_SEGMENT_ID,
+// and no email is sent. Lets Growth check the whole path without emailing anyone.
 // Beehiiv is not called.
 
 export async function POST(req: NextRequest) {
@@ -74,17 +79,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  const payload = { type: "subscribe" as const, name, email, source: SOURCE };
+  const testToken = process.env.HANDOFF_TEST_TOKEN?.trim() ?? "";
+  const isTest = !!testToken && req.headers.get("x-handoff-test") === testToken;
+  const source = isTest ? TEST_SOURCE : SOURCE;
+  const segmentId =
+    (isTest ? process.env.HANDOFF_TEST_SEGMENT_ID : process.env.HANDOFF_SEGMENT_ID)?.trim() ?? "";
 
-  const sent = await notifyHandoffSubscribe({ name, email, source: SOURCE }).catch((error) => {
+  const payload = { type: "subscribe" as const, name, email, source };
+
+  const [filed, contact] = await Promise.all([
+    fileHandoffSubscriber({ name, email, source }),
+    addHandoffContact({ name, email, segmentId }),
+  ]);
+  if (!filed) console.error("handoff sheet write failed", { source });
+  if (!contact) console.error("handoff resend contact failed", { source, segment: !!segmentId });
+
+  if (!filed && !contact) {
+    console.log("handoff-subscribe unrecorded", payload);
+    return NextResponse.json({ ok: false }, { status: 500 });
+  }
+
+  if (isTest) {
+    return NextResponse.json({ ok: true, test: true, sheet: filed, resend: contact });
+  }
+
+  const sent = await notifyHandoffSubscribe({ name, email, source }).catch((error) => {
     console.error("handoff email error", error);
     return false;
   });
-
-  if (!sent) {
-    console.log("handoff-subscribe", payload);
-    return NextResponse.json({ ok: false }, { status: 500 });
-  }
+  if (!sent) console.error("handoff confirmation or notice failed", { email });
 
   const webhook = process.env.HANDOFF_WEBHOOK_URL;
   if (webhook) {
@@ -93,12 +116,6 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     }).catch((error) => console.error("handoff webhook error", error));
-  }
-
-  const filed = await fileHandoffSubscriber({ name, email, source: SOURCE });
-  if (!filed) {
-    console.error("handoff sheet write failed");
-    return NextResponse.json({ ok: false }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
