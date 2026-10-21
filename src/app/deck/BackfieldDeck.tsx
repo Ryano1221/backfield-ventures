@@ -272,7 +272,7 @@ function useIsMobile(bp=768) {
    SHARED UI
 ───────────────────────────────────────────── */
 function Ticker() {
-  const t="BACKFIELD VENTURES · FUND I · $20M–$25M TARGET · CONSUMER & SPORTS VC · AUSTIN, TX · EARLY STAGE · SEED / SERIES A · ";
+  const t="BACKFIELD VENTURES · FUND I · $20M-$25M TARGET · CONSUMER & SPORTS VC · AUSTIN, TX · EARLY STAGE · SEED / SERIES A · ";
   return (
     <div style={{height:22,background:"#fff",overflow:"hidden",display:"flex",alignItems:"center",flexShrink:0,zIndex:20}}>
       <div style={{display:"flex",whiteSpace:"nowrap",animation:"marquee 28s linear infinite"}}>
@@ -476,7 +476,7 @@ function Cover({onNext,onGo,total}:{onNext:()=>void;onGo:(n:number)=>void;total:
   const m=useParallax();
   const metrics=[
     {label:"FUND",        value:"FUND I"},
-    {label:"FUND SIZE",   value:"$20M–$25M"},
+    {label:"FUND SIZE",   value:"$20M-$25M"},
     {label:"CATEGORIES",  value:"CPG & SPORTS"},
     {label:"STAGE",       value:"SEED / SERIES A"},
   ];
@@ -812,7 +812,7 @@ function Separates({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;o
 ───────────────────────────────────────────── */
 function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void;onGo:(n:number)=>void;total:number}) {
   const hi=[
-    {v:"$20–25M",l:"Fund Target",sub:"Fund I"},
+    {v:"$20M-$25M",l:"Fund Target",sub:"Fund I"},
     {v:"15–25",  l:"Portfolio Companies",sub:"Target"},
     {v:"3–7 YRS",l:"Investment Horizon",sub:"+ Extensions"},
   ];
@@ -1048,7 +1048,7 @@ function CloseSlide({onPrev,onRestart,onGo,total}:{onPrev:()=>void;onRestart:()=
         </div>
         <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",margin:"0 auto",marginBottom:"clamp(10px,1.5vh,18px)"}}/>
         <div className="fu4" style={{fontFamily:BODY,color:"rgba(255,255,255,.42)",fontSize:"clamp(12px,1.6vh,15px)",lineHeight:1.85,maxWidth:440,margin:"0 auto",marginBottom:"clamp(20px,2.8vh,36px)"}}>
-          Backfield Ventures is raising Fund I, targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
+          Backfield Ventures is raising Fund I, targeting $20M-$25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
         </div>
         <div className="fu5 m-hide" style={{display:"flex",gap:9,justifyContent:"center",marginBottom:"clamp(16px,2.2vh,28px)"}}>
           <button className="bw" onClick={onRestart}>↩ START OVER</button>
@@ -1106,7 +1106,7 @@ function MHeader({n,label,light}:{n:string;label:string;light?:boolean}) {
 function MobileCover() {
   const metrics=[
     {label:"FUND",       value:"FUND I"},
-    {label:"FUND SIZE",  value:"$20M–$25M"},
+    {label:"FUND SIZE",  value:"$20M-$25M"},
     {label:"CATEGORIES", value:"CPG & SPORTS"},
     {label:"STAGE",      value:"SEED / SERIES A"},
   ];
@@ -1486,7 +1486,7 @@ function MobileSeparates() {
 /* ─── MOBILE 5: FUND DETAILS ─── */
 function MobileFundDetails() {
   const hi=[
-    {v:"$20–25M",l:"Fund Target",sub:"Fund I"},
+    {v:"$20M-$25M",l:"Fund Target",sub:"Fund I"},
     {v:"15–25",  l:"Portfolio Companies",sub:"Target"},
     {v:"3–7 YRS",l:"Investment Horizon",sub:"+ Extensions"},
   ];
@@ -1718,7 +1718,7 @@ function MobileClose() {
         </div>
         <div className="fu3" style={{width:28,height:1,background:"rgba(255,255,255,.2)",marginBottom:18}}/>
         <div className="fu4" style={{fontFamily:BODY,color:"rgba(255,255,255,.5)",fontSize:14,lineHeight:1.75,maxWidth:340,marginBottom:36,padding:"0 8px"}}>
-          Backfield Ventures is raising Fund I, targeting $20M to $25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
+          Backfield Ventures is raising Fund I, targeting $20M-$25M. We&apos;re looking for LPs who want to back the next generation of culture-defining consumer and sports brands.
         </div>
         <span style={{fontFamily:MONO,fontSize:8,color:"rgba(255,255,255,.2)",letterSpacing:2,lineHeight:1.6}}>
           BACKFIELDVENTURES.COM<br/>AUSTIN, TX · FUND I · 2026
