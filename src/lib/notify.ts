@@ -58,19 +58,29 @@ function wrap(subject: string, badge: string, badgeColor: string, body: string) 
 </body></html>`;
 }
 
-export async function notifyPitch(d: Record<string, string>) {
-  if (!resend) return;
+// Returns true only when Resend accepted the email. The pitch route treats this
+// as the record of the submission, so it must not report success silently.
+export async function notifyPitch(d: Record<string, string>): Promise<boolean> {
+  if (!resend) {
+    console.error("pitch email skipped: RESEND_API_KEY not set");
+    return false;
+  }
   const subject = `${d.company}${d.stage ? `: ${d.stage}` : ""}`;
   const body =
     section("Company", row("Name", d.company) + row("Website", d.website) + row("Stage", d.stage) + row("Sector", d.sector) + row("One-liner", d.oneLiner) + row("Location", d.location)) +
     section("Founder", row("Name", d.founderName) + row("Email", d.founderEmail) + row("Role", d.founderRole) + row("LinkedIn", d.linkedin) + row("Background", d.background) + row("Team size", d.teamSize)) +
     section("Opportunity", row("Problem", d.problem) + row("Solution", d.solution) + row("Traction", d.traction) + row("Raising", d.raiseAmount) + row("Raised to date", d.raisedToDate) + row("Deck", d.deckLink)) +
     section("Meta", row("Source", d.source) + row("Notes", d.notes));
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM, to: TO, replyTo: d.founderEmail || undefined,
     subject: `New Pitch: ${subject}`,
     html: wrap(subject, "New Pitch", "#111827", body),
   });
+  if (error) {
+    console.error("pitch email rejected", error);
+    return false;
+  }
+  return true;
 }
 
 export async function notifyInvest(d: Record<string, string>) {

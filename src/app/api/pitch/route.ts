@@ -9,15 +9,54 @@ const stageMap: Record<string, string> = {
   "Series B": "series-b",
 };
 
+const CRM_TIMEOUT_MS = 5000;
+
+function withTimeout<T>(work: PromiseLike<T>, ms: number): Promise<T> {
+  return Promise.race([
+    Promise.resolve(work),
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`CRM write timed out after ${ms}ms`)), ms)),
+  ]);
+}
+
+// Email first, CRM second. The New Pitch email to Ryan is the record of every
+// submission. The Supabase CRM write is best-effort: the Free-plan project
+// pauses and its host stops resolving, which silently lost pitches Oct 7-21 2026.
 export async function POST(req: NextRequest) {
-  const supabase = getSupabase();
-  if (!supabase) {
-    console.error("pitch route missing supabase env");
-    return NextResponse.json({ ok: false }, { status: 500 });
+  let d: Record<string, string>;
+  try {
+    d = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+  if (!d || typeof d !== "object" || !String(d.company ?? "").trim() || !String(d.founderEmail ?? "").trim()) {
+    return NextResponse.json({ ok: false }, { status: 400 });
   }
 
+  // Minimal breadcrumb so a failed email can still be traced from runtime logs.
+  console.log("pitch received", JSON.stringify({ company: d.company, founderName: d.founderName, founderEmail: d.founderEmail }));
+
+  const emailed = await notifyPitch(d).catch((e) => {
+    console.error("pitch email error", e);
+    return false;
+  });
+
   try {
-    const d = await req.json();
+    await withTimeout(writePitchToCrm(d), CRM_TIMEOUT_MS);
+  } catch (err) {
+    console.error("pitch CRM write skipped (best-effort)", err);
+  }
+
+  if (!emailed) {
+    console.error("pitch NOT delivered by email", JSON.stringify({ company: d.company, founderEmail: d.founderEmail }));
+    return NextResponse.json({ ok: false }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}
+
+async function writePitchToCrm(d: Record<string, string>) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error("supabase env not set");
+  {
 
     // 1. Create company record — each form field in its own column
     const hasCpgMetrics = !!(d.cpgRevenue || d.cpgGrossMargin || d.cpgVelocity);
@@ -150,11 +189,5 @@ export async function POST(req: NextRequest) {
       content: snap,
     });
 
-    await notifyPitch(d).catch((e) => console.error("pitch email error", e));
-
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("pitch route error", err);
-    return NextResponse.json({ ok: false }, { status: 500 });
   }
 }
