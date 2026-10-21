@@ -136,6 +136,32 @@ export async function notifyHandoffSubscribe(d: { name: string; email: string; s
   return noticed;
 }
 
+// Adds a Handoff signup to the Resend segment that broadcasts go to.
+// A contact that already exists is only added to the segment, so an earlier
+// unsubscribe is never overwritten.
+export async function addHandoffContact(d: { name: string; email: string; segmentId: string }) {
+  if (!resend || !d.segmentId) return false;
+  const [firstName, ...rest] = d.name.trim().split(/\s+/);
+  try {
+    const created = await resend.contacts.create({
+      email: d.email,
+      firstName: firstName || undefined,
+      lastName: rest.join(" ") || undefined,
+      segments: [{ id: d.segmentId }],
+    });
+    if (!created.error && created.data?.id) return true;
+    const added = await resend.contacts.segments.add({ email: d.email, segmentId: d.segmentId });
+    if (added.error) {
+      console.error("handoff contact error", created.error, added.error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("handoff contact error", error);
+    return false;
+  }
+}
+
 export async function notifyPartner(d: Record<string, string>) {
   if (!resend) return;
   const name = `${d.firstName} ${d.lastName}`.trim();
