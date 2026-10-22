@@ -3,7 +3,7 @@
  "updated": "2026-10-22",
  "verified_count": 62,
  "row_count": 63,
- "disclaimer": "For information only. Not investment advice, and not a solicitation or offer. Roles and figures are as stated by the linked source on the date shown. A blank cell means the source did not state it. Value figures are as reported by the linked source and are not Backfield estimates.",
+ "disclaimer": "For information only. Not investment advice, and not a solicitation or offer. Roles and figures are as stated by the linked source, as of the source date where one is shown. A blank cell means the source did not state it. Values and stakes are as reported or estimated by the linked source. They are not Backfield estimates and may not reflect current value. A round figure is the total size of the funding round the athlete joined or led, not the athlete's stake.",
  "rows": [
   {
    "brand": "BODYARMOR",
@@ -14,10 +14,10 @@
    "source_url": "https://www.sportico.com/business/commerce/2021/coca-cola-bodyarmor-purchase-1234645399/",
    "source_date": "2021-11-01",
    "verified": "Y",
-   "involvement": "Kobe Bryant invested about $6M for about 10% in 2014. Naomi Osaka joined as an endorser in 2019 and received a significant equity stake.",
+   "involvement": "The late Kobe Bryant invested about $6M for about 10% in 2014. Naomi Osaka joined as an endorser in 2019 and received a significant equity stake.",
    "involvement_source_url": "https://www.sportico.com/business/commerce/2021/coca-cola-bodyarmor-purchase-1234645399/",
    "involvement_source_date": "2021-11-01",
-   "value_display": "$400M+ (expected for Kobe Bryant's estate at the 2021 sale)",
+   "value_display": "$400M+ expected payout to Kobe Bryant's estate from the 2021 sale (Sportico, citing WSJ)",
    "value_basis": "reported",
    "value_source_url": "https://www.sportico.com/business/commerce/2021/coca-cola-bodyarmor-purchase-1234645399/",
    "value_source_date": "2021-11-01"
@@ -34,8 +34,8 @@
    "involvement": "Roger Federer joined in 2019 as a co-owner and entrepreneur.",
    "involvement_source_url": "https://press.on-running.com/roger-federer-joins-swiss-running-brand-on-as-an-entrepreneur",
    "involvement_source_date": "2019-11-25",
-   "value_display": "$375M+ (Forbes estimate)",
-   "value_basis": "reported",
+   "value_display": "$375M+ stake (Forbes estimate, Aug 2025)",
+   "value_basis": "source estimate",
    "value_source_url": "https://www.forbes.com/sites/justinbirnbaum/2025/08/22/roger-federer-is-now-a-billionaire/",
    "value_source_date": "2025-08-22"
   },
@@ -65,13 +65,13 @@
    "source_url": "https://ir.prenetics.com/news-releases/news-release-details/prenetics-announces-nba-champion-and-two-time-mvp-giannis",
    "source_date": "2026-04-02",
    "verified": "Y",
-   "involvement": "David Beckham co-founded IM8 with Prenetics. Giannis Antetokounmpo is a shareholder. Aryna Sabalenka and Ollie Bearman took equity.",
+   "involvement": "David Beckham co-founded IM8 with Prenetics, its parent company. Giannis Antetokounmpo is a shareholder in Prenetics. Aryna Sabalenka and Ollie Bearman took equity.",
    "involvement_source_url": "https://ir.prenetics.com/news-releases/news-release-details/prenetics-announces-nba-champion-and-two-time-mvp-giannis",
    "involvement_source_date": "2026-04-02",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Shares equal to 3% of parent company Prenetics, fully diluted, under a June 2024 subscription agreement (via DB Ventures; SEC filing, Jul 2024)",
+   "value_basis": "reported",
+   "value_source_url": "https://www.sec.gov/Archives/edgar/data/1876431/000162828024031643/ex1026.htm",
+   "value_source_date": "2024-07-11"
   },
   {
    "brand": "Garage Beer",
@@ -102,10 +102,10 @@
    "involvement": "Novak Djokovic co-founded it with Jessica Davidoff and led its 2025 seed round.",
    "involvement_source_url": "https://www.foodbusinessnews.net/articles/29290-cob-raises-5-million-seed-round",
    "involvement_source_date": "2025-11-04",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Led $5M seed round (Nov 2025)",
+   "value_basis": "round",
+   "value_source_url": "https://www.foodbusinessnews.net/articles/29290-cob-raises-5-million-seed-round",
+   "value_source_date": "2025-11-04"
   },
   {
    "brand": "Saysh",
@@ -204,10 +204,10 @@
    "involvement": "Named among the athlete investors when the company took a strategic investment in 2020.",
    "involvement_source_url": "https://www.prnewswire.com/news-releases/hyperice-secures-strategic-investment-from-main-street-advisors-scholdings-nfls-investment-arm-32-equity-nba-and-superstar-athletes-301148763.html",
    "involvement_source_date": "2020-10-08",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Athlete investors joined $48M Series A round (Oct 2020)",
+   "value_basis": "round",
+   "value_source_url": "https://www.cnbc.com/2020/10/08/hyperice-adds-more-athlete-investors-now-valued-at-700-million-.html",
+   "value_source_date": "2020-10-08"
   },
   {
    "brand": "KINLÒ",
@@ -272,10 +272,10 @@
    "involvement": "Venus Williams created it and co-founded it with Neel Premkumar. The other athletes joined its 2022 investment round.",
    "involvement_source_url": "https://www.prnewswire.com/news-releases/happy-viking-the-plant-based-superfood-nutrition-company-created-by-venus-williams-closes-athlete-investment-round-301606395.html",
    "involvement_source_date": "2022-08-16",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Part of $2M athlete investment round (Aug 2022)",
+   "value_basis": "round",
+   "value_source_url": "https://www.prnewswire.com/news-releases/happy-viking-the-plant-based-superfood-nutrition-company-created-by-venus-williams-closes-athlete-investment-round-301606395.html",
+   "value_source_date": "2022-08-16"
   },
   {
    "brand": "Beyond Meat",
@@ -357,10 +357,10 @@
    "involvement": "Named among more than 20 athlete investors, with Curry, George and Wie joining in the 2020 round.",
    "involvement_source_url": "https://tonal.com/blogs/all/press-release-tonal-announces-110-million-in-new-funding",
    "involvement_source_date": "2020-09-17",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Curry, George and Wie joined $110M round (Sept 2020)",
+   "value_basis": "round",
+   "value_source_url": "https://tonal.com/blogs/all/press-release-tonal-announces-110-million-in-new-funding",
+   "value_source_date": "2020-09-17"
   },
   {
    "brand": "WHOOP",
@@ -408,10 +408,10 @@
    "involvement": "Laird Hamilton co-founded it in 2015, serves as Chief Innovator and sits on the board.",
    "involvement_source_url": "https://investors.lairdsuperfood.com/governance/board-of-directors/person-details/default.aspx?ItemId=437cb6dd-3911-4dfc-baa7-6b354d977e55",
    "involvement_source_date": "",
-   "value_display": "8.7% stake",
+   "value_display": "9.3% beneficial ownership as of May 18, 2026 (SEC proxy; includes options exercisable within 60 days)",
    "value_basis": "reported",
-   "value_source_url": "https://www.sec.gov/Archives/edgar/data/1650696/000143774925017204/lsf20250227c_def14a.htm",
-   "value_source_date": "2025-05-15"
+   "value_source_url": "https://www.sec.gov/Archives/edgar/data/1650696/000143774926018290/lsf20260520_def14a.htm",
+   "value_source_date": "2026-05-18"
   },
   {
    "brand": "Good Man Brand",
@@ -510,10 +510,10 @@
    "involvement": "Serena Williams was named among the investors announced in its 2019 round.",
    "involvement_source_url": "https://www.cnn.com/2019/05/13/investing/impossible-foods-investment-serena-williams-jay-z",
    "involvement_source_date": "2019-05-13",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Joined $300M Series E round (May 2019)",
+   "value_basis": "round",
+   "value_source_url": "https://assets.ctfassets.net/hhv516v5f7sj/76lxjm2toPaYRVca41oUOU/b3e1df2a7772f1b27d8d209433801e88/05_2019_IF_SERIES_E__300_MILLION_ROUND.pdf",
+   "value_source_date": "2019-05-14"
   },
   {
    "brand": "Big Chicken",
@@ -680,27 +680,27 @@
    "involvement": "Drew and Brittany Brees became co-owners of Walk-On's Enterprises in 2015.",
    "involvement_source_url": "https://www.franchising.com/news/20150520_drew_amp_brittany_brees_join_the_walkonrsquos_team.html",
    "involvement_source_date": "2015-05-20",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Bought 25% of the company within a year of partnering (per Brandon Landry, Jan 2021)",
+   "value_basis": "reported",
+   "value_source_url": "https://www.wafb.com/2021/01/15/drew-brees-hopes-strong-finish-when-he-walks-away/",
+   "value_source_date": "2021-01-15"
   },
   {
    "brand": "Blaze Pizza",
    "category": "Restaurants",
    "athletes": "LeBron James",
    "role": "investor",
-   "whats_public": "Stake reported worth at least $35M (ESPN sources, 2017)",
+   "whats_public": "Invested less than $1M in 2012. A 2017 deal valued the chain at around $250M (ESPN sources)",
    "source_url": "https://abcnews.com/Sports/lebrons-stake-blaze-pizza-chain-now-worth-35/story?id=48827564",
    "source_date": "2017-07-24",
    "verified": "Y",
    "involvement": "LeBron James invested less than $1M in 2012 with his business partners.",
    "involvement_source_url": "https://abcnews.com/Sports/lebrons-stake-blaze-pizza-chain-now-worth-35/story?id=48827564",
    "involvement_source_date": "2017-07-24",
-   "value_display": "$35M to $40M (2017)",
-   "value_basis": "reported",
-   "value_source_url": "https://abcnews.com/Sports/lebrons-stake-blaze-pizza-chain-now-worth-35/story?id=48827564",
-   "value_source_date": "2017-07-24"
+   "value_display": "",
+   "value_basis": "",
+   "value_source_url": "",
+   "value_source_date": ""
   },
   {
    "brand": "OXIGEN",
@@ -782,7 +782,7 @@
    "involvement": "Giannis Antetokounmpo holds a stake in the company.",
    "involvement_source_url": "https://en.protothema.gr/2025/07/17/antetokounmpo-the-sklavenitis-family-and-giorgos-daskalakis-new-shareholders-in-premia/",
    "involvement_source_date": "2025-07-17",
-   "value_display": "10% stake",
+   "value_display": "10% stake (reported Jul 2025)",
    "value_basis": "reported",
    "value_source_url": "https://en.protothema.gr/2025/07/17/antetokounmpo-the-sklavenitis-family-and-giorgos-daskalakis-new-shareholders-in-premia/",
    "value_source_date": "2025-07-17"
@@ -867,10 +867,10 @@
    "involvement": "Scottie Scheffler and Tom Kim joined the 2024 Series A as equity investors.",
    "involvement_source_url": "https://www.businesswire.com/news/home/20240110673342/en/GolfForever-Secures-%2410-Million-in-Series-A-Funding-Led-by-Clerisy",
    "involvement_source_date": "2024-01-10",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Joined $10M Series A round (Jan 2024)",
+   "value_basis": "round",
+   "value_source_url": "https://www.businesswire.com/news/home/20240110673342/en/GolfForever-Secures-%2410-Million-in-Series-A-Funding-Led-by-Clerisy",
+   "value_source_date": "2024-01-10"
   },
   {
    "brand": "Cadence",
@@ -935,10 +935,10 @@
    "involvement": "Gerard Piqué co-led a EUR 3.75M round in 2026 and joined as a partner and co-founder.",
    "involvement_source_url": "https://www.europapress.es/epagro/agricultura/noticia-foodtech-plesh-cierra-ronda-375-millones-liderada-ibai-llanos-gerard-pique-20261005131549.html",
    "involvement_source_date": "2026-10-05",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "Co-led EUR 3.75M round (Oct 2026)",
+   "value_basis": "round",
+   "value_source_url": "https://www.europapress.es/epagro/agricultura/noticia-foodtech-plesh-cierra-ronda-375-millones-liderada-ibai-llanos-gerard-pique-20261005131549.html",
+   "value_source_date": "2026-10-05"
   },
   {
    "brand": "Coco5",
@@ -969,10 +969,10 @@
    "involvement": "Named as athlete investors and impact partners of the brand.",
    "involvement_source_url": "https://www.prnewswire.com/news-releases/nfl-rookie-tetairoa-mcmillan-mlb-all-star-devin-williams-and-nba-veteran-jerami-grant-invest-in-waikea-hawaiian-volcanic-water--joining-aaron-judge-myles-garrett-klay-thompson-and-others-302653290.html",
    "involvement_source_date": "2026-01-06",
-   "value_display": "",
-   "value_basis": "",
-   "value_source_url": "",
-   "value_source_date": ""
+   "value_display": "McMillan, Williams and Grant joined $11M round (Jan 2026)",
+   "value_basis": "round",
+   "value_source_url": "https://www.refreshmentmag.com/news/athlete-investors-back-wai%C4%81kea-as-latest-round-raises-11m",
+   "value_source_date": "2026-01-07"
   },
   {
    "brand": "New Era Cap",

@@ -31,6 +31,19 @@ if (data.rows.some((row) => !row.source_url)) {
   throw new Error("athlete-brands row is missing a source");
 }
 
+const allowedBases = new Set(["", "reported", "source estimate", "round"]);
+if (data.rows.some((row) => !allowedBases.has(row.value_basis))) {
+  throw new Error("athlete-brands row has a value basis that is not shown");
+}
+
+if (
+  data.rows.some(
+    (row) => row.value_display.trim() !== "" && row.value_source_url === "",
+  )
+) {
+  throw new Error("athlete-brands value is missing its source");
+}
+
 const pageTitle = "Athlete brands | Backfield Ventures";
 const pageDescription =
   "Consumer brands that athletes founded, owned or invested in, with who's behind each one and how they're involved.";

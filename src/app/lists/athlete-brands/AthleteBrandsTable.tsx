@@ -22,12 +22,17 @@ const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "athletes", label: "Athletes" },
   { key: "role", label: "Role" },
   { key: "involvement", label: "How they're involved" },
-  { key: "value", label: "Est. value" },
+  { key: "value", label: "Reported value, stake or round" },
   { key: "whats_public", label: "Details" },
   { key: "source", label: "Source" },
 ];
 
-const ESTIMATE_BASIS = "est. from reported stake and valuation";
+function valueTag(basis: string): string | null {
+  if (basis === "reported") return "reported";
+  if (basis === "source estimate") return "source est.";
+  if (basis === "round") return "round";
+  return null;
+}
 
 function sourceLabel(url: string, date: string): string {
   let host = url;
@@ -113,12 +118,6 @@ function InvolvementValue({ row }: { row: Row }) {
       ) : null}
     </>
   );
-}
-
-function valueTag(basis: string): string | null {
-  if (basis === "reported") return "reported";
-  if (basis === ESTIMATE_BASIS) return "est.";
-  return null;
 }
 
 function ValueCell({ row }: { row: Row }) {
@@ -253,7 +252,7 @@ export default function AthleteBrandsTable() {
                   <dd>
                     <InvolvementValue row={row} />
                   </dd>
-                  <dt>Est. value</dt>
+                  <dt>Reported value, stake or round</dt>
                   <dd>
                     <ValueCell row={row} />
                   </dd>
