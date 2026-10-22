@@ -272,7 +272,7 @@ function useIsMobile(bp=768) {
    SHARED UI
 ───────────────────────────────────────────── */
 function Ticker() {
-  const t="BACKFIELD VENTURES · FUND I · $20M-$25M TARGET · CONSUMER & SPORTS VC · AUSTIN, TX · EARLY STAGE · SEED / SERIES A · ";
+  const t="BACKFIELD VENTURES · CONSUMER & SPORTS VC · AUSTIN, TX · EARLY STAGE · SEED / SERIES A · ";
   return (
     <div style={{height:22,background:"#fff",overflow:"hidden",display:"flex",alignItems:"center",flexShrink:0,zIndex:20}}>
       <div style={{display:"flex",whiteSpace:"nowrap",animation:"marquee 28s linear infinite"}}>
