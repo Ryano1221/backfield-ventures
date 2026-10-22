@@ -149,16 +149,31 @@ export async function notifyHandoffSubscribe(d: { name: string; email: string; s
 // Adds a Handoff signup to the Resend segment that broadcasts go to.
 // A contact that already exists is only added to the segment, so an earlier
 // unsubscribe is never overwritten.
-export async function addHandoffContact(d: { name: string; email: string; segmentId: string }) {
+export async function addHandoffContact(d: {
+  name: string;
+  email: string;
+  segmentId: string;
+  signupSource?: string;
+}) {
   if (!resend || !d.segmentId) return false;
   const [firstName, ...rest] = d.name.trim().split(/\s+/);
+  const contact = {
+    email: d.email,
+    firstName: firstName || undefined,
+    lastName: rest.join(" ") || undefined,
+    segments: [{ id: d.segmentId }],
+  };
   try {
-    const created = await resend.contacts.create({
-      email: d.email,
-      firstName: firstName || undefined,
-      lastName: rest.join(" ") || undefined,
-      segments: [{ id: d.segmentId }],
-    });
+    // signup_source is optional contact data. If Resend rejects the property,
+    // create the contact the same way as before so the segment path still works.
+    let created = await resend.contacts.create(
+      d.signupSource
+        ? { ...contact, properties: { signup_source: d.signupSource } }
+        : contact,
+    );
+    if (created.error && d.signupSource) {
+      created = await resend.contacts.create(contact);
+    }
     if (!created.error && created.data?.id) return true;
     const added = await resend.contacts.segments.add({ email: d.email, segmentId: d.segmentId });
     if (added.error) {

@@ -20,8 +20,48 @@ function chicagoReceived(now = new Date()) {
   return `${pick("year")}-${pick("month")}-${pick("day")} ${hour}:${pick("minute")} CT`;
 }
 
+const ATTR_MAX = 200;
+
+function cleanAttr(value: unknown) {
+  return String(value ?? "")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, ATTR_MAX);
+}
+
+// One trailing sheet value. src wins; the referrer host is only the fallback.
+// utm_* are appended when the page URL had them.
+function signupSourceFrom(body: {
+  src?: unknown;
+  utm_source?: unknown;
+  utm_medium?: unknown;
+  utm_campaign?: unknown;
+  referrer?: unknown;
+}) {
+  const src = cleanAttr(body.src);
+  const utmSource = cleanAttr(body.utm_source);
+  const utmMedium = cleanAttr(body.utm_medium);
+  const utmCampaign = cleanAttr(body.utm_campaign);
+  const referrer = cleanAttr(body.referrer);
+  const parts: string[] = [];
+  const primary = src || referrer;
+  if (primary) parts.push(primary);
+  if (utmSource) parts.push(`utm_source=${utmSource}`);
+  if (utmMedium) parts.push(`utm_medium=${utmMedium}`);
+  if (utmCampaign) parts.push(`utm_campaign=${utmCampaign}`);
+  return parts.join(" ");
+}
+
 // Apps Script answers the POST with a 302. Follow that once as a GET.
-async function fileHandoffSubscriber(fields: { name: string; email: string; source: string }) {
+// signupSource is a new trailing field. received, name, email, and source stay
+// in that order so the existing sheet columns are unchanged.
+async function fileHandoffSubscriber(fields: {
+  name: string;
+  email: string;
+  source: string;
+  signupSource: string;
+}) {
   const url = process.env.HANDOFF_SHEET_URL?.trim() ?? "";
   const secret = process.env.HANDOFF_SHEET_SECRET?.trim() ?? "";
   if (!url || !secret) return false;
@@ -37,6 +77,7 @@ async function fileHandoffSubscriber(fields: { name: string; email: string; sour
         name: fields.name,
         email: fields.email,
         source: fields.source,
+        signupSource: fields.signupSource,
       }),
     });
     if (posted.status !== 302) return false;
@@ -60,7 +101,16 @@ async function fileHandoffSubscriber(fields: { name: string; email: string; sour
 // Beehiiv is not called.
 
 export async function POST(req: NextRequest) {
-  let body: { type?: unknown; name?: unknown; email?: unknown };
+  let body: {
+    type?: unknown;
+    name?: unknown;
+    email?: unknown;
+    src?: unknown;
+    utm_source?: unknown;
+    utm_medium?: unknown;
+    utm_campaign?: unknown;
+    referrer?: unknown;
+  };
   try {
     body = await req.json();
   } catch {
@@ -85,11 +135,12 @@ export async function POST(req: NextRequest) {
   const segmentId =
     (isTest ? process.env.HANDOFF_TEST_SEGMENT_ID : process.env.HANDOFF_SEGMENT_ID)?.trim() ?? "";
 
+  const signupSource = signupSourceFrom(body);
   const payload = { type: "subscribe" as const, name, email, source };
 
   const [filed, contact] = await Promise.all([
-    fileHandoffSubscriber({ name, email, source }),
-    addHandoffContact({ name, email, segmentId }),
+    fileHandoffSubscriber({ name, email, source, signupSource }),
+    addHandoffContact({ name, email, segmentId, signupSource }),
   ]);
   if (!filed) console.error("handoff sheet write failed", { source });
   if (!contact) console.error("handoff resend contact failed", { source, segment: !!segmentId });

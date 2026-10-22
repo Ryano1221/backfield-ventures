@@ -49,7 +49,7 @@ export default function Contact() {
         </div>
 
         <p className="contact__handoff reveal-bottom">
-          <Link href="/handoff">Follow The Handoff</Link>
+          <Link href="/handoff?src=home-contact">Follow The Handoff</Link>
         </p>
 
         <div className="contact__email reveal-bottom">

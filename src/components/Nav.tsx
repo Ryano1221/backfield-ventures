@@ -41,7 +41,7 @@ export default function Nav() {
           <li><Link href="/#philosophy" className="nav__link">PHILOSOPHY</Link></li>
           <li><Link href="/#contact" className="nav__link">CONTACT</Link></li>
           <li>
-            <Link href="/handoff" className="nav__link" aria-current={onHandoff ? "page" : undefined}>
+            <Link href="/handoff?src=site-nav" className="nav__link" aria-current={onHandoff ? "page" : undefined}>
               HANDOFF
             </Link>
           </li>
@@ -68,7 +68,7 @@ export default function Nav() {
         <Link href="/#why" className="nav__mobile-link" onClick={closeMenu}>WHY</Link>
         <Link href="/#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</Link>
         <Link href="/#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</Link>
-        <Link href="/handoff" className="nav__mobile-link" onClick={closeMenu} aria-current={onHandoff ? "page" : undefined}>HANDOFF</Link>
+        <Link href="/handoff?src=site-nav-mobile" className="nav__mobile-link" onClick={closeMenu} aria-current={onHandoff ? "page" : undefined}>HANDOFF</Link>
         <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
           PITCH <span className="bfv-arrow">→</span>
         </button>

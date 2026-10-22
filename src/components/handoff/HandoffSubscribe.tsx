@@ -7,6 +7,31 @@ type Status = "idle" | "submitting" | "done" | "error";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function readSignupAttribution() {
+  const params = new URLSearchParams(window.location.search);
+  const pick = (key: string) => {
+    const value = params.get(key)?.trim() ?? "";
+    return value || undefined;
+  };
+  const src = pick("src");
+  let referrer: string | undefined;
+  if (!src && document.referrer) {
+    try {
+      const host = new URL(document.referrer).host.trim();
+      if (host) referrer = host;
+    } catch {
+      referrer = undefined;
+    }
+  }
+  return {
+    src,
+    utm_source: pick("utm_source"),
+    utm_medium: pick("utm_medium"),
+    utm_campaign: pick("utm_campaign"),
+    referrer,
+  };
+}
+
 export default function HandoffSubscribe() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,7 +51,12 @@ export default function HandoffSubscribe() {
       const res = await fetch("/api/handoff-subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "subscribe", name: nameValue, email: emailValue }),
+        body: JSON.stringify({
+          type: "subscribe",
+          name: nameValue,
+          email: emailValue,
+          ...readSignupAttribution(),
+        }),
       });
       if (!res.ok) {
         setStatus("error");

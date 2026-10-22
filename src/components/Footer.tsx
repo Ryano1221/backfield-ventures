@@ -30,7 +30,7 @@ export default function Footer() {
           <Link href="/#philosophy" className="footer__nav-link">PHILOSOPHY</Link>
           <Link href="/#contact" className="footer__nav-link">CONTACT</Link>
           <Link
-            href="/handoff"
+            href="/handoff?src=site-footer"
             className="footer__nav-link"
             aria-current={onHandoff ? "page" : undefined}
           >
