@@ -30,6 +30,7 @@ export function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
+// /lists is public. Keep it out of this matcher so this proxy does not gate it.
 export const config = {
   matcher: ["/fund1/:path*", "/deck", "/deck/:path*"],
 };
