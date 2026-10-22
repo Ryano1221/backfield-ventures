@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Space_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import BfvDrawers from "@/components/BfvDrawers";
 
@@ -570,6 +571,7 @@ export default function RootLayout({
     if(e.key==='Escape'){bfvClose('pitch');bfvClose('invest');bfvPartnerClose();}
   });
 })();` }} />
+        <Analytics />
       </body>
     </html>
   );
