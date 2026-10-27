@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { deliverPitch } from "@/lib/pitch-delivery";
 import { notifyPitch } from "@/lib/notify";
 import { getSupabase } from "@/lib/supabase";
 
@@ -8,15 +9,6 @@ const stageMap: Record<string, string> = {
   "Series A": "series-a",
   "Series B": "series-b",
 };
-
-const CRM_TIMEOUT_MS = 5000;
-
-function withTimeout<T>(work: PromiseLike<T>, ms: number): Promise<T> {
-  return Promise.race([
-    Promise.resolve(work),
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`CRM write timed out after ${ms}ms`)), ms)),
-  ]);
-}
 
 // Email first, CRM second. The New Pitch email to Ryan is the record of every
 // submission. The Supabase CRM write is best-effort: the Free-plan project
@@ -35,21 +27,14 @@ export async function POST(req: NextRequest) {
   // Minimal breadcrumb so a failed email can still be traced from runtime logs.
   console.log("pitch received", JSON.stringify({ company: d.company, founderName: d.founderName, founderEmail: d.founderEmail }));
 
-  const emailed = await notifyPitch(d).catch((e) => {
-    console.error("pitch email error", e);
-    return false;
+  const delivered = await deliverPitch({
+    notify: () => notifyPitch(d),
+    writeCrm: () => writePitchToCrm(d),
+    log: { company: d.company, founderEmail: d.founderEmail },
   });
 
-  try {
-    await withTimeout(writePitchToCrm(d), CRM_TIMEOUT_MS);
-  } catch (err) {
-    console.error("pitch CRM write skipped (best-effort)", err);
-  }
-
-  if (!emailed) {
-    console.error("pitch NOT delivered by email", JSON.stringify({ company: d.company, founderEmail: d.founderEmail }));
-    return NextResponse.json({ ok: false }, { status: 500 });
-  }
+  // 2xx only after Resend accepted the email. A CRM miss does not fail the request.
+  if (!delivered) return NextResponse.json({ ok: false }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
 
