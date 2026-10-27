@@ -817,13 +817,14 @@ function FundDetails({onNext,onPrev,onGo,total}:{onNext:()=>void;onPrev:()=>void
     {v:"3–7 YRS",l:"Investment Horizon",sub:"+ Extensions"},
   ];
   const rows=[
-    ["FUND STRUCTURE",    "Delaware LP / Standard VC Terms"],
+    ["FUND STRUCTURE",    "Delaware LP"],
     ["TARGET STAGE",      "Seed / Series A"],
     ["INITIAL CHECK",     "$100K – $500K Per Company"],
     ["RESERVE RATIO",     "~40% Reserved for Follow-On"],
-    ["MANAGEMENT FEE",    "2.0% Per Annum"],
-    ["CARRIED INTEREST",  "20% Above 8% Preferred Return"],
+    ["MANAGEMENT FEE",    "2% on Committed Capital, Flat for Life"],
+    ["CARRIED INTEREST",  "15% Carry (85% LP / 15% GP)"], /* No pref, no hurdle (Ryan, 10/27 9:02am CT). */
     ["MIN. LP INVESTMENT","$200,000 (Accredited Investors Only)"],
+    ["SPV TERMS",         "2% Fee / 20% Carry"],
   ];
   return (
     <Dark>
@@ -1491,13 +1492,14 @@ function MobileFundDetails() {
     {v:"3–7 YRS",l:"Investment Horizon",sub:"+ Extensions"},
   ];
   const rows=[
-    ["FUND STRUCTURE",    "Delaware LP / Standard VC Terms"],
+    ["FUND STRUCTURE",    "Delaware LP"],
     ["TARGET STAGE",      "Seed / Series A"],
     ["INITIAL CHECK",     "$100K – $500K Per Company"],
     ["RESERVE RATIO",     "~40% Reserved for Follow-On"],
-    ["MANAGEMENT FEE",    "2.0% Per Annum"],
-    ["CARRIED INTEREST",  "20% Above 8% Preferred Return"],
+    ["MANAGEMENT FEE",    "2% on Committed Capital, Flat for Life"],
+    ["CARRIED INTEREST",  "15% Carry (85% LP / 15% GP)"], /* No pref, no hurdle (Ryan, 10/27 9:02am CT). */
     ["MIN. LP INVESTMENT","$200,000 (Accredited Investors Only)"],
+    ["SPV TERMS",         "2% Fee / 20% Carry"],
   ];
   return (
     <MobileSlide>
