@@ -67,7 +67,6 @@ export const metadata: Metadata = {
     "early stage startup funding",
     "seed stage investor",
     // General VC
-    "venture capital fund",
     "startup investor",
     "angel investor Austin",
     "VC for consumer startups",

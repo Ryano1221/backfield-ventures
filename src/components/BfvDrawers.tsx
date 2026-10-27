@@ -298,7 +298,7 @@ const overlayHtml = `
       <div class="bfvp-confirm" id="bfvp-confirm" style="display:none;">
         <div class="bfvp-confirm-icon">&#x2713;</div>
         <div class="bfvp-confirm-title">Thanks for Reaching Out</div>
-        <p class="bfvp-confirm-body">We&apos;ll review your background and be in touch if there&apos;s a fit with our portfolio or fund. We appreciate operators who want to give back.</p>
+        <p class="bfvp-confirm-body">We&apos;ll review your background and be in touch if there&apos;s a fit with our portfolio. We appreciate operators who want to give back.</p>
         <div class="bfvp-confirm-detail">Backfield Ventures &middot; <span id="bfvp-conf-email"></span></div>
         <button class="bfvp-btn" onclick="bfvPartnerClose()" style="margin-top:8px;">Close &#x2715;</button>
       </div>
