@@ -1,3 +1,5 @@
+import { PITCH_NOT_SENT_MESSAGE } from "@/lib/pitch-submit";
+
 const overlayHtml = `
 <div class="bfv-overlay" id="bfv-pitch">
   <div class="bfv-backdrop" onclick="bfvClose('pitch')"></div>
@@ -138,6 +140,7 @@ const overlayHtml = `
       </div>
     </div>
     <div class="bfv-footer" id="bfv-pfooter">
+      <p class="bfv-submit-error" id="bfv-pitch-error" role="alert" hidden>${PITCH_NOT_SENT_MESSAGE}</p>
       <div class="bfv-counter" id="bfv-pctr">01 / 04</div>
       <div class="bfv-footer-btns">
         <button class="bfv-btn-sm" id="bfv-pback" onclick="bfvPitchNav(-1)" style="display:none;">← Back</button>

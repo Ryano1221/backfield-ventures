@@ -3,6 +3,7 @@ import { Bebas_Neue, Space_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import BfvDrawers from "@/components/BfvDrawers";
+import { PITCH_SUBMIT_TIMEOUT_MS, pitchSubmissionSucceededSource } from "@/lib/pitch-submit";
 
 const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
@@ -244,6 +245,9 @@ export default function RootLayout({
         {children}
         <BfvDrawers />
         <script dangerouslySetInnerHTML={{ __html: `(function(){
+  ${pitchSubmissionSucceededSource}
+  var pitchSending = false;
+  var PITCH_TIMEOUT_MS = ${PITCH_SUBMIT_TIMEOUT_MS};
   var ps = 1, is = 1, prs = 1, T = 4, PT = 6;
 
   window.bfvOpen = function(t) {
@@ -332,6 +336,22 @@ export default function RootLayout({
     if(f)f.classList.remove('bfv-err'); return true;
   }
 
+  function bfvPitchSetError(show) {
+    var errEl = document.getElementById('bfv-pitch-error');
+    if (errEl) errEl.hidden = !show;
+  }
+  function bfvPitchFail() {
+    pitchSending = false;
+    var nextBtn = document.getElementById('bfv-pnext');
+    if (nextBtn) {
+      nextBtn.disabled = false;
+      nextBtn.textContent = 'Submit →';
+    }
+    var backBtn = document.getElementById('bfv-pback');
+    if (backBtn) backBtn.disabled = false;
+    bfvPitchSetError(true);
+  }
+
   function bfvPitchConfirm() {
     var email=document.getElementById('bfv-p-fe').value;
     document.getElementById('bfv-pconf-email').textContent=email;
@@ -353,15 +373,20 @@ export default function RootLayout({
   }
 
   window.bfvPitchNav = function(d) {
+    if (pitchSending) return;
     if(d===1){
       if(ps===1){var ok=bfvVal('bfv-p-co','bfv-pf-co')&bfvValSel('bfv-p-st','bfv-pf-st')&bfvValSel('bfv-p-sec','bfv-pf-sec')&bfvVal('bfv-p-ol','bfv-pf-ol');if(!ok)return;}
       if(ps===2){var ok2=bfvVal('bfv-p-fn','bfv-pf-fn')&bfvVal('bfv-p-fr','bfv-pf-fr')&bfvValEmail('bfv-p-fe','bfv-pf-fe');if(!ok2)return;}
       if(ps===3){if(!bfvVal('bfv-p-pr','bfv-pf-pr'))return;}
       if(ps===5){var ok5=bfvVal('bfv-p-why-now','bfv-pf-why')&bfvVal('bfv-p-moat','bfv-pf-moat')&bfvVal('bfv-p-risks','bfv-pf-risks');if(!ok5)return;}
       if(ps===PT){
+        pitchSending = true;
+        bfvPitchSetError(false);
         var nextBtn=document.getElementById('bfv-pnext');
         nextBtn.textContent='Submitting…';
         nextBtn.disabled=true;
+        var backBtn=document.getElementById('bfv-pback');
+        if(backBtn) backBtn.disabled=true;
         var gv=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
         var payload={
           company: gv('bfv-p-co'),
@@ -410,12 +435,26 @@ export default function RootLayout({
           risks: gv('bfv-p-risks'),
           useOfProceeds: gv('bfv-p-proceeds'),
         };
-        fetch('/api/pitch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-          .then(function(){bfvPitchConfirm();})
-          .catch(function(){bfvPitchConfirm();});
+        var controller = new AbortController();
+        var timer = setTimeout(function(){ controller.abort(); }, PITCH_TIMEOUT_MS);
+        fetch('/api/pitch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal})
+          .then(function(res){
+            return res.json().then(function(body){
+              return {status:res.status, body:body};
+            }, function(){
+              return {status:res.status, body:null};
+            });
+          })
+          .then(function(result){
+            if (pitchSubmissionSucceeded(result.status, result.body)) bfvPitchConfirm();
+            else bfvPitchFail();
+          })
+          .catch(function(){ bfvPitchFail(); })
+          .then(function(){ clearTimeout(timer); });
         return;
       }
     }
+    bfvPitchSetError(false);
     ps=Math.max(1,Math.min(PT,ps+d));
     bfvShow('pitch',ps); bfvProgress('pitch',ps);
     if(ps===4) bfvShowMetrics();

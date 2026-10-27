@@ -71,16 +71,23 @@ export async function notifyPitch(d: Record<string, string>): Promise<boolean> {
     section("Founder", row("Name", d.founderName) + row("Email", d.founderEmail) + row("Role", d.founderRole) + row("LinkedIn", d.linkedin) + row("Background", d.background) + row("Team size", d.teamSize)) +
     section("Opportunity", row("Problem", d.problem) + row("Solution", d.solution) + row("Traction", d.traction) + row("Raising", d.raiseAmount) + row("Raised to date", d.raisedToDate) + row("Deck", d.deckLink)) +
     section("Meta", row("Source", d.source) + row("Notes", d.notes));
-  const { error } = await resend.emails.send({
-    from: FROM, to: TO, replyTo: d.founderEmail || undefined,
-    subject: `New Pitch: ${subject}`,
-    html: wrap(subject, "New Pitch", "#111827", body),
-  });
-  if (error) {
-    console.error("pitch email rejected", error);
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM, to: TO, replyTo: d.founderEmail || undefined,
+      subject: `New Pitch: ${subject}`,
+      html: wrap(subject, "New Pitch", "#111827", body),
+    });
+    // A send counts only when Resend returns an id. An error object, a throw,
+    // or an empty success payload are all undelivered.
+    if (error || !data?.id) {
+      console.error("pitch email rejected", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("pitch email error", error);
     return false;
   }
-  return true;
 }
 
 export async function notifyInvest(d: Record<string, string>) {

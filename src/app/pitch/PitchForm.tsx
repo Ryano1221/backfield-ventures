@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { PITCH_NOT_SENT_MESSAGE, postPitch } from "@/lib/pitch-submit";
 
 const TOTAL = 5;
 const STEP_LABELS = ["Company", "Team", "Opp", "Metrics", "Deep Dive", "Submit"];
@@ -54,6 +55,8 @@ export default function PitchForm() {
   const [fields, setFields] = useState<Fields>(EMPTY);
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const submittingRef = useRef(false);
 
   function set(k: keyof Fields) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -87,55 +90,59 @@ export default function PitchForm() {
   }
 
   async function next() {
+    if (submittingRef.current) return;
     if (!validate()) return;
     if (step === TOTAL) {
+      submittingRef.current = true;
       setSubmitting(true);
-      try {
-        await fetch("/api/pitch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            company: fields.company,
-            website: fields.website,
-            stage: fields.stage,
-            sector: fields.sector,
-            oneLiner: fields.oneLiner,
-            location: fields.location,
-            founderName: fields.founderName,
-            founderRole: fields.founderRole,
-            founderEmail: fields.founderEmail,
-            linkedin: fields.linkedin,
-            teamSize: fields.teamSize,
-            background: fields.background,
-            problem: fields.problem,
-            solution: fields.solution,
-            traction: [
-              fields.revenueTtm     && `Revenue (TTM): ${fields.revenueTtm}`,
-              fields.grossMargin    && `Gross Margin: ${fields.grossMargin}`,
-              fields.velocity       && `Velocity: ${fields.velocity}`,
-              fields.retailDoors    && `Retail Doors: ${fields.retailDoors}`,
-              fields.avgMomGrowth   && `Avg MoM Growth: ${fields.avgMomGrowth}`,
-              fields.dtcRevenuePct  && `DTC Revenue %: ${fields.dtcRevenuePct}`,
-              fields.repeatPurchaseRate && `Repeat Purchase Rate: ${fields.repeatPurchaseRate}`,
-              fields.dtcCac         && `DTC CAC: ${fields.dtcCac}`,
-              fields.cacPayback     && `CAC Payback: ${fields.cacPayback}`,
-              fields.cashRunway     && `Cash Runway: ${fields.cashRunway}`,
-            ].filter(Boolean).join("\n") || null,
-            deckLink: fields.deckLink,
-            source: fields.source,
-            notes: fields.notes,
-          }),
-        });
-      } finally {
-        setSubmitting(false);
+      setSubmitError("");
+      const result = await postPitch({
+        company: fields.company,
+        website: fields.website,
+        stage: fields.stage,
+        sector: fields.sector,
+        oneLiner: fields.oneLiner,
+        location: fields.location,
+        founderName: fields.founderName,
+        founderRole: fields.founderRole,
+        founderEmail: fields.founderEmail,
+        linkedin: fields.linkedin,
+        teamSize: fields.teamSize,
+        background: fields.background,
+        problem: fields.problem,
+        solution: fields.solution,
+        traction: [
+          fields.revenueTtm     && `Revenue (TTM): ${fields.revenueTtm}`,
+          fields.grossMargin    && `Gross Margin: ${fields.grossMargin}`,
+          fields.velocity       && `Velocity: ${fields.velocity}`,
+          fields.retailDoors    && `Retail Doors: ${fields.retailDoors}`,
+          fields.avgMomGrowth   && `Avg MoM Growth: ${fields.avgMomGrowth}`,
+          fields.dtcRevenuePct  && `DTC Revenue %: ${fields.dtcRevenuePct}`,
+          fields.repeatPurchaseRate && `Repeat Purchase Rate: ${fields.repeatPurchaseRate}`,
+          fields.dtcCac         && `DTC CAC: ${fields.dtcCac}`,
+          fields.cacPayback     && `CAC Payback: ${fields.cacPayback}`,
+          fields.cashRunway     && `Cash Runway: ${fields.cashRunway}`,
+        ].filter(Boolean).join("\n") || null,
+        deckLink: fields.deckLink,
+        source: fields.source,
+        notes: fields.notes,
+      });
+      if (result.ok) {
         setConfirmed(true);
+        return;
       }
+      submittingRef.current = false;
+      setSubmitting(false);
+      setSubmitError(PITCH_NOT_SENT_MESSAGE);
       return;
     }
+    setSubmitError("");
     setStep((s) => s + 1);
   }
 
   function back() {
+    if (submittingRef.current) return;
+    setSubmitError("");
     setStep((s) => Math.max(1, s - 1));
   }
 
@@ -477,12 +484,15 @@ export default function PitchForm() {
         {/* Footer */}
         {!confirmed && (
           <div className="bfv-footer">
+            {submitError ? (
+              <p className="bfv-submit-error" role="alert">{submitError}</p>
+            ) : null}
             <div className="bfv-counter">
               {String(step).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
             </div>
             <div className="bfv-footer-btns">
               {step > 1 && (
-                <button className="bfv-btn-sm" onClick={back}>
+                <button className="bfv-btn-sm" onClick={back} disabled={submitting}>
                   ← Back
                 </button>
               )}
