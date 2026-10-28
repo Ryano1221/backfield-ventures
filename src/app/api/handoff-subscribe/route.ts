@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addHandoffContact, notifyHandoffSubscribe } from "@/lib/notify";
+import { createBeehiivSubscription, type BeehiivSubscriptionResult } from "@/lib/beehiiv";
+import { addHandoffContact, notifyHandoffSubscribe, sendHandoffNotice } from "@/lib/notify";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SOURCE = "handoff-public";
@@ -31,7 +32,28 @@ function cleanAttr(value: unknown) {
 }
 
 // One trailing sheet value. src wins; the referrer host is only the fallback.
-// utm_* are appended when the page URL had them.
+// utm_source, utm_medium, and utm_campaign are appended when the page URL had them.
+// utm_term and utm_content stay off the sheet and are only forwarded to beehiiv.
+function signupAttrs(body: {
+  src?: unknown;
+  utm_source?: unknown;
+  utm_medium?: unknown;
+  utm_campaign?: unknown;
+  utm_term?: unknown;
+  utm_content?: unknown;
+  referrer?: unknown;
+}) {
+  return {
+    src: cleanAttr(body.src),
+    utmSource: cleanAttr(body.utm_source),
+    utmMedium: cleanAttr(body.utm_medium),
+    utmCampaign: cleanAttr(body.utm_campaign),
+    utmTerm: cleanAttr(body.utm_term),
+    utmContent: cleanAttr(body.utm_content),
+    referrer: cleanAttr(body.referrer),
+  };
+}
+
 function signupSourceFrom(body: {
   src?: unknown;
   utm_source?: unknown;
@@ -39,17 +61,13 @@ function signupSourceFrom(body: {
   utm_campaign?: unknown;
   referrer?: unknown;
 }) {
-  const src = cleanAttr(body.src);
-  const utmSource = cleanAttr(body.utm_source);
-  const utmMedium = cleanAttr(body.utm_medium);
-  const utmCampaign = cleanAttr(body.utm_campaign);
-  const referrer = cleanAttr(body.referrer);
+  const attrs = signupAttrs(body);
   const parts: string[] = [];
-  const primary = src || referrer;
+  const primary = attrs.src || attrs.referrer;
   if (primary) parts.push(primary);
-  if (utmSource) parts.push(`utm_source=${utmSource}`);
-  if (utmMedium) parts.push(`utm_medium=${utmMedium}`);
-  if (utmCampaign) parts.push(`utm_campaign=${utmCampaign}`);
+  if (attrs.utmSource) parts.push(`utm_source=${attrs.utmSource}`);
+  if (attrs.utmMedium) parts.push(`utm_medium=${attrs.utmMedium}`);
+  if (attrs.utmCampaign) parts.push(`utm_campaign=${attrs.utmCampaign}`);
   return parts.join(" ");
 }
 
@@ -92,13 +110,30 @@ async function fileHandoffSubscriber(fields: {
 }
 
 // Self-hosted subscribe for The Handoff.
-// Order matters: record the signup first (sheet row + Resend contact in the
-// Handoff segment), then send the confirmation and the internal notice.
-// A failed email no longer loses the signup.
+// Record the signup first. The sheet write, the optional beehiiv subscription,
+// and the optional Resend contact run together. Mail goes out only after one
+// of those paths records the person. A failed email does not lose the signup.
+// The visitor sees success when any enabled path succeeds.
+// HANDOFF_BEEHIIV_ENABLED must be exactly "true" or beehiiv is not called.
+// HANDOFF_RESEND_ENABLED stays on unless it is exactly "false". "false" skips
+// the Resend contact and the subscriber confirmation. The internal notice
+// still sends.
 // Test mode: send header x-handoff-test equal to HANDOFF_TEST_TOKEN. The row is
 // written with source "handoff-TEST", the contact goes to HANDOFF_TEST_SEGMENT_ID,
-// and no email is sent. Lets Growth check the whole path without emailing anyone.
-// Beehiiv is not called.
+// beehiiv is skipped, and no email is sent.
+
+function resendContactsEnabled() {
+  return process.env.HANDOFF_RESEND_ENABLED !== "false";
+}
+
+function logBeehiiv(result: BeehiivSubscriptionResult | null) {
+  if (!result || result.ok) return;
+  if (result.error === "missing_config") {
+    console.error("[handoff-subscribe] beehiiv skipped", "missing_config");
+    return;
+  }
+  console.error("[handoff-subscribe] beehiiv failed", result.status, result.error ?? "error");
+}
 
 export async function POST(req: NextRequest) {
   let body: {
@@ -109,6 +144,8 @@ export async function POST(req: NextRequest) {
     utm_source?: unknown;
     utm_medium?: unknown;
     utm_campaign?: unknown;
+    utm_term?: unknown;
+    utm_content?: unknown;
     referrer?: unknown;
   };
   try {
@@ -136,29 +173,63 @@ export async function POST(req: NextRequest) {
     (isTest ? process.env.HANDOFF_TEST_SEGMENT_ID : process.env.HANDOFF_SEGMENT_ID)?.trim() ?? "";
 
   const signupSource = signupSourceFrom(body);
+  const attrs = signupAttrs(body);
   const payload = { type: "subscribe" as const, name, email, source };
+  const resendOn = resendContactsEnabled();
+  const beehiivOn = process.env.HANDOFF_BEEHIIV_ENABLED === "true" && !isTest;
 
-  const [filed, contact] = await Promise.all([
+  const [filed, beehiiv, contact] = await Promise.all([
     fileHandoffSubscriber({ name, email, source, signupSource }),
-    addHandoffContact({ name, email, segmentId, signupSource }),
+    beehiivOn
+      ? createBeehiivSubscription({
+          email,
+          name,
+          utmSource: attrs.src || SOURCE,
+          utmMedium: attrs.utmMedium,
+          utmCampaign: attrs.utmCampaign,
+          utmTerm: attrs.utmTerm,
+          utmContent: attrs.utmContent,
+          referringSite: attrs.referrer,
+        }).catch(() => {
+          const failed: BeehiivSubscriptionResult = { ok: false, status: 0, error: "unexpected" };
+          return failed;
+        })
+      : Promise.resolve(null),
+    resendOn ? addHandoffContact({ name, email, segmentId, signupSource }) : Promise.resolve(false),
   ]);
   if (!filed) console.error("handoff sheet write failed", { source });
-  if (!contact) console.error("handoff resend contact failed", { source, segment: !!segmentId });
+  logBeehiiv(beehiiv);
+  if (resendOn && !contact) console.error("handoff resend contact failed", { source, segment: !!segmentId });
 
-  if (!filed && !contact) {
-    console.log("handoff-subscribe unrecorded", payload);
+  const recorded = filed || beehiiv?.ok === true || (resendOn && contact);
+  if (!recorded) {
+    console.log("handoff-subscribe unrecorded", { source });
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 
   if (isTest) {
-    return NextResponse.json({ ok: true, test: true, sheet: filed, resend: contact });
+    return NextResponse.json({
+      ok: true,
+      test: true,
+      sheet: filed,
+      resend: contact,
+      beehiiv: "skipped",
+    });
   }
 
-  const sent = await notifyHandoffSubscribe({ name, email, source }).catch((error) => {
-    console.error("handoff email error", error);
-    return false;
-  });
-  if (!sent) console.error("handoff confirmation or notice failed", { email });
+  if (resendOn) {
+    const sent = await notifyHandoffSubscribe({ name, email, source }).catch(() => {
+      console.error("handoff email error");
+      return false;
+    });
+    if (!sent) console.error("handoff confirmation or notice failed", { source });
+  } else {
+    const noticed = await sendHandoffNotice({ name, email, source }).catch(() => {
+      console.error("handoff notice error");
+      return false;
+    });
+    if (!noticed) console.error("handoff notice failed", { source });
+  }
 
   const webhook = process.env.HANDOFF_WEBHOOK_URL;
   if (webhook) {
