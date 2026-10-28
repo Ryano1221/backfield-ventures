@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import LeftBar from "@/components/LeftBar";
 import Nav from "@/components/Nav";
 import ParticleBackground from "@/components/ParticleBackground";
 import DealMosaic from "@/components/handoff/DealMosaic";
+import HandoffArchive from "@/components/handoff/HandoffArchive";
 import HandoffDrawers from "@/components/handoff/HandoffDrawers";
 import HandoffHero from "@/components/handoff/HandoffHero";
 import HandoffMidCta from "@/components/handoff/HandoffMidCta";
@@ -30,6 +32,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 3600;
+
 export default function HandoffPage() {
   return (
     <>
@@ -43,9 +47,12 @@ export default function HandoffPage() {
             <HandoffSubscribe />
             <DealMosaic />
             <p className={styles.proofNote}>
-              Brands we think are impressive. Not an investment offer.
+              Brands I think are impressive. Not an investment offer.
             </p>
             <HandoffMidCta />
+            <Suspense fallback={null}>
+              <HandoffArchive />
+            </Suspense>
           </div>
         </section>
       </main>
