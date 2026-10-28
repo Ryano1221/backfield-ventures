@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --import tsx --test src/lib/handoff-archive.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.0",
@@ -15,7 +16,8 @@
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^6.12.2"
+    "resend": "^6.12.2",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -25,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
