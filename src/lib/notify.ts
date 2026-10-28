@@ -133,24 +133,30 @@ async function sendHandoffEmail(params: {
   }
 }
 
-export async function notifyHandoffSubscribe(d: { name: string; email: string; source: string }) {
-  const confirmed = await sendHandoffEmail({
+export async function sendHandoffConfirmation(d: { name: string; email: string }) {
+  return sendHandoffEmail({
     to: d.email,
     subject: HANDOFF_CONFIRMATION_SUBJECT,
     html: renderHandoffConfirmation(d.name),
     text: handoffConfirmationText(d.name),
   });
-  if (!confirmed) return false;
+}
 
+export async function sendHandoffNotice(d: { name: string; email: string; source: string }) {
   const noticeTo = process.env.HANDOFF_TO_EMAIL?.trim() || TO;
-  const noticed = await sendHandoffEmail({
+  return sendHandoffEmail({
     to: noticeTo,
     replyTo: d.email,
     subject: `The Handoff subscribe: ${d.email.replace(/[\r\n]/g, "")}`,
     html: renderHandoffNotice(d),
     text: handoffNoticeText(d),
   });
-  return noticed;
+}
+
+export async function notifyHandoffSubscribe(d: { name: string; email: string; source: string }) {
+  const confirmed = await sendHandoffConfirmation(d);
+  if (!confirmed) return false;
+  return sendHandoffNotice(d);
 }
 
 // Adds a Handoff signup to the Resend segment that broadcasts go to.
