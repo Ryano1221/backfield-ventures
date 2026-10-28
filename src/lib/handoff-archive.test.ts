@@ -428,8 +428,15 @@ describe("copy", () => {
     assert.equal(page.includes("Brands we think are impressive."), false);
 
     const component = readFileSync("src/components/handoff/HandoffArchive.tsx", "utf8");
-    assert.match(component, /\{ARCHIVE_HEADING\}/);
-    assert.match(component, /\{ARCHIVE_SUBHEADING\}/);
+    assert.match(
+      component,
+      /<p className=\{`\$\{styles\.archiveDate\} \$\{styles\.archiveEyebrow\}`\}>\{ARCHIVE_HEADING\}<\/p>/,
+    );
+    assert.match(
+      component,
+      /<h2 id="handoff-archive-heading" className=\{styles\.sectionHeading\}>\s*\{ARCHIVE_SUBHEADING\}\s*<\/h2>/,
+    );
+    assert.equal(/<h[1-6][^>]*>\s*\{ARCHIVE_HEADING\}/.test(component), false);
     assert.match(component, /\{ARCHIVE_LINE\}/);
     assert.equal(component.includes("Read the back issues"), false);
     assert.equal(component.includes("\u2014") || component.includes("\u2013"), false);

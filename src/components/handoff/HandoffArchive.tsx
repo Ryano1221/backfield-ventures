@@ -37,10 +37,10 @@ export default async function HandoffArchive() {
 
   return (
     <section className={styles.archive} id="past-issues" aria-labelledby="handoff-archive-heading">
+      <p className={`${styles.archiveDate} ${styles.archiveEyebrow}`}>{ARCHIVE_HEADING}</p>
       <h2 id="handoff-archive-heading" className={styles.sectionHeading}>
-        {ARCHIVE_HEADING}
+        {ARCHIVE_SUBHEADING}
       </h2>
-      <p className={styles.archiveSubhead}>{ARCHIVE_SUBHEADING}</p>
       <p className={styles.lead}>{ARCHIVE_LINE}</p>
       <ul className={styles.archiveList}>
         {issues.map((issue) => (

@@ -709,18 +709,8 @@
   border-top: 1px solid rgba(240, 237, 232, 0.22);
 }
 
-.archive .sectionHeading {
-  margin-bottom: 12px;
-}
-
-.archiveSubhead {
-  font-family: var(--font-bebas);
-  letter-spacing: 0.02em;
-  color: #f0ede8;
-  margin: 0 0 16px;
-  font-size: clamp(28px, 3vw, 42px);
-  font-weight: 400;
-  line-height: 1;
+.archiveEyebrow {
+  margin: 0 0 24px;
 }
 
 .archiveList {
