@@ -72,7 +72,10 @@ function installFetch() {
             reject(new Error("missing abort signal"));
             return;
           }
+          // AbortSignal.timeout does not keep a bare test process alive.
+          const keepAlive = setInterval(() => {}, 200);
           const fail = () => {
+            clearInterval(keepAlive);
             const reason = signal.reason;
             reject(reason instanceof Error ? reason : new DOMException("timeout", "TimeoutError"));
           };
