@@ -124,8 +124,8 @@ test("postPitch treats 500, a failing body, a network error, and a timeout as fa
 });
 
 test("pitch clients no longer confirm before the response succeeds", () => {
-  const layout = readFileSync(new URL("../src/app/layout.tsx", import.meta.url), "utf8");
-  const form = readFileSync(new URL("../src/app/pitch/PitchForm.tsx", import.meta.url), "utf8");
+  const layout = readFileSync(new URL("../src/app/(site)/layout.tsx", import.meta.url), "utf8");
+  const form = readFileSync(new URL("../src/app/(site)/pitch/PitchForm.tsx", import.meta.url), "utf8");
   const drawers = readFileSync(new URL("../src/components/BfvDrawers.tsx", import.meta.url), "utf8");
   const route = readFileSync(new URL("../src/app/api/pitch/route.ts", import.meta.url), "utf8");
 

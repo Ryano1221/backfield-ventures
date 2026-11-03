@@ -1,5 +1,5 @@
 import Image from "next/image";
-import styles from "@/app/handoff/handoff.module.css";
+import styles from "@/app/(site)/handoff/handoff.module.css";
 import type { HandoffBrand } from "./brands";
 
 const layoutClass = {

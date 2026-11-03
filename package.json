@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/handoff-archive.test.ts"
+    "test": "node --import tsx --test src/lib/handoff-archive.test.ts src/lib/os/*.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/blob": "^2.8.2",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",
     "react": "19.2.4",

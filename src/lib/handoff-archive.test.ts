@@ -423,7 +423,7 @@ describe("copy", () => {
       assert.equal(line.includes("\u2013"), false);
     }
 
-    const page = readFileSync("src/app/handoff/page.tsx", "utf8");
+    const page = readFileSync("src/app/(site)/handoff/page.tsx", "utf8");
     assert.match(page, /Brands I think are impressive\. Not an investment offer\./);
     assert.equal(page.includes("Brands we think are impressive."), false);
 
@@ -441,7 +441,7 @@ describe("copy", () => {
     assert.equal(component.includes("Read the back issues"), false);
     assert.equal(component.includes("\u2014") || component.includes("\u2013"), false);
 
-    const css = readFileSync("src/app/handoff/handoff.module.css", "utf8");
+    const css = readFileSync("src/app/(site)/handoff/handoff.module.css", "utf8");
     const archiveCss = css.slice(css.indexOf(".archive {"));
     const colors = archiveCss.match(/#[0-9a-fA-F]{3,8}/g) ?? [];
     assert.deepEqual(
