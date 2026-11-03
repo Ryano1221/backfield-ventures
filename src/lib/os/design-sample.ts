@@ -11,7 +11,6 @@ export const designDecisions: Decision[] = [
     summary: "She wrote you on LinkedIn on Oct 28 about Backfield's food and beverage focus.",
     context: "You are connected on LinkedIn. The block check is clear. She is waiting on your yes before anyone sends.",
     exact_message: "Hi Kathleen, thanks for reaching out.",
-    domain: null,
   },
   {
     id: "best3-october-pack",
@@ -21,7 +20,6 @@ export const designDecisions: Decision[] = [
     requested_by: "Investment",
     summary: "The October partner pack is on hold until you approve it.",
     context: "The picks from public sources, with no founder material, are Protein Pints, Vaca Chips, and Fave.",
-    domain: null,
   },
 ];
 
