@@ -1,9 +1,14 @@
 import {
+  DIRECTOR_KEYS,
+  INTERACTION_KINDS,
   PITCH_STATUSES,
   type ActivityItem,
   type BotFeed,
   type BotRecord,
   type Decision,
+  type DirectorKey,
+  type Interaction,
+  type InteractionKind,
   type OutreachTrack,
   type Pitch,
   type PitchStatus,
@@ -18,6 +23,7 @@ const LIMITS = {
   decisions: 300,
   activity: 1000,
   routines: 200,
+  interactions: 500,
 } as const;
 
 export type SchemaResult =
@@ -40,8 +46,10 @@ export function validateSnapshot(input: unknown): SchemaResult {
   const outreach = validateOutreach(input.outreach, issues);
   const decisions = validateDecisions(input.decisions, issues);
   const activity = validateActivity(input.activity, issues);
+  const interactions =
+    input.interactions === undefined ? [] : validateInteractions(input.interactions, issues);
 
-  if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || issues.length) {
+  if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || !interactions || issues.length) {
     return { ok: false, issues: issues.slice(0, 30) };
   }
 
@@ -54,6 +62,7 @@ export function validateSnapshot(input: unknown): SchemaResult {
       outreach,
       decisions,
       activity,
+      interactions,
     },
   };
 }
@@ -176,6 +185,10 @@ function validateBot(value: unknown, path: string, issues: string[]): BotRecord 
       issues.push(`${path}.usage_share must be a number or null`);
     } else bot.usage_share = value.usage_share;
   }
+  if (value.director !== undefined && value.director !== null && value.director !== "") {
+    const director = directorKey(value.director, `${path}.director`, issues);
+    if (director) bot.director = director;
+  }
   return bot;
 }
 
@@ -279,6 +292,96 @@ function validateActivityItem(value: unknown, path: string, issues: string[]): A
   if (timestamp && !isDate(timestamp)) issues.push(`${path}.timestamp must be a date`);
   if (!timestamp || !actor || !summary) return null;
   return { timestamp, actor, summary };
+}
+
+function validateInteractions(value: unknown, issues: string[]): Interaction[] | null {
+  if (!Array.isArray(value)) {
+    issues.push("interactions must be an array");
+    return null;
+  }
+  if (value.length > LIMITS.interactions) {
+    issues.push(`interactions is limited to ${LIMITS.interactions} rows`);
+    return null;
+  }
+  const rows: Interaction[] = [];
+  for (let i = 0; i < value.length; i++) {
+    const row = validateInteraction(value[i], `interactions[${i}]`, issues);
+    if (row) rows.push(row);
+  }
+  return rows;
+}
+
+function validateInteraction(value: unknown, path: string, issues: string[]): Interaction | null {
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return null;
+  }
+  const timestamp = reqStr(value.timestamp, `${path}.timestamp`, 80, issues);
+  const from = reqStr(value.from, `${path}.from`, 120, issues);
+  const to = reqStr(value.to, `${path}.to`, 120, issues);
+  const kind = interactionKind(value.kind, `${path}.kind`, issues);
+  const title = reqStr(value.title, `${path}.title`, 160, issues);
+  const packet_id = optionalId(value.packet_id, `${path}.packet_id`, issues);
+  const status = optionalStatus(value.status, `${path}.status`, issues);
+  if (timestamp && !isDate(timestamp)) issues.push(`${path}.timestamp must be a date`);
+  if (!timestamp || !from || !to || !kind || !title || packet_id === undefined || status === undefined) return null;
+  return { timestamp, from, to, kind, title, packet_id, status };
+}
+
+function interactionKind(value: unknown, path: string, issues: string[]): InteractionKind | null {
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a string`);
+    return null;
+  }
+  const kind = value.trim().toLowerCase();
+  if (!INTERACTION_KINDS.includes(kind as InteractionKind)) {
+    issues.push(`${path} must be packet, amendment, result, or message`);
+    return null;
+  }
+  return kind as InteractionKind;
+}
+
+function directorKey(value: unknown, path: string, issues: string[]): DirectorKey | null {
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a director key`);
+    return null;
+  }
+  const key = value.trim().toLowerCase();
+  if (!DIRECTOR_KEYS.includes(key as DirectorKey)) {
+    issues.push(`${path} must be investment, intelligence, network, growth, firm_os, executive, or ryan`);
+    return null;
+  }
+  return key as DirectorKey;
+}
+
+function optionalId(value: unknown, path: string, issues: string[]): string | null | undefined {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a string or null`);
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > 80) {
+    issues.push(`${path} is too long`);
+    return undefined;
+  }
+  return trimmed;
+}
+
+function optionalStatus(value: unknown, path: string, issues: string[]): string | null | undefined {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a string or null`);
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > 40) {
+    issues.push(`${path} is too long`);
+    return undefined;
+  }
+  return trimmed;
 }
 
 function pitchStatus(value: unknown, path: string, issues: string[]): PitchStatus | null {

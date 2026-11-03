@@ -1,7 +1,7 @@
 .os {
   --cream: #f0ede8;
   --white: #ffffff;
-  --forest: #1e5631;
+  --forest: #123d22;
   --line: rgba(240, 237, 232, 0.16);
   --muted: rgba(240, 237, 232, 0.64);
   --faint: rgba(240, 237, 232, 0.38);
@@ -754,4 +754,374 @@ a.os-btn-solid,
   .os-bar-label { grid-area: label; }
   .os-bar-n { grid-area: n; }
   .os-bar-track { grid-area: track; }
+}
+
+.os-page {
+  width: min(1080px, calc(100% - 40px));
+  padding-top: 0;
+}
+
+.os-bar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: #000000;
+  border-bottom: 1px solid var(--line);
+}
+
+.os-bar-inner {
+  width: min(1080px, calc(100% - 40px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 64px;
+}
+
+.os-mark {
+  font-family: var(--font-bebas), "Bebas Neue", sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.os-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.os-nav a {
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.os-nav a[aria-current="page"] {
+  color: var(--white);
+  box-shadow: inset 0 -2px 0 var(--forest);
+}
+
+.os-bar-meta {
+  margin-left: auto;
+  text-align: right;
+}
+
+.os-bar-meta strong {
+  display: block;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 13px;
+  color: var(--white);
+}
+
+.os-bar-meta span,
+.os-bar-meta .os-kicker {
+  display: block;
+}
+
+.os-status {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 0.8fr;
+  gap: 36px;
+  padding: 42px 0 18px;
+}
+
+.os-status-value {
+  margin: 10px 0 8px;
+  font-family: var(--font-bebas), "Bebas Neue", sans-serif;
+  font-size: 72px;
+  line-height: 0.82;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  font-weight: 400;
+}
+
+.os-status-value.is-word {
+  font-size: 48px;
+}
+
+.os-status-cell.is-warn .os-status-value {
+  color: var(--cream);
+}
+
+.os-quiet {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.os-empty-line,
+.os-lede-page {
+  margin: 28px 0 0;
+  max-width: 46rem;
+  color: var(--muted);
+}
+
+.os-block {
+  margin-top: 36px;
+}
+
+.os-block h2,
+.os-feed-panel h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-bebas), "Bebas Neue", sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--white);
+}
+
+.os-lines,
+.os-tracks,
+.os-handoffs,
+.os-specialists {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.os-lines li,
+.os-tracks li,
+.os-handoffs li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.os-lines strong,
+.os-lines a,
+.os-handoff-title {
+  font-family: var(--font-bebas), "Bebas Neue", sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 0.95;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.os-lines p,
+.os-handoffs p {
+  margin: 4px 0 0;
+}
+
+.os-tracks li {
+  grid-template-columns: 140px 1fr auto;
+}
+
+.os-office-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+.os-text-link,
+.os-more {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--cream);
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.os-fold {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  padding: 16px 0 8px;
+}
+
+.os-fold summary {
+  cursor: pointer;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.os-fold summary:hover {
+  color: var(--white);
+}
+
+.os-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.75fr);
+  gap: 36px;
+  align-items: start;
+  margin-top: 28px;
+}
+
+.os-org {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  padding: 14px 14px 12px;
+  background: #000000;
+}
+
+.os-org.is-selected {
+  border-color: var(--forest);
+}
+
+.os-org-main,
+.os-org-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.os-org-main {
+  display: grid;
+  gap: 4px;
+}
+
+.os-org-title {
+  font-family: var(--font-bebas), "Bebas Neue", sans-serif;
+  font-size: 32px;
+  letter-spacing: 0.04em;
+  line-height: 0.9;
+  color: var(--white);
+}
+
+.os-org-toggle {
+  align-self: start;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-height: 32px;
+}
+
+.os-spoke {
+  display: block;
+  height: 28px;
+  margin: 0 auto;
+  background: rgba(240, 237, 232, 0.18);
+}
+
+.os-spoke.is-live {
+  background: var(--forest);
+}
+
+.os-directors {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.os-director {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.os-director-edge {
+  flex: 0 0 auto;
+  background: rgba(240, 237, 232, 0.18);
+}
+
+.os-director-edge.is-live {
+  background: var(--forest);
+}
+
+.os-director-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.os-specialists li button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 10px 2px;
+  text-align: left;
+}
+
+.os-lanes {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.os-lane {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.os-lane-bar {
+  display: block;
+  height: 6px;
+  background: var(--forest);
+}
+
+.os-other {
+  margin-top: 18px;
+}
+
+.os-detail {
+  margin-top: 22px;
+  min-height: 72px;
+}
+
+.os-handoff-title {
+  font-size: 22px;
+}
+
+@media (max-width: 860px) {
+  .os-bar-inner {
+    flex-wrap: wrap;
+    padding: 12px 0;
+  }
+
+  .os-bar-meta {
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .os-status,
+  .os-map-layout,
+  .os-tracks li,
+  .os-office-link {
+    grid-template-columns: 1fr;
+  }
+
+  .os-status {
+    gap: 22px;
+    padding-top: 28px;
+  }
+
+  .os-status-value {
+    font-size: 56px;
+  }
+
+  .os-directors {
+    display: grid;
+    gap: 12px;
+  }
 }

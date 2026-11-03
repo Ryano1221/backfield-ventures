@@ -20,5 +20,14 @@ export default async function OsPage() {
   const onOs = isOsHost(host);
   if (!(await isOsAuthed())) redirect(onOs ? "/login" : "/os/login");
   const snapshot = await readSnapshot();
-  return <Dashboard model={buildDashboard(snapshot)} loginPath={onOs ? "/login" : "/os/login"} />;
+  const homeHref = onOs ? "/" : "/os";
+  const botsHref = onOs ? "/bots" : "/os/bots";
+  return (
+    <Dashboard
+      model={buildDashboard(snapshot)}
+      loginPath={onOs ? "/login" : "/os/login"}
+      homeHref={homeHref}
+      botsHref={botsHref}
+    />
+  );
 }

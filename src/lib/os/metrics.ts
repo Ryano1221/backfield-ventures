@@ -43,6 +43,7 @@ export type DashboardModel = {
     new30: number | null;
     decisions: number | null;
     working: number | null;
+    needsRyan: number | null;
     failed: number | null;
     outreachSent: number | null;
     outreachFloor: number | null;
@@ -100,6 +101,7 @@ export function buildDashboard(snapshot: Snapshot | null, now = Date.now()): Das
       new30: pitches.filter((pitch) => withinDays(pitch.received, 30, now)).length,
       decisions: snapshot.decisions.length,
       working: bots.filter((bot) => bot.status.trim().toLowerCase() === "working").length,
+      needsRyan: bots.filter((bot) => bot.status.trim().toLowerCase() === "needs ryan").length,
       failed: bots.filter(isFailedBot).length,
       outreachSent: sent,
       outreachFloor: floor,
@@ -304,6 +306,7 @@ function emptyModel(): DashboardModel {
       new30: null,
       decisions: null,
       working: null,
+      needsRyan: null,
       failed: null,
       outreachSent: null,
       outreachFloor: null,
