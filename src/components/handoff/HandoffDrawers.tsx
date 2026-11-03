@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import styles from "@/app/handoff/handoff.module.css";
+import styles from "@/app/(site)/handoff/handoff.module.css";
 import { brands, type HandoffBrandId } from "./brands";
 
 const FOCUSABLE =

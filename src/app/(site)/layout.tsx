@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     siteName: "Backfield Ventures",
     type: "website",
     locale: "en_US",
-    // og:image is auto-generated from src/app/opengraph-image.png
+    // og:image is auto-generated from src/app/(site)/opengraph-image.png
   },
   twitter: {
     card: "summary_large_image",

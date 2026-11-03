@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-01-01T18:00:00.000Z",
+  "pitches": [
+    {
+      "company": "FIXTURE Northwind Sample",
+      "sector": "Sample sector",
+      "stage": "Seed",
+      "received": "2026-01-01",
+      "founder": "Fixture Founder",
+      "status": "new",
+      "score": 1,
+      "source": "fixture",
+      "deck": null
+    }
+  ],
+  "bots": {
+    "built_at": "2026-01-01T18:00:00.000Z",
+    "today": "2026-01-01",
+    "bots": [
+      {
+        "name": "FIXTURE Sample Bot",
+        "slug": "fixture_sample",
+        "team": "Fixture",
+        "role": "Sample",
+        "scope": "Fake local fixture only",
+        "registry_status": "active",
+        "status": "Working",
+        "last": "Jan 1, 12:00pm CT",
+        "last_iso": "2026-01-01T18:00:00.000Z",
+        "source": "fixture",
+        "result": "This bot is fake sample data for local development.",
+        "usage_share": null
+      }
+    ],
+    "routines": [
+      {
+        "name": "FIXTURE sample routine",
+        "status": "Paused",
+        "last": "Jan 1"
+      }
+    ]
+  },
+  "outreach": [
+    { "track": "athlete", "sent": 1, "floor": 25, "label": "Athlete (fixture)" }
+  ],
+  "decisions": [
+    {
+      "title": "FIXTURE sample decision",
+      "since": "2026-01-01T18:00:00.000Z",
+      "link": null
+    }
+  ],
+  "activity": [
+    {
+      "timestamp": "2026-01-01T18:00:00.000Z",
+      "actor": "Fixture",
+      "summary": "Fake local activity. Not a real firm event."
+    }
+  ]
+}

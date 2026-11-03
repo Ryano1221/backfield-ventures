@@ -1,4 +1,4 @@
-import styles from "@/app/handoff/handoff.module.css";
+import styles from "@/app/(site)/handoff/handoff.module.css";
 
 export default function HandoffHero() {
   return (

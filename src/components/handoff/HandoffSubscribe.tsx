@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import styles from "@/app/handoff/handoff.module.css";
+import styles from "@/app/(site)/handoff/handoff.module.css";
 
 type Status = "idle" | "submitting" | "done" | "error";
 
