@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { MapDirector, MapEdge, MapHandoff, MapModel, OrgKey } from "@/lib/os/interactions";
-import { ORG_DIRECTORS } from "@/lib/os/interactions";
+import { displayParty, ORG_DIRECTORS } from "@/lib/os/interactions";
 
 type Selection =
   | { kind: "node"; id: OrgKey | `bot:${string}` }
@@ -214,7 +214,7 @@ function HandoffList({ items }: { items: MapHandoff[] }) {
           </p>
           <p className="os-handoff-title">{item.title}</p>
           <p className="os-quiet">
-            {item.from} to {item.to}
+            {displayParty(item.from)} to {displayParty(item.to)}
           </p>
         </li>
       ))}
@@ -256,6 +256,6 @@ function selectionLabel(selection: Selection, map: MapModel): string {
 }
 
 function labelOf(key: OrgKey): string {
-  if (key === "firm_os") return "Firm OS";
-  return key.charAt(0).toUpperCase() + key.slice(1);
+  if (key === "other") return "Other";
+  return displayParty(key);
 }
