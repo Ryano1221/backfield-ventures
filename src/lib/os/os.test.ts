@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { decideOs } from "./host";
+import { buildMap, groupKey } from "./interactions";
 import { buildDashboard, isFailedBot } from "./metrics";
 import { STALE_AFTER_MS } from "./types";
 import { LoginLimiter } from "./rate-limit";
@@ -160,6 +161,19 @@ test("host routing keeps the public site and locks the dashboard", () => {
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/snapshot", authed: false, vercelEnv: "preview" }).kind, "unauthorized");
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/", authed: false, vercelEnv: "preview" }).kind, "public");
   assert.equal(decideOs({ host: "localhost:3000", pathname: "/handoff", authed: false }).kind, "public");
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/bots", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/bots",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/bots", authed: false }), {
+    kind: "redirect",
+    pathname: "/login",
+  });
+  assert.deepEqual(decideOs({ host: "preview.vercel.app", pathname: "/os/bots", authed: false, vercelEnv: "preview" }), {
+    kind: "redirect",
+    pathname: "/os/login",
+  });
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/bots", authed: true, vercelEnv: "preview" }).kind, "os-next");
 });
 
 test("dashboard metrics flag stale snapshots and count the operating picture", () => {
@@ -192,6 +206,99 @@ test("failed logins lock after repeated attempts", () => {
   assert.equal(limiter.check("1.2.3.4", 0).allowed, false);
   limiter.recordSuccess("1.2.3.4");
   assert.equal(limiter.check("1.2.3.4", 0).allowed, true);
+});
+
+test("interactions are optional and bots without a director stay in other", () => {
+  const plain = validateSnapshot({ ...sample() });
+  assert.equal(plain.ok, true);
+  if (plain.ok) assert.deepEqual(plain.snapshot.interactions, []);
+
+  const now = Date.parse("2026-11-03T20:00:00.000Z");
+  const withHandoffs = validateSnapshot({
+    ...sample(),
+    bots: {
+      bots: [
+        { name: "FIXTURE Executive", team: "Fixture", role: "Executive", status: "Working", director: "executive" },
+        { name: "FIXTURE Investor", team: "Fixture", role: "Director", status: "Working", director: "investment" },
+        { name: "FIXTURE Scout", team: "Fixture", role: "Specialist", status: "Idle", director: "investment" },
+        { name: "FIXTURE Loose", team: "Fixture", role: "Specialist", status: "Idle" },
+      ],
+    },
+    interactions: [
+      {
+        timestamp: "2026-11-03T18:00:00.000Z",
+        from: "executive",
+        to: "investment",
+        kind: "Packet",
+        packet_id: "pkt_fixture",
+        title: "FIXTURE score the sample",
+        status: "open",
+      },
+      {
+        timestamp: "2026-11-02T18:00:00.000Z",
+        from: "FIXTURE Scout",
+        to: "FIXTURE Investor",
+        kind: "result",
+        packet_id: null,
+        title: "FIXTURE note",
+        status: null,
+      },
+      {
+        timestamp: "2026-10-01T18:00:00.000Z",
+        from: "network",
+        to: "growth",
+        kind: "message",
+        packet_id: null,
+        title: "FIXTURE old note",
+        status: "done",
+      },
+    ],
+  });
+  assert.equal(withHandoffs.ok, true);
+  if (!withHandoffs.ok) return;
+  assert.equal(withHandoffs.snapshot.bots.bots[1]?.director, "investment");
+  const map = buildMap(withHandoffs.snapshot, now);
+  assert.equal(map.executive.lead?.name, "FIXTURE Executive");
+  assert.equal(map.directors.find((group) => group.key === "investment")?.specialists.length, 1);
+  assert.equal(map.other.specialists.length, 1);
+  assert.equal(groupKey({}), "other");
+  assert.equal(map.edges.some((edge) => edge.count === 1 && edge.from === "executive" && edge.to === "investment"), true);
+  assert.equal(map.edges.some((edge) => edge.from === "growth" || edge.to === "growth"), false);
+  assert.equal(map.feed.length, 3);
+
+  const badKind = validateSnapshot({
+    ...sample(),
+    interactions: [{ timestamp: now, from: "a", to: "b", kind: "ping", packet_id: null, title: "No", status: null }],
+  });
+  assert.equal(badKind.ok, false);
+  const longTitle = validateSnapshot({
+    ...sample(),
+    interactions: [{ timestamp: "2026-11-03T18:00:00.000Z", from: "a", to: "b", kind: "message", packet_id: null, title: "x".repeat(161), status: null }],
+  });
+  assert.equal(longTitle.ok, false);
+  const badDirector = validateSnapshot({
+    ...sample(),
+    bots: { bots: [{ name: "FIXTURE", team: "Fixture", status: "Idle", director: "bronze" }] },
+  });
+  assert.equal(badDirector.ok, false);
+
+  const many = Array.from({ length: 40 }, (_, index) => ({
+    name: `FIXTURE Bot ${index + 1}`,
+    team: "Fixture",
+    role: "Specialist",
+    status: "Idle",
+    director: ["investment", "intelligence", "network", "growth", "firm_os"][index % 5],
+  }));
+  const crowded = validateSnapshot({ ...sample(), bots: { bots: many } });
+  assert.equal(crowded.ok, true);
+  if (crowded.ok) {
+    const crowdedMap = buildMap(crowded.snapshot, now);
+    assert.equal(crowdedMap.other.specialists.length, 0);
+    assert.equal(
+      crowdedMap.directors.reduce((sum, group) => sum + group.specialists.length, 0),
+      40,
+    );
+  }
 });
 
 test("file snapshot round trip stays empty without a fixture in production", async () => {

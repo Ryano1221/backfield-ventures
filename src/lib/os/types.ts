@@ -14,6 +14,22 @@ export type Pitch = {
   deck: string | null;
 };
 
+export const DIRECTOR_KEYS = [
+  "investment",
+  "intelligence",
+  "network",
+  "growth",
+  "firm_os",
+  "executive",
+  "ryan",
+] as const;
+
+export type DirectorKey = (typeof DIRECTOR_KEYS)[number];
+
+export const INTERACTION_KINDS = ["packet", "amendment", "result", "message"] as const;
+
+export type InteractionKind = (typeof INTERACTION_KINDS)[number];
+
 export type BotRecord = {
   name: string;
   team: string;
@@ -27,6 +43,7 @@ export type BotRecord = {
   source?: string;
   result?: string;
   usage_share?: number | null;
+  director?: DirectorKey;
 };
 
 export type RoutineRecord = {
@@ -75,6 +92,16 @@ export type ActivityItem = {
   summary: string;
 };
 
+export type Interaction = {
+  timestamp: string;
+  from: string;
+  to: string;
+  kind: InteractionKind;
+  packet_id: string | null;
+  title: string;
+  status: string | null;
+};
+
 export type Snapshot = {
   generated_at: string;
   pitches: Pitch[];
@@ -82,6 +109,7 @@ export type Snapshot = {
   outreach: OutreachTrack[];
   decisions: Decision[];
   activity: ActivityItem[];
+  interactions: Interaction[];
 };
 
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;

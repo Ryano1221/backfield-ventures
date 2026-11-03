@@ -60,6 +60,12 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
   if (path === "/login") {
     return authed ? { kind: "redirect", pathname: "/" } : { kind: "rewrite", pathname: "/os/login" };
   }
+  if (path === "/bots") {
+    return authed ? { kind: "rewrite", pathname: "/os/bots" } : { kind: "redirect", pathname: "/login" };
+  }
+  if (path === "/os/bots") {
+    return { kind: "redirect", pathname: authed ? "/bots" : "/login" };
+  }
   if (path === "/api/os/login" || path === "/api/os/ingest") return { kind: "os-next" };
   if (path === "/api/os" || path.startsWith("/api/os/")) {
     return authed ? { kind: "os-next" } : { kind: "unauthorized" };

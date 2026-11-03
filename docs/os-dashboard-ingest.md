@@ -65,7 +65,7 @@ Logged-out page requests render only the sign-in screen. Logged-out calls to das
 
 `generated_at` is shown as "Last updated" in America/Chicago. Older than 6 hours, the screen is marked stale.
 
-Before the first successful ingest, the dashboard is an empty state. It does not invent pitches, bots, or outreach.
+Before the first successful ingest, the dashboard is an empty state. It does not invent pitches, bots, outreach, or handoffs. The bot map stays empty of links until `interactions` is posted.
 
 ## Schema
 
@@ -103,7 +103,8 @@ Before the first successful ingest, the dashboard is an empty state. It does not
         "last_iso": "2026-11-02T12:02:49.375628-06:00",
         "source": "ops/handoffs/muse-handoff-2026-11-02.md",
         "result": "Latest one-line result.",
-        "usage_share": 14
+        "usage_share": 14,
+        "director": "executive"
       }
     ],
     "routines": [
@@ -137,6 +138,17 @@ Before the first successful ingest, the dashboard is an empty state. It does not
       "actor": "Instagram Comms",
       "summary": "Working the close DM queue."
     }
+  ],
+  "interactions": [
+    {
+      "timestamp": "2026-11-03T19:10:00.000Z",
+      "from": "executive",
+      "to": "investment",
+      "kind": "packet",
+      "packet_id": "pkt_example",
+      "title": "Score the inbound deck",
+      "status": "open"
+    }
   ]
 }
 ```
@@ -152,8 +164,12 @@ Rules:
 - `usage_share` is a number or `null`.
 - `sent` and `floor` are numbers from 0 to 1000000.
 - Known track ids: `athlete`, `fo_hnwi`, `creator`, `real_estate_agents`, `ig_dms`, `follows`. Any other `track` string is kept. `label` overrides the display name.
-- Arrays are required. Send `[]` when a section is empty.
-- Limits: 2000 pitches, 500 bots, 50 outreach rows, 300 decisions, 1000 activity rows, 1.5 MB.
+- Arrays other than `interactions` are required. Send `[]` when a section is empty.
+- `interactions` is optional. Current snapshots that omit it keep working. When present it is an array of at most 500 handoffs.
+- Each interaction needs `timestamp` (ISO-8601), `from`, `to`, `kind` (`packet`, `amendment`, `result`, or `message`), `packet_id` (string or null), `title` (max 160 characters), and `status` (string or null).
+- `from` and `to` are a lowercase director key (`investment`, `intelligence`, `network`, `growth`, `firm_os`, `executive`, `ryan`) or a bot display name.
+- A bot may include `director`, one of those same keys. If it is missing, the bot map files that bot under Other.
+- Limits: 2000 pitches, 500 bots, 50 outreach rows, 300 decisions, 1000 activity rows, 500 interactions, 1.5 MB.
 
 A 400 response lists field paths in `issues` and does not echo the payload.
 

@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         outreach: result.snapshot.outreach.length,
         decisions: result.snapshot.decisions.length,
         activity: result.snapshot.activity.length,
+        interactions: result.snapshot.interactions.length,
       },
     });
   } catch (error) {
