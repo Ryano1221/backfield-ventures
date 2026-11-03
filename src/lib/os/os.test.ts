@@ -182,6 +182,28 @@ test("host routing keeps the public site and locks the dashboard", () => {
   assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/api/os/actions/pending", authed: false }).kind, "os-next");
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/action", authed: false, vercelEnv: "preview" }).kind, "unauthorized");
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/decide", authed: false, vercelEnv: "preview" }).kind, "unauthorized");
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/deals", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/deals",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/d/dec_1", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/d/dec_1",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/crm/person_1", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/crm/person_1",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/os/d/dec_1", authed: true }), {
+    kind: "redirect",
+    pathname: "/d/dec_1",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/d/dec_1", authed: false }), {
+    kind: "redirect",
+    pathname: "/login",
+  });
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/deals", authed: true, vercelEnv: "preview" }).kind, "os-next");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/crm/person_1", authed: false, vercelEnv: "preview" }).kind, "redirect");
 });
 
 test("dashboard metrics flag stale snapshots and count the operating picture", () => {

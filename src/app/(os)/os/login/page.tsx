@@ -19,7 +19,7 @@ export default async function LoginPage() {
   if (await isOsAuthed()) redirect(onOs ? "/" : "/os");
   return (
     <main className="os-login">
-      <img src="/brand/backfield-ventures-logo-black.png" alt="Backfield Ventures" className="os-wordmark" />
+      <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
       <h1>Operating system</h1>
       <p className="os-lede">Private dashboard for Ryan.</p>
       <LoginForm destination={onOs ? "/" : "/os"} />

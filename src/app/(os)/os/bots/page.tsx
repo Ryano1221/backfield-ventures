@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { HandoffFeed } from "@/components/os/HandoffFeed";
-import { Office } from "@/components/os/Office";
-import { OsFrame } from "@/components/os/OsFrame";
+import { headers } from "next/headers";
+import { NightFrame } from "@/components/os/night/NightFrame";
+import { PixelOffice } from "@/components/os/night/PixelOffice";
+import { isOsHost } from "@/lib/os/host";
+import { buildOffice, buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
 
 export const dynamic = "force-dynamic";
@@ -12,41 +14,26 @@ export const metadata: Metadata = {
 };
 
 export default async function BotsPage() {
-  const { hrefs, snapshot, model, actions, finder } = await loadOsPage();
-  const bots = (snapshot?.bots.bots ?? []).map((bot) => ({
-    name: bot.name,
-    director: bot.director || "other",
-    status: bot.status,
-    failed: bot.status.toLowerCase().includes("fail") || (bot.registry_status || "").toLowerCase() === "failing",
-    last: bot.last || "",
-    result: bot.result || "",
-    role: bot.role || "",
-    scope: bot.scope || "",
-  }));
-  const moves = (snapshot?.interactions ?? []).map((item) => ({
-    from: item.from,
-    to: item.to,
-    title: item.title,
-    timestamp: item.timestamp,
-  }));
+  const page = await loadOsPage();
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
+  const model = buildToday(page.snapshot, page.actions);
+  const office = buildOffice(page.snapshot, page.actions);
   return (
-    <OsFrame
-      active="bots"
-      hrefs={hrefs}
-      loginPath={hrefs.login}
-      updated={model.relative || "Not yet"}
-      updatedDetail={model.generatedLabel || "Waiting on the first ingest"}
-      actions={actions}
-      finder={finder}
-    >
-      <p className="os-lede-page">The office. Robots sit on their floors. Recent handoffs walk across when you press play.</p>
-      <div className="os-map-layout">
-        <Office bots={bots} moves={moves} />
-        <section className="os-feed-panel" aria-label="Handoff feed">
-          <h2>Handoffs</h2>
-          <HandoffFeed moves={moves} />
-        </section>
-      </div>
-    </OsFrame>
+    <NightFrame onOs={isOsHost(host)} active="bots" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+      <div className="lbl eyebrow">Bots</div>
+      <h1 className="d-xl">The office.</h1>
+      <p className="t-body muted" style={{ margin: "12px 0 28px", maxWidth: 560 }}>
+        {office.bots.length
+          ? `${office.bots.length.toLocaleString("en-US")} bots at their desks. Handoffs replay from this snapshot.`
+          : "The office fills in when the snapshot arrives."}
+      </p>
+      <PixelOffice data={office} />
+    </NightFrame>
   );
+}
+
+function counts(snapshot: unknown, model: ReturnType<typeof buildToday>) {
+  if (!snapshot) return { today: null, deals: null, people: null };
+  return { today: model.ready.length + model.hold.length + model.open.length, deals: model.reviewingCount, people: model.peopleCount };
 }

@@ -62,7 +62,9 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
   }
   const page = OS_PAGE_REWRITES[path];
   if (page) return authed ? { kind: "rewrite", pathname: page } : { kind: "redirect", pathname: "/login" };
-  if (path.startsWith("/os/") && OS_INTERNAL_PAGES.has(path)) {
+  const nested = nestedOsPage(path);
+  if (nested) return authed ? { kind: "rewrite", pathname: nested } : { kind: "redirect", pathname: "/login" };
+  if (path.startsWith("/os/") && (OS_INTERNAL_PAGES.has(path) || path.startsWith("/os/d/") || path.startsWith("/os/crm/"))) {
     const external = path.slice(3);
     return { kind: "redirect", pathname: authed ? external : "/login" };
   }
@@ -88,9 +90,16 @@ function decideShared(path: string, authed: boolean): OsDecision {
 const OS_PAGE_REWRITES: Record<string, string> = {
   "/bots": "/os/bots",
   "/crm": "/os/crm",
+  "/deals": "/os/deals",
   "/pipeline": "/os/pipeline",
   "/activity": "/os/activity",
 };
+
+function nestedOsPage(path: string): string | null {
+  if (path.startsWith("/d/") && path.length > 3) return `/os${path}`;
+  if (path.startsWith("/crm/") && path.length > 5) return `/os${path}`;
+  return null;
+}
 
 const OS_INTERNAL_PAGES = new Set(Object.values(OS_PAGE_REWRITES));
 

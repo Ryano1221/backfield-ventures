@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue, IBM_Plex_Sans, Space_Mono } from "next/font/google";
+import { Bebas_Neue, Space_Mono } from "next/font/google";
 import "./os.css";
 
 const bebas = Bebas_Neue({
@@ -13,13 +13,6 @@ const mono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
   variable: "--font-mono",
-  display: "swap",
-});
-
-const plex = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex",
   display: "swap",
 });
 
@@ -45,8 +38,8 @@ export const viewport: Viewport = {
 
 export default function OsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${bebas.variable} ${mono.variable} ${plex.variable}`}>
-      <body className="os">{children}</body>
+    <html lang="en" className={`${bebas.variable} ${mono.variable}`}>
+      <body className="os theme-a">{children}</body>
     </html>
   );
 }

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { Dashboard } from "@/components/os/Dashboard";
+import { NightFrame } from "@/components/os/night/NightFrame";
+import { TodayDesk } from "@/components/os/night/TodayDesk";
+import { isOsHost } from "@/lib/os/host";
+import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -10,16 +14,22 @@ export const metadata: Metadata = {
 };
 
 export default async function OsPage() {
-  const { hrefs, snapshot, model, actions, finder } = await loadOsPage();
+  const page = await loadOsPage();
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
+  const model = buildToday(page.snapshot, page.actions);
   return (
-    <Dashboard
-      model={model}
-      decisions={snapshot?.decisions ?? []}
-      pitches={snapshot?.pitches ?? []}
-      actions={actions}
-      finder={finder}
-      loginPath={hrefs.login}
-      hrefs={hrefs}
-    />
+    <NightFrame onOs={isOsHost(host)} active="today" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+      <TodayDesk model={model} onOs={isOsHost(host)} />
+    </NightFrame>
   );
+}
+
+function counts(snapshot: { decisions: unknown[] } | null, model: ReturnType<typeof buildToday>) {
+  if (!snapshot) return { today: null, deals: null, people: null };
+  return {
+    today: model.ready.length + model.hold.length + model.open.length,
+    deals: model.reviewingCount,
+    people: model.peopleCount,
+  };
 }
