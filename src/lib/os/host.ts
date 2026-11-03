@@ -87,6 +87,9 @@ function decideShared(path: string, authed: boolean): OsDecision {
 
 const OS_PAGE_REWRITES: Record<string, string> = {
   "/bots": "/os/bots",
+  "/crm": "/os/crm",
+  "/pipeline": "/os/pipeline",
+  "/activity": "/os/activity",
 };
 
 const OS_INTERNAL_PAGES = new Set(Object.values(OS_PAGE_REWRITES));
