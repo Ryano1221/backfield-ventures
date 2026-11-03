@@ -174,6 +174,10 @@ test("host routing keeps the public site and locks the dashboard", () => {
     pathname: "/os/login",
   });
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/bots", authed: true, vercelEnv: "preview" }).kind, "os-next");
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/crm", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/crm",
+  });
   assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/api/os/decisions/answered", authed: false }).kind, "os-next");
   assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/api/os/actions/pending", authed: false }).kind, "os-next");
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/action", authed: false, vercelEnv: "preview" }).kind, "unauthorized");

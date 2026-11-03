@@ -7,7 +7,10 @@ import { OsShell } from "./OsShell";
 
 const LINKS: { id: OsSection; label: string }[] = [
   { id: "today", label: "Today" },
+  { id: "crm", label: "CRM" },
+  { id: "pipeline", label: "Pipeline" },
   { id: "bots", label: "Bots" },
+  { id: "activity", label: "Activity" },
 ];
 
 export function OsFrame({
