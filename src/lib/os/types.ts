@@ -4,14 +4,18 @@ export type PitchStatus = (typeof PITCH_STATUSES)[number];
 
 export type Pitch = {
   company: string;
-  sector: string;
-  stage: string;
+  sector: string | null;
+  stage: string | null;
   received: string;
-  founder: string;
+  founder: string | null;
   status: PitchStatus;
   score: number | null;
-  source: string;
+  source: string | null;
   deck: string | null;
+  title?: string;
+  summary?: string;
+  domain?: string;
+  logo_url?: string;
 };
 
 export const DIRECTOR_KEYS = [
@@ -80,10 +84,100 @@ export type OutreachTrack = {
   label?: string;
 };
 
+export type DecisionOption = {
+  value: string;
+  label: string;
+};
+
 export type Decision = {
   title: string;
   since: string;
   link: string | null;
+  id?: string;
+  context?: string;
+  summary?: string;
+  domain?: string;
+  logo_url?: string;
+  options?: DecisionOption[];
+  exact_message?: string;
+  requested_by?: string;
+  created_at?: string;
+};
+
+export const CRM_TRACKS = [
+  "investor",
+  "family_office",
+  "athlete",
+  "creator",
+  "real_estate",
+  "lp",
+  "founder",
+  "other",
+] as const;
+
+export type CrmTrack = (typeof CRM_TRACKS)[number];
+
+export type CrmPerson = {
+  id: string;
+  name: string;
+  firm: string | null;
+  track: CrmTrack;
+  stage: string | null;
+  owner: string | null;
+  last_touch_at: string | null;
+  last_touch_channel: string | null;
+  next_step: string | null;
+  next_step_due: string | null;
+  email: string | null;
+  linkedin: string | null;
+  notes: string | null;
+  domain?: string;
+  logo_url?: string;
+};
+
+export const ACTION_TYPES = [
+  "decide",
+  "pitch_status",
+  "crm_stage",
+  "crm_next_step",
+  "crm_note",
+  "crm_hold",
+  "crm_dnc",
+  "draft_followup",
+  "bot_request",
+  "bot_pause",
+  "bot_resume",
+  "snooze",
+  "free_text",
+] as const;
+
+export type ActionType = (typeof ACTION_TYPES)[number];
+
+export type ActionPayload = Record<string, string | number | boolean | null>;
+
+export type OsAction = {
+  action_id: string;
+  type: ActionType;
+  target_id: string;
+  payload: ActionPayload;
+  created_at: string;
+  idempotency_key: string;
+  acked_at: string | null;
+  result: string | null;
+  status: "pending" | "done" | "failed";
+};
+
+export type CrmBook = {
+  people: CrmPerson[];
+};
+
+export type DecisionAnswer = {
+  decision_id: string;
+  choice: string;
+  note: string | null;
+  decided_at: string;
+  exact_message_hash: string | null;
+  acked_at: string | null;
 };
 
 export type ActivityItem = {
@@ -110,6 +204,7 @@ export type Snapshot = {
   decisions: Decision[];
   activity: ActivityItem[];
   interactions: Interaction[];
+  crm: CrmBook;
 };
 
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;

@@ -1,47 +1,45 @@
 import type { ReactNode } from "react";
-import { OsActions } from "./OsActions";
+import type { FinderItem } from "@/lib/os/finder";
+import type { OsSection } from "@/lib/os/nav";
+import { osHrefs } from "@/lib/os/nav";
+import type { OsAction } from "@/lib/os/types";
+import { OsShell } from "./OsShell";
+
+const LINKS: { id: OsSection; label: string }[] = [
+  { id: "today", label: "Today" },
+  { id: "bots", label: "Bots" },
+];
 
 export function OsFrame({
   active,
-  homeHref,
-  botsHref,
+  hrefs,
   loginPath,
   updated,
   updatedDetail,
+  actions,
+  finder,
   children,
 }: {
-  active: "today" | "bots";
-  homeHref: string;
-  botsHref: string;
+  active: OsSection;
+  hrefs: ReturnType<typeof osHrefs>;
   loginPath: string;
   updated: string;
   updatedDetail: string;
+  actions: OsAction[];
+  finder: FinderItem[];
   children: ReactNode;
 }) {
   return (
-    <>
-      <header className="os-bar">
-        <div className="os-bar-inner">
-          <a className="os-mark" href={homeHref}>
-            Backfield
-          </a>
-          <nav className="os-nav" aria-label="Dashboard">
-            <a href={homeHref} aria-current={active === "today" ? "page" : undefined}>
-              Today
-            </a>
-            <a href={botsHref} aria-current={active === "bots" ? "page" : undefined}>
-              Bots
-            </a>
-          </nav>
-          <div className="os-bar-meta">
-            <p className="os-kicker">Updated</p>
-            <strong>{updated}</strong>
-            <span>{updatedDetail}</span>
-          </div>
-          <OsActions loginPath={loginPath} />
-        </div>
-      </header>
-      <main className="os-page">{children}</main>
-    </>
+    <OsShell
+      active={active}
+      links={LINKS.map((link) => ({ ...link, href: hrefs[link.id] }))}
+      loginPath={loginPath}
+      updated={updated}
+      updatedDetail={updatedDetail}
+      initialActions={actions}
+      finder={finder}
+    >
+      {children}
+    </OsShell>
   );
 }

@@ -174,6 +174,10 @@ test("host routing keeps the public site and locks the dashboard", () => {
     pathname: "/os/login",
   });
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/bots", authed: true, vercelEnv: "preview" }).kind, "os-next");
+  assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/api/os/decisions/answered", authed: false }).kind, "os-next");
+  assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/api/os/actions/pending", authed: false }).kind, "os-next");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/action", authed: false, vercelEnv: "preview" }).kind, "unauthorized");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/decide", authed: false, vercelEnv: "preview" }).kind, "unauthorized");
 });
 
 test("dashboard metrics flag stale snapshots and count the operating picture", () => {
@@ -298,6 +302,36 @@ test("interactions are optional and bots without a director stay in other", () =
       crowdedMap.directors.reduce((sum, group) => sum + group.specialists.length, 0),
       40,
     );
+  }
+});
+
+test("crm lists and decision answers use only real fields", async () => {
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const path = await import("node:path");
+  const { isHot, needsFollowUp } = await import("./crm");
+  const { ackAnswers, exactMessageHash, readAnswers, recordAnswer } = await import("./answers");
+  const now = Date.parse("2026-11-03T20:00:00.000Z");
+  const due = { id: "1", name: "A", firm: null, track: "investor" as const, stage: "Talking", owner: null, last_touch_at: null, last_touch_channel: null, next_step: "Call", next_step_due: "2026-11-01", email: null, linkedin: null, notes: null };
+  const recent = { ...due, id: "2", last_touch_at: "2026-11-02T12:00:00.000Z", next_step_due: null };
+  assert.equal(needsFollowUp(due, now), true);
+  assert.equal(needsFollowUp(recent, now), false);
+  assert.equal(isHot(recent, now), true);
+  assert.equal(isHot(due, now), false);
+  const bare = validateSnapshot({ ...sample() });
+  assert.equal(bare.ok, true);
+  if (bare.ok) assert.deepEqual(bare.snapshot.crm.people, []);
+
+  const dir = await mkdtemp(path.join(tmpdir(), "bfv-dec-"));
+  const env = { OS_SNAPSHOT_FILE: path.join(dir, "snap.json") };
+  try {
+    assert.equal(await recordAnswer({ decision_id: "d1", choice: "yes", note: null, decided_at: "2026-11-03T20:00:00.000Z", exact_message_hash: exactMessageHash("Send this") }, env), "stored");
+    assert.equal(await recordAnswer({ decision_id: "d1", choice: "no", note: null, decided_at: "2026-11-03T20:01:00.000Z", exact_message_hash: null }, env), "duplicate");
+    assert.deepEqual(await ackAnswers(["d1"], env), ["d1"]);
+    assert.equal((await readAnswers(env))[0]?.acked_at != null, true);
+    assert.deepEqual(await ackAnswers(["d1"], env), []);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
   }
 });
 

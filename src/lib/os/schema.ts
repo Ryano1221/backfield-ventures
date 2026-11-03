@@ -1,11 +1,17 @@
+import { blankToNull, normalizeDomain, normalizeLogoUrl } from "./present";
 import {
+  CRM_TRACKS,
   DIRECTOR_KEYS,
   INTERACTION_KINDS,
   PITCH_STATUSES,
   type ActivityItem,
   type BotFeed,
   type BotRecord,
+  type CrmBook,
+  type CrmPerson,
+  type CrmTrack,
   type Decision,
+  type DecisionOption,
   type DirectorKey,
   type Interaction,
   type InteractionKind,
@@ -24,6 +30,7 @@ const LIMITS = {
   activity: 1000,
   routines: 200,
   interactions: 500,
+  people: 5000,
 } as const;
 
 export type SchemaResult =
@@ -48,8 +55,9 @@ export function validateSnapshot(input: unknown): SchemaResult {
   const activity = validateActivity(input.activity, issues);
   const interactions =
     input.interactions === undefined ? [] : validateInteractions(input.interactions, issues);
+  const crm = input.crm === undefined ? { people: [] } : validateCrm(input.crm, issues);
 
-  if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || !interactions || issues.length) {
+  if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || !interactions || !crm || issues.length) {
     return { ok: false, issues: issues.slice(0, 30) };
   }
 
@@ -63,6 +71,7 @@ export function validateSnapshot(input: unknown): SchemaResult {
       decisions,
       activity,
       interactions,
+      crm,
     },
   };
 }
@@ -90,19 +99,26 @@ function validatePitch(value: unknown, path: string, issues: string[]): Pitch | 
     return null;
   }
   const company = reqStr(value.company, `${path}.company`, 200, issues);
-  const sector = reqStr(value.sector, `${path}.sector`, 200, issues);
-  const stage = reqStr(value.stage, `${path}.stage`, 80, issues);
+  const sector = softBlank(value.sector, 200);
+  const stage = softBlank(value.stage, 80);
   const received = reqStr(value.received, `${path}.received`, 80, issues);
-  const founder = reqStr(value.founder, `${path}.founder`, 200, issues);
-  const source = reqStr(value.source, `${path}.source`, 200, issues);
+  const founder = softBlank(value.founder, 200);
+  const source = softBlank(value.source, 200);
   const status = pitchStatus(value.status, `${path}.status`, issues);
   const score = scoreValue(value.score, `${path}.score`, issues);
   const deck = optionalUrl(value.deck, `${path}.deck`, issues);
   if (received && !isDate(received)) issues.push(`${path}.received must be a date`);
-  if (!company || !sector || !stage || !received || !founder || !source || !status || score === undefined) {
-    return null;
-  }
-  return { company, sector, stage, received, founder, status, score, source, deck };
+  if (!company || !received || !status || score === undefined) return null;
+  const pitch: Pitch = { company, sector, stage, received, founder, status, score, source, deck };
+  const title = softText(value.title, 160);
+  const summary = softText(value.summary, 2000);
+  const domain = normalizeDomain(typeof value.domain === "string" ? value.domain : null);
+  const logo = normalizeLogoUrl(typeof value.logo_url === "string" ? value.logo_url : null);
+  if (title) pitch.title = title;
+  if (summary) pitch.summary = summary;
+  if (domain) pitch.domain = domain;
+  if (logo) pitch.logo_url = logo;
+  return pitch;
 }
 
 function validateBots(value: unknown, issues: string[]): BotFeed | null {
@@ -256,12 +272,159 @@ function validateDecision(value: unknown, path: string, issues: string[]): Decis
     issues.push(`${path} must be an object`);
     return null;
   }
-  const title = reqStr(value.title, `${path}.title`, 300, issues);
+  const title = requiredClip(value.title, `${path}.title`, 4000, issues);
   const since = reqStr(value.since, `${path}.since`, 80, issues);
   const link = optionalUrl(value.link, `${path}.link`, issues);
   if (since && !isDate(since)) issues.push(`${path}.since must be a date`);
   if (!title || !since) return null;
-  return { title, since, link };
+  const decision: Decision = { title, since, link };
+  const id = optStr(value.id, `${path}.id`, 80, issues);
+  const context = softText(value.context, 600);
+  const summary = softText(value.summary, 2000);
+  const domain = normalizeDomain(typeof value.domain === "string" ? value.domain : null);
+  const logo = normalizeLogoUrl(typeof value.logo_url === "string" ? value.logo_url : null);
+  const exact = softText(value.exact_message, 8000);
+  const requested = optStr(value.requested_by, `${path}.requested_by`, 120, issues);
+  const created = optStr(value.created_at, `${path}.created_at`, 80, issues);
+  if (id) decision.id = id;
+  if (context) decision.context = context;
+  if (summary) decision.summary = summary;
+  if (domain) decision.domain = domain;
+  if (logo) decision.logo_url = logo;
+  if (exact) decision.exact_message = exact;
+  if (requested) decision.requested_by = requested;
+  if (created) {
+    if (!isDate(created)) issues.push(`${path}.created_at must be a date`);
+    else decision.created_at = created;
+  }
+  if (value.options !== undefined) {
+    const options = validateOptions(value.options, `${path}.options`, issues);
+    if (options) decision.options = options;
+  }
+  return decision;
+}
+
+function validateOptions(value: unknown, path: string, issues: string[]): DecisionOption[] | null {
+  if (!Array.isArray(value)) {
+    issues.push(`${path} must be an array`);
+    return null;
+  }
+  if (value.length > 8) {
+    issues.push(`${path} is limited to 8 choices`);
+    return null;
+  }
+  const rows: DecisionOption[] = [];
+  for (let i = 0; i < value.length; i++) {
+    const item = value[i];
+    if (!isRecord(item)) {
+      issues.push(`${path}[${i}] must be an object`);
+      continue;
+    }
+    const optionValue = reqStr(item.value, `${path}[${i}].value`, 80, issues);
+    const label = reqStr(item.label, `${path}[${i}].label`, 80, issues);
+    if (optionValue && label) rows.push({ value: optionValue, label });
+  }
+  return rows;
+}
+
+function validateCrm(value: unknown, issues: string[]): CrmBook | null {
+  if (!isRecord(value)) {
+    issues.push("crm must be an object");
+    return null;
+  }
+  if (!Array.isArray(value.people)) {
+    issues.push("crm.people must be an array");
+    return null;
+  }
+  if (value.people.length > LIMITS.people) {
+    issues.push(`crm.people is limited to ${LIMITS.people} rows`);
+    return null;
+  }
+  const people: CrmPerson[] = [];
+  for (let i = 0; i < value.people.length; i++) {
+    const person = validatePerson(value.people[i], `crm.people[${i}]`, issues);
+    if (person) people.push(person);
+  }
+  return { people };
+}
+
+function validatePerson(value: unknown, path: string, issues: string[]): CrmPerson | null {
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return null;
+  }
+  const id = reqStr(value.id, `${path}.id`, 80, issues);
+  const name = reqStr(value.name, `${path}.name`, 120, issues);
+  const stage = softBlank(value.stage, 80);
+  const track = crmTrack(value.track, `${path}.track`, issues);
+  const firm = nullableStr(value.firm, `${path}.firm`, 120, issues);
+  const owner = nullableStr(value.owner, `${path}.owner`, 80, issues);
+  const lastTouch = nullableDate(value.last_touch_at, `${path}.last_touch_at`, issues);
+  const channel = nullableStr(value.last_touch_channel, `${path}.last_touch_channel`, 40, issues);
+  const nextStep = nullableStr(value.next_step, `${path}.next_step`, 200, issues);
+  const nextDue = nullableDate(value.next_step_due, `${path}.next_step_due`, issues);
+  const email = nullableStr(value.email, `${path}.email`, 200, issues);
+  const linkedin = nullableStr(value.linkedin, `${path}.linkedin`, 200, issues);
+  const notes = nullableStr(value.notes, `${path}.notes`, 280, issues);
+  if (!id || !name || !track) return null;
+  if ([firm, owner, lastTouch, channel, nextStep, nextDue, email, linkedin, notes].includes(undefined)) return null;
+  const person: CrmPerson = {
+    id,
+    name,
+    firm: firm ?? null,
+    track,
+    stage,
+    owner: owner ?? null,
+    last_touch_at: lastTouch ?? null,
+    last_touch_channel: channel ?? null,
+    next_step: nextStep ?? null,
+    next_step_due: nextDue ?? null,
+    email: email ?? null,
+    linkedin: linkedin ?? null,
+    notes: notes ?? null,
+  };
+  const domain = normalizeDomain(typeof value.domain === "string" ? value.domain : null);
+  const logo = normalizeLogoUrl(typeof value.logo_url === "string" ? value.logo_url : null);
+  if (domain) person.domain = domain;
+  if (logo) person.logo_url = logo;
+  return person;
+}
+
+function crmTrack(value: unknown, path: string, issues: string[]): CrmTrack | null {
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a string`);
+    return null;
+  }
+  const track = value.trim().toLowerCase();
+  if (!CRM_TRACKS.includes(track as CrmTrack)) {
+    issues.push(`${path} must be a known track`);
+    return null;
+  }
+  return track as CrmTrack;
+}
+
+function nullableStr(value: unknown, path: string, max: number, issues: string[]): string | null | undefined {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a string or null`);
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > max) {
+    issues.push(`${path} is too long`);
+    return undefined;
+  }
+  return trimmed;
+}
+
+function nullableDate(value: unknown, path: string, issues: string[]): string | null | undefined {
+  const text = nullableStr(value, path, 80, issues);
+  if (text && !isDate(text)) {
+    issues.push(`${path} must be a date or null`);
+    return undefined;
+  }
+  return text;
 }
 
 function validateActivity(value: unknown, issues: string[]): ActivityItem[] | null {
@@ -461,6 +624,27 @@ function reqStr(value: unknown, path: string, max: number, issues: string[]): st
     return null;
   }
   return trimmed;
+}
+
+function requiredClip(value: unknown, path: string, max: number, issues: string[]): string | null {
+  if (typeof value !== "string" || !value.trim()) {
+    issues.push(typeof value === "string" ? `${path} is required` : `${path} must be a string`);
+    return null;
+  }
+  return value.trim().slice(0, max);
+}
+
+function softBlank(value: unknown, max: number): string | null {
+  if (typeof value !== "string") return null;
+  const text = blankToNull(value);
+  return text ? text.slice(0, max) : null;
+}
+
+function softText(value: unknown, max: number): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.slice(0, max);
 }
 
 function optStr(value: unknown, path: string, max: number, issues: string[]): string | undefined {

@@ -108,8 +108,8 @@ export function buildDashboard(snapshot: Snapshot | null, now = Date.now()): Das
       tracksUnder: outreach.filter((row) => row.sent < row.floor).length,
     },
     pitches,
-    sectors: bars(pitches.map((pitch) => pitch.sector)),
-    stages: bars(pitches.map((pitch) => pitch.stage)),
+    sectors: bars(pitches.flatMap((pitch) => (pitch.sector ? [pitch.sector] : []))),
+    stages: bars(pitches.flatMap((pitch) => (pitch.stage ? [pitch.stage] : []))),
     teams: groupBots(bots),
     routines: (snapshot.bots.routines ?? []).map((routine) => ({
       name: routine.name || "Routine",
