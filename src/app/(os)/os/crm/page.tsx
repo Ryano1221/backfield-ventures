@@ -30,12 +30,12 @@ function toPerson(person: { id: string; name: string; firm: string | null; track
   return {
     id: person.id,
     name: person.name,
-    role: person.firm || person.track,
+    role: person.firm,
     firm: person.firm,
     domain: person.domain ?? null,
-    why: person.notes || "No note was recorded for this person.",
-    next: person.next_step || "No next step was recorded.",
-    channel: person.last_touch_channel || "No channel recorded",
+    why: person.notes,
+    next: person.next_step,
+    channel: person.last_touch_channel,
     events: [],
   };
 }

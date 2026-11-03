@@ -4,7 +4,7 @@ import { DecisionView } from "./DecisionView";
 import { DesignFrame } from "./DesignFrame";
 import type { ExplainedDecision } from "@/lib/os/explain";
 import { blankToNull } from "@/lib/os/present";
-import type { Pitch } from "@/lib/os/types";
+import type { Pitch, PitchStatus } from "@/lib/os/types";
 
 export function TodayDesign({
   items,
@@ -53,14 +53,14 @@ export function TodayDesign({
         <p className="dx-intro">These are companies, not messages. Opening one does not send anything.</p>
         <ul className="dx-deals">
           {deals.map((deal) => {
-            const facts = [blankToNull(deal.sector), blankToNull(deal.stage)].filter(Boolean).join(" · ");
+            const facts = [blankToNull(deal.sector), blankToNull(deal.stage), statusLabel(deal.status)].filter(Boolean).join(" · ");
             return (
               <li key={deal.company}>
                 <Mark name={deal.company} domain={deal.domain} logoUrl={deal.logo_url} />
                 <span>
                   <strong>{deal.company}</strong>
                   {facts ? <em>{facts}</em> : null}
-                  <p>{deal.summary || "In your review queue. No note was recorded."}</p>
+                  {deal.summary ? <p>{deal.summary}</p> : null}
                 </span>
               </li>
             );
@@ -75,4 +75,12 @@ export function TodayDesign({
       ) : null}
     </DesignFrame>
   );
+}
+
+function statusLabel(status: PitchStatus): string | null {
+  if (status === "new") return "New";
+  if (status === "reviewing") return "Reviewing";
+  if (status === "passed") return "Passed";
+  if (status === "advanced") return "Advanced";
+  return null;
 }

@@ -1,15 +1,12 @@
 import type { Decision, Pitch } from "./types";
 
-/** Design sample shaped from the live queue Ryan already saw. It does not invent the rest of a cut-off message, an email, or a firm we were not given. */
+/** Only fields that were already on the live queue. Missing lines are omitted in the UI. */
 export const designDecisions: Decision[] = [
   {
     id: "kathleen-linkedin",
-    title: "Reply to Kathleen Collins (protein beverage founder)",
+    title: "Reply to Kathleen Collins on LinkedIn",
     since: "2026-10-28T22:05:00.000Z",
     link: null,
-    requested_by: "BV Executive",
-    summary: "She wrote you on LinkedIn on Oct 28 about Backfield's food and beverage focus.",
-    context: "You are connected on LinkedIn. The block check is clear. She is waiting on your yes before anyone sends.",
     exact_message: "Hi Kathleen, thanks for reaching out.",
   },
   {
@@ -17,9 +14,6 @@ export const designDecisions: Decision[] = [
     title: "Best3 October partner pack",
     since: "2026-10-20T15:00:00.000Z",
     link: null,
-    requested_by: "Investment",
-    summary: "The October partner pack is on hold until you approve it.",
-    context: "The picks from public sources, with no founder material, are Protein Pints, Vaca Chips, and Fave.",
   },
 ];
 
@@ -34,7 +28,6 @@ export const designDeals: Pitch[] = [
     score: null,
     source: null,
     deck: null,
-    summary: "In your review queue. Seed company in sports hardware.",
   },
   {
     company: "Grit & Grace",
@@ -46,7 +39,6 @@ export const designDeals: Pitch[] = [
     score: null,
     source: null,
     deck: null,
-    summary: "In your review queue. Seed company in consumer CPG.",
   },
   {
     company: "Ball on Top Ltd.",
@@ -58,7 +50,6 @@ export const designDeals: Pitch[] = [
     score: null,
     source: null,
     deck: null,
-    summary: "In your review queue. Seed company in sports.",
   },
   {
     company: "Iron & Oak",
@@ -70,19 +61,18 @@ export const designDeals: Pitch[] = [
     score: null,
     source: null,
     deck: null,
-    summary: "In your review queue. Consumer wellness. No stage was recorded.",
   },
 ];
 
 export type DesignPerson = {
   id: string;
   name: string;
-  role: string;
+  role: string | null;
   firm: string | null;
   domain: string | null;
-  why: string;
-  next: string;
-  channel: string;
+  why: string | null;
+  next: string | null;
+  channel: string | null;
   events: { when: string; text: string }[];
 };
 
@@ -90,15 +80,12 @@ export const designPeople: DesignPerson[] = [
   {
     id: "kathleen-collins",
     name: "Kathleen Collins",
-    role: "Protein beverage founder",
+    role: null,
     firm: null,
     domain: null,
-    why: "She wrote you on LinkedIn on Oct 28 about food and beverage. A reply is waiting on your yes.",
-    next: "Approve the LinkedIn reply, or edit it first.",
-    channel: "LinkedIn",
-    events: [
-      { when: "Oct 28", text: "She asked about Backfield's food and beverage focus." },
-      { when: "Now", text: "A reply is drafted. Nothing sends until you approve the exact text." },
-    ],
+    why: null,
+    next: null,
+    channel: null,
+    events: [],
   },
 ];

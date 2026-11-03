@@ -20,7 +20,7 @@ export function CrmListDesign({
 }) {
   return (
     <DesignFrame todayHref={todayHref} crmHref={crmHref} botsHref={botsHref} active="crm">
-      {sample ? <p className="dx-banner">Design sample. One person from the live queue. No email was invented.</p> : null}
+      {sample ? <p className="dx-banner">Design sample. Lines appear only when a field is present.</p> : null}
       <p className="dx-counts">
         <span>
           <strong>{people.length}</strong>
@@ -36,8 +36,8 @@ export function CrmListDesign({
                 <Mark name={person.name} domain={person.domain} />
                 <span>
                   <strong>{person.name}</strong>
-                  <em>{person.role}</em>
-                  <p>{person.why}</p>
+                  {person.role ? <em>{person.role}</em> : null}
+                  {person.why ? <p>{person.why}</p> : null}
                 </span>
               </Link>
             </li>
@@ -71,14 +71,22 @@ export function PersonDesign({
           <Mark name={person.name} domain={person.domain} />
           <div>
             <h2>{person.name}</h2>
-            <p className="dx-role">{person.role}</p>
+            {person.role ? <p className="dx-role">{person.role}</p> : null}
           </div>
         </header>
-        <h3>Who they are</h3>
-        <p>{person.why}</p>
-        <h3>What is next</h3>
-        <p>{person.next}</p>
-        <p className="dx-role">Channel: {person.channel}</p>
+        {person.why ? (
+          <>
+            <h3>Who they are</h3>
+            <p className="dx-copy">{person.why}</p>
+          </>
+        ) : null}
+        {person.next ? (
+          <>
+            <h3>What is next</h3>
+            <p className="dx-copy">{person.next}</p>
+          </>
+        ) : null}
+        {person.channel ? <p className="dx-role">Channel: {person.channel}</p> : null}
         {decisionHref ? (
           <div className="dx-actions">
             <Link className="dx-primary" href={decisionHref}>
@@ -87,17 +95,19 @@ export function PersonDesign({
           </div>
         ) : null}
       </article>
-      <section className="dx-group">
-        <h1>What happened</h1>
-        <ol className="dx-timeline">
-          {person.events.map((event) => (
-            <li key={event.when}>
-              <strong>{event.when}</strong>
-              <span>{event.text}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      {person.events.length ? (
+        <section className="dx-group">
+          <h1>What happened</h1>
+          <ol className="dx-timeline">
+            {person.events.map((event) => (
+              <li key={`${event.when}-${event.text}`}>
+                <strong>{event.when}</strong>
+                <span>{event.text}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
     </DesignFrame>
   );
 }

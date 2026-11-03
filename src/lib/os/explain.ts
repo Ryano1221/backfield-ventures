@@ -5,38 +5,34 @@ import type { Decision } from "./types";
 export type ExplainedDecision = {
   id: string;
   who: string;
-  role: string | null;
-  firm: string | null;
   domain: string | null;
   logoUrl: string | null;
-  what: string;
-  why: string;
+  what: string | null;
   message: string | null;
   primary: string;
   canEdit: boolean;
 };
 
 export function explainDecision(decision: Decision, id: string): ExplainedDecision {
-  const raw = [decision.title, decision.context, decision.summary].filter(Boolean).join(". ");
-  const who = personName(raw) || subjectFrom(decision);
-  const role = roleFrom(raw);
-  const what = firstSentence(plain(decision.summary) || plain(decision.context) || plain(decision.title) || "This item is waiting on you.");
-  const why = whyFrom(raw, Boolean(decision.exact_message));
+  const who = personName(`${decision.title}. ${decision.context ?? ""}`) || subjectFrom(decision);
+  const what = fieldText(decision.summary) || fieldText(decision.context);
   const message = decision.exact_message?.trim() ? decision.exact_message.trim() : null;
   const pack = /partner pack/i.test(decision.title);
   return {
     id,
     who,
-    role,
-    firm: null,
     domain: decision.domain ?? null,
     logoUrl: decision.logo_url ?? null,
     what,
-    why,
     message,
     primary: message ? "Send this reply" : pack ? "Approve this pack" : "Approve",
     canEdit: Boolean(message),
   };
+}
+
+function fieldText(value: string | null | undefined): string | null {
+  const text = plain(value);
+  return text || null;
 }
 
 export function plain(value: string | null | undefined): string {
@@ -53,25 +49,6 @@ export function plain(value: string | null | undefined): string {
     .trim();
   if (!cleaned) return "";
   return mostlyShouty(cleaned) ? sentence(cleaned) : cleaned;
-}
-
-function whyFrom(raw: string, hasMessage: boolean): string {
-  const text = raw.toLowerCase();
-  if (hasMessage && /needs ryan|before anyone sends|exact text/.test(text)) {
-    return "Nothing sends until you approve this exact message.";
-  }
-  if (/on hold/.test(text)) return "This is on hold until you approve it.";
-  if (hasMessage) return "Approving sends the message below. Nothing sends until you do.";
-  return "This is in front of you because it is waiting on your yes.";
-}
-
-function roleFrom(raw: string): string | null {
-  const match = raw.match(/\(([^)]{8,80})\)/);
-  if (!match) return null;
-  const inside = match[1];
-  if (/packet|pkt_|owner|\.md|\//i.test(inside)) return null;
-  const bit = plain(inside.split(/[;.]/)[0] || "");
-  return bit ? bit.charAt(0).toUpperCase() + bit.slice(1) : null;
 }
 
 function subjectFrom(decision: Decision): string {
@@ -100,11 +77,6 @@ function titleCaseName(value: string): string {
     .split(/\s+/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
-}
-
-function firstSentence(value: string): string {
-  const sentence = value.split(/(?<=[.])\s/)[0]?.trim() || value.trim();
-  return sentence.length > 180 ? `${sentence.slice(0, 176).replace(/\s+\S*$/, "")}.` : sentence;
 }
 
 function mostlyShouty(value: string): boolean {

@@ -17,12 +17,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     ? snapshot.crm.people.map((person) => ({
         id: person.id,
         name: person.name,
-        role: person.firm || person.track,
+        role: person.firm,
         firm: person.firm,
         domain: person.domain ?? null,
-        why: person.notes || "No note was recorded for this person.",
-        next: person.next_step || "No next step was recorded.",
-        channel: person.last_touch_channel || "No channel recorded",
+        why: person.notes,
+        next: person.next_step,
+        channel: person.last_touch_channel,
         events: [] as { when: string; text: string }[],
       }))
     : designPeople;
@@ -35,5 +35,5 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 }
 
 function emptyPerson(): DesignPerson {
-  return { id: "none", name: "No one in this snapshot", role: "", firm: null, domain: null, why: "The CRM list is empty.", next: "No next step was recorded.", channel: "No channel recorded", events: [] };
+  return { id: "none", name: "No one in this snapshot", role: null, firm: null, domain: null, why: null, next: null, channel: null, events: [] };
 }

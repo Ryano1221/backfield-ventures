@@ -109,4 +109,4 @@ Why it fits: the isometric stack made every robot a speck. The next office shoul
 - CRM: a short list, then a person record with who they are, the next step, and what happened. No empty form.
 - Bots: one room, nameplates, a floor switch, and a bottom line when you click a robot.
 
-These pages read the live snapshot when it has decisions or people. When it does not, they use a design sample shaped like that snapshot: the LinkedIn reply and the October partner pack from the live queue, and the companies that were already in review. The sample does not invent an email, a firm, or the rest of a cut-off message. A line at the top says when you are looking at the sample. Nothing on these pages writes to the action queue.
+These pages read the live snapshot when it has decisions, deals, or people. A missing field is left off the screen. The preview sample uses only names and facts already on that queue: Kathleen Collins, the October partner pack, and the companies that were in review. It does not add a job, a firm, a date, or the rest of a message. Nothing on these pages writes to the action queue.

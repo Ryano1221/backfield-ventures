@@ -17,7 +17,7 @@ export function DecisionView({
         <Mark name={item.who} domain={item.domain} logoUrl={item.logoUrl} />
         <span>
           <strong>{item.who}</strong>
-          <em>{item.why}</em>
+          {item.what ? <em>{item.what}</em> : null}
         </span>
       </Link>
     );
@@ -29,23 +29,20 @@ export function DecisionView({
         <Mark name={item.who} domain={item.domain} logoUrl={item.logoUrl} />
         <div>
           <h2>{item.who}</h2>
-          {item.role ? <p className="dx-role">{item.role}</p> : null}
         </div>
       </header>
-      <p className="dx-why">{item.why}</p>
-      <h3>What happened</h3>
-      <p>{item.what}</p>
+      {item.what ? (
+        <>
+          <h3>What happened</h3>
+          <p className="dx-copy">{item.what}</p>
+        </>
+      ) : null}
       {item.message ? (
         <>
           <h3>If you approve, this is what goes out</h3>
           <blockquote className="dx-message">{item.message}</blockquote>
         </>
-      ) : (
-        <>
-          <h3>If you approve</h3>
-          <p>You approve this item. There is no outgoing message attached.</p>
-        </>
-      )}
+      ) : null}
       <div className="dx-actions">
         <button type="button" className="dx-primary">
           {item.primary}
