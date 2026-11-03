@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { decideOs } from "./host";
-import { buildMap, groupKey } from "./interactions";
+import { buildMap, displayParty, groupKey } from "./interactions";
 import { buildDashboard, isFailedBot } from "./metrics";
 import { STALE_AFTER_MS } from "./types";
 import { LoginLimiter } from "./rate-limit";
@@ -299,6 +299,18 @@ test("interactions are optional and bots without a director stay in other", () =
       40,
     );
   }
+});
+
+test("handoff parties use display names for director keys only", () => {
+  assert.equal(displayParty("investment"), "Investment");
+  assert.equal(displayParty("intelligence"), "Intelligence");
+  assert.equal(displayParty("network"), "Network");
+  assert.equal(displayParty("growth"), "Growth");
+  assert.equal(displayParty("firm_os"), "Firm OS");
+  assert.equal(displayParty("executive"), "BV Executive");
+  assert.equal(displayParty("ryan"), "Ryan");
+  assert.equal(displayParty("  Executive "), "BV Executive");
+  assert.equal(displayParty("FIXTURE Scout"), "FIXTURE Scout");
 });
 
 test("file snapshot round trip stays empty without a fixture in production", async () => {

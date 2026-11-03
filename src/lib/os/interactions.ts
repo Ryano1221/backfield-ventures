@@ -18,6 +18,20 @@ const DIRECTOR_LABELS: Record<OrgKey, string> = {
   other: "Other",
 };
 
+const PARTY_LABELS: Record<string, string> = {
+  investment: "Investment",
+  intelligence: "Intelligence",
+  network: "Network",
+  growth: "Growth",
+  firm_os: "Firm OS",
+  executive: "BV Executive",
+  ryan: "Ryan",
+};
+
+export function displayParty(name: string): string {
+  return PARTY_LABELS[name.trim().toLowerCase()] ?? name;
+}
+
 export type MapBot = {
   name: string;
   role: string;
