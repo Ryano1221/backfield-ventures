@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Operating dashboard
+
+The private dashboard for `os.backfieldventures.com` lives under `src/app/(os)`. Sign-in, ingest, the CRM, the pipeline, the bot office, and Ryan's action queue are specified in [docs/os-dashboard-ingest.md](docs/os-dashboard-ingest.md).
+
+The site records what Ryan decides. It does not send email, DMs, or posts. Blank and `unknown` pitch fields are omitted from the page. Logos come from `logo_url` or a fetched favicon for `domain`, and a monogram when neither exists.
+
 ## Getting Started
 
 First, run the development server:

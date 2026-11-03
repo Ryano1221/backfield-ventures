@@ -23,8 +23,8 @@ export function DealFlow({ pitches }: { pitches: PitchRow[] }) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [open, setOpen] = useState<PitchRow | null>(null);
 
-  const sectors = useMemo(() => unique(pitches.map((pitch) => pitch.sector)), [pitches]);
-  const stages = useMemo(() => unique(pitches.map((pitch) => pitch.stage)), [pitches]);
+  const sectors = useMemo(() => unique(pitches.flatMap((pitch) => (pitch.sector ? [pitch.sector] : []))), [pitches]);
+  const stages = useMemo(() => unique(pitches.flatMap((pitch) => (pitch.stage ? [pitch.stage] : []))), [pitches]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -35,6 +35,7 @@ export function DealFlow({ pitches }: { pitches: PitchRow[] }) {
       if (stage !== "all" && pitch.stage !== stage) return false;
       if (!q) return true;
       return [pitch.company, pitch.founder, pitch.sector, pitch.source, pitch.stage]
+        .filter(Boolean)
         .join(" ")
         .toLowerCase()
         .includes(q);

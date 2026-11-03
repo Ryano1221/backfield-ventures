@@ -60,13 +60,13 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
   if (path === "/login") {
     return authed ? { kind: "redirect", pathname: "/" } : { kind: "rewrite", pathname: "/os/login" };
   }
-  if (path === "/bots") {
-    return authed ? { kind: "rewrite", pathname: "/os/bots" } : { kind: "redirect", pathname: "/login" };
+  const page = OS_PAGE_REWRITES[path];
+  if (page) return authed ? { kind: "rewrite", pathname: page } : { kind: "redirect", pathname: "/login" };
+  if (path.startsWith("/os/") && OS_INTERNAL_PAGES.has(path)) {
+    const external = path.slice(3);
+    return { kind: "redirect", pathname: authed ? external : "/login" };
   }
-  if (path === "/os/bots") {
-    return { kind: "redirect", pathname: authed ? "/bots" : "/login" };
-  }
-  if (path === "/api/os/login" || path === "/api/os/ingest") return { kind: "os-next" };
+  if (isTokenRoute(path)) return { kind: "os-next" };
   if (path === "/api/os" || path.startsWith("/api/os/")) {
     return authed ? { kind: "os-next" } : { kind: "unauthorized" };
   }
@@ -76,13 +76,30 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
 function decideShared(path: string, authed: boolean): OsDecision {
   if (!isDashboardPath(path)) return { kind: "public" };
   if (path === "/api/ingest") return { kind: "not-found" };
-  if (path === "/api/os/login" || path === "/api/os/ingest") return { kind: "os-next" };
+  if (isTokenRoute(path)) return { kind: "os-next" };
   if (path.startsWith("/api/")) return authed ? { kind: "os-next" } : { kind: "unauthorized" };
   if (path === "/os/login") {
     return authed ? { kind: "redirect", pathname: "/os" } : { kind: "os-next" };
   }
   if (!authed) return { kind: "redirect", pathname: "/os/login" };
   return { kind: "os-next" };
+}
+
+const OS_PAGE_REWRITES: Record<string, string> = {
+  "/bots": "/os/bots",
+};
+
+const OS_INTERNAL_PAGES = new Set(Object.values(OS_PAGE_REWRITES));
+
+function isTokenRoute(path: string): boolean {
+  return (
+    path === "/api/os/login" ||
+    path === "/api/os/ingest" ||
+    path === "/api/os/decisions/answered" ||
+    path === "/api/os/decisions/ack" ||
+    path === "/api/os/actions/pending" ||
+    path === "/api/os/actions/ack"
+  );
 }
 
 function isDashboardPath(path: string): boolean {

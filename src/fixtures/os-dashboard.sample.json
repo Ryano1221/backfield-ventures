@@ -14,13 +14,11 @@
     },
     {
       "company": "FIXTURE Cedar Sample",
-      "sector": "Sample CPG",
       "stage": "Pre-Seed",
       "received": "2026-11-01",
-      "founder": "Casey Fixture",
       "status": "new",
       "score": 2,
-      "source": "fixture",
+      "summary": "FIXTURE deal note. Not a real company.",
       "deck": null
     }
   ],
@@ -690,12 +688,32 @@
     {
       "title": "FIXTURE sample decision",
       "since": "2026-11-03T16:00:00.000Z",
-      "link": null
+      "link": null,
+      "id": "fix-dec-1",
+      "context": "Fake decision for the local fixture.",
+      "requested_by": "FIXTURE Executive",
+      "created_at": "2026-11-03T16:00:00.000Z",
+      "options": [
+        {
+          "value": "send",
+          "label": "Send"
+        },
+        {
+          "value": "hold",
+          "label": "Hold"
+        }
+      ],
+      "exact_message": "FIXTURE: this is the exact sample message. Not a real note."
     },
     {
-      "title": "FIXTURE second sample decision",
-      "since": "2026-11-02T16:00:00.000Z",
-      "link": null
+      "title": "ON HOLD. FIXTURE BEST3 OCTOBER 2026 PARTNER PACK (PACKET PKT_SAMPLE, OWNER INVESTMENT). APPROVE THE SAMPLE CARD.",
+      "summary": "Fake summary for the local fixture.",
+      "since": "2026-11-01T16:00:00.000Z",
+      "link": null,
+      "id": "fix-dec-long",
+      "context": "Fake context. Not a real packet.",
+      "exact_message": "FIXTURE: sample exact text for an outgoing note.",
+      "requested_by": "FIXTURE Executive"
     }
   ],
   "activity": [
@@ -787,5 +805,39 @@
       "title": "FIXTURE old sample note",
       "status": "done"
     }
-  ]
+  ],
+  "crm": {
+    "people": [
+      {
+        "id": "fix-ada",
+        "name": "FIXTURE Ada North",
+        "firm": "FIXTURE Harbor",
+        "track": "investor",
+        "stage": "Talking",
+        "owner": "Ryan",
+        "last_touch_at": "2026-11-02T15:00:00.000Z",
+        "last_touch_channel": "email",
+        "next_step": "Send the sample note",
+        "next_step_due": "2026-11-01",
+        "email": "ada.fixture@example.com",
+        "linkedin": null,
+        "notes": "Fake CRM row. Not a real person."
+      },
+      {
+        "id": "fix-beau",
+        "name": "FIXTURE Beau Cedar",
+        "firm": null,
+        "track": "founder",
+        "stage": "unknown",
+        "owner": null,
+        "last_touch_at": "2026-10-01T15:00:00.000Z",
+        "last_touch_channel": null,
+        "next_step": null,
+        "next_step_due": null,
+        "email": null,
+        "linkedin": null,
+        "notes": "Fake founder row."
+      }
+    ]
+  }
 }

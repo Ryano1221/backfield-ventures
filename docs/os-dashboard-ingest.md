@@ -158,7 +158,9 @@ Rules:
 - `generated_at` is required ISO-8601.
 - `status` on a pitch is `new`, `reviewing`, `passed`, or `advanced` (any case).
 - `score` is a number or `null`.
-- `deck` and `link` are `null` or an `http`/`https` URL.
+- `founder`, `sector`, `stage`, and `source` are optional. Omit them, send `""`, or send `unknown` and the dashboard stores nothing and renders nothing. Older snapshots that still send those strings keep working.
+- A pitch may also include `title` (short label, clipped at 160), `summary` (internal deal note, clipped at 2000, shown in muted text), `domain`, and `logo_url`.
+- `deck` and `link` are `null` or an `http`/`https` URL. `logo_url` is the same, and is dropped when it is not a public http(s) URL. `domain` is a hostname. The dashboard fetches a favicon for `domain` when `logo_url` is absent, and falls back to a monogram when nothing is found.
 - `received`, `since`, `timestamp`, and `last_iso` must parse as dates. `last_iso` may be `null`.
 - `bots` may be the feed object above, or a bare array of bots. The live bot-office file belongs under `bots` as that object, including `routines`, `pulse`, and `usage`.
 - `usage_share` is a number or `null`.
@@ -166,6 +168,15 @@ Rules:
 - Known track ids: `athlete`, `fo_hnwi`, `creator`, `real_estate_agents`, `ig_dms`, `follows`. Any other `track` string is kept. `label` overrides the display name.
 - Arrays other than `interactions` are required. Send `[]` when a section is empty.
 - `interactions` is optional. Current snapshots that omit it keep working. When present it is an array of at most 500 handoffs.
+- `crm` is optional. When omitted, the CRM page is empty. Shape: `{ "people": [ ... ] }` with at most 5000 people.
+- Each person needs `id`, `name`, and `track` (`investor`, `family_office`, `athlete`, `creator`, `real_estate`, `lp`, `founder`, or `other`). `stage` may be omitted. A stage of `unknown` is stored as no stage. Optional nulls: `firm`, `owner`, `last_touch_at`, `last_touch_channel`, `next_step`, `next_step_due`, `email`, `linkedin`, `notes` (max 280). Optional `domain` and `logo_url` supply the firm mark.
+- Follow-up is anyone whose `next_step_due` is on or before today. Hot is anyone whose `last_touch_at` is within the last 7 days. Both lists use only those fields.
+- A decision may also include `id`, `summary` (short muted line), `context` (max 600), `options` (`value` and `label`, up to 8), `exact_message`, `requested_by`, `created_at`, `domain`, and `logo_url`. `title` can be long. The page shows a short sentence-case title, then the summary, and keeps the full context and exact message behind Details. Without `options`, the inbox offers Approve, Edit, and Skip. Edit stores the edited text as its own choice with a sha256 of that text, not an approval of the original.
+- Ryan's answer is stored separately from the snapshot, in the same private store, on the action queue. `POST /api/os/decide` is an alias: it requires the session cookie and a same-origin request. Body: `{ "decision_id", "choice", "note" }`. The stored record is an action `{ action_id, type: "decide", target_id, payload, created_at, idempotency_key }` where the payload includes `{ choice, note, exact_message_hash }`. The hash is sha256 of `exact_message` when that field is present and the choice approves it. A decision can be answered once. The same idempotency key never creates a second row.
+- `POST /api/os/action` is the queue for every Ryan action. Same session cookie and same-origin check. Body: `{ "type", "target_id", "payload", "idempotency_key" }`. `type` is `decide`, `pitch_status`, `crm_stage`, `crm_next_step`, `crm_note`, `crm_hold`, `crm_dnc`, `draft_followup`, `bot_request`, `bot_pause`, `bot_resume`, `snooze`, or `free_text`. `payload` is a flat JSON object capped at 8000 bytes. The site never sends email, DMs, or posts. It only records the request.
+- The office box reads unacked actions with `GET /api/os/actions/pending` and marks them with `POST /api/os/actions/ack` and `{ "ids": ["action_id"], "result": { "status": "done"|"failed", "note": "optional" } }`. Both use `Authorization: Bearer $OS_INGEST_TOKEN`. The page shows Pending until ack, then Done or Failed with the note.
+- `GET /api/os/decisions/answered` and `POST /api/os/decisions/ack` still work. They read and ack `decide` actions. Ack ids may be decision ids. After pickup the older clients still see `acked_at`.
+- The office box reads answers with `GET /api/os/decisions/answered` and marks them picked up with `POST /api/os/decisions/ack` and `{ "ids": ["..."] }`. Both use `Authorization: Bearer $OS_INGEST_TOKEN`. After pickup the inbox says Done. Until then it says Pending. A later snapshot that already contains the change clears the overlay.
 - Each interaction needs `timestamp` (ISO-8601), `from`, `to`, `kind` (`packet`, `amendment`, `result`, or `message`), `packet_id` (string or null), `title` (max 160 characters), and `status` (string or null).
 - `from` and `to` are a lowercase director key (`investment`, `intelligence`, `network`, `growth`, `firm_os`, `executive`, `ryan`) or a bot display name.
 - A bot may include `director`, one of those same keys. If it is missing, the bot map files that bot under Other.
