@@ -108,8 +108,15 @@ body:has(.email) {
   color: #000;
 }
 
-.email .nav .grp {
+.email .grp {
+  display: block;
+  background: transparent;
+  border: 0;
+  padding: 0;
   color: var(--e-side3);
+}
+
+.email .nav .grp {
   margin: 22px 12px 6px;
 }
 
@@ -123,6 +130,7 @@ body:has(.email) {
 .email .drawer { display: none; }
 
 .email .crumb {
+  height: auto;
   min-height: 44px;
   display: flex;
   align-items: center;
@@ -131,6 +139,7 @@ body:has(.email) {
   padding: 0 40px;
   border-bottom: 1px solid var(--e-soft);
   color: var(--e-ink2);
+  background: var(--e-cream);
 }
 
 .email .crumb a {
@@ -168,6 +177,13 @@ body:has(.email) {
   background: transparent;
   backdrop-filter: none;
   z-index: auto;
+}
+
+.email .row {
+  display: block;
+  width: auto;
+  grid-template-columns: none;
+  cursor: default;
 }
 
 .email .top h1 {
@@ -554,10 +570,13 @@ body:has(.email) {
 
 .email .actions {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 8px 16px;
   align-items: center;
+  margin-top: 0;
   padding: 8px 16px 16px;
+  border-top: 0;
 }
 
 .email .hint { color: var(--e-ink3); font-size: 13px; line-height: 1.4; }
@@ -635,7 +654,7 @@ body:has(.email) {
 
 .email .burger { box-shadow: 0 6px 0 #fff, 0 -6px 0 #fff; }
 
-.email .x { background: transparent; }
+.email .x { background: transparent; box-shadow: none; }
 
 .email .x:before,
 .email .x:after {
