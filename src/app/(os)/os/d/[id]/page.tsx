@@ -33,7 +33,7 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
   const index = items.findIndex((item) => item.id === key);
   const item = index >= 0 ? items[index] : null;
   return (
-    <NightFrame onOs={onOs} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={onOs} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder} askAbout={item?.id ?? null} askOwner={item?.requestedBy ?? null}>
       {item ? (
         <DecisionDesk item={item} index={index} total={items.length} next={items[index + 1] ?? null} onOs={onOs} />
       ) : (

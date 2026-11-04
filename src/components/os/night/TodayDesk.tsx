@@ -9,7 +9,7 @@ import { useNightActions } from "./NightFrame";
 
 export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
   const hrefs = osHrefs(onOs);
-  const { submit, inflight, reportToday, actions } = useNightActions();
+  const { submit, inflight, reportToday, actions, setAskContext } = useNightActions();
   const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
   const items = useMemo(() => [...view.ready, ...view.hold, ...view.open], [view]);
   const [current, setCurrent] = useState(0);
@@ -19,6 +19,14 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
     reportToday(items.length);
     return () => reportToday(null);
   }, [items.length, reportToday]);
+  useEffect(() => {
+    setAskContext({
+      page: hrefs.today,
+      about: item?.id ?? null,
+      requestedBy: item?.requestedBy ?? null,
+      botName: null,
+    });
+  }, [hrefs.today, item?.id, item?.requestedBy, setAskContext]);
   const next = item && items[current + 1] ? items[current + 1] : items.length > 1 ? items[0] : null;
 
   useEffect(() => {

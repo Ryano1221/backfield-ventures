@@ -107,6 +107,7 @@ export type DeskDecision = {
   pending: boolean;
   outcome: { label: AnswerLabel; at: string } | null;
   exactMessage: string | null;
+  requestedBy: string | null;
 };
 
 export type SettledDecision = {
@@ -635,7 +636,12 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
     pending: false,
     outcome: answer ? { label: answer.label, at: formatCt(answer.at, true) || "" } : null,
     exactMessage: blankToNull(decision.exact_message),
+    requestedBy: blankToNull(decision.requested_by),
   };
+}
+
+export function stageChoices(): { value: string; label: string }[] {
+  return STAGE_ORDER.map((value) => ({ value, label: stageLabel(value) || value }));
 }
 
 export function withLiveAnswers(model: TodayModel, actions: OsAction[], now = Date.now()): TodayModel {

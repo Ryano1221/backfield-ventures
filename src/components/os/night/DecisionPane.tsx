@@ -4,7 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { snoozeUntil } from "@/lib/os/snooze";
 import type { DeskDecision } from "@/lib/os/night";
 import type { ActionPayload, DecisionSwap } from "@/lib/os/types";
-import { decisionNeedsPickup, PICKUP_LINE } from "@/lib/os/waiting";
+import { officeStatus, whoLabel } from "@/lib/os/ask";
+import { decisionNeedsPickup } from "@/lib/os/waiting";
 import { DecisionDetailView } from "./DecisionDetail";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
@@ -24,6 +25,8 @@ export function DecisionPane({
 }) {
   const { submit, retry, inflight, errors, actions } = useNightActions();
   const pickup = decisionNeedsPickup(actions, item.id);
+  const savedAction = [...actions].reverse().find((action) => action.type === "decide" && action.target_id === item.id) ?? null;
+  const pickupStatus = savedAction ? officeStatus(savedAction, whoLabel(item.requestedBy || "the office")) : null;
   const pending = Boolean(inflight[item.id]);
   const error = errors[item.id] || "";
   const [editing, setEditing] = useState(false);
@@ -180,7 +183,29 @@ export function DecisionPane({
               <b>{item.outcome.label}</b>
               {item.outcome.at ? <span className="lbl"> · {item.outcome.at}</span> : null}
             </p>
-            {pickup ? <p className="pickup">{PICKUP_LINE}</p> : null}
+            {pickupStatus && (pickup || savedAction?.acked_at || savedAction?.status === "failed") ? (
+              <p className="pickup">
+                {pickupStatus.line}
+                {pickupStatus.note ? ` ${pickupStatus.note}` : ""}
+                {pickupStatus.retry ? (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() =>
+                      submit({
+                        type: "decide",
+                        target_id: item.id,
+                        payload: { choice: String(savedAction?.payload.choice || item.approveChoice) },
+                        label: `Retry for ${item.name}.`,
+                        retry: true,
+                      })
+                    }
+                  >
+                    Retry
+                  </button>
+                ) : null}
+              </p>
+            ) : null}
           </>
         ) : editing ? (
           <>

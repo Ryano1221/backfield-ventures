@@ -1,5 +1,6 @@
 import type { PersonModel } from "@/lib/os/night";
 import { Logo } from "./Logo";
+import { PersonActions } from "./PersonActions";
 
 export function PersonDesk({ person, peopleHref }: { person: PersonModel; peopleHref: string }) {
   return (
@@ -22,18 +23,7 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
             </div>
           ) : null}
         </div>
-        <div className="acts" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {person.email ? (
-            <a className="btn" href={`mailto:${person.email}`}>
-              Email
-            </a>
-          ) : null}
-          {person.call && person.next ? (
-            <a className="btn primary" href="#next">
-              Prep for call →
-            </a>
-          ) : null}
-        </div>
+        <PersonActions person={person} />
       </div>
       {person.next ? (
         <div className="next" id="next">
@@ -72,7 +62,14 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
             <div className="h lbl">About</div>
             <dl className="dl">
               {person.firm ? <><dt>Firm</dt><dd>{person.firm}</dd></> : null}
-              {person.email ? <><dt>Email</dt><dd>{person.email}</dd></> : null}
+              {person.email ? (
+            <>
+              <dt>Email</dt>
+              <dd>
+                <a href={`mailto:${person.email}`}>{person.email}</a>
+              </dd>
+            </>
+          ) : null}
               {person.website ? <><dt>Website</dt><dd><a href={person.website}>{person.domain}</a></dd></> : null}
               {person.trackLabel ? <><dt>Track</dt><dd>{person.trackLabel}</dd></> : null}
               {person.owner ? <><dt>Owner</dt><dd>{person.owner}</dd></> : null}

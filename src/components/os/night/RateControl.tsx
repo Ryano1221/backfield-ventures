@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { RATING_ORDER, shownPitchRating } from "@/lib/os/pitch-rate";
 import type { PitchRating } from "@/lib/os/types";
-import { PICKUP_LINE, ratingNeedsPickup } from "@/lib/os/waiting";
+import { officeStatus } from "@/lib/os/ask";
 import { useNightActions } from "./NightFrame";
 
 export function RateControl({
@@ -23,6 +23,8 @@ export function RateControl({
   const error = errors[id] || "";
   const pending = Boolean(inflight[id]);
   const shown = error ? stored : pending && picked ? picked : stored;
+  const rateRow = [...actions].reverse().find((action) => action.type === "rate" && action.target_id === id) ?? null;
+  const rateStatus = rateRow ? officeStatus(rateRow, "the office") : null;
 
   useEffect(() => {
     if (!pending && picked && (error || stored === picked)) setPicked(null);
@@ -51,8 +53,30 @@ export function RateControl({
         <p className="os-error" role="alert">
           {error}
         </p>
-      ) : ratingNeedsPickup(actions, id) ? (
-        <p className="pickup">{PICKUP_LINE}</p>
+      ) : null}
+      {rateStatus ? (
+        <p className="pickup">
+          {rateStatus.line}
+          {rateStatus.note ? ` ${rateStatus.note}` : ""}
+          {rateStatus.retry ? (
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                shown &&
+                submit({
+                  type: "rate",
+                  target_id: id,
+                  payload: { rating: shown },
+                  label: `Retry the rating for ${company}.`,
+                  retry: true,
+                })
+              }
+            >
+              Retry
+            </button>
+          ) : null}
+        </p>
       ) : null}
     </div>
   );

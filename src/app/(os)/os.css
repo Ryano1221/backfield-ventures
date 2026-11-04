@@ -695,6 +695,14 @@ img { display: block; }
 .settled li:last-child { border-bottom: 0; }
 .outcome { font-size: 16px; line-height: 24px; }
 .pickup { margin: 0; font-size: 14px; line-height: 20px; }
+.ask { position: relative; min-width: 0; }
+.ask input { width: min(280px, 42vw); height: 32px; border: 1px solid #000; background: #fff; color: #000; padding: 0 10px; font: 16px/24px var(--text); }
+.ask-list { position: absolute; z-index: 8; top: 40px; right: 0; width: min(360px, 86vw); margin: 0; padding: 10px 12px; list-style: none; background: #fff; border: 1px solid #000; display: grid; gap: 8px; }
+.ask-list li { display: grid; gap: 4px; }
+.ask-panel { position: fixed; inset: 0; z-index: 40; background: #f0ede8; padding: 16px; overflow: auto; }
+.ask-panel .ask input, .person-actions select, .person-actions textarea, .bot-ask textarea { width: 100%; }
+.person-actions, .bot-ask { display: grid; gap: 10px; }
+.person-actions select, .bot-ask textarea, .person-actions textarea { border: 1px solid #000; background: #fff; color: #000; font: 16px/24px var(--text); min-height: 44px; padding: 8px 10px; }
 .actions .os-error { width: 100%; }
 .why { background: transparent; color: inherit; border-left: 3px solid #000; }
 .why .lbl { color: var(--e-ink3); }
@@ -806,7 +814,7 @@ img { display: block; }
   .mnav { display: none; }
   .mbar .search-icon { display: inline-flex; border: 0; color: #fff; width: 44px; height: 44px; }
   .crumb { padding: 0 16px; }
-  .crumb .r .stamp, .crumb .r .private, .crumb .search { display: none; }
+  .crumb .r .stamp, .crumb .r .private, .crumb .search, .crumb .ask { display: none; }
   .main { padding: 20px 16px 72px; }
   body.os, .main, .t-body, .lede, .hero .lede, .tbl td, .row .o, .row .sm, .happened, .msg .bd { font-size: 16px; }
   .d-xl { font-size: 40px; line-height: 0.95; }

@@ -29,7 +29,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   }
   const deal = buildDeal(page.snapshot, key);
   return (
-    <NightFrame onOs={onOs} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={onOs} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder} askAbout={deal?.id ?? null}>
       {deal ? <DealDetail deal={deal} dealsHref={osHrefs(onOs).deals} /> : <p className="t-body muted">That pitch is not in this snapshot.</p>}
     </NightFrame>
   );
