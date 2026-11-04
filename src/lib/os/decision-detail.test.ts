@@ -90,6 +90,7 @@ test("detail keeps example companies, strips emails and phones, and leaves cards
             to_label: "5 partners",
             text: "EXAMPLE pack text.",
             html: `<p>EXAMPLE</p><script>alert(1)</script><a href="https://example.com/pack">pack</a>`,
+            attachment_hash: "abc123",
           },
         },
       },
@@ -108,6 +109,7 @@ test("detail keeps example companies, strips emails and phones, and leaves cards
   assert.equal(card?.detail?.candidates?.[0]?.website, "https://example.com/linea");
   assert.equal(card?.detail?.preview?.html?.includes("script"), false);
   assert.match(card?.detail?.preview?.html || "", /https:\/\/example.com\/pack/);
+  assert.equal(card?.detail?.preview ? "attachment_hash" in card.detail.preview : false, false);
   assert.equal(card?.options?.[1]?.label, "No");
 
   const shown = presentDecision(card!, result.snapshot, [], NOW);

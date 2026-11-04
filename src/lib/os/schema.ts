@@ -633,6 +633,7 @@ function validatePreview(value: unknown, path: string, issues: string[]): Decisi
   const attachment = publicText(value.attachment_label, 120);
   const version = publicText(value.version, 40);
   const hash = optStr(value.hash, `${path}.hash`, 80, issues);
+  // attachment_hash is a snapshot checksum. The preview view does not show it.
   if (subject) preview.subject = subject;
   if (toLabel) preview.to_label = toLabel;
   if (text) preview.text = text;
