@@ -1025,7 +1025,7 @@ function linksFor(decision: Decision, name: string, snapshot: Snapshot): DeskLin
   if (pitch) {
     links.push({
       kind: "pitch",
-      id: `pitch:${pitch.company}`,
+      id: pitchTarget(pitch),
       name: pitch.company,
       detail: [blankToNull(pitch.summary), stageLabel(pitch.stage) || blankToNull(pitch.stage), pitch.status].filter(Boolean).join(" · ") || null,
       domain: pitch.domain || null,

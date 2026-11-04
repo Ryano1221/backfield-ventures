@@ -64,10 +64,7 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
   if (page) return authed ? { kind: "rewrite", pathname: page } : { kind: "redirect", pathname: "/login" };
   const nested = nestedOsPage(path);
   if (nested) return authed ? { kind: "rewrite", pathname: nested } : { kind: "redirect", pathname: "/login" };
-  if (
-    path.startsWith("/os/") &&
-    (OS_INTERNAL_PAGES.has(path) || path.startsWith("/os/d/") || path.startsWith("/os/crm/") || path.startsWith("/os/email/"))
-  ) {
+  if (path.startsWith("/os/") && (OS_INTERNAL_PAGES.has(path) || nestedOsPage(path.slice(3)))) {
     const external = path.slice(3);
     return { kind: "redirect", pathname: authed ? external : "/login" };
   }
@@ -100,10 +97,12 @@ const OS_PAGE_REWRITES: Record<string, string> = {
   "/waiting": "/os/waiting",
 };
 
+const NESTED_PREFIXES = ["/d/", "/crm/", "/deals/", "/email/"] as const;
+
 function nestedOsPage(path: string): string | null {
-  if (path.startsWith("/d/") && path.length > 3) return `/os${path}`;
-  if (path.startsWith("/crm/") && path.length > 5) return `/os${path}`;
-  if (path.startsWith("/email/") && path.length > 7) return `/os${path}`;
+  for (const prefix of NESTED_PREFIXES) {
+    if (path.startsWith(prefix) && path.length > prefix.length) return `/os${path}`;
+  }
   return null;
 }
 
