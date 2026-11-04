@@ -5,8 +5,10 @@ import type { BotDesk, DeskBot, DeskFilter, RoutineView } from "@/lib/os/bot-des
 import { botMatches, groupTeams } from "@/lib/os/bot-desk";
 import type { OfficeData } from "@/lib/os/night";
 import type { Interaction } from "@/lib/os/types";
+import { officeStatus, whoLabel } from "@/lib/os/ask";
 import { FlowView } from "./FlowView";
 import { PixelOffice } from "./PixelOffice";
+import { useNightActions } from "./NightFrame";
 
 const DOT: Record<DeskBot["status"], string> = {
   "Needs Ryan": "is-need",
@@ -50,6 +52,15 @@ export function OfficeSwitch({
   const rest = desk.routines.filter((routine) => !routine.failed && !routine.overdue);
   const feed = feedAll ? desk.feed : desk.feed.slice(0, 5);
   const openBot = desk.bots.find((bot) => bot.id === selected) ?? null;
+  const { setAskContext } = useNightActions();
+  useEffect(() => {
+    setAskContext({
+      page: "/os/bots",
+      about: openBot?.id ?? null,
+      requestedBy: null,
+      botName: openBot?.name ?? null,
+    });
+  }, [openBot?.id, openBot?.name, setAskContext]);
 
   useEffect(() => {
     if (view !== "map") return;
@@ -353,6 +364,7 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
         </p>
         <When relative={bot.relative} ct={bot.ct} />
         {bot.result ? <p className="bots-sheet-result">{bot.result}</p> : null}
+        <BotAsk name={bot.name} />
         <dl className="bots-sheet-facts">
           {bot.scope ? <Fact label="Scope" value={bot.scope} /> : null}
           {bot.director ? <Fact label="Director" value={bot.director} /> : null}
@@ -395,6 +407,49 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
         ) : null}
       </aside>
     </>
+  );
+}
+
+function BotAsk({ name }: { name: string }) {
+  const { submit, actions } = useNightActions();
+  const [text, setText] = useState("");
+  const latest = [...actions].reverse().find((action) => action.target_id === name && (action.type === "bot_request" || action.type === "bot_pause" || action.type === "bot_resume"));
+  const status = latest ? officeStatus(latest, whoLabel(name)) : null;
+  return (
+    <div className="bot-ask">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const note = text.trim();
+          if (!note) return;
+          submit({ type: "bot_request", target_id: name, payload: { text: note }, label: `Asked ${name}.` });
+          setText("");
+        }}
+      >
+        <label className="note-field">
+          <span className="lbl">Ask</span>
+          <textarea aria-label={`Ask ${name}`} value={text} maxLength={2000} onChange={(event) => setText(event.target.value)} />
+        </label>
+        <button type="submit" className="btn" disabled={!text.trim()}>
+          Ask
+        </button>
+      </form>
+      <div className="rate-row">
+        <button type="button" className="btn" onClick={() => submit({ type: "bot_pause", target_id: name, payload: {}, label: `Pause ${name}.` })}>
+          Pause
+        </button>
+        <button type="button" className="btn" onClick={() => submit({ type: "bot_resume", target_id: name, payload: {}, label: `Resume ${name}.` })}>
+          Resume
+        </button>
+      </div>
+      <p className="hint">Pause and resume file a request. The office routes pause to the registry owner. This page does not change the bot.</p>
+      {status ? (
+        <p className="pickup">
+          {status.line}
+          {status.note ? ` ${status.note}` : ""}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { emailHrefs, emailNav, emailSection, type EmailSection } from "@/lib/email/nav";
+import { AskBox } from "@/components/os/night/AskBox";
 
 const GROUPS = ["Email", "Lists", "System"] as const;
 
@@ -72,6 +73,7 @@ export function EmailShell({ onOs, children }: { onOs: boolean; children: ReactN
           <span>
             <a href={hrefs.today}>Backfield OS</a> <span className="sep">/</span> Email
           </span>
+          <AskBox actions={[]} context={{ page: pathname, about: null, requestedBy: null, botName: null }} />
           <span className="private">Private to Ryan</span>
         </div>
         <main className="main">{children}</main>

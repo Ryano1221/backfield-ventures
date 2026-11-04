@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { FinderItem } from "@/lib/os/finder";
 import { osHrefs } from "@/lib/os/nav";
 import { isPitchRating, rateKey } from "@/lib/os/pitch-rate";
 import type { ActionPayload, ActionType, OsAction } from "@/lib/os/types";
 import { waitingActions } from "@/lib/os/waiting";
+import { AskBox, type AskContext } from "./AskBox";
 
 type Queued = {
   batch: string;
@@ -22,6 +23,7 @@ type Draft = {
   target_id: string;
   payload: ActionPayload;
   label: string;
+  retry?: boolean;
 };
 
 type NightApi = {
@@ -32,6 +34,8 @@ type NightApi = {
   inflight: Record<string, boolean>;
   errors: Record<string, string>;
   reportToday: (count: number | null) => void;
+  askContext: AskContext;
+  setAskContext: (context: AskContext) => void;
 };
 
 const Ctx = createContext<NightApi | null>(null);
@@ -54,6 +58,8 @@ export function NightFrame({
   stale = false,
   initialActions,
   finder,
+  askAbout = null,
+  askOwner = null,
   children,
 }: {
   active: Section;
@@ -63,13 +69,18 @@ export function NightFrame({
   stale?: boolean;
   initialActions: OsAction[];
   finder: FinderItem[];
+  askAbout?: string | null;
+  askOwner?: string | null;
   children: ReactNode;
 }) {
   const [actions, setActions] = useState(initialActions);
   const [queued, setQueued] = useState<Queued[]>([]);
   const [toasts, setToasts] = useState<{ id: string; label: string; undo: boolean }[]>([]);
   const [open, setOpen] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
   const [menu, setMenu] = useState(false);
+  const pathname = usePathname() || "/os";
+  const [askContext, setAskContext] = useState<AskContext>({ page: pathname, about: askAbout, requestedBy: askOwner, botName: null });
   const [inflight, setInflight] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [liveToday, setLiveToday] = useState<number | null>(null);
@@ -82,6 +93,33 @@ export function NightFrame({
   const chain = useRef(Promise.resolve());
 
   useEffect(() => setActions(initialActions), [initialActions]);
+
+  useEffect(() => {
+    setAskContext((current) => ({ ...current, page: pathname, about: askAbout ?? current.about, requestedBy: askOwner ?? current.requestedBy }));
+  }, [pathname, askAbout, askOwner]);
+
+  useEffect(() => {
+    let stop = false;
+    async function pull() {
+      if (document.visibilityState !== "visible") return;
+      const res = await fetch("/api/os/actions/mine");
+      if (!res.ok) return;
+      const body = (await res.json()) as { actions?: OsAction[] };
+      if (stop || !Array.isArray(body.actions)) return;
+      setActions((current) => {
+        const ids = new Set(body.actions!.map((action) => action.action_id));
+        const local = current.filter((action) => !ids.has(action.action_id));
+        return [...body.actions!, ...local];
+      });
+    }
+    const timer = window.setInterval(pull, 30000);
+    document.addEventListener("visibilitychange", pull);
+    return () => {
+      stop = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", pull);
+    };
+  }, []);
 
   const visible = useMemo<OsAction[]>(
     () => [
@@ -131,7 +169,7 @@ export function NightFrame({
   const submit = useCallback((draft: Draft) => {
     const id = draft.target_id;
     if (inflightRef.current[id]) return;
-    const key = actionKey(draft, drafts.current.get(id)?.key);
+    const key = actionKey(draft);
     const saved = { ...draft, key };
     drafts.current.set(id, saved);
     inflightRef.current = { ...inflightRef.current, [id]: true };
@@ -256,9 +294,9 @@ export function NightFrame({
   const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
 
   useEffect(() => {
-    document.body.classList.toggle("os-cover", menu || open);
+    document.body.classList.toggle("os-cover", menu || open || askOpen);
     return () => document.body.classList.remove("os-cover");
-  }, [menu, open]);
+  }, [menu, open, askOpen]);
 
   const q = query.trim().toLowerCase();
   const matches = finder
@@ -271,13 +309,13 @@ export function NightFrame({
   }
 
   return (
-    <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday }}>
+    <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday, askContext, setAskContext }}>
       <header className="mbar">
         <a href={hrefs.today}>
           <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
         </a>
         <div className="mbar-actions">
-          <button type="button" className="search-icon" aria-label="Search" onClick={() => setOpen(true)}>
+          <button type="button" className="search-icon" aria-label="Ask" onClick={() => setAskOpen(true)}>
             <SearchIcon />
           </button>
           <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
@@ -313,6 +351,7 @@ export function NightFrame({
               Backfield OS <span className="sep">/</span> {pageLabel}
             </span>
             <span className="r">
+              <AskBox actions={actions} context={askContext} onSubmit={submit} />
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
                 <span>Search</span>
@@ -366,6 +405,14 @@ export function NightFrame({
           </a>
         </div>
       ) : null}
+      {askOpen ? (
+        <div className="ask-panel" role="dialog" aria-modal="true" aria-label="Ask the firm">
+          <button type="button" className="palette-close" onClick={() => setAskOpen(false)}>
+            Close
+          </button>
+          <AskBox actions={actions} context={askContext} onSubmit={submit} />
+        </div>
+      ) : null}
       {open ? (
         <div
           className="palette"
@@ -417,10 +464,14 @@ export function NightFrame({
   );
 }
 
-function actionKey(draft: Draft, previous?: string): string {
+function actionKey(draft: Draft): string {
+  if (draft.retry) return `retry:${crypto.randomUUID()}`;
   if (draft.type === "rate" && isPitchRating(draft.payload.rating)) return rateKey(draft.target_id, draft.payload.rating);
   if (draft.type === "decide") return `decide:${draft.target_id}`;
-  return previous || crypto.randomUUID();
+  if (draft.type === "free_text" || draft.type === "bot_request" || draft.type === "crm_note" || draft.type === "draft_followup") {
+    return `ask:${crypto.randomUUID()}`;
+  }
+  return crypto.randomUUID();
 }
 
 function finderHref(item: FinderItem, hrefs: ReturnType<typeof osHrefs>): string {

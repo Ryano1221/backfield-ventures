@@ -2,6 +2,7 @@ import { decisionKey } from "@/lib/os/decision-id";
 import { isActionType, normalizeDecidePayload, recordAction, sanitizePayload } from "@/lib/os/actions";
 import { sameOriginRequest } from "@/lib/os/answers";
 import { isOsAuthed } from "@/lib/os/current";
+import { normalizeAskPayload } from "@/lib/os/ask";
 import { isPitchRating, pitchTarget } from "@/lib/os/pitch-rate";
 import { osJson } from "@/lib/os/response";
 import { readSnapshot, SnapshotStoreError } from "@/lib/os/store";
@@ -42,6 +43,11 @@ export async function POST(req: Request) {
   if (type === "rate") {
     if (!isPitchRating(payload.rating)) return osJson({ error: "That rating is not offered" }, 400);
     storedPayload = { rating: payload.rating };
+  }
+  if (type === "free_text" || type === "bot_request") {
+    const normalized = normalizeAskPayload(payload);
+    if (!normalized.ok) return osJson({ error: normalized.error }, 400);
+    storedPayload = normalized.payload;
   }
 
   try {
