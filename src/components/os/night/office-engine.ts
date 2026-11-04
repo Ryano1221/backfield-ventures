@@ -44,7 +44,7 @@ const LANE_R=11*T+10, LANE_L=12*T+12;
 /* ---------- canvas ---------- */
 root.classList.add('ofc'); if(LIGHT) root.classList.add('light');
 const coarse=window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 700px)").matches;
-root.innerHTML=`<div class="ofc-stage"><div class="ofc-hud"><div class="ofc-win" role="group" aria-label="Time window"><button type="button" data-w="today">Today</button><button type="button" data-w="week">7d</button><button type="button" data-w="all">All</button></div><div class="ofc-play" role="group" aria-label="Replay"><button type="button" class="pp">${reduce?'Play':'Pause'}</button><button type="button" class="sp on" data-s="1">1x</button><button type="button" class="sp" data-s="4">4x</button><button type="button" class="sp" data-s="16">16x</button></div><label class="ofc-scrub"><span class="ct">Replay</span><input type="range" min="0" max="1" step="0.01" value="0" aria-label="Replay time" /></label></div><div class="ofc-view"><canvas></canvas><div class="ofc-layer"></div></div><p class="ofc-ticker" hidden></p></div>
+root.innerHTML=`<div class="ofc-stage"><div class="ofc-hud"><select class="ofc-win-select" aria-label="Time window"><option value="today">Today</option><option value="week">7 days</option><option value="all">All</option></select><div class="ofc-win" role="group" aria-label="Time window"><button type="button" data-w="today">Today</button><button type="button" data-w="week">7d</button><button type="button" data-w="all">All</button></div><div class="ofc-play" role="group" aria-label="Replay"><button type="button" class="pp">${reduce?'Play':'Pause'}</button><button type="button" class="sp on" data-s="1">1x</button><button type="button" class="sp" data-s="4">4x</button><button type="button" class="sp" data-s="16">16x</button><button type="button" class="sp-cycle">1x</button></div><label class="ofc-scrub"><span class="ct">Replay</span><input type="range" min="0" max="1" step="0.01" value="0" aria-label="Replay time" /></label></div><div class="ofc-view"><canvas></canvas><div class="ofc-layer"></div></div><p class="ofc-ticker" hidden></p></div>
 <div class="legend"><span><i style="background:#7DBB91"></i>Working</span><span><i style="background:#c8b89a"></i>Needs you</span><span><i style="background:#8C8C8C"></i>Idle</span><span><i style="background:#A6A6A6"></i>Paused</span><span>${coarse?"Pinch to zoom. Double-tap a room.":"Scroll to zoom. Click a room to focus."}</span></div>`;
 const stage=root.querySelector('.ofc-view'),cv=root.querySelector('canvas'),ctx=cv.getContext('2d'),layer=root.querySelector('.ofc-layer');
 const bg=document.createElement('canvas');bg.width=W;bg.height=H;const g=bg.getContext('2d');
@@ -192,7 +192,7 @@ let speed=1,paused=reduce,windowName='today',playIndex=0,fired=0,scrubbing=false
 let hover=null;
 const pointers=new Map();
 function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-function snippet(s){const t=String(s||'').trim();return t.length>42?t.slice(0,40).replace(/\s\S*$/,'')+'…':t}
+function snippet(s){const t=String(s||'').trim(); const max=coarse?22:42; return t.length>max?t.slice(0,max-1).replace(/\s\S*$/,'')+'…':t}
 function who(s){return s==='ryan'?'Ryan':(bySlug[s]?bySlug[s].name:s)}
 function eventList(){
   return D.events.filter(e=>inFlowWindow(Date.parse(e.ts), windowName, clockNow));
@@ -227,7 +227,7 @@ function viewW(){return stage.clientWidth||1}
 function viewH(){return stage.clientHeight||1}
 function clampCam(){
   const vw=viewW(), vh=viewH();
-  cam.z=Math.max(0.9, Math.min(3.3, cam.z));
+  cam.z=Math.max(viewW()<760?0.32:0.9, Math.min(3.3, cam.z));
   const maxX=W-vw/cam.z, maxY=H-vh/cam.z;
   cam.x=Math.max(Math.min(0,maxX)-24, Math.min(Math.max(0,maxX)+24, cam.x));
   cam.y=Math.max(Math.min(0,maxY)-24, Math.min(Math.max(0,maxY)+24, cam.y));
@@ -238,10 +238,9 @@ function fitInitial(){
   if(vw<40||vh<40||didFit) return;
   didFit=true;
   if(vw<760){
-    cam.z=1.45;
-    const R=ROOMS.executive;
-    cam.x=((R.x0+R.x1)/2)*T - vw/(2*cam.z);
-    cam.y=((R.y0+R.y1)/2)*T - (vh*0.62)/cam.z;
+    cam.z=Math.min(vw/W, vh/H);
+    cam.x=(W-vw/cam.z)/2;
+    cam.y=0;
   }else{
     cam.z=Math.max(1.05, Math.min(vw/W, vh/H));
     cam.x=(W-vw/cam.z)/2;
@@ -250,6 +249,18 @@ function fitInitial(){
   clampCam();
 }
 function toView(x,y){return{left:(x-cam.x)*cam.z, top:(y-cam.y)*cam.z}}
+function placeBubble(el,x,y){
+  const p=toView(x,y);
+  const vw=viewW();
+  const margin=6;
+  const width=el.offsetWidth||(coarse?140:180);
+  const half=width/2;
+  const flip=p.left<half+margin;
+  el.classList.toggle('is-left', flip);
+  const left=flip?Math.max(margin, Math.min(vw-width-margin, p.left-12)):Math.max(half+margin, Math.min(vw-half-margin, p.left));
+  el.style.left=left+'px';
+  el.style.top=Math.max(margin, Math.min(viewH()-8, p.top))+'px';
+}
 function worldAt(ev){
   const r=cv.getBoundingClientRect();
   return{x:(ev.clientX-r.left)/cam.z+cam.x, y:(ev.clientY-r.top)/cam.z+cam.y};
@@ -270,8 +281,8 @@ function placeSigns(){
     const p=toView((R.x0+0.55)*T, py);
     const today=todayCount(R.key);
     el.className='sign'+(today>=8?' hot':'');
-    el.innerHTML=`<b>${narrow?(SHORT[R.key]||R.name):R.name}</b><span>${R.bots.length} · ${today} today</span>`;
-    el.style.left=p.left+'px'; el.style.top=p.top+'px';
+    el.innerHTML=`<b>${narrow?(SHORT[R.key]||R.name):R.name}</b><span>${narrow?R.bots.length+'·'+today:R.bots.length+' · '+today+' today'}</span>`;
+    el.style.left=Math.max(2, Math.min(viewW()-4, p.left))+'px'; el.style.top=Math.max(2, p.top)+'px';
   });
   const p=toView(RYAN.x0*T+8, RYAN.y0*T+8);
   const waiting=flyers.filter(f=>f.hold&&f.wait).length;
@@ -296,7 +307,7 @@ function attachBubble(f){
   if(reduce) return;
   const el=document.createElement('div');
   el.className='bub '+(f.kind==='result'?'res':f.kind==='ask'?'ask':'');
-  el.innerHTML=`<span class="w">${f.kind==='ask'?'Needs you':(KINDL[f.kind]||f.kind)}</span>${esc(snippet(f.title))}`;
+  el.innerHTML=coarse?esc(snippet(f.title)):`<span class="w">${f.kind==='ask'?'Needs you':(KINDL[f.kind]||f.kind)}</span>${esc(snippet(f.title))}`;
   layer.appendChild(el);
   f.bubble=el;
 }
@@ -344,6 +355,7 @@ function setWindow(name){
   range.max=String(Math.max(0,current.length-1));
   range.value='0';
   root.querySelectorAll('.ofc-win button').forEach(b=>b.classList.toggle('on', b.dataset.w===name));
+  const sel=root.querySelector('.ofc-win-select'); if(sel) sel.value=name;
   if(current[0]) clock.textContent=current[0].at;
   else clock.textContent='No handoffs';
   if(!current.length){paused=true; playBtn.textContent='Play';}
@@ -358,6 +370,9 @@ function paintClock(e){
   range.setAttribute('aria-valuetext', e.at);
 }
 root.querySelectorAll('.ofc-win button').forEach(b=>b.onclick=()=>setWindow(b.dataset.w));
+const winSel=root.querySelector('.ofc-win-select'); if(winSel) winSel.onchange=()=>setWindow(winSel.value);
+function paintSpeed(){ root.querySelectorAll('.sp').forEach(x=>x.classList.toggle('on', +x.dataset.s===speed)); const cycle=root.querySelector('.sp-cycle'); if(cycle) cycle.textContent=speed+'x'; }
+const cycleBtn=root.querySelector('.sp-cycle'); if(cycleBtn) cycleBtn.onclick=()=>{ const seq=[1,4,16]; speed=seq[(seq.indexOf(speed)+1)%3]; paintSpeed(); };
 playBtn.onclick=()=>{
   if(!current.length||reduce) return;
   if(!paused && fired>=current.length){ playIndex=0; fired=0; range.value='0'; }
@@ -366,7 +381,7 @@ playBtn.onclick=()=>{
   playBtn.textContent=paused?'Play':'Pause';
   playBtn.classList.toggle('on', paused);
 };
-root.querySelectorAll('.sp').forEach(bn=>bn.onclick=()=>{speed=+bn.dataset.s; root.querySelectorAll('.sp').forEach(x=>x.classList.toggle('on', x===bn));});
+root.querySelectorAll('.sp').forEach(bn=>bn.onclick=()=>{speed=+bn.dataset.s; paintSpeed();});
 range.max=String(Math.max(0,current.length-1));
 range.addEventListener('pointerdown',()=>{scrubbing=true;});
 range.addEventListener('pointerup',()=>{scrubbing=false;});
@@ -497,7 +512,9 @@ function frame(now){
   flyers.forEach(f=>drawCourier(f,now));
   blit();
   placeSigns();
-  flyers.forEach(f=>{ if(!f.bubble) return; const p=toView(f.x, f.y-20); const left=Math.max(78, Math.min(viewW()-78, p.left)); const top=Math.max(86, p.top); f.bubble.style.left=left+'px'; f.bubble.style.top=top+'px'; });
+  const moving=flyers.filter(f=>f.bubble&&!f.wait);
+  moving.forEach((f,idx)=>{ const show=!coarse||idx>=moving.length-2; f.bubble.style.visibility=show?'visible':'hidden'; if(show) placeBubble(f.bubble,f.x,f.y-18); });
+  flyers.forEach(f=>{ if(!f.bubble||!f.wait) return; f.bubble.style.visibility=coarse?'hidden':'visible'; if(!coarse) placeBubble(f.bubble,f.x,f.y-18); });
   bots.forEach(b=>{
     const show=b===hover;
     const el=tags.get(b);

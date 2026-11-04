@@ -255,7 +255,10 @@ img { display: block; }
 .sign { position: absolute; font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #1b1a18; background: #fff; padding: 2px 7px; border: 1px solid #1b1a18; white-space: nowrap; }
 .sign b { font-weight: 700; }
 .bub { position: absolute; transform: translate(-50%, -100%); background: #fff; color: #111; border: 2px solid #111; padding: 6px 9px; font-size: 12px; line-height: 16px; max-width: 230px; width: max-content; box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45); font-family: var(--text); }
+.bub.is-left { transform: translate(0, -100%); }
+.bub.is-left:after { left: 14px; margin-left: 0; }
 .bub:after { content: ""; position: absolute; left: 50%; bottom: -8px; margin-left: -5px; border: 5px solid transparent; border-top: 5px solid #111; border-bottom: 0; }
+.ofc-win-select, .sp-cycle { display: none; }
 .bub .w { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #5a564f; margin-bottom: 2px; }
 .bub.res { background: #e7f3eb; }
 .bub.msg { background: #e4e1ee; }
@@ -494,8 +497,21 @@ img { display: block; }
   .fe > div, .fe .r, .fe .x, .ofc-card .h span { min-width: 0; overflow-wrap: anywhere; }
   .ofc-card .h { flex-wrap: wrap; gap: 6px 12px; }
   .ofc, .ofc-stage, .ofc-view, .ofc-card { max-width: 100%; min-width: 0; }
-  .ofc-stage { height: 440px; min-height: 0; }
+  .ofc-stage { display: flex; flex-direction: column; height: auto; min-height: 0; overflow: visible; border: 0; background: transparent; }
+  .ofc-hud { position: static; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; margin: 0 0 8px; pointer-events: auto; }
+  .ofc-win { display: none; }
+  .ofc-win-select { display: block; width: 100%; height: 44px; padding: 0 10px; border: 1px solid #2a6b40; background: #000; color: #fff; font-family: var(--mono); font-size: 14px; }
+  .ofc-play { display: contents; }
+  .ofc-play .sp { display: none; }
+  .sp-cycle { display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 44px; border: 1px solid #2a6b40; background: #123d22; color: #fff; }
+  .ofc-hud .pp { min-width: 72px; min-height: 44px; border: 1px solid #2a6b40; }
+  .ofc-scrub { grid-column: 1 / -1; min-height: 44px; background: #000; }
+  .ofc-view { position: relative; inset: auto; height: min(70vh, calc(100dvh - 280px)); min-height: 360px; border: 1px solid var(--o-line); background: #0c0c0c; }
+  .ofc-ticker { position: static; margin: 8px 0 0; }
   .ofc-hud button, .ofc-scrub { min-height: 44px; }
+  .bub { max-width: 148px; font-size: 12px; line-height: 16px; padding: 4px 7px; }
+  .sign { font-size: 9px; letter-spacing: 0.04em; padding: 1px 4px; }
+  nextjs-portal { position: fixed !important; top: auto !important; bottom: calc(120px + env(safe-area-inset-bottom)) !important; left: 8px !important; z-index: 8 !important; }
   .ofc-scroll { overflow-x: hidden; }
   .legend span:last-child { margin-left: 0 !important; flex-basis: 100%; }
   .ofc.is-narrow .sign { padding: 1px 4px; }
