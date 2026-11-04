@@ -15,7 +15,10 @@ import {
 import type { Interaction } from "@/lib/os/types";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const NEED = "#c8b89a";
+const NEED = "#000";
+const WORK = "#000";
+const IDLE = "rgba(0,0,0,.35)";
+const PAUSED = "rgba(0,0,0,.15)";
 
 type Point = { x: number; y: number; r: number };
 type Flyer = { el: SVGCircleElement; path: SVGPathElement; len: number; t: number; dur: number };
@@ -158,7 +161,7 @@ export function FlowView({
       }
       const el = document.createElementNS(SVG_NS, "circle");
       el.setAttribute("r", "5.5");
-      el.setAttribute("fill", "#7DBB91");
+      el.setAttribute("fill", "#000");
       el.setAttribute("stroke", "#fff");
       el.setAttribute("stroke-width", "1.5");
       layer.appendChild(el);
@@ -252,7 +255,7 @@ export function FlowView({
         <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="Handoffs between teams">
           <defs>
             <marker id={markerId} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
-              <path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7DBB91" />
+              <path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#000" />
             </marker>
           </defs>
           {model.edges.map((edge) => {
@@ -368,10 +371,10 @@ function NodeGlyph({ node, point, pressed, onPick }: { node: FlowNode; point: Po
   const circumference = 2 * Math.PI * ring;
   let offset = 0;
   const segments = [
-    [node.counts.working, "#7DBB91"],
+    [node.counts.working, WORK],
     [node.counts.needs, NEED],
-    [node.counts.idle, "#8C8C8C"],
-    [node.counts.paused, "#A6A6A6"],
+    [node.counts.idle, IDLE],
+    [node.counts.paused, PAUSED],
   ] as const;
   const label = `${node.label}, ${node.count} ${node.count === 1 ? "bot" : "bots"}${node.counts.needs ? `, ${node.counts.needs} need you` : ""}`;
   return (
@@ -392,14 +395,14 @@ function NodeGlyph({ node, point, pressed, onPick }: { node: FlowNode; point: Po
       <circle className="flow-glow" r={point.r + 12} />
       <circle className="flow-hit-node" r={Math.max(point.r, 24)} />
       {total
-        ? segments.map(([count, color]) => {
+        ? segments.map(([count, color], index) => {
             if (!count) return null;
             const len = (count / total) * circumference;
             const shown = Math.max(0, len - (total > 1 ? 2 : 0));
             const dash = `${shown} ${circumference - shown}`;
             const circle = (
               <circle
-                key={color}
+                key={`${index}-${color}`}
                 r={ring}
                 fill="none"
                 stroke={color}
@@ -478,7 +481,7 @@ function WhoTalks({ model }: { model: FlowModel }) {
                   const count = cells.get(`${row.key}|${column.key}`) ?? 0;
                   const strength = model.maxCount ? count / model.maxCount : 0;
                   return (
-                    <td key={column.key} style={count ? { background: `rgba(125, 187, 145, ${0.18 + strength * 0.82})`, color: "#fff" } : undefined}>
+                    <td key={column.key} style={count ? { background: `rgba(0, 0, 0, ${(0.1 + strength * 0.8).toFixed(3)})`, color: strength > 0.55 ? "#fff" : "#000" } : undefined}>
                       {count ? count.toLocaleString("en-US") : ""}
                     </td>
                   );

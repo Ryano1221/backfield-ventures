@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { OfficeSwitch } from "@/components/os/night/OfficeSwitch";
 import { isOsHost } from "@/lib/os/host";
+import { osChromeCounts } from "@/lib/os/nav";
 import { buildBotDesk } from "@/lib/os/bot-desk";
 import { buildOffice, buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
@@ -24,10 +25,16 @@ export default async function BotsPage() {
   const office = buildOffice(page.snapshot, page.actions);
   const desk = buildBotDesk(page.snapshot, page.actions, now);
   return (
-    <NightFrame onOs={onOs} active="bots" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={onOs} active="bots" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <div className="lbl eyebrow">Bots</div>
       <h1 className="d-xl">The office.</h1>
-      {desk.bots.length ? null : <p className="t-body muted bots-lede">The office fills in when the snapshot arrives.</p>}
+      {desk.bots.length ? (
+        <p className="lede">
+          {desk.bots.length.toLocaleString("en-US")} {desk.bots.length === 1 ? "bot" : "bots"}. {desk.summary.needs.toLocaleString("en-US")} {desk.summary.needs === 1 ? "is" : "are"} waiting on you.
+        </p>
+      ) : (
+        <p className="t-body muted bots-lede">The office fills in when the snapshot arrives.</p>
+      )}
       <OfficeSwitch desk={desk} office={office} interactions={page.snapshot?.interactions ?? []} now={now} decisionRoot={onOs ? "/d" : "/os/d"} />
     </NightFrame>
   );
@@ -35,9 +42,4 @@ export default async function BotsPage() {
 
 function readClock(): number {
   return Date.now();
-}
-
-function counts(snapshot: unknown, model: ReturnType<typeof buildToday>) {
-  if (!snapshot) return { today: null, deals: null, people: null };
-  return { today: model.ready.length + model.hold.length + model.open.length, deals: model.reviewingCount, people: model.peopleCount };
 }

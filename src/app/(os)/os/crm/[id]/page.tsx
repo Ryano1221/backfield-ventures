@@ -4,7 +4,7 @@ import { NightFrame } from "@/components/os/night/NightFrame";
 import { PersonDesk } from "@/components/os/night/PersonDesk";
 import { isOsHost } from "@/lib/os/host";
 import { buildPerson, buildToday } from "@/lib/os/night";
-import { osHrefs } from "@/lib/os/nav";
+import { osChromeCounts, osHrefs } from "@/lib/os/nav";
 import { loadOsPage } from "@/lib/os/page-data";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   }
   const person = page.snapshot?.crm.people.find((row) => row.id === key) ?? null;
   return (
-    <NightFrame onOs={onOs} active="people" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={onOs} active="people" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       {person && page.snapshot ? (
         <PersonDesk person={buildPerson(person, page.snapshot)} peopleHref={osHrefs(onOs).people} />
       ) : (
@@ -37,9 +37,4 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       )}
     </NightFrame>
   );
-}
-
-function counts(snapshot: unknown, model: ReturnType<typeof buildToday>) {
-  if (!snapshot) return { today: null, deals: null, people: null };
-  return { today: model.ready.length + model.hold.length + model.open.length, deals: model.reviewingCount, people: model.peopleCount };
 }

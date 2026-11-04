@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeDecidePayload } from "./actions";
-import { buildOffice, buildToday, daySentence, formatCt, formatCtStamp, headlineLines } from "./night";
-import type { Snapshot } from "./types";
+import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, stageLabel } from "./night";
+import type { CrmPerson, Snapshot } from "./types";
 
 const NOW = Date.parse("2026-11-03T22:09:00.000Z");
 
@@ -232,3 +232,74 @@ function sample(): Snapshot {
     },
   };
 }
+
+function crmPerson(partial: Pick<CrmPerson, "id" | "name" | "track"> & Partial<CrmPerson>): CrmPerson {
+  return {
+    firm: null,
+    stage: null,
+    owner: null,
+    last_touch_at: null,
+    last_touch_channel: null,
+    next_step: null,
+    next_step_due: null,
+    email: null,
+    linkedin: null,
+    notes: null,
+    ...partial,
+  };
+}
+
+function peopleSnapshot(people: CrmPerson[]): Snapshot {
+  return { ...sample(), crm: { people } };
+}
+
+test("people stages stay in funnel order and the tiles cover every person", () => {
+  assert.equal(stageLabel("unknown"), "Unknown");
+  assert.equal(stageLabel("call_booked"), "Call booked");
+  assert.equal(stageLabel(null), null);
+  const people = buildPeople(
+    peopleSnapshot([
+      crmPerson({ id: "1", name: "Ready", track: "athlete", stage: "ready" }),
+      crmPerson({ id: "2", name: "Asked", track: "founder", stage: "call_asked" }),
+      crmPerson({ id: "3", name: "In", track: "investor", stage: "im_in" }),
+      crmPerson({ id: "4", name: "Booked", track: "creator", stage: "call_booked" }),
+      crmPerson({ id: "5", name: "Hold", track: "other", stage: "hold" }),
+      crmPerson({ id: "6", name: "Blank", track: "founder", stage: null }),
+      crmPerson({ id: "7", name: "Queued", track: "creator", stage: "queued" }),
+    ]),
+  );
+  assert.deepEqual(
+    people.counts.map((item) => item.stage),
+    ["ready", "queued", "im_in", "call_asked", "call_booked", "hold", "unknown"],
+  );
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.label, "I'm in");
+  assert.equal(people.counts.find((item) => item.stage === "unknown")?.count, 1);
+  assert.equal(people.counts.find((item) => item.stage === "queued")?.detail, null);
+  assert.equal(people.counted, people.total);
+  assert.equal(people.warm, 3);
+});
+
+test("a lasting yes flag counts I'm in, and LP stays on the real track", () => {
+  const people = buildPeople(
+    peopleSnapshot([
+      crmPerson({ id: "1", name: "Reply", track: "investor", stage: "replied", im_in: false, lp: true }),
+      crmPerson({ id: "2", name: "Yes", track: "athlete", stage: "im_in", im_in: true }),
+      crmPerson({ id: "3", name: "Asked", track: "founder", stage: "call_asked", im_in: true }),
+      crmPerson({ id: "4", name: "Booked", track: "investor", stage: "call_booked", im_in: true, lp: true }),
+      crmPerson({ id: "5", name: "Mail", track: "creator", stage: "queued", channel: "email" }),
+      crmPerson({ id: "6", name: "Gram", track: "creator", stage: "queued", channel: "ig_dm" }),
+      crmPerson({ id: "7", name: "Quiet", track: "lp", stage: "ready", lp: false }),
+    ]),
+  );
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.stageCount, 1);
+  assert.equal(people.counts.find((item) => item.stage === "queued")?.detail, "1 email · 1 IG DM");
+  assert.equal(people.warm, 4);
+  assert.equal(people.tracks.find((item) => item.track === "investor")?.count, 2);
+  assert.equal(people.tracks.find((item) => item.track === "lp")?.count, 2);
+  assert.equal(people.rows.filter((row) => row.track === "investor" && row.lp).length, 2);
+  assert.equal(people.rows.find((row) => row.id === "7")?.lp, false);
+  assert.equal(people.counted, 7);
+  assert.equal(people.total, 7);
+});

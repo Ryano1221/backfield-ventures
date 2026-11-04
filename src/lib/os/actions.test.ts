@@ -8,7 +8,7 @@ import { ackAnswers, readAnswers, recordAnswer } from "./answers";
 import { validateSnapshot } from "./schema";
 import type { Decision } from "./types";
 
-test("optional pitch fields and unknown crm stage stay blank", () => {
+test("optional pitch fields stay blank and a crm stage of unknown is kept", () => {
   const result = validateSnapshot({
     generated_at: "2026-11-03T18:00:00.000Z",
     pitches: [
@@ -60,7 +60,7 @@ test("optional pitch fields and unknown crm stage stay blank", () => {
   assert.equal(result.snapshot.pitches[0]?.domain, "bare.example");
   assert.equal(result.snapshot.pitches[1]?.founder, "Ada Sample");
   assert.equal(result.snapshot.pitches[1]?.stage, "Seed");
-  assert.equal(result.snapshot.crm.people[0]?.stage, null);
+  assert.equal(result.snapshot.crm.people[0]?.stage, "unknown");
   assert.equal(result.snapshot.crm.people[0]?.domain, "ada.example");
   assert.equal(result.snapshot.decisions[0]?.summary, "Short summary");
   assert.equal(result.snapshot.decisions[0]?.domain, "example.com");

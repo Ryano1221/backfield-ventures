@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { DeskDeal, DeskDecision, TodayModel } from "@/lib/os/night";
+import { type DeskDeal, type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { DecisionPane, DecisionRow } from "./DecisionPane";
 import { Logo } from "./Logo";
@@ -9,10 +9,16 @@ import { useNightActions } from "./NightFrame";
 
 export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
   const hrefs = osHrefs(onOs);
-  const items = useMemo(() => [...model.ready, ...model.hold, ...model.open], [model]);
+  const { submit, inflight, reportToday, actions } = useNightActions();
+  const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
+  const items = useMemo(() => [...view.ready, ...view.hold, ...view.open], [view]);
   const [current, setCurrent] = useState(0);
-  const { enqueue } = useNightActions();
   const item = items[current] ?? null;
+
+  useEffect(() => {
+    reportToday(items.length);
+    return () => reportToday(null);
+  }, [items.length, reportToday]);
   const next = item && items[current + 1] ? items[current + 1] : items.length > 1 ? items[0] : null;
 
   useEffect(() => {
@@ -26,44 +32,42 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       } else if (event.key === "k" || event.key === "ArrowUp") {
         event.preventDefault();
         setCurrent((index) => Math.max(0, index - 1));
-      } else if (event.key === "Enter" && item && !item.pending) {
+      } else if (event.key === "Enter" && item && !inflight[item.id] && !item.outcome) {
         event.preventDefault();
-        enqueue({
+        submit({
           type: "decide",
           target_id: item.id,
           payload: { choice: item.approveChoice },
-          label: `Queued approval for ${item.name}. Nothing sends until the office acts.`,
+          label: `Approved ${item.name}.`,
         });
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [enqueue, item, items.length]);
+  }, [inflight, item, items.length, submit]);
 
   return (
     <>
       <div className="hero">
         <div>
-          {model.weekday ? (
-            <div className="lbl eyebrow">
-              01 · <b>{model.weekday}</b>
-            </div>
+          {view.weekday ? (
+            <div className="lbl eyebrow">{view.weekday}</div>
           ) : null}
           <h1 className="d-xl">
-            {model.headline}
-            {model.headlineDim ? (
+            {view.headline}
+            {view.headlineDim ? (
               <>
                 <br />
-                <span className="dim">{model.headlineDim}</span>
+                <span className="dim">{view.headlineDim}</span>
               </>
             ) : null}
           </h1>
-          {model.lede ? <p className="lede">{model.lede}</p> : null}
-          {model.instruction ? <p className="t-body">{model.instruction}</p> : null}
+          {view.lede ? <p className="lede">{view.lede}</p> : null}
+          {view.instruction ? <p className="t-body">{view.instruction}</p> : null}
         </div>
-        {model.kpis.length ? (
+        {view.kpis.length ? (
           <div className="kpis">
-            {model.kpis.map((kpi) => (
+            {view.kpis.map((kpi) => (
               <div className="kpi" key={kpi.label}>
                 <div className="lbl">{kpi.label}</div>
                 <div className="v">
@@ -77,27 +81,41 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         ) : null}
       </div>
 
-      <section className="sec" style={{ marginTop: 0 }}>
-        <div className="sec-h">
-          <div>
-            <div className="lbl">02 · Needs you</div>
-            <h2 className="d-m">Decisions</h2>
+      {view.settled.length ? (
+        <section className="card" aria-label="Answered">
+          <div className="h">
+            <span className="lbl">Answered</span>
           </div>
-          {items.length ? <div className="tools"><span className="lbl muted pointer-keys">J / K to move · Enter to approve</span></div> : null}
+          <ul className="settled">
+            {view.settled.map((row) => (
+              <li key={row.id}>
+                <b>{row.label}</b>
+                <span>{row.name}</span>
+                {row.at ? <span className="lbl">{row.at}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section className="card">
+        <div className="h">
+          <span className="lbl">Needs you · Decisions</span>
+          {items.length ? <span className="lbl pointer-keys">J / K to move · Enter to approve</span> : null}
         </div>
         {item ? (
           <div className="mfirst">
             <DecisionPane key={item.id} item={item} index={current} total={items.length} />
           </div>
         ) : (
-          <p className="t-body muted">No decisions in this snapshot.</p>
+          <p className="t-body muted" style={{ padding: "16px 18px" }}>No decisions in this snapshot.</p>
         )}
         {items.length ? (
           <div className="split">
             <div className="list">
-              <Group label="Ready to send" items={model.ready} all={items} current={current} onSelect={setCurrent} />
-              <Group label="On hold" items={model.hold} all={items} current={current} onSelect={setCurrent} />
-              <Group label="Open" items={model.open} all={items} current={current} onSelect={setCurrent} />
+              <Group label="Ready to send" items={view.ready} all={items} current={current} onSelect={setCurrent} />
+              <Group label="On hold" items={view.hold} all={items} current={current} onSelect={setCurrent} />
+              <Group label="Open" items={view.open} all={items} current={current} onSelect={setCurrent} />
             </div>
             {item ? (
               <DecisionPane
@@ -114,14 +132,11 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       </section>
 
       {model.waiting.length ? (
-        <section className="sec">
-          <div className="sec-h">
-            <div>
-              <div className="lbl">Bots waiting on you · {model.waiting.length}</div>
-              <h2 className="d-m">In their words</h2>
-            </div>
-            <a className="btn sm" href={hrefs.bots}>
-              Office →
+        <section className="card">
+          <div className="h">
+            <span className="lbl">Bots waiting on you · {model.waiting.length}</span>
+            <a className="lnk" href={hrefs.bots}>
+              Office
             </a>
           </div>
           <div className="wait">
@@ -135,19 +150,16 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         </section>
       ) : null}
 
-      <section className="sec">
-        <div className="sec-h">
-          <div>
-            <div className="lbl">03 · Deal desk</div>
-            <h2 className="d-m">Deals in review</h2>
-          </div>
+      <section className="card">
+        <div className="h">
+          <span className="lbl">Deal desk · Deals in review</span>
           {model.pitchCount ? (
-            <a className="btn sm" href={hrefs.deals}>
-              All {model.pitchCount.toLocaleString("en-US")} pitches →
+            <a className="lnk" href={hrefs.deals}>
+              All {model.pitchCount.toLocaleString("en-US")} pitches
             </a>
           ) : null}
         </div>
-        {model.deals.length ? <DealTable deals={model.deals} /> : <p className="t-body muted">No deals are in review.</p>}
+        {model.deals.length ? <DealTable deals={model.deals} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No deals are in review.</p>}
       </section>
     </>
   );

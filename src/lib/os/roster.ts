@@ -3,10 +3,10 @@ import type { OfficeBot, OfficeData, OfficeEvent } from "./night";
 export const TEAM_ORDER = ["Intelligence", "Executive", "Investment", "Network", "Growth", "Firm OS"] as const;
 
 export const STATUS_COLOR: Record<OfficeBot["status"], string> = {
-  Working: "#8faa96",
-  "Needs Ryan": "#c8b89a",
-  Idle: "#77736c",
-  Paused: "#a09ab8",
+  Working: "#000000",
+  "Needs Ryan": "#000000",
+  Idle: "rgba(0,0,0,.3)",
+  Paused: "#ffffff",
 };
 
 export type StatusCounts = { working: number; needs: number; idle: number; paused: number };

@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await recordAction({ type, target_id: target, payload: storedPayload, idempotency_key: key });
-    if (result.conflict) return osJson({ error: "Already answered", action: result.action }, 409);
+    if (result.conflict) return osJson({ ok: true, created: false, action: result.action });
     return osJson({ ok: true, created: result.created, action: result.action });
   } catch (error) {
     if (error instanceof SnapshotStoreError && error.code === "unconfigured") {

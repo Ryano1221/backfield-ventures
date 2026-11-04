@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { FinderItem } from "@/lib/os/finder";
 import { osHrefs } from "@/lib/os/nav";
@@ -24,6 +25,11 @@ type Draft = {
 type NightApi = {
   actions: OsAction[];
   enqueue: (draft: Draft) => void;
+  submit: (draft: Draft) => void;
+  retry: (targetId: string) => void;
+  inflight: Record<string, boolean>;
+  errors: Record<string, string>;
+  reportToday: (count: number | null) => void;
 };
 
 const Ctx = createContext<NightApi | null>(null);
@@ -50,7 +56,7 @@ export function NightFrame({
 }: {
   active: Section;
   onOs: boolean;
-  counts: { today: number | null; deals: number | null; people: number | null };
+  counts: { today: number | null; deals: number | null; people: number | null; bots?: number | null };
   stamp: string | null;
   stale?: boolean;
   initialActions: OsAction[];
@@ -61,6 +67,13 @@ export function NightFrame({
   const [queued, setQueued] = useState<Queued[]>([]);
   const [toasts, setToasts] = useState<{ id: string; label: string; undo: boolean }[]>([]);
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [inflight, setInflight] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [liveToday, setLiveToday] = useState<number | null>(null);
+  const drafts = useRef(new Map<string, Draft & { key: string }>());
+  const inflightRef = useRef<Record<string, boolean>>({});
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const queuedRef = useRef<Queued[]>([]);
   const timers = useRef(new Map<string, number>());
@@ -113,6 +126,60 @@ export function NightFrame({
     setToasts((current) => current.filter((toast) => toast.id !== batch));
   }, []);
 
+  const submit = useCallback((draft: Draft) => {
+    const id = draft.target_id;
+    if (inflightRef.current[id]) return;
+    const key = drafts.current.get(id)?.key || (draft.type === "decide" ? `decide:${id}` : crypto.randomUUID());
+    const saved = { ...draft, key };
+    drafts.current.set(id, saved);
+    inflightRef.current = { ...inflightRef.current, [id]: true };
+    setInflight(inflightRef.current);
+    setErrors((current) => {
+      if (!current[id]) return current;
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+    const item: Queued = {
+      batch: id,
+      idempotency_key: key,
+      type: saved.type,
+      target_id: id,
+      payload: saved.payload,
+      created_at: new Date().toISOString(),
+    };
+    void postAction(item).then((ok) => {
+      const next = { ...inflightRef.current };
+      delete next[id];
+      inflightRef.current = next;
+      setInflight(next);
+      if (ok.action) {
+        setActions((current) => (current.some((action) => action.action_id === ok.action?.action_id) ? current : [...current, ok.action!]));
+        setErrors((current) => {
+          if (!current[id]) return current;
+          const copy = { ...current };
+          delete copy[id];
+          return copy;
+        });
+        router.refresh();
+        return;
+      }
+      setErrors((current) => ({ ...current, [id]: ok.error || "Could not save that." }));
+    });
+  }, [router]);
+
+  const retry = useCallback(
+    (targetId: string) => {
+      const draft = drafts.current.get(targetId);
+      if (draft) submit(draft);
+    },
+    [submit],
+  );
+
+  const reportToday = useCallback((count: number | null) => {
+    setLiveToday(count);
+  }, []);
+
   const enqueue = useCallback(
     (draft: Draft) => {
       if (SINGLETON.has(draft.type) && queuedRef.current.some((item) => item.type === draft.type && item.target_id === draft.target_id)) return;
@@ -138,11 +205,23 @@ export function NightFrame({
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setOpen((value) => !value);
-      } else if (event.key === "Escape") setOpen(false);
+      } else if (event.key === "Escape") {
+        setOpen(false);
+        setMenu(false);
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (!menu) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [menu]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -163,13 +242,14 @@ export function NightFrame({
   }, []);
 
   const hrefs = osHrefs(onOs);
-  const links: { id: Section; label: string; href: string; count: number | null; hot?: boolean }[] = [
-    { id: "today", label: "Today", href: hrefs.today, count: counts.today, hot: true },
+  const links: { id: Section; label: string; href: string; count: number | null }[] = [
+    { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
     { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
     { id: "people", label: "People", href: hrefs.people, count: counts.people },
-    { id: "bots", label: "Bots", href: hrefs.bots, count: null },
+    { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
     { id: "email", label: "Email", href: hrefs.email, count: null },
   ];
+  const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
 
   const q = query.trim().toLowerCase();
   const matches = finder
@@ -182,65 +262,101 @@ export function NightFrame({
   }
 
   return (
-    <Ctx.Provider value={{ actions: visible, enqueue }}>
+    <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday }}>
+      <header className="mbar">
+        <a href={hrefs.today}>
+          <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
+        </a>
+        <div className="mbar-actions">
+          <button type="button" className="search-icon" aria-label="Search" onClick={() => setOpen(true)}>
+            <SearchIcon />
+          </button>
+          <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
+            <i />
+            Menu
+          </button>
+        </div>
+      </header>
       <div className="shell">
         <aside className="rail">
-          <div className="v">Backfield Ventures · OS · Private</div>
+          <a className="brand" href={hrefs.today}>
+            <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
+          </a>
+          <div className="sub lbl">OS · {pageLabel}</div>
+          <nav>
+            {links.map((link) => (
+              <a key={link.id} href={link.href} className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+                {link.label}
+                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+              </a>
+            ))}
+          </nav>
+          <div className="rail-foot lbl">
+            <button type="button" onClick={signOut}>
+              Sign out
+            </button>
+            <span>Private to Ryan</span>
+          </div>
         </aside>
-        <div>
-          <header className="top">
-            <a className="brand" href={hrefs.today}>
-              <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
-            </a>
-            <nav>
-              {links.map((link) => (
-                <a key={link.id} href={link.href} className={active === link.id ? "on" : ""}>
-                  {link.label}
-                  {link.count != null ? <span className={`c${link.hot && link.count > 0 ? " hot" : ""}`}>{link.count.toLocaleString("en-US")}</span> : null}
-                </a>
-              ))}
-            </nav>
-            <div className="right">
-              <button type="button" className="search-icon" aria-label="Search" onClick={() => setOpen(true)}>
-                <SearchIcon />
-              </button>
+        <div className="os-col">
+          <header className="crumb lbl">
+            <span>
+              Backfield OS <span className="sep">/</span> {pageLabel}
+            </span>
+            <span className="r">
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
-                <span>Search people, deals, bots</span>
-                <kbd>⌘K</kbd>
+                <span>Search</span>
+                <kbd className="pointer-keys">⌘K</kbd>
               </button>
               {stamp ? (
-                <span className="lbl stamp">
+                <span className="stamp">
                   <i className={`dot${stale ? " wait" : ""}`} />
                   Updated {stamp.replace(/,\s*\d{4}/, "")}
                 </span>
               ) : (
-                <span className="lbl stamp">Waiting on the first ingest</span>
+                <span className="stamp">Waiting on the first ingest</span>
               )}
-            </div>
+              <span className="private">Private to Ryan</span>
+            </span>
           </header>
           <main className="main">
             {children}
             <div className="foot lbl">
-              <span>
-                Backfield OS · private to Ryan ·{" "}
-                <button type="button" onClick={signOut}>
-                  Sign out
-                </button>
-              </span>
+              <span>Backfield OS · private to Ryan</span>
               <span>{stamp ? `Snapshot ${stamp}` : "No snapshot yet"}</span>
             </div>
           </main>
         </div>
       </div>
-      <nav className="mnav">
-        {links.map((link) => (
-          <a key={link.id} href={link.href} className={active === link.id ? "on" : ""}>
-            {link.label}
-            {link.hot && link.count ? <span className="b">{link.count}</span> : null}
+      {menu ? (
+        <div className="mpanel" id="os-menu" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="mpanel-bar">
+            <img src="/brand/logo-cream.png" alt="" />
+            <button type="button" className="menu-btn" onClick={() => setMenu(false)}>
+              <span aria-hidden="true">×</span> Close
+            </button>
+          </div>
+          <div className="lbl mpanel-kicker">OS</div>
+          <nav>
+            {links.map((link) => (
+              <a key={link.id} href={link.href} className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenu(false)}>
+                {link.label}
+                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+              </a>
+            ))}
+          </nav>
+          <button type="button" className="mpanel-row" onClick={() => { setMenu(false); setOpen(true); }}>
+            Search
+          </button>
+          <button type="button" className="mpanel-row" onClick={signOut}>
+            Sign out
+          </button>
+          <a className="mpanel-back" href={hrefs.today} onClick={() => setMenu(false)}>
+            ← Back to today
           </a>
-        ))}
-      </nav>
+        </div>
+      ) : null}
       {open ? (
         <div
           className="palette"
@@ -320,10 +436,10 @@ async function postAction(item: Queued): Promise<{ action?: OsAction; error?: st
         idempotency_key: item.idempotency_key,
       }),
     });
-    if (res.status === 409) return { error: "Already answered." };
-    if (!res.ok) return { error: "Could not save that." };
-    const body = (await res.json()) as { action?: OsAction };
-    return { action: body.action };
+    const body = (await res.json().catch(() => ({}))) as { action?: OsAction; error?: string };
+    if (body.action && (res.ok || res.status === 409)) return { action: body.action };
+    if (!res.ok) return { error: body.error || "Could not save that." };
+    return { error: "Could not save that." };
   } catch {
     return { error: "Could not save that." };
   }

@@ -19,8 +19,9 @@ export function DecisionPane({
   next?: { href: string; label: string } | null;
   className?: string;
 }) {
-  const { actions, enqueue } = useNightActions();
-  const pending = item.pending || actions.some((action) => action.type === "decide" && action.target_id === item.id && action.status !== "failed") || actions.some((action) => action.type === "snooze" && action.target_id === item.id && action.status !== "failed");
+  const { submit, retry, inflight, errors } = useNightActions();
+  const pending = Boolean(inflight[item.id]);
+  const error = errors[item.id] || "";
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.message || "");
   const crumbs = [
@@ -31,17 +32,17 @@ export function DecisionPane({
   const saved = (item.message || "").trim();
 
   function approve() {
-    enqueue({
+    submit({
       type: "decide",
       target_id: item.id,
       payload: { choice: item.approveChoice },
-      label: `Queued approval for ${item.name}. Nothing sends until the office acts.`,
+      label: `Approved ${item.name}.`,
     });
   }
 
   function notNow() {
     if (item.notNow.kind === "decide") {
-      enqueue({
+      submit({
         type: "decide",
         target_id: item.id,
         payload: { choice: item.notNow.choice },
@@ -49,7 +50,7 @@ export function DecisionPane({
       });
       return;
     }
-    enqueue({
+    submit({
       type: "snooze",
       target_id: item.id,
       payload: { until: snoozeUntil("tomorrow") },
@@ -60,11 +61,11 @@ export function DecisionPane({
   function saveEdit() {
     const text = draft.trim();
     if (!text || text === saved) return;
-    enqueue({
+    submit({
       type: "decide",
       target_id: item.id,
       payload: { choice: "edit", edited_message: text },
-      label: `Queued an edited reply for ${item.name}.`,
+      label: `Edited the reply for ${item.name}.`,
     });
     setEditing(false);
   }
@@ -137,10 +138,15 @@ export function DecisionPane({
         </div>
       ) : null}
       <div className="actions">
-        {editing ? (
+        {item.outcome && !pending ? (
+          <p className="outcome">
+            <b>{item.outcome.label}</b>
+            {item.outcome.at ? <span className="lbl"> · {item.outcome.at}</span> : null}
+          </p>
+        ) : editing ? (
           <>
             <button type="button" className="btn primary" onClick={saveEdit} disabled={!draft.trim() || draft.trim() === saved}>
-              Queue edit <span>→</span>
+              Save edit <span>→</span>
             </button>
             <button type="button" className="btn" onClick={() => setEditing(false)}>
               Cancel
@@ -163,6 +169,14 @@ export function DecisionPane({
             <span className="note">{next ? <a href={next.href}>Next: {next.label} →</a> : "Nothing sends until you approve."}</span>
           </>
         )}
+        {error ? (
+          <p className="os-error" role="alert">
+            {error}{" "}
+            <button type="button" className="btn" onClick={() => retry(item.id)}>
+              Retry
+            </button>
+          </p>
+        ) : null}
       </div>
     </section>
   );
