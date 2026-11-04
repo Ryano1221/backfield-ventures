@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BotDesk, DeskBot, DeskFilter, RoutineView } from "@/lib/os/bot-desk";
 import { botMatches, groupTeams } from "@/lib/os/bot-desk";
 import type { OfficeData } from "@/lib/os/night";
+import type { Interaction } from "@/lib/os/types";
+import { FlowView } from "./FlowView";
 import { PixelOffice } from "./PixelOffice";
 
 const DOT: Record<DeskBot["status"], string> = {
@@ -13,15 +15,27 @@ const DOT: Record<DeskBot["status"], string> = {
   Paused: "#a09ab8",
 };
 
-export function OfficeSwitch({ desk, office, decisionRoot }: { desk: BotDesk; office: OfficeData; decisionRoot: string }) {
-  const [choice, setChoice] = useState<"list" | "map" | null>(null);
+export function OfficeSwitch({
+  desk,
+  office,
+  interactions,
+  now,
+  decisionRoot,
+}: {
+  desk: BotDesk;
+  office: OfficeData;
+  interactions: Interaction[];
+  now: number;
+  decisionRoot: string;
+}) {
+  const [choice, setChoice] = useState<"flow" | "list" | "map" | null>(null);
   const [filter, setFilter] = useState<DeskFilter | null>(null);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const [feedAll, setFeedAll] = useState(false);
-  const view = choice ?? "auto";
+  const view = choice ?? "map";
   const visible = useMemo(() => desk.bots.filter((bot) => botMatches(bot, filter, query)), [desk.bots, filter, query]);
   const needs = visible.filter((bot) => bot.status === "Needs Ryan");
   const teams = groupTeams(visible);
@@ -31,10 +45,10 @@ export function OfficeSwitch({ desk, office, decisionRoot }: { desk: BotDesk; of
   const openBot = desk.bots.find((bot) => bot.id === selected) ?? null;
 
   useEffect(() => {
-    if (choice !== "map") return;
+    if (view !== "map") return;
     const id = window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
     return () => window.cancelAnimationFrame(id);
-  }, [choice]);
+  }, [view]);
 
   function toggleFilter(next: DeskFilter) {
     setFilter((current) => (current === next ? null : next));
@@ -57,12 +71,18 @@ export function OfficeSwitch({ desk, office, decisionRoot }: { desk: BotDesk; of
         }}
       />
       <div className="bots-toggle" role="group" aria-label="Office view">
-        <button type="button" data-for="list" aria-pressed={choice === "list"} onClick={() => setChoice("list")}>
-          List
-        </button>
-        <button type="button" data-for="map" aria-pressed={choice === "map"} onClick={() => setChoice("map")}>
+        <button type="button" data-for="map" aria-pressed={view === "map"} onClick={() => setChoice("map")}>
           Map
         </button>
+        <button type="button" data-for="flow" aria-pressed={view === "flow"} onClick={() => setChoice("flow")}>
+          Flow
+        </button>
+        <button type="button" data-for="list" aria-pressed={view === "list"} onClick={() => setChoice("list")}>
+          List
+        </button>
+      </div>
+      <div className="bots-flow">
+        <FlowView interactions={interactions} bots={desk.bots} now={now} active={view === "flow"} onOpenBot={setSelected} />
       </div>
       <div className="bots-list">
         {needs.length ? (
@@ -181,7 +201,21 @@ export function OfficeSwitch({ desk, office, decisionRoot }: { desk: BotDesk; of
         ) : null}
       </div>
       <div className="bots-map">
-        {office.bots.length ? <PixelOffice data={office} /> : <p className="t-body muted">No bots in this snapshot.</p>}
+        {office.bots.length ? (
+          <PixelOffice
+            data={office}
+            now={now}
+            active={view === "map"}
+            needs={desk.bots.filter((bot) => bot.status === "Needs Ryan").map((bot) => ({
+              slug: bot.id,
+              name: bot.name,
+              href: bot.decision ? `${decisionRoot}/${encodeURIComponent(bot.decision.id)}` : null,
+            }))}
+            onOpenBot={setSelected}
+          />
+        ) : (
+          <p className="t-body muted">No bots in this snapshot.</p>
+        )}
       </div>
       {openBot ? <BotSheet bot={openBot} decisionRoot={decisionRoot} onClose={() => setSelected(null)} /> : null}
     </div>
