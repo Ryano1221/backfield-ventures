@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { answerLabel, storedDecisionAnswer } from "./decision-merge";
+import { answerLabel, draftHash, storedDecisionAnswer } from "./decision-merge";
 import { buildToday } from "./night";
 import type { OsAction, Snapshot } from "./types";
 
@@ -32,7 +32,7 @@ test("an unacked answer wins over a snapshot that still lists the decision", () 
   assert.match(model.headline, /on hold/);
 });
 
-test("an edit and a not-now are named, and a failed or acked answer does not hide the card", () => {
+test("an acked answer stays answered, and a new draft opens the card again", () => {
   const edited = action("decide", { choice: "edit", edited_message: "Changed." }, { target_id: "dec_ada" });
   assert.equal(storedDecisionAnswer([edited], "dec_ada", NOW)?.label, "Edited");
 
@@ -45,21 +45,33 @@ test("an edit and a not-now are named, and a failed or acked answer does not hid
   assert.equal(storedDecisionAnswer([failed], "dec_ada", NOW), null);
   assert.equal(buildToday(sample(), [failed], NOW).ready.length, 1);
 
-  const acked = action("decide", { choice: "approve" }, { target_id: "dec_ada", status: "done", acked_at: "2026-11-03T22:10:00.000Z" });
-  assert.equal(storedDecisionAnswer([acked], "dec_ada", NOW), null);
-  assert.equal(buildToday(sample(), [acked], NOW).ready.length, 1);
-  assert.equal(buildToday(sample(), [acked], NOW).settled.length, 0);
+  const same = action(
+    "decide",
+    { choice: "approve", exact_message_hash: draftHash("Exact words that go out.") },
+    { target_id: "dec_ada", status: "done", acked_at: "2026-11-03T15:13:00.000Z", created_at: "2026-11-03T14:54:00.000Z" },
+  );
+  const kept = buildToday(sample(), [same], NOW);
+  assert.equal(kept.ready.some((card) => card.id === "dec_ada"), false);
+  assert.equal(kept.settled[0]?.label, "Approved");
+  assert.match(kept.settled[0]?.at || "", /CT$/);
+  assert.equal(kept.kpis.find((kpi) => kpi.label === "Needs you")?.value, "1");
+
+  const revised = action(
+    "decide",
+    { choice: "approve", exact_message_hash: draftHash("The previous draft.") },
+    { target_id: "dec_ada", status: "done", acked_at: "2026-11-03T15:13:00.000Z" },
+  );
+  assert.equal(storedDecisionAnswer([revised], "dec_ada", NOW, { exact: "Exact words that go out." }), null);
+  const reopened = buildToday(sample(), [revised], NOW);
+  assert.equal(reopened.ready.some((card) => card.id === "dec_ada"), true);
+  assert.equal(reopened.settled.length, 0);
 });
 
-test("an unacked snooze is Not now until the box acks it", () => {
-  const snooze = action("snooze", { until: "2026-11-05T14:00:00.000Z" }, { target_id: "dec_ada", created_at: "2026-11-03T22:00:00.000Z" });
+test("an acked snooze stays Not now", () => {
+  const snooze = action("snooze", { until: "2026-11-05T14:00:00.000Z" }, { target_id: "dec_ada", created_at: "2026-11-03T22:00:00.000Z", status: "done", acked_at: "2026-11-03T22:10:00.000Z" });
   const model = buildToday(sample(), [snooze], NOW);
   assert.equal(model.ready.length, 0);
   assert.equal(model.settled[0]?.label, "Not now");
-
-  const acked = action("snooze", { until: "2026-11-05T14:00:00.000Z" }, { target_id: "dec_ada", status: "done", acked_at: "2026-11-03T22:10:00.000Z" });
-  assert.equal(storedDecisionAnswer([acked], "dec_ada", NOW), null);
-  assert.equal(buildToday(sample(), [acked], NOW).ready.length, 0);
 });
 
 function action(

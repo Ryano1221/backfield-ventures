@@ -103,6 +103,7 @@ export type DeskDecision = {
   linked: DeskLink[];
   pending: boolean;
   outcome: { label: AnswerLabel; at: string } | null;
+  exactMessage: string | null;
 };
 
 export type SettledDecision = {
@@ -392,9 +393,8 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
   const decisions = snapshot.decisions
     .map((decision) => presentDecision(decision, snapshot, actions, now))
     .filter((decision) => {
-      const answer = storedDecisionAnswer(actions, decision.id, now);
-      if (answer) {
-        settled.push({ id: decision.id, name: decision.name, label: answer.label, at: formatCt(answer.at, true) || "" });
+      if (decision.outcome) {
+        settled.push({ id: decision.id, name: decision.name, label: decision.outcome.label, at: decision.outcome.at });
         return false;
       }
       return !isSnoozed(decision.id, actions, now);
@@ -572,7 +572,7 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
   const domain = decision.domain || org?.domain || null;
   const logoUrl = decision.logo_url || org?.logoUrl || null;
   const approve = approveChoice(decision);
-  const answer = storedDecisionAnswer(actions, id, now);
+  const answer = storedDecisionAnswer(actions, id, now, { exact: decision.exact_message });
   const linkedin = channel === "LinkedIn";
   const crm = crmMatch(name, decision, snapshot);
   return {
@@ -608,6 +608,7 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
     linked: linksFor(decision, name, snapshot),
     pending: false,
     outcome: answer ? { label: answer.label, at: formatCt(answer.at, true) || "" } : null,
+    exactMessage: blankToNull(decision.exact_message),
   };
 }
 
@@ -616,7 +617,7 @@ export function withLiveAnswers(model: TodayModel, actions: OsAction[], now = Da
   const seen = new Set(settled.map((row) => row.id));
   const keep: DeskDecision[] = [];
   for (const card of [...model.ready, ...model.hold, ...model.open]) {
-    const answer = storedDecisionAnswer(actions, card.id, now);
+    const answer = storedDecisionAnswer(actions, card.id, now, { exact: card.exactMessage });
     if (answer) {
       if (!seen.has(card.id)) {
         settled.push({ id: card.id, name: card.name, label: answer.label, at: formatCt(answer.at, true) || "" });
