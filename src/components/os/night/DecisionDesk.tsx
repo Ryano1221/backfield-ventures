@@ -79,7 +79,7 @@ export function DecisionDesk({
             <div className="card">
               <div className="h lbl">Linked records</div>
               {item.linked.map((link) => (
-                <a className="linked" key={link.id} href={link.kind === "person" ? hrefs.person(link.id) : hrefs.deals}>
+                <a className="linked" key={`${link.kind}:${link.id}`} href={link.kind === "person" ? hrefs.person(link.id) : hrefs.deal(link.id)}>
                   <Logo name={link.name} domain={link.domain} logoUrl={link.logoUrl} />
                   <div>
                     <div className="n">{link.name}</div>
