@@ -32,6 +32,7 @@ export async function recordAnswer(
         choice: answer.choice,
         note: answer.note,
         exact_message_hash: answer.exact_message_hash,
+        ...(answer.swaps?.length ? { swaps: answer.swaps } : {}),
       },
       idempotency_key: `decide:${answer.decision_id}`,
       created_at: answer.decided_at,
