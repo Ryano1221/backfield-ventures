@@ -1,6 +1,6 @@
 import type { OsAction } from "./types";
 
-export type AnswerLabel = "Approved" | "Edited" | "Not now";
+export type AnswerLabel = "Approved" | "Edited" | "Not now" | "Swap" | "Reply";
 
 export type StoredAnswer = {
   id: string;
@@ -12,9 +12,11 @@ const NOT_NOW = new Set(["not_now", "skip", "later", "hold", "no"]);
 
 export function answerLabel(action: Pick<OsAction, "type" | "payload">): AnswerLabel {
   if (action.type === "snooze") return "Not now";
+  const choice = typeof action.payload.choice === "string" ? action.payload.choice.trim().toLowerCase() : "";
+  if (choice === "swap") return "Swap";
+  if (choice === "reply") return "Reply";
   const edited = action.payload.edited_message;
   if (typeof edited === "string" && edited.trim()) return "Edited";
-  const choice = typeof action.payload.choice === "string" ? action.payload.choice.trim().toLowerCase() : "";
   if (choice === "edit") return "Edited";
   if (NOT_NOW.has(choice)) return "Not now";
   return "Approved";

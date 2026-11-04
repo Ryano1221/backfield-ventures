@@ -3,7 +3,7 @@ import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
 import { botPaused, isSnoozed } from "./overlays";
 import { blankToNull, shortTitle } from "./present";
-import type { BotRecord, CrmPerson, Decision, DecisionEvent, Interaction, OsAction, Pitch, Snapshot } from "./types";
+import type { BotRecord, CrmPerson, Decision, DecisionDetail, DecisionEvent, Interaction, OsAction, Pitch, Snapshot } from "./types";
 
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
 
@@ -99,6 +99,8 @@ export type DeskDecision = {
   domain: string | null;
   approveChoice: string;
   approveLabel: string;
+  options: { value: string; label: string }[];
+  detail: DecisionDetail | null;
   notNow: { kind: "decide"; choice: string } | { kind: "snooze" };
   linked: DeskLink[];
   pending: boolean;
@@ -604,6 +606,8 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
     domain,
     approveChoice: approve.choice,
     approveLabel: approve.label,
+    options: (decision.options ?? []).map((option) => ({ value: option.value, label: option.label || option.value })),
+    detail: decision.detail ?? null,
     notNow: notNowChoice(decision),
     linked: linksFor(decision, name, snapshot),
     pending: false,
