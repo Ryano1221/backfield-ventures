@@ -19,17 +19,22 @@ export default async function BotsPage() {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const onOs = isOsHost(host);
+  const now = readClock();
   const model = buildToday(page.snapshot, page.actions);
   const office = buildOffice(page.snapshot, page.actions);
-  const desk = buildBotDesk(page.snapshot, page.actions, Date.now());
+  const desk = buildBotDesk(page.snapshot, page.actions, now);
   return (
     <NightFrame onOs={onOs} active="bots" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <div className="lbl eyebrow">Bots</div>
       <h1 className="d-xl">The office.</h1>
       {desk.bots.length ? null : <p className="t-body muted bots-lede">The office fills in when the snapshot arrives.</p>}
-      <OfficeSwitch desk={desk} office={office} decisionRoot={onOs ? "/d" : "/os/d"} />
+      <OfficeSwitch desk={desk} office={office} interactions={page.snapshot?.interactions ?? []} now={now} decisionRoot={onOs ? "/d" : "/os/d"} />
     </NightFrame>
   );
+}
+
+function readClock(): number {
+  return Date.now();
 }
 
 function counts(snapshot: unknown, model: ReturnType<typeof buildToday>) {
