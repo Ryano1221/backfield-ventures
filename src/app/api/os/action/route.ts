@@ -2,6 +2,7 @@ import { decisionKey } from "@/lib/os/decision-id";
 import { isActionType, normalizeDecidePayload, recordAction, sanitizePayload } from "@/lib/os/actions";
 import { sameOriginRequest } from "@/lib/os/answers";
 import { isOsAuthed } from "@/lib/os/current";
+import { isPitchRating, pitchTarget } from "@/lib/os/pitch-rate";
 import { osJson } from "@/lib/os/response";
 import { readSnapshot, SnapshotStoreError } from "@/lib/os/store";
 import type { ActionType, Snapshot } from "@/lib/os/types";
@@ -38,6 +39,10 @@ export async function POST(req: Request) {
     if (!normalized.ok) return osJson({ error: normalized.error }, 400);
     storedPayload = normalized.payload;
   }
+  if (type === "rate") {
+    if (!isPitchRating(payload.rating)) return osJson({ error: "That rating is not offered" }, 400);
+    storedPayload = { rating: payload.rating };
+  }
 
   try {
     const result = await recordAction({ type, target_id: target, payload: storedPayload, idempotency_key: key });
@@ -60,8 +65,9 @@ function targetAllowed(type: ActionType, target: string, snapshot: Snapshot | nu
     if (type === "snooze" && snapshot.crm.people.some((person) => person.id === target)) return true;
     if (type !== "snooze") return false;
   }
+  if (type === "rate") return snapshot.pitches.some((pitch) => pitchTarget(pitch) === target);
   if (type === "pitch_status" || target.startsWith("pitch:")) {
-    return snapshot.pitches.some((pitch) => `pitch:${pitch.company}` === target);
+    return snapshot.pitches.some((pitch) => pitchTarget(pitch) === target || `pitch:${pitch.company}` === target);
   }
   if (type.startsWith("crm_") || type === "draft_followup") {
     return snapshot.crm.people.some((person) => person.id === target);

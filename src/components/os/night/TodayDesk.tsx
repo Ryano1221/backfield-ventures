@@ -159,7 +159,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
             </a>
           ) : null}
         </div>
-        {model.deals.length ? <DealTable deals={model.deals} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No deals are in review.</p>}
+        {model.deals.length ? <DealTable deals={model.deals} hrefFor={(deal) => hrefs.deal(deal.id)} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No deals are in review.</p>}
       </section>
     </>
   );
@@ -192,7 +192,7 @@ function Group({
   );
 }
 
-export function DealTable({ deals }: { deals: DeskDeal[] }) {
+export function DealTable({ deals, hrefFor }: { deals: DeskDeal[]; hrefFor?: (deal: DeskDeal) => string }) {
   return (
     <div className="tbl-scroll">
       <table className="tbl">
@@ -207,12 +207,18 @@ export function DealTable({ deals }: { deals: DeskDeal[] }) {
         </thead>
         <tbody>
           {deals.map((deal) => (
-            <tr key={deal.company} id={`pitch:${deal.company}`}>
+            <tr key={deal.id} id={deal.id}>
               <td>
                 <div className="co">
                   <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} />
                   <div>
-                    <div className="n">{deal.company}</div>
+                    {hrefFor ? (
+                      <a className="n" href={hrefFor(deal)}>
+                        {deal.company}
+                      </a>
+                    ) : (
+                      <div className="n">{deal.company}</div>
+                    )}
                     {deal.summary ? <div className="d clamp2">{deal.summary}</div> : null}
                   </div>
                 </div>

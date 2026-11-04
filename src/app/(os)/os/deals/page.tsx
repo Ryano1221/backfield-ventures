@@ -21,7 +21,7 @@ export default async function DealsPage() {
   const model = buildToday(page.snapshot, page.actions);
   return (
     <NightFrame onOs={isOsHost(host)} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <DealsDesk deals={buildDeals(page.snapshot)} reviewing={model.reviewingCount} />
+      <DealsDesk deals={buildDeals(page.snapshot)} reviewing={model.reviewingCount} onOs={isOsHost(host)} />
     </NightFrame>
   );
 }

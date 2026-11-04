@@ -3,7 +3,8 @@ import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
 import { botPaused, isSnoozed } from "./overlays";
 import { blankToNull, shortTitle } from "./present";
-import type { BotRecord, CrmPerson, Decision, DecisionEvent, Interaction, OsAction, Pitch, Snapshot } from "./types";
+import { pitchTarget } from "./pitch-rate";
+import type { BotRecord, CrmPerson, Decision, DecisionEvent, Interaction, OsAction, Pitch, PitchRating, Snapshot } from "./types";
 
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
 
@@ -113,16 +114,31 @@ export type SettledDecision = {
   at: string;
 };
 
+export type DealSource = { field: string; label: string; source: string };
+
 export type DeskDeal = {
+  id: string;
   company: string;
+  title: string | null;
   summary: string | null;
   sector: string | null;
   stage: string | null;
+  score: number | null;
   pips: number | null;
   waiting: string | null;
+  received: string;
+  founder: string | null;
   domain: string | null;
+  website: string | null;
+  deckUrl: string | null;
+  deckNote: string | null;
   logoUrl: string | null;
   status: string;
+  statusLabel: string;
+  source: string | null;
+  loggedRating: PitchRating | null;
+  generatedAt: string;
+  sources: DealSource[];
 };
 
 export type WaitingBot = { name: string; ask: string; slug: string };
@@ -459,6 +475,12 @@ export function buildDeals(snapshot: Snapshot | null): DeskDeal[] {
     .map((pitch) => presentDeal(pitch, snapshot.generated_at));
 }
 
+export function buildDeal(snapshot: Snapshot | null, id: string): DeskDeal | null {
+  if (!snapshot) return null;
+  const pitch = snapshot.pitches.find((item) => pitchTarget(item) === id);
+  return pitch ? presentDeal(pitch, snapshot.generated_at) : null;
+}
+
 export type StageCount = { stage: string; label: string; count: number; stageCount: number; detail: string | null };
 
 export function buildPeople(snapshot: Snapshot | null): { rows: PeopleRow[]; counts: StageCount[]; tracks: { track: string; label: string; count: number }[]; total: number; warm: number; counted: number } {
@@ -654,17 +676,64 @@ function outgoingBody(value: string | null | undefined): string | null {
 }
 
 function presentDeal(pitch: Pitch, generatedAt: string): DeskDeal {
+  const deckUrl = pitch.deck_url || pitch.deck || null;
   return {
+    id: pitchTarget(pitch),
     company: pitch.company,
+    title: blankToNull(pitch.title),
     summary: sentenceOrNull(blankToNull(pitch.summary)),
     sector: blankToNull(pitch.sector),
     stage: blankToNull(pitch.stage),
+    score: pitch.score,
     pips: scorePips(pitch.score),
     waiting: waitingLabel(pitch.received.length === 10 ? `${pitch.received}T12:00:00-06:00` : pitch.received, generatedAt),
+    received: pitch.received,
+    founder: blankToNull(pitch.founder),
     domain: pitch.domain || null,
+    website: pitch.website || (pitch.domain ? `https://${pitch.domain}` : null),
+    deckUrl,
+    deckNote: deckUrl ? null : blankToNull(pitch.deck_note),
     logoUrl: pitch.logo_url || null,
     status: pitch.status,
+    statusLabel: pitchStatusLabel(pitch.status),
+    source: blankToNull(pitch.source),
+    loggedRating: pitch.ryan_rating ?? null,
+    generatedAt,
+    sources: pitchSources(pitch.field_sources),
   };
+}
+
+const SOURCE_LABEL: Record<string, string> = {
+  company: "Company",
+  title: "Title",
+  summary: "Summary",
+  sector: "Sector",
+  stage: "Stage",
+  score: "Score",
+  status: "Status",
+  source: "Source",
+  received: "Received",
+  founder: "Founder",
+  domain: "Domain",
+  website: "Website",
+  deck: "Deck",
+  deck_url: "Deck",
+  deck_note: "Deck note",
+  logo_url: "Logo",
+  ryan_rating: "Rating",
+};
+
+function pitchSources(sources: Record<string, string> | undefined): DealSource[] {
+  if (!sources) return [];
+  return Object.entries(sources).map(([field, source]) => ({ field, label: SOURCE_LABEL[field] || field, source }));
+}
+
+function pitchStatusLabel(status: string): string {
+  if (status === "new") return "New";
+  if (status === "reviewing") return "Reviewing";
+  if (status === "passed") return "Passed";
+  if (status === "advanced") return "Advanced";
+  return status;
 }
 
 function presentPersonRow(person: CrmPerson, generatedAt: string, useImIn: boolean, useLp: boolean): PeopleRow {

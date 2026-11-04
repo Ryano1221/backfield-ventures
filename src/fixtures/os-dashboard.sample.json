@@ -10,7 +10,19 @@
       "status": "reviewing",
       "score": 1,
       "source": "fixture",
-      "deck": null
+      "deck": null,
+      "id": "pitch_fixture-northwind",
+      "title": "FIXTURE sample company",
+      "domain": "northwind.example",
+      "website": "https://northwind.example",
+      "deck_url": "https://example.com/fixture-northwind-deck",
+      "logo_url": null,
+      "ryan_rating": "good",
+      "field_sources": {
+        "sector": "FIXTURE email",
+        "website": "FIXTURE pitch",
+        "deck_url": "FIXTURE link"
+      }
     },
     {
       "company": "FIXTURE Cedar Sample",
@@ -19,7 +31,18 @@
       "status": "new",
       "score": 2,
       "summary": "FIXTURE deal note. Not a real company.",
-      "deck": null
+      "deck": null,
+      "id": "pitch_fixture-cedar",
+      "domain": "cedar.example",
+      "website": null,
+      "deck_url": null,
+      "deck_note": "FIXTURE: attachment in email, no link",
+      "logo_url": null,
+      "ryan_rating": null,
+      "field_sources": {
+        "deck_note": "FIXTURE email",
+        "summary": "FIXTURE note"
+      }
     }
   ],
   "bots": {

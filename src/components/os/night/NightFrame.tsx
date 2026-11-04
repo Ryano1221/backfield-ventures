@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { FinderItem } from "@/lib/os/finder";
 import { osHrefs } from "@/lib/os/nav";
+import { isPitchRating, rateKey } from "@/lib/os/pitch-rate";
 import type { ActionPayload, ActionType, OsAction } from "@/lib/os/types";
 
 type Queued = {
@@ -129,7 +130,7 @@ export function NightFrame({
   const submit = useCallback((draft: Draft) => {
     const id = draft.target_id;
     if (inflightRef.current[id]) return;
-    const key = drafts.current.get(id)?.key || (draft.type === "decide" ? `decide:${id}` : crypto.randomUUID());
+    const key = actionKey(draft, drafts.current.get(id)?.key);
     const saved = { ...draft, key };
     drafts.current.set(id, saved);
     inflightRef.current = { ...inflightRef.current, [id]: true };
@@ -407,10 +408,16 @@ export function NightFrame({
   );
 }
 
+function actionKey(draft: Draft, previous?: string): string {
+  if (draft.type === "rate" && isPitchRating(draft.payload.rating)) return rateKey(draft.target_id, draft.payload.rating);
+  if (draft.type === "decide") return `decide:${draft.target_id}`;
+  return previous || crypto.randomUUID();
+}
+
 function finderHref(item: FinderItem, hrefs: ReturnType<typeof osHrefs>): string {
   if (item.kind === "person") return hrefs.person(item.id);
   if (item.kind === "decision") return hrefs.decision(item.id);
-  if (item.kind === "company") return `${hrefs.deals}#${encodeURIComponent(item.id)}`;
+  if (item.kind === "company") return hrefs.deal(item.id);
   return hrefs.bots;
 }
 
