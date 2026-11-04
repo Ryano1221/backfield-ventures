@@ -15,7 +15,7 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
           {person.tags.length ? (
             <div className="facts">
               {person.tags.map((tag) => (
-                <span className={`tag${tag === person.stageLabel && person.stage && ["I'm in", "Replied", "Call asked"].includes(tag) ? " warm" : ""}`} key={tag}>
+                <span className={`tag${tag === person.stageLabel && person.stage && ["I'm in", "Replied", "Call asked", "Call booked"].includes(tag) ? " warm" : ""}`} key={tag}>
                   {tag}
                 </span>
               ))}

@@ -177,6 +177,13 @@ img { display: block; }
 .funnel .lbl { color: var(--ink3); }
 .funnel .v { font-family: var(--display); font-size: 36px; line-height: 1; margin-top: 8px; }
 .funnel .warmc .v { color: var(--forest-tint); }
+.funnel .sub { margin-top: 6px; color: var(--ink2); font-size: 13px; line-height: 18px; }
+.funnel .span { grid-column: 1 / -1; }
+.funnel .bits { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; }
+.funnel .bits li { color: var(--ink2); font-size: 13px; line-height: 18px; }
+.funnel .bits b { color: var(--ink); font-weight: 700; }
+.funnel-check { margin: 8px 0 0; }
+.funnel-check.is-off { color: var(--forest-tint); }
 .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin: 40px 0 0; overflow-x: auto; }
 .tabs button, .tabs a { padding: 14px 20px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink2); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: transparent; cursor: pointer; white-space: nowrap; }
 .tabs button.on, .tabs a.on { color: var(--ink); border-bottom-color: var(--ink); }

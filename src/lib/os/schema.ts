@@ -537,7 +537,7 @@ function validatePerson(value: unknown, path: string, issues: string[]): CrmPers
   }
   const id = reqStr(value.id, `${path}.id`, 80, issues);
   const name = reqStr(value.name, `${path}.name`, 120, issues);
-  const stage = softBlank(value.stage, 80);
+  const stage = personStage(value.stage);
   const track = crmTrack(value.track, `${path}.track`, issues);
   const firm = nullableStr(value.firm, `${path}.firm`, 120, issues);
   const owner = nullableStr(value.owner, `${path}.owner`, 80, issues);
@@ -569,7 +569,24 @@ function validatePerson(value: unknown, path: string, issues: string[]): CrmPers
   const logo = normalizeLogoUrl(typeof value.logo_url === "string" ? value.logo_url : null);
   if (domain) person.domain = domain;
   if (logo) person.logo_url = logo;
+  if (typeof value.im_in === "boolean") person.im_in = value.im_in;
+  else if (value.im_in !== undefined && value.im_in !== null) issues.push(`${path}.im_in must be a boolean`);
+  if (typeof value.lp === "boolean") person.lp = value.lp;
+  else if (value.lp !== undefined && value.lp !== null) issues.push(`${path}.lp must be a boolean`);
+  const queueChannel = value.channel === undefined ? null : nullableStr(value.channel, `${path}.channel`, 40, issues);
+  if (queueChannel === undefined) return null;
+  if (queueChannel) person.channel = queueChannel;
+  if (issues.some((issue) => issue.startsWith(`${path}.im_in`) || issue.startsWith(`${path}.lp`))) return null;
   return person;
+}
+
+function personStage(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.toLowerCase() === "unknown") return "unknown";
+  const text = blankToNull(trimmed);
+  return text ? text.slice(0, 80) : null;
 }
 
 function crmTrack(value: unknown, path: string, issues: string[]): CrmTrack | null {

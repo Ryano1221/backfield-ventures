@@ -7,17 +7,19 @@ import type { BotRecord, CrmPerson, Decision, DecisionEvent, Interaction, OsActi
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
 
 const STAGE_LABEL: Record<string, string> = {
+  ready: "Ready",
+  queued: "Queued",
+  contacted: "Contacted",
+  nudged: "Nudged",
+  replied: "Replied",
   im_in: "I'm in",
   call_asked: "Call asked",
-  replied: "Replied",
-  nudged: "Nudged",
-  contacted: "Contacted",
-  queued: "Queued",
-  ready: "Ready",
+  call_booked: "Call booked",
   hold: "On hold",
   bounced: "Bounced",
   do_not_contact: "Do not contact",
   passed: "Passed",
+  unknown: "Unknown",
 };
 
 const TRACK_LABEL: Record<string, string> = {
@@ -31,8 +33,9 @@ const TRACK_LABEL: Record<string, string> = {
   founder: "Founder",
 };
 
-const STAGE_ORDER = ["ready", "queued", "contacted", "nudged", "replied", "call_asked", "im_in", "hold", "bounced", "do_not_contact", "passed"];
-const WARM = new Set(["im_in", "call_asked", "replied"]);
+const STAGE_ORDER = ["ready", "queued", "contacted", "nudged", "replied", "im_in", "call_asked", "call_booked", "hold", "bounced", "do_not_contact", "passed", "unknown"];
+const WARM = new Set(["replied", "im_in", "call_asked", "call_booked"]);
+const YES_STAGES = new Set(["im_in", "call_asked", "call_booked"]);
 const ROOM_NAME: Record<string, string> = {
   executive: "Executive",
   network: "Network",
@@ -145,6 +148,8 @@ export type PeopleRow = {
   stage: string | null;
   stageLabel: string | null;
   warm: boolean;
+  imIn: boolean;
+  lp: boolean;
   last: string | null;
   lastAge: string | null;
   next: string | null;
@@ -331,8 +336,12 @@ export function scorePips(score: number | null): number | null {
 }
 
 export function stageLabel(stage: string | null | undefined): string | null {
-  const raw = blankToNull(stage);
-  if (!raw || raw.toLowerCase() === "unknown") return null;
+  if (stage == null) return null;
+  const trimmed = stage.trim();
+  if (!trimmed) return null;
+  if (trimmed.toLowerCase() === "unknown") return "Unknown";
+  const raw = blankToNull(trimmed);
+  if (!raw) return null;
   return STAGE_LABEL[raw] || cap(raw.replace(/_/g, " "));
 }
 
@@ -430,28 +439,46 @@ export function buildDeals(snapshot: Snapshot | null): DeskDeal[] {
     .map((pitch) => presentDeal(pitch, snapshot.generated_at));
 }
 
-export function buildPeople(snapshot: Snapshot | null): { rows: PeopleRow[]; counts: { stage: string; label: string; count: number }[]; tracks: { track: string; label: string; count: number }[]; total: number; warm: number } {
-  if (!snapshot) return { rows: [], counts: [], tracks: [], total: 0, warm: 0 };
+export type StageCount = { stage: string; label: string; count: number; stageCount: number; detail: string | null };
+
+export function buildPeople(snapshot: Snapshot | null): { rows: PeopleRow[]; counts: StageCount[]; tracks: { track: string; label: string; count: number }[]; total: number; warm: number; counted: number } {
+  if (!snapshot) return { rows: [], counts: [], tracks: [], total: 0, warm: 0, counted: 0 };
   const people = snapshot.crm.people;
+  const useImIn = people.some((person) => typeof person.im_in === "boolean");
+  const useLp = people.some((person) => typeof person.lp === "boolean");
   const stageCounts = new Map<string, number>();
   const trackCounts = new Map<string, number>();
   for (const person of people) {
-    if (person.stage) stageCounts.set(person.stage, (stageCounts.get(person.stage) || 0) + 1);
-    trackCounts.set(person.track, (trackCounts.get(person.track) || 0) + 1);
+    const stage = stageKey(person);
+    stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1);
+    if (person.track !== "lp") trackCounts.set(person.track, (trackCounts.get(person.track) || 0) + 1);
   }
+  const imInCount = people.filter((person) => personIsImIn(person, useImIn)).length;
+  if (imInCount > 0) stageCounts.set("im_in", stageCounts.get("im_in") || 0);
+  const queuedLine = queuedDetail(people);
   const counts = [...stageCounts.entries()]
-    .sort((a, b) => stageIndex(a[0]) - stageIndex(b[0]))
-    .map(([stage, count]) => ({ stage, label: stageLabel(stage) || stage, count }));
+    .sort((a, b) => stageIndex(a[0]) - stageIndex(b[0]) || a[0].localeCompare(b[0]))
+    .map(([stage, stageCount]) => ({
+      stage,
+      label: stageLabel(stage) || stage,
+      count: stage === "im_in" ? imInCount : stageCount,
+      stageCount,
+      detail: stage === "queued" ? queuedLine : stage === "im_in" && imInCount !== stageCount ? `${stageCount.toLocaleString("en-US")} in this stage` : null,
+    }));
+  const lpCount = people.filter((person) => personIsLp(person, useLp)).length;
   const tracks = [...trackCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([track, count]) => ({ track, label: trackLabel(track) || track, count }));
-  const rows = people.map((person) => presentPersonRow(person, snapshot.generated_at));
+  if (lpCount > 0) tracks.push({ track: "lp", label: "LP", count: lpCount });
+  tracks.sort((a, b) => b.count - a.count);
+  const rows = people.map((person) => presentPersonRow(person, snapshot.generated_at, useImIn, useLp));
   rows.sort((a, b) => {
     const warm = Number(b.warm) - Number(a.warm);
     if (warm) return warm;
     return (b.last || "").localeCompare(a.last || "");
   });
-  return { rows, counts, tracks, total: people.length, warm: people.filter((person) => isWarmStage(person.stage)).length };
+  const counted = [...stageCounts.values()].reduce((sum, count) => sum + count, 0);
+  return { rows, counts, tracks, total: people.length, warm: people.filter((person) => personIsWarm(person, useImIn)).length, counted };
 }
 
 export function buildPerson(person: CrmPerson, snapshot: Snapshot): PersonModel {
@@ -584,16 +611,19 @@ function presentDeal(pitch: Pitch, generatedAt: string): DeskDeal {
   };
 }
 
-function presentPersonRow(person: CrmPerson, generatedAt: string): PeopleRow {
+function presentPersonRow(person: CrmPerson, generatedAt: string, useImIn: boolean, useLp: boolean): PeopleRow {
+  const stage = stageKey(person);
   return {
     id: person.id,
     name: person.name,
     firm: blankToNull(person.firm),
     track: person.track,
     trackLabel: trackLabel(person.track) || person.track,
-    stage: person.stage,
-    stageLabel: stageLabel(person.stage),
-    warm: isWarmStage(person.stage),
+    stage,
+    stageLabel: stageLabel(stage),
+    warm: personIsWarm(person, useImIn),
+    imIn: personIsImIn(person, useImIn),
+    lp: personIsLp(person, useLp),
     last: formatCt(person.last_touch_at, false),
     lastAge: waitingLabel(person.last_touch_at, generatedAt),
     next: cleanNext(person.next_step),
@@ -988,6 +1018,52 @@ function partySlug(party: string, slugs: Map<string, string>): string | null {
 function stageIndex(stage: string): number {
   const index = STAGE_ORDER.indexOf(stage);
   return index === -1 ? STAGE_ORDER.length : index;
+}
+
+function stageKey(person: CrmPerson): string {
+  const raw = person.stage?.trim();
+  if (!raw || raw.toLowerCase() === "unknown") return "unknown";
+  return raw;
+}
+
+function personIsImIn(person: CrmPerson, useFlag: boolean): boolean {
+  if (useFlag) return person.im_in === true;
+  return Boolean(person.stage && YES_STAGES.has(person.stage));
+}
+
+function personIsWarm(person: CrmPerson, useFlag: boolean): boolean {
+  if (person.stage === "replied" || person.stage === "call_asked" || person.stage === "call_booked") return true;
+  if (useFlag) return person.im_in === true;
+  return person.stage === "im_in";
+}
+
+function personIsLp(person: CrmPerson, useFlag: boolean): boolean {
+  if (useFlag) return person.lp === true;
+  return person.track === "lp";
+}
+
+function queueBucket(person: CrmPerson): "email" | "ig" | null {
+  const value = (person.channel || person.last_touch_channel || "").trim().toLowerCase();
+  if (!value) return null;
+  if (value === "email" || value === "e-mail") return "email";
+  if (value === "ig" || value === "ig_dm" || value === "ig dm" || value === "instagram" || value === "instagram_dm" || value === "instagram dm" || value === "dm") return "ig";
+  return null;
+}
+
+function queuedDetail(people: CrmPerson[]): string | null {
+  let email = 0;
+  let ig = 0;
+  for (const person of people) {
+    if (stageKey(person) !== "queued") continue;
+    const bucket = queueBucket(person);
+    if (bucket === "email") email += 1;
+    else if (bucket === "ig") ig += 1;
+  }
+  if (!email && !ig) return null;
+  const parts: string[] = [];
+  if (email) parts.push(`${email.toLocaleString("en-US")} email`);
+  if (ig) parts.push(`${ig.toLocaleString("en-US")} IG DM`);
+  return parts.join(" · ");
 }
 
 function cleanNext(value: string | null | undefined): string | null {
