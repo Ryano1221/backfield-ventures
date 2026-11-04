@@ -2,6 +2,10 @@ export const PITCH_STATUSES = ["new", "reviewing", "passed", "advanced"] as cons
 
 export type PitchStatus = (typeof PITCH_STATUSES)[number];
 
+export const PITCH_RATINGS = ["great", "good", "maybe", "no"] as const;
+
+export type PitchRating = (typeof PITCH_RATINGS)[number];
+
 export type Pitch = {
   company: string;
   sector: string | null;
@@ -16,6 +20,13 @@ export type Pitch = {
   summary?: string;
   domain?: string;
   logo_url?: string;
+  /** Stable id, pitch_<slug>. Rate actions and deal links use it. */
+  id?: string;
+  website?: string | null;
+  deck_url?: string | null;
+  deck_note?: string | null;
+  ryan_rating?: PitchRating | null;
+  field_sources?: Record<string, string>;
 };
 
 export const DIRECTOR_KEYS = [
@@ -248,6 +259,7 @@ export const ACTION_TYPES = [
   "bot_resume",
   "snooze",
   "free_text",
+  "rate",
 ] as const;
 
 export type ActionType = (typeof ACTION_TYPES)[number];

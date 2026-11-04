@@ -25,6 +25,7 @@ export function osHrefs(onOs: boolean) {
     activity: `${root}/activity`,
     login: onOs ? "/login" : "/os/login",
     decision: (id: string) => `${root}/d/${encodeURIComponent(id)}`,
+    deal: (id: string) => `${root}/deals/${encodeURIComponent(id)}`,
     person: (id: string) => `${root}/crm/${encodeURIComponent(id)}`,
   };
 }

@@ -1,0 +1,57 @@
+import type { DeskDeal } from "@/lib/os/night";
+import { Logo } from "./Logo";
+import { DealLinks } from "./DealsDesk";
+import { RateControl } from "./RateControl";
+
+export function DealDetail({ deal, dealsHref }: { deal: DeskDeal; dealsHref: string }) {
+  const source = (field: string) => deal.sources.find((item) => item.field === field)?.source || null;
+  return (
+    <>
+      <div className="lbl eyebrow">
+        <a href={dealsHref}>Deals</a>
+        {` / ${deal.company}`}
+      </div>
+      <div className="phead">
+        <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} large />
+        <div>
+          <h1 className="d-l">{deal.company}</h1>
+          {deal.title ? <p className="sub">{deal.title}</p> : null}
+          <div className="facts">
+            {deal.stage ? <span className="tag">{deal.stage}</span> : null}
+            <span className="tag">{deal.statusLabel}</span>
+          </div>
+        </div>
+      </div>
+      {deal.summary ? <p className="lede">{deal.summary}</p> : null}
+      <DealLinks deal={deal} />
+      <RateControl id={deal.id} company={deal.company} logged={deal.loggedRating} generatedAt={deal.generatedAt} />
+      <dl className="dl deal-fields">
+        <Field label="Sector" value={deal.sector} source={source("sector")} />
+        <Field label="Stage" value={deal.stage} source={source("stage")} />
+        <Field label="Score" value={deal.score == null ? null : String(deal.score)} source={source("score")} />
+        <Field label="Status" value={deal.statusLabel} source={source("status")} />
+        <Field label="Source" value={deal.source} source={source("source")} />
+        <Field label="Received" value={deal.received} source={source("received")} />
+        <Field label="Founder" value={deal.founder} source={source("founder")} />
+        <Field label="Domain" value={deal.domain} source={source("domain")} />
+        <Field label="Website" value={deal.website} source={source("website")} />
+        <Field label="Deck" value={deal.deckUrl} source={source("deck_url") || source("deck")} />
+        <Field label="Deck note" value={deal.deckNote} source={source("deck_note")} />
+        <Field label="Rating" value={deal.loggedRating} source={source("ryan_rating")} />
+      </dl>
+    </>
+  );
+}
+
+function Field({ label, value, source }: { label: string; value: string | null; source: string | null }) {
+  if (!value) return null;
+  return (
+    <>
+      <dt>{label}</dt>
+      <dd>
+        {value}
+        {source ? <div className="src">{source}</div> : null}
+      </dd>
+    </>
+  );
+}

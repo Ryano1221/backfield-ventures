@@ -1,4 +1,5 @@
 import { decisionKey } from "./decision-id";
+import { pitchTarget } from "./pitch-rate";
 import { shortTitle } from "./present";
 import { blankToNull } from "./present";
 import type { Snapshot } from "./types";
@@ -24,7 +25,7 @@ export function buildFinder(snapshot: Snapshot | null): FinderItem[] {
   for (const pitch of snapshot.pitches) {
     items.push({
       kind: "company",
-      id: `pitch:${pitch.company}`,
+      id: pitchTarget(pitch),
       title: pitch.company,
       hint: [blankToNull(pitch.sector), blankToNull(pitch.stage)].filter(Boolean).join(" · "),
     });

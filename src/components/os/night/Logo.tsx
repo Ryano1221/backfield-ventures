@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { logoReady, monogram } from "@/lib/os/logo-mark";
 
 export function Logo({
   name,
@@ -18,22 +19,28 @@ export function Logo({
     : domain
       ? `/api/os/logo?domain=${encodeURIComponent(domain)}`
       : "";
-  const [failed, setFailed] = useState(!src);
-  if (!src || failed) {
+  const ref = useRef<HTMLImageElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    setShown(logoReady(ref.current));
+  }, [src]);
+
+  if (!src) {
     return <span className={`logo fb${large ? " lg" : ""}`}>{monogram(name)}</span>;
   }
+
   return (
-    <span className={`logo${large ? " lg" : ""}`}>
-      <img src={src} alt="" onError={() => setFailed(true)} />
+    <span className={`logo${shown ? "" : " fb"}${large ? " lg" : ""}`}>
+      {shown ? null : monogram(name)}
+      <img
+        ref={ref}
+        src={src}
+        alt=""
+        className={shown ? undefined : "pending"}
+        onLoad={(event) => setShown(logoReady(event.currentTarget))}
+        onError={() => setShown(false)}
+      />
     </span>
   );
-}
-
-function monogram(name: string): string {
-  const parts = name
-    .split(/[^A-Za-z0-9]+/)
-    .map((part) => part.trim())
-    .filter((part) => part && part.toLowerCase() !== "fixture");
-  const letters = (parts.length ? parts : [name]).slice(0, 2).map((part) => part.charAt(0).toUpperCase());
-  return letters.join("") || "BV";
 }

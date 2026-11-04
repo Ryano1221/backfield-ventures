@@ -27,6 +27,7 @@ import {
   type InteractionKind,
   type OutreachTrack,
   type Pitch,
+  type PitchRating,
   type PitchStatus,
   type RoutineRecord,
   type Snapshot,
@@ -124,11 +125,54 @@ function validatePitch(value: unknown, path: string, issues: string[]): Pitch | 
   const summary = softText(value.summary, 2000);
   const domain = normalizeDomain(typeof value.domain === "string" ? value.domain : null);
   const logo = normalizeLogoUrl(typeof value.logo_url === "string" ? value.logo_url : null);
+  const id = pitchSlug(value.id);
+  const website = softHttpUrl(value.website);
+  const deckUrl = softHttpUrl(value.deck_url);
+  const deckNote = softText(value.deck_note, 240);
+  const rating = pitchRating(value.ryan_rating);
+  const sources = fieldSources(value.field_sources);
   if (title) pitch.title = title;
   if (summary) pitch.summary = summary;
   if (domain) pitch.domain = domain;
   if (logo) pitch.logo_url = logo;
+  if (id) pitch.id = id;
+  if (website) pitch.website = website;
+  if (deckUrl) pitch.deck_url = deckUrl;
+  if (deckNote) pitch.deck_note = deckNote;
+  if (rating) pitch.ryan_rating = rating;
+  else if (value.ryan_rating === null) pitch.ryan_rating = null;
+  if (sources) pitch.field_sources = sources;
   return pitch;
+}
+
+function pitchSlug(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return /^pitch_[a-z0-9][a-z0-9_-]{0,60}$/.test(trimmed) ? trimmed : undefined;
+}
+
+function softHttpUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 2000 || !isHttpUrl(trimmed)) return null;
+  return trimmed;
+}
+
+function pitchRating(value: unknown): PitchRating | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed === "great" || trimmed === "good" || trimmed === "maybe" || trimmed === "no" ? trimmed : null;
+}
+
+function fieldSources(value: unknown): Record<string, string> | undefined {
+  if (!isRecord(value)) return undefined;
+  const sources: Record<string, string> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (!/^[a-z][a-z0-9_]{0,40}$/.test(key) || typeof item !== "string") continue;
+    const text = item.trim().slice(0, 120);
+    if (text) sources[key] = text;
+  }
+  return Object.keys(sources).length ? sources : undefined;
 }
 
 function validateBots(value: unknown, issues: string[]): BotFeed | null {

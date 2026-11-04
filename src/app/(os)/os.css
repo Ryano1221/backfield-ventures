@@ -48,7 +48,8 @@ img { display: block; }
 .btn.primary { background: var(--primary); color: #fff; border-color: var(--forest-line); }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btn.sm { height: 36px; padding: 0 14px; font-size: 11px; }
-.logo { width: 40px; height: 40px; flex: none; border: 1px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.logo { position: relative; width: 40px; height: 40px; flex: none; border: 1px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.logo img.pending { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .logo img { width: 28px; height: 28px; object-fit: contain; }
 .logo.lg { width: 56px; height: 56px; }
 .logo.lg img { width: 38px; height: 38px; }
@@ -836,4 +837,22 @@ img { display: block; }
   .tbl td[data-label]:not(:first-child):not(:empty)::before { font-size: 10px; }
   .ofc-win-select, .ofc-hud .sp-cycle, .ofc-hud .pp, .ofc-scrub { border-color: rgba(255, 255, 255, 0.35); }
   .foot { flex-direction: column; }
+  .deal-filters { padding: 0 16px 12px; }
 }
+
+.deal-filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+.deal-chip { min-height: 44px; padding: 0 12px; border: 1px solid #000; background: #fff; color: #000; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+.deal-chip span { margin-left: 6px; color: var(--e-ink3); }
+.deal-chip[aria-pressed="true"] { background: #000; color: #fff; }
+.deal-chip[aria-pressed="true"] span { color: #fff; }
+.deal-list { background: #fff; }
+.deal-card { display: grid; gap: 12px; padding: 16px 18px; border-top: 1px solid rgba(0, 0, 0, 0.12); }
+.deal-open { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; color: inherit; text-decoration: none; }
+.deal-open .n { font-weight: 700; }
+.deal-open:hover .n { text-decoration: underline; }
+.deal-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.deal-links { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.deal-note { margin: 0; color: var(--e-ink3); font-size: 13px; line-height: 18px; }
+.rate-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.deal-fields { margin-top: 28px; }
+.deal-fields .src { margin-top: 4px; }
