@@ -33,12 +33,12 @@
         "role": "Executive",
         "scope": "Fake seat for the local fixture.",
         "registry_status": "active",
-        "status": "Working",
+        "status": "Needs Ryan",
         "last": "Fixture",
-        "last_iso": "2026-11-03T18:00:00.000Z",
+        "last_iso": "2026-11-03T17:40:00.000Z",
         "source": "fixture",
-        "result": "This executive is fake sample data.",
-        "usage_share": null,
+        "result": "Casey's sample reply is waiting on your yes.",
+        "usage_share": 22,
         "director": "executive"
       },
       {
@@ -50,10 +50,10 @@
         "registry_status": "active",
         "status": "Working",
         "last": "Fixture",
-        "last_iso": "2026-11-03T18:00:00.000Z",
+        "last_iso": "2026-11-03T17:10:00.000Z",
         "source": "fixture",
-        "result": "Fake director result. Not a real firm event.",
-        "usage_share": null,
+        "result": "Scored the sample company and left the card for review.",
+        "usage_share": 14,
         "director": "investment"
       },
       {
@@ -275,7 +275,7 @@
         "registry_status": "active",
         "status": "Working",
         "last": "Fixture",
-        "last_iso": "2026-11-03T18:00:00.000Z",
+        "last_iso": "2026-10-30T15:00:00.000Z",
         "source": "fixture",
         "result": "Fake specialist result. Not a real firm event.",
         "usage_share": null,
@@ -290,10 +290,10 @@
         "registry_status": "active",
         "status": "Needs Ryan",
         "last": "Fixture",
-        "last_iso": "2026-11-03T18:00:00.000Z",
+        "last_iso": "2026-11-03T17:30:00.000Z",
         "source": "fixture",
-        "result": "Fake director result. Not a real firm event.",
-        "usage_share": null,
+        "result": "The sample note is drafted and waiting on your yes.",
+        "usage_share": 11,
         "director": "network"
       },
       {
@@ -633,9 +633,9 @@
         "role": "Specialist",
         "scope": "Fake specialist for the local fixture.",
         "registry_status": "active",
-        "status": "Working",
+        "status": "Paused",
         "last": "Fixture",
-        "last_iso": "2026-11-03T18:00:00.000Z",
+        "last_iso": "2026-10-20T15:00:00.000Z",
         "source": "fixture",
         "result": "Fake specialist result. Not a real firm event.",
         "usage_share": null,
@@ -650,7 +650,7 @@
         "registry_status": "active",
         "status": "Idle",
         "last": "Fixture",
-        "last_iso": "2026-11-03T18:00:00.000Z",
+        "last_iso": "2026-10-28T15:00:00.000Z",
         "source": "fixture",
         "result": "Fake bot with no director.",
         "usage_share": null
@@ -658,11 +658,34 @@
     ],
     "routines": [
       {
+        "name": "FIXTURE Network digest",
+        "status": "Failed",
+        "last": "2026-11-03T16:00:00.000Z",
+        "note": "The sample digest did not send."
+      },
+      {
+        "name": "FIXTURE Investment score",
+        "status": "Succeeded",
+        "last": "2026-11-02T16:00:00.000Z",
+        "next": "2026-11-03T12:00:00.000Z"
+      },
+      {
+        "name": "FIXTURE Executive morning",
+        "status": "Succeeded",
+        "last": "2026-11-03T15:00:00.000Z",
+        "next": "2026-11-04T15:00:00.000Z"
+      },
+      {
         "name": "FIXTURE sample routine",
         "status": "Paused",
         "last": "Fixture"
       }
-    ]
+    ],
+    "usage": {
+      "weekly_used_pct": 0.7,
+      "on_demand_cycle_usd": 50.46,
+      "weekly_reset": "Mon Nov 9"
+    }
   },
   "outreach": [
     {
@@ -771,6 +794,16 @@
       "timestamp": "2026-11-03T18:00:00.000Z",
       "actor": "Fixture",
       "summary": "Fake local activity. Not a real firm event. The rest of this sentence is padding so the summary can be expanded on the home screen when it runs past the short line."
+    },
+    {
+      "timestamp": "2026-11-03T17:40:00.000Z",
+      "actor": "FIXTURE Network Director",
+      "summary": "Drafted the sample note and left it for your yes."
+    },
+    {
+      "timestamp": "2026-11-03T17:10:00.000Z",
+      "actor": "FIXTURE Investment Director",
+      "summary": "Scored the sample company."
     }
   ],
   "interactions": [
