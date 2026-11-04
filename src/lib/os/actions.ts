@@ -70,6 +70,7 @@ export function normalizeDecidePayload(
         note: note || null,
         edited_message: edited,
         exact_message_hash: exactMessageHash(edited),
+        prior_message_hash: decision.exact_message ? exactMessageHash(decision.exact_message) : null,
       },
     };
   }
@@ -127,11 +128,14 @@ export async function recordAction(
 ): Promise<{ created: boolean; conflict: boolean; action: OsAction }> {
   const current = await readActions(env);
   const sameKey = current.find((action) => action.idempotency_key === input.idempotency_key);
-  if (sameKey) return { created: false, conflict: false, action: sameKey };
-  if (input.type === "decide" && current.some((action) => action.type === "decide" && action.target_id === input.target_id)) {
-    const previous = current.find((action) => action.type === "decide" && action.target_id === input.target_id)!;
-    return { created: false, conflict: true, action: previous };
+  const previous = input.type === "decide"
+    ? [...current].reverse().find((action) => action.type === "decide" && action.target_id === input.target_id && action.status !== "failed")
+    : undefined;
+  if (previous && newDecisionRevision(previous, input)) {
+    return writeRevision(current, previous, input, env);
   }
+  if (sameKey) return { created: false, conflict: false, action: sameKey };
+  if (previous) return { created: false, conflict: true, action: previous };
   const action: OsAction = {
     action_id: randomUUID(),
     type: input.type,
@@ -164,6 +168,40 @@ async function logDecision(action: OsAction, env: Record<string, string | undefi
   } catch {
     console.error("decision log failed");
   }
+}
+
+function newDecisionRevision(previous: OsAction, input: { type: ActionType; payload: ActionPayload }): boolean {
+  if (input.type !== "decide") return false;
+  const oldHash = typeof previous.payload.exact_message_hash === "string" ? previous.payload.exact_message_hash : "";
+  const nextHash = typeof input.payload.exact_message_hash === "string" ? input.payload.exact_message_hash : "";
+  return Boolean(oldHash && nextHash && oldHash !== nextHash);
+}
+
+async function writeRevision(
+  current: OsAction[],
+  previous: OsAction,
+  input: { type: ActionType; target_id: string; payload: ActionPayload; idempotency_key: string; created_at?: string },
+  env: Record<string, string | undefined>,
+): Promise<{ created: boolean; conflict: boolean; action: OsAction }> {
+  const action: OsAction = {
+    action_id: randomUUID(),
+    type: input.type,
+    target_id: input.target_id,
+    payload: input.payload,
+    created_at: input.created_at || new Date().toISOString(),
+    idempotency_key: input.idempotency_key,
+    acked_at: null,
+    result: null,
+    status: "pending",
+  };
+  const next = current.map((row) =>
+    row.action_id === previous.action_id && row.idempotency_key === input.idempotency_key
+      ? { ...row, idempotency_key: `superseded:${row.action_id}` }
+      : row,
+  );
+  await writeActions([...next, action], env);
+  if (action.type === "decide") await logDecision(action, env);
+  return { created: true, conflict: false, action };
 }
 
 export async function ackActions(
