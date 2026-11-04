@@ -182,6 +182,12 @@ export type CrmPerson = {
   notes: string | null;
   domain?: string;
   logo_url?: string;
+  /** Lasting yes. Present only once the snapshot builder sends it. */
+  im_in?: boolean;
+  /** LP relationship, independent of track. */
+  lp?: boolean;
+  /** Planned queue channel, when it is not the last touch. */
+  channel?: string | null;
 };
 
 export const ACTION_TYPES = [

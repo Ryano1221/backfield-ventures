@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { PeopleRow } from "@/lib/os/night";
+import type { PeopleRow, StageCount } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { Logo } from "./Logo";
 
 const PAGE = 24;
+const TAIL = new Set(["hold", "bounced", "do_not_contact", "passed", "unknown"]);
+const WARM_STAGE = new Set(["replied", "im_in", "call_asked", "call_booked"]);
 
 export function PeopleDesk({
   rows,
@@ -13,13 +15,15 @@ export function PeopleDesk({
   tracks,
   total,
   warm,
+  counted,
   onOs,
 }: {
   rows: PeopleRow[];
-  counts: { stage: string; label: string; count: number }[];
+  counts: StageCount[];
   tracks: { track: string; label: string; count: number }[];
   total: number;
   warm: number;
+  counted: number;
   onOs: boolean;
 }) {
   const hrefs = osHrefs(onOs);
@@ -30,13 +34,21 @@ export function PeopleDesk({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((row) => {
-      if (track !== "all" && row.track !== track) return false;
-      if (stage !== "all" && row.stage !== stage) return false;
+      if (track === "lp") {
+        if (!row.lp) return false;
+      } else if (track !== "all" && row.track !== track) return false;
+      if (stage === "im_in") {
+        if (!row.imIn) return false;
+      } else if (stage !== "all" && row.stage !== stage) return false;
       if (!q) return true;
       return `${row.name} ${row.firm || ""}`.toLowerCase().includes(q);
     });
   }, [query, rows, stage, track]);
   const visible = filtered.slice(0, shown);
+  const tiles = counts.filter((item) => !TAIL.has(item.stage) && (item.count > 0 || item.stageCount > 0));
+  const rest = counts.filter((item) => TAIL.has(item.stage) && item.stageCount > 0);
+  const other = rest.reduce((sum, item) => sum + item.stageCount, 0);
+  const covered = counted === total;
 
   return (
     <>
@@ -51,14 +63,33 @@ export function PeopleDesk({
         ) : null}
       </h1>
       {counts.length ? (
-        <div className="funnel" style={{ marginTop: 32 }}>
-          {counts.slice(0, 7).map((item) => (
-            <div key={item.stage} className={item.stage === "im_in" || item.stage === "replied" || item.stage === "call_asked" ? "warmc" : ""}>
-              <div className="lbl">{item.label}</div>
-              <div className="v">{item.count.toLocaleString("en-US")}</div>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="funnel" style={{ marginTop: 32 }}>
+            {tiles.map((item) => (
+              <div key={item.stage} className={WARM_STAGE.has(item.stage) ? "warmc" : ""}>
+                <div className="lbl">{item.label}</div>
+                <div className="v">{item.count.toLocaleString("en-US")}</div>
+                {item.detail ? <div className="sub">{item.detail}</div> : null}
+              </div>
+            ))}
+            {rest.length ? (
+              <div className="span">
+                <div className="lbl">Other</div>
+                <div className="v">{other.toLocaleString("en-US")}</div>
+                <ul className="bits">
+                  {rest.map((item) => (
+                    <li key={item.stage}>
+                      {item.label} <b>{item.stageCount.toLocaleString("en-US")}</b>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+          <p className={`lbl muted funnel-check${covered ? "" : " is-off"}`}>
+            {counted.toLocaleString("en-US")} of {total.toLocaleString("en-US")}
+          </p>
+        </>
       ) : null}
       <div className="tabs">
         <button type="button" className={track === "all" ? "on" : ""} onClick={() => { setTrack("all"); setShown(PAGE); }}>

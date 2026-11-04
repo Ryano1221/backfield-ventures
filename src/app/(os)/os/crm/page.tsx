@@ -21,7 +21,7 @@ export default async function CrmPage() {
   const people = buildPeople(page.snapshot);
   return (
     <NightFrame onOs={isOsHost(host)} active="people" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <PeopleDesk rows={people.rows} counts={people.counts} tracks={people.tracks} total={people.total} warm={people.warm} onOs={isOsHost(host)} />
+      <PeopleDesk rows={people.rows} counts={people.counts} tracks={people.tracks} total={people.total} warm={people.warm} counted={people.counted} onOs={isOsHost(host)} />
     </NightFrame>
   );
 }
