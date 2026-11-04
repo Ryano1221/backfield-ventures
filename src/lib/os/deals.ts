@@ -46,7 +46,7 @@ export function compareDeals(a: DeskDeal, b: DeskDeal, sort: DealSort, ratingOf:
   if (sort === "score") return (b.score ?? -1) - (a.score ?? -1) || a.company.localeCompare(b.company);
   const rank = (deal: DeskDeal) => {
     const rating = ratingOf(deal);
-    return rating ? RATING_RANK[rating] : 4;
+    return rating ? RATING_RANK[rating] + 1 : 0;
   };
   return rank(a) - rank(b) || (b.score ?? -1) - (a.score ?? -1) || a.company.localeCompare(b.company);
 }

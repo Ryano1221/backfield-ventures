@@ -254,6 +254,11 @@ test("host routing keeps the public site and locks the dashboard", () => {
     kind: "rewrite",
     pathname: "/os/deals",
   });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/waiting", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/waiting",
+  });
+  assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/waiting", authed: false }).kind, "redirect");
   assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/d/dec_1", authed: true }), {
     kind: "rewrite",
     pathname: "/os/d/dec_1",

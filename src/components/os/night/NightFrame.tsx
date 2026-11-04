@@ -6,6 +6,7 @@ import type { FinderItem } from "@/lib/os/finder";
 import { osHrefs } from "@/lib/os/nav";
 import { isPitchRating, rateKey } from "@/lib/os/pitch-rate";
 import type { ActionPayload, ActionType, OsAction } from "@/lib/os/types";
+import { waitingActions } from "@/lib/os/waiting";
 
 type Queued = {
   batch: string;
@@ -43,7 +44,7 @@ export function useNightActions(): NightApi {
 
 const SINGLETON = new Set<ActionType>(["decide", "pitch_status", "crm_stage", "crm_hold", "crm_dnc", "bot_pause", "bot_resume", "snooze"]);
 
-type Section = "today" | "deals" | "people" | "bots" | "activity" | "email";
+type Section = "today" | "deals" | "people" | "bots" | "activity" | "email" | "waiting";
 
 export function NightFrame({
   active,
@@ -243,14 +244,21 @@ export function NightFrame({
   }, []);
 
   const hrefs = osHrefs(onOs);
+  const waitingCount = waitingActions(actions).length;
   const links: { id: Section; label: string; href: string; count: number | null }[] = [
     { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
+    { id: "waiting", label: "Waiting", href: hrefs.waiting, count: waitingCount },
     { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
     { id: "people", label: "People", href: hrefs.people, count: counts.people },
     { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
     { id: "email", label: "Email", href: hrefs.email, count: null },
   ];
   const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
+
+  useEffect(() => {
+    document.body.classList.toggle("os-cover", menu || open);
+    return () => document.body.classList.remove("os-cover");
+  }, [menu, open]);
 
   const q = query.trim().toLowerCase();
   const matches = finder

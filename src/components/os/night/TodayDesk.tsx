@@ -47,7 +47,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
   }, [inflight, item, items.length, submit]);
 
   return (
-    <>
+    <div className="today-board">
       <div className="hero">
         <div>
           {view.weekday ? (
@@ -98,7 +98,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         </section>
       ) : null}
 
-      <section className="card">
+      <section className="card decisions">
         <div className="h">
           <span className="lbl">Needs you · Decisions</span>
           {items.length ? <span className="lbl pointer-keys">J / K to move · Enter to approve</span> : null}
@@ -161,7 +161,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         </div>
         {model.deals.length ? <DealTable deals={model.deals} hrefFor={(deal) => hrefs.deal(deal.id)} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No deals are in review.</p>}
       </section>
-    </>
+    </div>
   );
 }
 

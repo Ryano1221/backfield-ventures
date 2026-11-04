@@ -26,7 +26,7 @@ export default async function HandoffListPage() {
         }
         primary={
           <a className="primary-btn" href={hrefs.compose}>
-            New Handoff issue
+            Open draft
           </a>
         }
       />

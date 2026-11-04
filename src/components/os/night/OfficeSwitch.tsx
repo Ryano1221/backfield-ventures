@@ -42,7 +42,7 @@ export function OfficeSwitch({
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const [feedAll, setFeedAll] = useState(false);
-  const view = choice ?? "map";
+  const view = choice ?? (desk.summary.needs > 0 ? "list" : "map");
   const visible = useMemo(() => desk.bots.filter((bot) => botMatches(bot, filter, query)), [desk.bots, filter, query]);
   const needs = visible.filter((bot) => bot.status === "Needs Ryan");
   const teams = groupTeams(visible);

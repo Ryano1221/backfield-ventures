@@ -1,4 +1,5 @@
 import { decisionKey } from "./decision-id";
+import { stageLabel } from "./night";
 import { pitchTarget } from "./pitch-rate";
 import { shortTitle } from "./present";
 import { blankToNull } from "./present";
@@ -19,7 +20,7 @@ export function buildFinder(snapshot: Snapshot | null): FinderItem[] {
       kind: "person",
       id: person.id,
       title: person.name,
-      hint: [person.firm, person.stage].filter(Boolean).join(" · "),
+      hint: [person.firm, stageLabel(person.stage)].filter(Boolean).join(" · "),
     });
   }
   for (const pitch of snapshot.pitches) {

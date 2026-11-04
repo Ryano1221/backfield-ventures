@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { snoozeUntil } from "@/lib/os/snooze";
 import type { DeskDecision } from "@/lib/os/night";
 import type { ActionPayload, DecisionSwap } from "@/lib/os/types";
+import { decisionNeedsPickup, PICKUP_LINE } from "@/lib/os/waiting";
 import { DecisionDetailView } from "./DecisionDetail";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
@@ -21,7 +22,8 @@ export function DecisionPane({
   next?: { href: string; label: string } | null;
   className?: string;
 }) {
-  const { submit, retry, inflight, errors } = useNightActions();
+  const { submit, retry, inflight, errors, actions } = useNightActions();
+  const pickup = decisionNeedsPickup(actions, item.id);
   const pending = Boolean(inflight[item.id]);
   const error = errors[item.id] || "";
   const [editing, setEditing] = useState(false);
@@ -173,10 +175,13 @@ export function DecisionPane({
       ) : null}
       <div className="actions">
         {item.outcome && !pending ? (
-          <p className="outcome">
-            <b>{item.outcome.label}</b>
-            {item.outcome.at ? <span className="lbl"> · {item.outcome.at}</span> : null}
-          </p>
+          <>
+            <p className="outcome">
+              <b>{item.outcome.label}</b>
+              {item.outcome.at ? <span className="lbl"> · {item.outcome.at}</span> : null}
+            </p>
+            {pickup ? <p className="pickup">{PICKUP_LINE}</p> : null}
+          </>
         ) : editing ? (
           <>
             <button type="button" className="btn primary" onClick={saveEdit} disabled={!draft.trim() || draft.trim() === saved}>
@@ -210,13 +215,13 @@ export function DecisionPane({
                     onClick={() => choose(option.value, `${option.label} for ${item.name}.`)}
                     disabled={pending}
                   >
-                    {pending && primary ? "Pending" : option.label} {primary && !pending ? <span>→</span> : null}
+                    {pending && primary ? "Pending" : primary ? `${option.label} · ${item.name}` : option.label} {primary && !pending ? <span>→</span> : null}
                   </button>
                 );
               })
             ) : (
               <button type="button" className="btn primary" onClick={approve} disabled={pending}>
-                {pending ? "Pending" : item.approveLabel} {!pending ? <span>→</span> : null}
+                {pending ? "Pending" : `${item.approveLabel} · ${item.name}`} {!pending ? <span>→</span> : null}
               </button>
             )}
             {!listed.length && item.message ? (
