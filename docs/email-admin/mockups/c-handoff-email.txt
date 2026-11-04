@@ -1,0 +1,46 @@
+From: Ryan Arnold <ryan@info.backfieldventures.com> (sample sender)
+Reply-To: ryan@backfieldventures.com
+Subject: The Handoff, Issue 01: Sample Brand A, Sample Brand B and Sample Brand C
+[MOCKUP ONLY. Plain-text version of The Handoff email, sample content.]
+
+THE HANDOFF
+Issue 01 / Sample Month 2026
+
+Hi {{first_name|there}},
+
+A short opener in my voice about what I saw this month and the three brands below. [sample text]
+
+01 / CATEGORY
+SAMPLE BRAND A
+Two or three short paragraphs on what the brand makes and why I think it's impressive. Facts come from a cited public source, and each one links to it. [sample text]
+Source: https://source.example.com/samplebranda (sample)
+Visit samplebranda.com: https://samplebranda.com (sample)
+
+02 / CATEGORY
+SAMPLE BRAND B
+Two or three short paragraphs on what the brand makes and why I think it's impressive. Facts come from a cited public source, and each one links to it. [sample text]
+Source: https://source.example.com/samplebrandb (sample)
+Visit samplebrandb.com: https://samplebrandb.com (sample)
+
+03 / CATEGORY
+SAMPLE BRAND C
+Two or three short paragraphs on what the brand makes and why I think it's impressive. Facts come from a cited public source, and each one links to it. [sample text]
+Source: https://source.example.com/samplebrandc (sample)
+Visit samplebrandc.com: https://samplebrandc.com (sample)
+
+CLOSING
+Got a consumer or sports company I should look at? Reply to this email or send it to ryan@backfieldventures.com. [sample]
+
+Ryan
+
+This is shared for information only. Not investment advice, and not a solicitation or offer.
+
+You're getting The Handoff because you asked to be on it. I write it once a month.
+
+Ryan Arnold
+Backfield Ventures
+200 Academy Dr, Suite 100, Austin, TX 78704
+
+Unsubscribe: https://backfieldventures.com/u/SAMPLE-TOKEN (sample unsubscribe link)
+Update preferences: https://backfieldventures.com/p/SAMPLE-TOKEN (sample)
+View in browser: https://backfieldventures.com/handoff/issue-00 (sample)

@@ -274,6 +274,40 @@ test("host routing keeps the public site and locks the dashboard", () => {
   assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/crm/person_1", authed: false, vercelEnv: "preview" }).kind, "redirect");
 });
 
+test("email paths stay on the public site or behind the dashboard", () => {
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/email", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/email",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/email", authed: false }), {
+    kind: "redirect",
+    pathname: "/login",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/email/subscribers", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/email/subscribers",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/email/lists/handoff", authed: true }), {
+    kind: "rewrite",
+    pathname: "/os/email/lists/handoff",
+  });
+  assert.deepEqual(decideOs({ host: "os.backfieldventures.com", pathname: "/os/email/compose", authed: true }), {
+    kind: "redirect",
+    pathname: "/email/compose",
+  });
+  assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/u/SAMPLE-TOKEN", authed: true }).kind, "not-found");
+  assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/u/SAMPLE-TOKEN", authed: false }).kind, "not-found");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/email", authed: false, vercelEnv: "preview" }).kind, "redirect");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/os/email/templates", authed: true, vercelEnv: "preview" }).kind, "os-next");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/u/SAMPLE-TOKEN", authed: false, vercelEnv: "preview" }).kind, "public");
+  assert.equal(decideOs({ host: "backfieldventures.com", pathname: "/u/SAMPLE-TOKEN", authed: false, vercelEnv: "production" }).kind, "public");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/email/subscribe", authed: false, vercelEnv: "preview" }).kind, "public");
+  assert.equal(decideOs({ host: "backfieldventures.com", pathname: "/api/email/unsubscribe", authed: false, vercelEnv: "production" }).kind, "public");
+  assert.equal(decideOs({ host: "preview.vercel.app", pathname: "/api/os/email/subscribers/export", authed: false, vercelEnv: "preview" }).kind, "unauthorized");
+  assert.equal(decideOs({ host: "os.backfieldventures.com", pathname: "/api/os/email/compose/send", authed: false }).kind, "unauthorized");
+  assert.equal(decideOs({ host: "backfieldventures.com", pathname: "/os/email", authed: true, vercelEnv: "production" }).kind, "not-found");
+});
+
 test("dashboard metrics flag stale snapshots and count the operating picture", () => {
   const fresh = buildDashboard(sample(), NOW);
   assert.equal(fresh.stale, false);

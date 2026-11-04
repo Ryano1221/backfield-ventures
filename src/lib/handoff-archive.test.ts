@@ -16,7 +16,7 @@ import {
   selectRssItems,
   type ArchiveEnv,
   type BeehiivPost,
-} from "./handoff-archive.ts";
+} from "./handoff-archive";
 
 const NOW = Date.UTC(2026, 9, 28, 17, 0, 0);
 const PUBLISHED = Math.floor(Date.UTC(2026, 9, 1, 17, 0, 0) / 1000);

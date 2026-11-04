@@ -1,0 +1,67 @@
+@font-face {
+  font-family: Switzer;
+  src: url("/fonts/os/Switzer-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  margin: 0;
+  background: #f0ede8;
+  color: #000;
+}
+
+.unsub {
+  min-height: 100vh;
+  margin: 0;
+  background: #f0ede8;
+  color: #000;
+  font-family: Switzer, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.unsub body,
+body:has(.unsub) {
+  margin: 0;
+  background: #f0ede8;
+  color: #000;
+}
+
+.unsub main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+}
+
+.unsub img {
+  height: 28px;
+  width: auto;
+}
+
+.unsub h1 {
+  font-family: var(--font-bebas), "Bebas Neue", Impact, sans-serif;
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 28px 0 12px;
+}
+
+.unsub p { margin: 0 0 12px; }
+
+.unsub .fine {
+  margin-top: 28px;
+  color: rgba(0, 0, 0, 0.66);
+  font-size: 14px;
+}
+
+.unsub a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  color: #000;
+}

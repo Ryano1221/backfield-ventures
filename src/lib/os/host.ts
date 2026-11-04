@@ -64,7 +64,10 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
   if (page) return authed ? { kind: "rewrite", pathname: page } : { kind: "redirect", pathname: "/login" };
   const nested = nestedOsPage(path);
   if (nested) return authed ? { kind: "rewrite", pathname: nested } : { kind: "redirect", pathname: "/login" };
-  if (path.startsWith("/os/") && (OS_INTERNAL_PAGES.has(path) || path.startsWith("/os/d/") || path.startsWith("/os/crm/"))) {
+  if (
+    path.startsWith("/os/") &&
+    (OS_INTERNAL_PAGES.has(path) || path.startsWith("/os/d/") || path.startsWith("/os/crm/") || path.startsWith("/os/email/"))
+  ) {
     const external = path.slice(3);
     return { kind: "redirect", pathname: authed ? external : "/login" };
   }
@@ -93,11 +96,13 @@ const OS_PAGE_REWRITES: Record<string, string> = {
   "/deals": "/os/deals",
   "/pipeline": "/os/pipeline",
   "/activity": "/os/activity",
+  "/email": "/os/email",
 };
 
 function nestedOsPage(path: string): string | null {
   if (path.startsWith("/d/") && path.length > 3) return `/os${path}`;
   if (path.startsWith("/crm/") && path.length > 5) return `/os${path}`;
+  if (path.startsWith("/email/") && path.length > 7) return `/os${path}`;
   return null;
 }
 
