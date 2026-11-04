@@ -43,7 +43,7 @@ export function useNightActions(): NightApi {
 
 const SINGLETON = new Set<ActionType>(["decide", "pitch_status", "crm_stage", "crm_hold", "crm_dnc", "bot_pause", "bot_resume", "snooze"]);
 
-type Section = "today" | "deals" | "people" | "bots" | "activity";
+type Section = "today" | "deals" | "people" | "bots" | "activity" | "email";
 
 export function NightFrame({
   active,
@@ -248,6 +248,7 @@ export function NightFrame({
     { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
     { id: "people", label: "People", href: hrefs.people, count: counts.people },
     { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
+    { id: "email", label: "Email", href: hrefs.email, count: null },
   ];
   const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
 

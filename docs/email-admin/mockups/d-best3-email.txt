@@ -1,0 +1,44 @@
+From: Ryan Arnold <ryan@backfieldventures.com> (sample sender)
+To: {{partner_email}} (one recipient per email)
+Subject: Three companies worth a look (Sample Month 2026)
+Attachment: Best3-Sample-Month.pdf (optional)
+[MOCKUP ONLY. Plain-text version of the Best 3 email, sample content.]
+
+Hi {{first_name|there}},
+
+Here are three companies I thought you might like. Let me know if you want to know more or want an intro. [sample text]
+
+1. Sample Company One (https://samplecompany1.com, sample)
+One or two plain sentences: what it makes, where it sells, and the public fact that made me pick it, with the source linked. [sample text]
+Source: https://source.example.com/samplecompany1 (sample)
+Category: Sample | Stage: Sample | HQ: Sample City
+
+2. Sample Company Two (https://samplecompany2.com, sample)
+One or two plain sentences: what it makes, where it sells, and the public fact that made me pick it, with the source linked. [sample text]
+Source: https://source.example.com/samplecompany2 (sample)
+Category: Sample | Stage: Sample | HQ: Sample City
+
+3. Sample Company Three (https://samplecompany3.com, sample)
+One or two plain sentences: what it makes, where it sells, and the public fact that made me pick it, with the source linked. [sample text]
+Source: https://source.example.com/samplecompany3 (sample)
+Category: Sample | Stage: Sample | HQ: Sample City
+
+Keep me in mind as you see companies that could be a fit, and I'll keep sending ones I like your way.
+
+Reply for an intro: just reply to this email.
+
+Best,
+Ryan
+[Backfield Stripe signature added by Gmail web at send]
+
+This is shared for information only. Not investment advice, and not a solicitation or offer.
+
+You're getting this because you and I have swapped companies before and you said yes to this note.
+
+Ryan Arnold
+Backfield Ventures
+200 Academy Dr, Suite 100, Austin, TX 78704
+
+Unsubscribe: https://backfieldventures.com/u/SAMPLE-TOKEN (sample unsubscribe link)
+Update preferences: https://backfieldventures.com/p/SAMPLE-TOKEN (sample)
+View in browser: https://backfieldventures.com/best3/sample-month (sample)

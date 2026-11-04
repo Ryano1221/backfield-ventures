@@ -1,4 +1,4 @@
-export type OsSection = "today" | "crm" | "pipeline" | "bots" | "activity";
+export type OsSection = "today" | "crm" | "pipeline" | "bots" | "activity" | "email";
 
 export function osChromeCounts(
   snapshot: { bots?: { bots?: readonly unknown[] } } | null,
@@ -23,6 +23,7 @@ export function osHrefs(onOs: boolean) {
     deals: `${root}/deals`,
     bots: `${root}/bots`,
     activity: `${root}/activity`,
+    email: onOs ? "/email" : "/os/email",
     login: onOs ? "/login" : "/os/login",
     decision: (id: string) => `${root}/d/${encodeURIComponent(id)}`,
     deal: (id: string) => `${root}/deals/${encodeURIComponent(id)}`,
