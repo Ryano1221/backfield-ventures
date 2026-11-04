@@ -9,10 +9,17 @@ import { FlowView } from "./FlowView";
 import { PixelOffice } from "./PixelOffice";
 
 const DOT: Record<DeskBot["status"], string> = {
-  "Needs Ryan": "#c8b89a",
-  Working: "#8faa96",
-  Idle: "#77736c",
-  Paused: "#a09ab8",
+  "Needs Ryan": "is-need",
+  Working: "is-work",
+  Idle: "is-idle",
+  Paused: "is-pause",
+};
+
+const CHIP_NOTE: Partial<Record<DeskFilter, string>> = {
+  needs: "Waiting on you",
+  working: "Running now",
+  idle: "Done for now",
+  paused: "Off until you resume",
 };
 
 export function OfficeSwitch({
@@ -248,11 +255,14 @@ function Summary({
       <div className="bots-chips" role="group" aria-label="Filter bots">
         {chips.map((chip) => (
           <button key={chip.id} type="button" className="bots-chip" aria-pressed={filter === chip.id} onClick={() => onFilter(chip.id)}>
-            <span>{chip.count}</span> {chip.label}
+            <span className="lbl">{chip.label}</span>
+            <span className="v">{chip.count.toLocaleString("en-US")}</span>
+            {CHIP_NOTE[chip.id] ? <span className="d">{CHIP_NOTE[chip.id]}</span> : null}
           </button>
         ))}
         <button type="button" className={counts.failedRoutines > 0 ? "bots-chip is-alert" : "bots-chip"} onClick={onRoutines}>
-          <span>{counts.failedRoutines}</span> Failed
+          <span className="lbl">Failed</span>
+          <span className="v">{counts.failedRoutines.toLocaleString("en-US")}</span>
         </button>
       </div>
       {usage.length ? <p className="bots-firm">{usage.join(" · ")}</p> : null}
@@ -263,7 +273,7 @@ function Summary({
 function Status({ bot }: { bot: DeskBot }) {
   return (
     <span className="bots-status">
-      <i className="bots-dot" style={{ background: DOT[bot.status] }} aria-hidden />
+      <i className={`bots-dot ${DOT[bot.status]}`} aria-hidden />
       {bot.statusLabel}
     </span>
   );
@@ -338,7 +348,7 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
           {bot.role && bot.role.toLowerCase() !== bot.team.toLowerCase() ? ` · ${bot.role}` : ""}
         </p>
         <p className="bots-status">
-          <i className="bots-dot" style={{ background: DOT[bot.status] }} aria-hidden />
+          <i className={`bots-dot ${DOT[bot.status]}`} aria-hidden />
           {bot.statusLabel}
         </p>
         <When relative={bot.relative} ct={bot.ct} />

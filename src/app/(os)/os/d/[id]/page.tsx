@@ -4,6 +4,7 @@ import { DecisionDesk } from "@/components/os/night/DecisionDesk";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { isOsHost } from "@/lib/os/host";
 import { buildToday, presentDecision } from "@/lib/os/night";
+import { osChromeCounts } from "@/lib/os/nav";
 import { loadOsPage } from "@/lib/os/page-data";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
   const index = items.findIndex((item) => item.id === key);
   const item = index >= 0 ? items[index] : null;
   return (
-    <NightFrame onOs={onOs} active="today" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={onOs} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       {item ? (
         <DecisionDesk item={item} index={index} total={items.length} next={items[index + 1] ?? null} onOs={onOs} />
       ) : (
@@ -40,9 +41,4 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
       )}
     </NightFrame>
   );
-}
-
-function counts(snapshot: { decisions: unknown[] } | null, model: ReturnType<typeof buildToday>) {
-  if (!snapshot) return { today: null, deals: null, people: null };
-  return { today: model.ready.length + model.hold.length + model.open.length, deals: model.reviewingCount, people: model.peopleCount };
 }

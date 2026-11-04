@@ -50,7 +50,7 @@ export function NightFrame({
 }: {
   active: Section;
   onOs: boolean;
-  counts: { today: number | null; deals: number | null; people: number | null };
+  counts: { today: number | null; deals: number | null; people: number | null; bots?: number | null };
   stamp: string | null;
   stale?: boolean;
   initialActions: OsAction[];
@@ -61,6 +61,7 @@ export function NightFrame({
   const [queued, setQueued] = useState<Queued[]>([]);
   const [toasts, setToasts] = useState<{ id: string; label: string; undo: boolean }[]>([]);
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState("");
   const queuedRef = useRef<Queued[]>([]);
   const timers = useRef(new Map<string, number>());
@@ -138,11 +139,23 @@ export function NightFrame({
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setOpen((value) => !value);
-      } else if (event.key === "Escape") setOpen(false);
+      } else if (event.key === "Escape") {
+        setOpen(false);
+        setMenu(false);
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (!menu) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [menu]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -163,12 +176,13 @@ export function NightFrame({
   }, []);
 
   const hrefs = osHrefs(onOs);
-  const links: { id: Section; label: string; href: string; count: number | null; hot?: boolean }[] = [
-    { id: "today", label: "Today", href: hrefs.today, count: counts.today, hot: true },
+  const links: { id: Section; label: string; href: string; count: number | null }[] = [
+    { id: "today", label: "Today", href: hrefs.today, count: counts.today },
     { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
     { id: "people", label: "People", href: hrefs.people, count: counts.people },
-    { id: "bots", label: "Bots", href: hrefs.bots, count: null },
+    { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
   ];
+  const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
 
   const q = query.trim().toLowerCase();
   const matches = finder
@@ -182,64 +196,100 @@ export function NightFrame({
 
   return (
     <Ctx.Provider value={{ actions: visible, enqueue }}>
+      <header className="mbar">
+        <a href={hrefs.today}>
+          <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
+        </a>
+        <div className="mbar-actions">
+          <button type="button" className="search-icon" aria-label="Search" onClick={() => setOpen(true)}>
+            <SearchIcon />
+          </button>
+          <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
+            <i />
+            Menu
+          </button>
+        </div>
+      </header>
       <div className="shell">
         <aside className="rail">
-          <div className="v">Backfield Ventures · OS · Private</div>
+          <a className="brand" href={hrefs.today}>
+            <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
+          </a>
+          <div className="sub lbl">OS · {pageLabel}</div>
+          <nav>
+            {links.map((link) => (
+              <a key={link.id} href={link.href} className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+                {link.label}
+                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+              </a>
+            ))}
+          </nav>
+          <div className="rail-foot lbl">
+            <button type="button" onClick={signOut}>
+              Sign out
+            </button>
+            <span>Private to Ryan</span>
+          </div>
         </aside>
-        <div>
-          <header className="top">
-            <a className="brand" href={hrefs.today}>
-              <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
-            </a>
-            <nav>
-              {links.map((link) => (
-                <a key={link.id} href={link.href} className={active === link.id ? "on" : ""}>
-                  {link.label}
-                  {link.count != null ? <span className={`c${link.hot && link.count > 0 ? " hot" : ""}`}>{link.count.toLocaleString("en-US")}</span> : null}
-                </a>
-              ))}
-            </nav>
-            <div className="right">
-              <button type="button" className="search-icon" aria-label="Search" onClick={() => setOpen(true)}>
-                <SearchIcon />
-              </button>
+        <div className="os-col">
+          <header className="crumb lbl">
+            <span>
+              Backfield OS <span className="sep">/</span> {pageLabel}
+            </span>
+            <span className="r">
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
-                <span>Search people, deals, bots</span>
-                <kbd>⌘K</kbd>
+                <span>Search</span>
+                <kbd className="pointer-keys">⌘K</kbd>
               </button>
               {stamp ? (
-                <span className="lbl stamp">
+                <span className="stamp">
                   <i className={`dot${stale ? " wait" : ""}`} />
                   Updated {stamp.replace(/,\s*\d{4}/, "")}
                 </span>
               ) : (
-                <span className="lbl stamp">Waiting on the first ingest</span>
+                <span className="stamp">Waiting on the first ingest</span>
               )}
-            </div>
+              <span className="private">Private to Ryan</span>
+            </span>
           </header>
           <main className="main">
             {children}
             <div className="foot lbl">
-              <span>
-                Backfield OS · private to Ryan ·{" "}
-                <button type="button" onClick={signOut}>
-                  Sign out
-                </button>
-              </span>
+              <span>Backfield OS · private to Ryan</span>
               <span>{stamp ? `Snapshot ${stamp}` : "No snapshot yet"}</span>
             </div>
           </main>
         </div>
       </div>
-      <nav className="mnav">
-        {links.map((link) => (
-          <a key={link.id} href={link.href} className={active === link.id ? "on" : ""}>
-            {link.label}
-            {link.hot && link.count ? <span className="b">{link.count}</span> : null}
+      {menu ? (
+        <div className="mpanel" id="os-menu" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="mpanel-bar">
+            <img src="/brand/logo-cream.png" alt="" />
+            <button type="button" className="menu-btn" onClick={() => setMenu(false)}>
+              <span aria-hidden="true">×</span> Close
+            </button>
+          </div>
+          <div className="lbl mpanel-kicker">OS</div>
+          <nav>
+            {links.map((link) => (
+              <a key={link.id} href={link.href} className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenu(false)}>
+                {link.label}
+                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+              </a>
+            ))}
+          </nav>
+          <button type="button" className="mpanel-row" onClick={() => { setMenu(false); setOpen(true); }}>
+            Search
+          </button>
+          <button type="button" className="mpanel-row" onClick={signOut}>
+            Sign out
+          </button>
+          <a className="mpanel-back" href={hrefs.today} onClick={() => setMenu(false)}>
+            ← Back to today
           </a>
-        ))}
-      </nav>
+        </div>
+      ) : null}
       {open ? (
         <div
           className="palette"

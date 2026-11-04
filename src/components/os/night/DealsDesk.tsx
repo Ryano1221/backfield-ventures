@@ -8,10 +8,13 @@ export function DealsDesk({ deals, reviewing }: { deals: DeskDeal[]; reviewing: 
       <h1 className="d-xl">
         {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "deal is" : "deals are"} in review.
       </h1>
-      <p className="t-body muted" style={{ margin: "16px 0 32px" }}>
-        {deals.length.toLocaleString("en-US")} pitches in this snapshot.
-      </p>
-      {deals.length ? <DealTable deals={deals} /> : <p className="t-body muted">No pitches in this snapshot.</p>}
+      <p className="lede">{deals.length.toLocaleString("en-US")} pitches in this snapshot.</p>
+      <section className="card">
+        <div className="h">
+          <span className="lbl">Pitches · score, then age</span>
+        </div>
+        {deals.length ? <DealTable deals={deals} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No pitches in this snapshot.</p>}
+      </section>
     </>
   );
 }

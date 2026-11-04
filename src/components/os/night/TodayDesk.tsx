@@ -45,9 +45,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       <div className="hero">
         <div>
           {model.weekday ? (
-            <div className="lbl eyebrow">
-              01 · <b>{model.weekday}</b>
-            </div>
+            <div className="lbl eyebrow">{model.weekday}</div>
           ) : null}
           <h1 className="d-xl">
             {model.headline}
@@ -77,20 +75,17 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         ) : null}
       </div>
 
-      <section className="sec" style={{ marginTop: 0 }}>
-        <div className="sec-h">
-          <div>
-            <div className="lbl">02 · Needs you</div>
-            <h2 className="d-m">Decisions</h2>
-          </div>
-          {items.length ? <div className="tools"><span className="lbl muted pointer-keys">J / K to move · Enter to approve</span></div> : null}
+      <section className="card">
+        <div className="h">
+          <span className="lbl">Needs you · Decisions</span>
+          {items.length ? <span className="lbl pointer-keys">J / K to move · Enter to approve</span> : null}
         </div>
         {item ? (
           <div className="mfirst">
             <DecisionPane key={item.id} item={item} index={current} total={items.length} />
           </div>
         ) : (
-          <p className="t-body muted">No decisions in this snapshot.</p>
+          <p className="t-body muted" style={{ padding: "16px 18px" }}>No decisions in this snapshot.</p>
         )}
         {items.length ? (
           <div className="split">
@@ -114,14 +109,11 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       </section>
 
       {model.waiting.length ? (
-        <section className="sec">
-          <div className="sec-h">
-            <div>
-              <div className="lbl">Bots waiting on you · {model.waiting.length}</div>
-              <h2 className="d-m">In their words</h2>
-            </div>
-            <a className="btn sm" href={hrefs.bots}>
-              Office →
+        <section className="card">
+          <div className="h">
+            <span className="lbl">Bots waiting on you · {model.waiting.length}</span>
+            <a className="lnk" href={hrefs.bots}>
+              Office
             </a>
           </div>
           <div className="wait">
@@ -135,19 +127,16 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         </section>
       ) : null}
 
-      <section className="sec">
-        <div className="sec-h">
-          <div>
-            <div className="lbl">03 · Deal desk</div>
-            <h2 className="d-m">Deals in review</h2>
-          </div>
+      <section className="card">
+        <div className="h">
+          <span className="lbl">Deal desk · Deals in review</span>
           {model.pitchCount ? (
-            <a className="btn sm" href={hrefs.deals}>
-              All {model.pitchCount.toLocaleString("en-US")} pitches →
+            <a className="lnk" href={hrefs.deals}>
+              All {model.pitchCount.toLocaleString("en-US")} pitches
             </a>
           ) : null}
         </div>
-        {model.deals.length ? <DealTable deals={model.deals} /> : <p className="t-body muted">No deals are in review.</p>}
+        {model.deals.length ? <DealTable deals={model.deals} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No deals are in review.</p>}
       </section>
     </>
   );
