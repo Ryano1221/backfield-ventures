@@ -43,13 +43,13 @@ const LANE_R=11*T+10, LANE_L=12*T+12;
 root.classList.add('ofc'); if(LIGHT) root.classList.add('light');
 root.innerHTML=`<div class="ofc-bar"><span class="clk"><i></i><span class="ct">Replay</span></span><span class="sp-g"><button class="pp${reduce?' on':''}">${reduce?'Play':'Pause'}</button><button class="sp on" data-s="1">1x</button><button class="sp" data-s="3">3x</button><button class="sp" data-s="8">8x</button></span></div><div class="ofc-stage"><div class="ofc-scroll"><div class="ofc-inner" style="position:relative"><canvas></canvas><div class="ofc-layer"></div></div></div>
 </div>
-<div class="legend"><span><i style="background:#8faa96"></i>Working</span><span><i style="background:#c8b89a"></i>Needs you</span><span><i style="background:#77736c"></i>Idle</span><span><i style="background:#a09ab8"></i>Paused</span><span style="margin-left:auto">Click any bot to see its work</span></div>
+<div class="legend"><span><i style="background:#8faa96"></i>Working</span><span><i style="background:#c8b89a"></i>Needs you</span><span><i style="background:#77736c"></i>Idle</span><span><i style="background:#a09ab8"></i>Paused</span><span style="margin-left:auto">${window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 700px)").matches ? "Tap" : "Click"} any bot to see its work</span></div>
 <div class="ofc-below"><div class="ofc-card"><div class="h"><span>Handoffs</span><span class="cnt"></span></div><div class="feed"></div></div><div class="ofc-card"><div class="h"><span>Selected bot</span><span>Live status</span></div><div class="insp"></div></div></div>`;
 const cv=root.querySelector('canvas'),ctx=cv.getContext('2d'),layer=root.querySelector('.ofc-layer'),inner=root.querySelector('.ofc-inner');
 const bg=document.createElement('canvas');bg.width=W;bg.height=H;const g=bg.getContext('2d');
 const buf=document.createElement('canvas');buf.width=W;buf.height=H;const c=buf.getContext('2d');
 let S=2;
-function fit(){const w=root.querySelector('.ofc-stage').clientWidth; S=w<700?1:Math.max(1,w/W); const cw=Math.round(W*S),ch=Math.round(H*S);
+function fit(){const w=root.querySelector('.ofc-stage').clientWidth; if(!w)return; S=w<700?Math.min(1,w/W):Math.max(1,w/W); const cw=Math.round(W*S),ch=Math.round(H*S);
   const dpr=window.devicePixelRatio||1; cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);cv.style.width=cw+'px';cv.style.height=ch+'px';
   inner.style.width=cw+'px';inner.style.height=ch+'px';layer.style.width=cw+'px';layer.style.height=ch+'px';placeSigns();}
 function R_(x,y,w,h,col,cc){(cc||c).fillStyle=col;(cc||c).fillRect(x|0,y|0,w|0,h|0)}
@@ -197,8 +197,11 @@ function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt
 const signs=[];
 for(const k in ROOMS){const R=ROOMS[k];const el=document.createElement('div');el.className='sign';el.innerHTML=`<b>${R.name}</b> · ${R.bots.length} bots`;layer.appendChild(el);signs.push([el,R]);}
 const ib=document.createElement('div');ib.className='sign';ib.innerHTML='<b>Ryan</b> · inbox';layer.appendChild(ib);
-function placeSigns(){signs.forEach(([el,R])=>{const x=(R.x0+(R.top?0.6:3.4))*T;const y=R.y0*T+9;el.style.left=(x*S)+'px';el.style.top=(y*S)+'px';});
-  ib.style.left=((INBOX.x-74)*S)+'px';ib.style.top=((11*T+8)*S)+'px';}
+function placeSigns(){signs.forEach(([el,R])=>{const x=(R.x0+(R.top?0.6:3.4))*T;const y=R.y0*T+9;el.style.left=(x*S)+'px';el.style.top=(y*S)+'px';
+  if(S<1){el.style.maxWidth=Math.max(48,((R.x1-R.x0+1)*T-8)*S)+'px';el.style.overflow='hidden';el.style.fontSize='8px';el.style.letterSpacing='0.04em';}
+  else{el.style.maxWidth='';el.style.overflow='';el.style.fontSize='';el.style.letterSpacing='';}});
+  ib.style.left=((INBOX.x-74)*S)+'px';ib.style.top=((11*T+8)*S)+'px';
+  if(S<1){ib.style.maxWidth='72px';ib.style.overflow='hidden';ib.style.fontSize='8px';}else{ib.style.maxWidth='';ib.style.overflow='';ib.style.fontSize='';}}
 const bubbles=new Map();
 function bubble(b,html,cls,ms){let o=bubbles.get(b);if(!o){o={el:document.createElement('div')};layer.appendChild(o.el);bubbles.set(b,o);}
   o.el.className='bub '+(cls||'');o.el.innerHTML=html;o.until=performance.now()+ms/Math.max(1,speed*0.6);o.el.style.opacity=1;}

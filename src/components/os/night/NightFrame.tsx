@@ -144,6 +144,24 @@ export function NightFrame({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const sync = () => {
+      const overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      root.style.setProperty("--keyboard", overlap > 80 ? `${Math.round(overlap)}px` : "0px");
+    };
+    sync();
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
+    return () => {
+      vv.removeEventListener("resize", sync);
+      vv.removeEventListener("scroll", sync);
+      root.style.removeProperty("--keyboard");
+    };
+  }, []);
+
   const hrefs = osHrefs(onOs);
   const links: { id: Section; label: string; href: string; count: number | null; hot?: boolean }[] = [
     { id: "today", label: "Today", href: hrefs.today, count: counts.today, hot: true },
@@ -182,6 +200,9 @@ export function NightFrame({
               ))}
             </nav>
             <div className="right">
+              <button type="button" className="search-icon" aria-label="Search" onClick={() => setOpen(true)}>
+                <SearchIcon />
+              </button>
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
                 <span>Search people, deals, bots</span>
@@ -220,8 +241,19 @@ export function NightFrame({
         ))}
       </nav>
       {open ? (
-        <div className="palette" role="dialog" aria-modal="true" aria-label="Search">
+        <div
+          className="palette"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setOpen(false);
+          }}
+        >
           <div className="palette-card">
+            <button type="button" className="palette-close" onClick={() => setOpen(false)}>
+              Close
+            </button>
             <input
               autoFocus
               value={query}

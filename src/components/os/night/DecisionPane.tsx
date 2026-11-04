@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { snoozeUntil } from "@/lib/os/snooze";
 import type { DeskDecision } from "@/lib/os/night";
 import { Logo } from "./Logo";
@@ -213,6 +213,21 @@ function FitTextarea({ value, onChange }: { value: string; onChange: (value: str
     node.style.height = "auto";
     node.style.height = `${node.scrollHeight}px`;
   }, [value]);
+  useEffect(() => {
+    const node = ref.current;
+    const vv = window.visualViewport;
+    if (!node || !vv) return;
+    const keepVisible = () => {
+      if (document.activeElement !== node) return;
+      node.scrollIntoView({ block: "center" });
+    };
+    vv.addEventListener("resize", keepVisible);
+    vv.addEventListener("scroll", keepVisible);
+    return () => {
+      vv.removeEventListener("resize", keepVisible);
+      vv.removeEventListener("scroll", keepVisible);
+    };
+  }, []);
   return (
     <textarea
       ref={ref}
@@ -221,6 +236,9 @@ function FitTextarea({ value, onChange }: { value: string; onChange: (value: str
       rows={1}
       aria-label="Edited message"
       onChange={(event) => onChange(event.target.value)}
+      onFocus={() => {
+        requestAnimationFrame(() => ref.current?.scrollIntoView({ block: "center" }));
+      }}
     />
   );
 }
