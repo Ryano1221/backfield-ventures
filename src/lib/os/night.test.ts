@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildOffice, buildToday, daySentence, headlineLines } from "./night";
+import { normalizeDecidePayload } from "./actions";
+import { buildOffice, buildToday, daySentence, formatCt, formatCtStamp, headlineLines } from "./night";
 import type { Snapshot } from "./types";
 
 const NOW = Date.parse("2026-11-03T22:09:00.000Z");
@@ -38,6 +39,84 @@ test("today headline and lede come from counts, and missing fields stay off the 
   assert.match(model.waiting[0]?.ask || "", /your yes/);
   assert.match(model.lede || "", /One reply is ready/);
   assert.match(model.lede || "", /one pack is on hold/);
+  assert.equal(model.ready[0]?.quote, null);
+  assert.equal(model.ready[0]?.why, null);
+  assert.equal(model.ready[0]?.toEmail, null);
+  assert.deepEqual(model.ready[0]?.checks, []);
+  assert.deepEqual(model.ready[0]?.timeline, []);
+});
+
+test("decision times render in CT and a formatted body keeps its blank lines", () => {
+  assert.equal(formatCt("2026-11-03T13:51:00.000Z"), "Nov 3, 7:51am CT");
+  assert.equal(formatCtStamp("2026-11-03T13:51:00.000Z", "row"), "Tue Nov 3 · 7:51am CT");
+  assert.equal(formatCtStamp("2026-10-30T15:56:00.000Z", "quote", true), "Fri Oct 30, ~10:56am CT");
+
+  const body = "Line one.\n\nLine two.";
+  const decision = {
+    ...sample().decisions[0]!,
+    exact_message: "Line one. Line two.",
+    body_formatted: body,
+    to_email: "casey.sample@example.com",
+    cc: "desk@example.com",
+    subject: "Hello — there",
+    thread_id: "thread-sample-1",
+    reply_to_msg_id: "msg-sample-1",
+    channel: "email" as const,
+    why_ryan: "Asked on Fri Oct 30 at 11:56 AM ET.",
+    summary: "A sample summary of what happened.",
+    context_raw: "RAW-MARKER-do-not-render",
+    checks: ["Not blocked"],
+    person: {
+      name: "Casey Sample",
+      company: "Sample Co",
+      what_they_do: "Makes sample goods",
+      reach: "10K readers",
+      source: "fixtures/sample.md",
+    },
+    their_words: {
+      quote: "A sample question?",
+      at: "2026-10-30T15:56:00.000Z",
+      at_et: "Fri Oct 30, 11:56 AM ET",
+      source: "reply to your note",
+      approx: true,
+    },
+    timeline: [
+      { at: "2026-10-29T15:34:00.000Z", event: "You sent the first note", source: "fixtures/sample.md" },
+      { at: "2026-10-30T15:56:00.000Z", event: "Casey replied with a question", approx: true, source: "fixtures/sample.md" },
+    ],
+  };
+  const model = buildToday({ ...sample(), decisions: [decision, sample().decisions[1]!] }, [], NOW);
+  const card = model.ready[0];
+  assert.equal(card?.message, body);
+  assert.equal(card?.name, "Casey Sample");
+  assert.equal(card?.org, "Sample Co · Makes sample goods");
+  assert.equal(card?.toName, "Casey Sample");
+  assert.equal(card?.toEmail, "casey.sample@example.com");
+  assert.equal(card?.cc, "desk@example.com");
+  assert.equal(card?.subject, "Hello, there");
+  assert.equal(card?.fromLine, "ryan@backfieldventures.com · reply in thread");
+  assert.equal(card?.channelCrumb, "Reply by email");
+  assert.equal(card?.why, "Asked on Fri Oct 30 at 11:56 AM ET.");
+  assert.equal(card?.happened, "A sample summary of what happened.");
+  assert.equal(card?.quote?.text, "A sample question?");
+  assert.match(card?.quote?.at || "", /Fri Oct 30, ~10:56am CT/);
+  assert.equal(card?.quote?.at?.includes("ET"), false);
+  assert.equal(card?.quote?.at?.includes("fixtures/"), false);
+  assert.equal(card?.timeline[1]?.at, "Fri Oct 30 · ~10:56am CT");
+  assert.equal(card?.timeline[0]?.tone, "you");
+  assert.equal(card?.timeline[1]?.tone, "them");
+  assert.deepEqual(card?.checks, ["Not blocked"]);
+  assert.equal(card?.details.some((fact) => fact.label === "Thread" && fact.value === "thread-sample-1"), true);
+  assert.equal(card?.details.some((fact) => fact.value === "fixtures/sample.md"), true);
+  const rendered = JSON.stringify({ ...card, details: undefined });
+  assert.equal(rendered.includes("thread-sample-1"), false);
+  assert.equal(rendered.includes("msg-sample-1"), false);
+  assert.equal(rendered.includes("RAW-MARKER"), false);
+  assert.equal(rendered.includes("fixtures/"), false);
+
+  const queued = normalizeDecidePayload(decision, { choice: "edit", edited_message: card?.message || "" });
+  assert.equal(queued.ok, true);
+  if (queued.ok) assert.equal(queued.payload.edited_message, "Line one.\n\nLine two.");
 });
 
 test("office walks only handoffs whose bots are in the snapshot", () => {

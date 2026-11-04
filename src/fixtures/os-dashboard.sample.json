@@ -686,21 +686,71 @@
   ],
   "decisions": [
     {
-      "title": "FIXTURE sample decision",
-      "since": "2026-11-03T16:00:00.000Z",
+      "title": "Email reply to FIXTURE Casey Sample",
+      "since": "2026-10-30T15:56:00.000Z",
       "link": null,
       "id": "fix-dec-1",
       "context": "Fake decision for the local fixture.",
+      "summary": "FIXTURE: you wrote first. Casey asked a sample question. No reply has gone out. This draft answers it.",
       "requested_by": "FIXTURE Executive",
-      "created_at": "2026-11-03T16:00:00.000Z",
-      "options": [
+      "created_at": "2026-11-03T13:51:00.000Z",
+      "channel": "email",
+      "to_email": "casey.sample@example.com",
+      "subject": "Re: sample note",
+      "thread_id": "thread-sample-1",
+      "reply_to_msg_id": "msg-sample-1",
+      "why_ryan": "FIXTURE: Casey asked a direct question and has not had an answer. Nothing sends until you say yes to the exact text.",
+      "body_formatted": "Hey Casey,\n\nFair question. This is fixture copy for the local dashboard, not a real note.\n\nIf that sounds fine, reply \"I'm in\".\n\nBest,",
+      "context_raw": "FIXTURE raw context. Not rendered.",
+      "checks": [
+        "FIXTURE: not blocked",
+        "FIXTURE: one reply, no double send",
+        "FIXTURE: signature is added later"
+      ],
+      "person": {
+        "name": "FIXTURE Casey Sample",
+        "company": "Sample Co",
+        "what_they_do": "Makes sample goods",
+        "reach": "10K readers",
+        "source": "fixtures/sample.md",
+        "block_check": {
+          "blocked": false,
+          "at": "2026-11-03T13:51:00.000Z",
+          "by": "email and name"
+        }
+      },
+      "their_words": {
+        "quote": "Why do you think this sample is a fit?",
+        "at": "2026-10-30T15:56:00.000Z",
+        "at_et": "Fri Oct 30, 11:56 AM ET",
+        "source": "reply to your sample note",
+        "approx": true
+      },
+      "timeline": [
         {
-          "value": "send",
-          "label": "Send"
+          "at": "2026-10-29T15:34:00.000Z",
+          "event": "You sent the first sample note",
+          "source": "fixtures/sample.md"
         },
         {
-          "value": "hold",
-          "label": "Hold"
+          "at": "2026-10-30T15:56:00.000Z",
+          "event": "Casey replied: \"Why do you think this sample is a fit?\"",
+          "approx": true,
+          "source": "fixtures/sample.md"
+        },
+        {
+          "at": "2026-11-03T13:51:00.000Z",
+          "event": "This reply was drafted. Waiting on your yes."
+        }
+      ],
+      "options": [
+        {
+          "value": "approve",
+          "label": "Approve and send"
+        },
+        {
+          "value": "not_now",
+          "label": "Not now"
         }
       ],
       "exact_message": "FIXTURE: this is the exact sample message. Not a real note."

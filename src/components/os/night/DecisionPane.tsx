@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { snoozeUntil } from "@/lib/os/snooze";
 import type { DeskDecision } from "@/lib/os/night";
 import { Logo } from "./Logo";
@@ -25,9 +25,10 @@ export function DecisionPane({
   const [draft, setDraft] = useState(item.message || "");
   const crumbs = [
     total ? `${index + 1} of ${total}` : null,
-    item.channel ? `Reply on ${item.channel}` : item.hold ? "On hold" : null,
+    item.channelCrumb || (item.hold ? "On hold" : null),
   ].filter(Boolean);
   const meta = [item.waiting ? `Waiting ${item.waiting}` : null, item.drafted ? `Drafted ${item.drafted}` : null].filter(Boolean);
+  const saved = (item.message || "").trim();
 
   function approve() {
     enqueue({
@@ -58,7 +59,7 @@ export function DecisionPane({
 
   function saveEdit() {
     const text = draft.trim();
-    if (!text || text === (item.message || "")) return;
+    if (!text || text === saved) return;
     enqueue({
       type: "decide",
       target_id: item.id,
@@ -81,25 +82,55 @@ export function DecisionPane({
           {item.org ? <div className="sub">{item.org}</div> : null}
         </div>
       </div>
+      {item.why ? (
+        <div className="why">
+          <span className="lbl">Why this is in front of you</span>
+          {item.why}
+        </div>
+      ) : null}
       {item.happened ? (
         <div className="block">
           <div className="lbl">What happened</div>
           <p className="happened">{item.happened}</p>
         </div>
       ) : null}
+      {item.quote ? (
+        <div className="block">
+          <div className="lbl">{item.quote.summary ? "What they asked" : "What they said"}</div>
+          <div className={`quote${item.quote.summary ? " sum" : ""}`}>
+            <q>{item.quote.text}</q>
+            {item.quote.at ? <div className="at lbl">{item.quote.at}</div> : null}
+          </div>
+        </div>
+      ) : null}
+      {item.timeline.length ? (
+        <div className="block">
+          <div className="lbl">Timeline · CT</div>
+          <div className="tl">
+            {item.timeline.map((row, rowIndex) => (
+              <div className={`r ${row.tone}`} key={`${row.at || "row"}-${rowIndex}`}>
+                <span className="t">{row.at || ""}</span>
+                <i />
+                <span className="e">{row.event}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
       {item.message ? (
         <div className="block">
-          <div className="lbl">If you approve, this goes out</div>
+          <div className="lbl">{editing ? "Edit the reply" : "If you approve, this goes out"}</div>
           {editing ? (
-            <textarea className="editbox" value={draft} onChange={(event) => setDraft(event.target.value)} aria-label="Edited message" />
+            <>
+              <div className="msg flat">
+                <MessageHead item={item} />
+              </div>
+              <FitTextarea value={draft} onChange={setDraft} />
+              <p className="hint">Edit the reply the way it goes out. Blank lines and line breaks are kept when you queue the edit. The box grows with the text.</p>
+            </>
           ) : (
             <div className="msg">
-              {item.toLine ? (
-                <div className="hd">
-                  <span className="lbl">To</span>
-                  <span>{item.toLine}</span>
-                </div>
-              ) : null}
+              <MessageHead item={item} />
               <div className="bd">{item.message}</div>
             </div>
           )}
@@ -108,12 +139,13 @@ export function DecisionPane({
       <div className="actions">
         {editing ? (
           <>
-            <button type="button" className="btn primary" onClick={saveEdit} disabled={!draft.trim() || draft.trim() === item.message}>
+            <button type="button" className="btn primary" onClick={saveEdit} disabled={!draft.trim() || draft.trim() === saved}>
               Queue edit <span>→</span>
             </button>
             <button type="button" className="btn" onClick={() => setEditing(false)}>
               Cancel
             </button>
+            <span className="note">Queued edits wait for the office. Nothing sends until you approve.</span>
           </>
         ) : (
           <>
@@ -128,11 +160,68 @@ export function DecisionPane({
             <button type="button" className="btn" onClick={notNow} disabled={pending}>
               Not now
             </button>
+            <span className="note">{next ? <a href={next.href}>Next: {next.label} →</a> : "Nothing sends until you approve."}</span>
           </>
         )}
-        <span className="note">{next ? <a href={next.href}>Next: {next.label} →</a> : "Nothing sends until you approve."}</span>
       </div>
     </section>
+  );
+}
+
+function MessageHead({ item }: { item: DeskDecision }) {
+  const to = item.toName || item.toEmail || item.toDetail;
+  if (!to && !item.cc && !item.subject && !item.fromLine) return null;
+  return (
+    <div className="hd">
+      {to ? (
+        <>
+          <span className="lbl">To</span>
+          <span className="to">
+            {item.toName ? <b>{item.toName}</b> : null}
+            {item.toEmail ? <span>{`${item.toName ? " " : ""}<${item.toEmail}>`}</span> : null}
+            {item.toDetail ? <span>{`${item.toName ? " " : ""}${item.toDetail}`}</span> : null}
+          </span>
+        </>
+      ) : null}
+      {item.cc ? (
+        <>
+          <span className="lbl">Cc</span>
+          <span>{item.cc}</span>
+        </>
+      ) : null}
+      {item.subject ? (
+        <>
+          <span className="lbl">Subject</span>
+          <span>{item.subject}</span>
+        </>
+      ) : null}
+      {item.fromLine ? (
+        <>
+          <span className="lbl">From</span>
+          <span>{item.fromLine}</span>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function FitTextarea({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    node.style.height = "auto";
+    node.style.height = `${node.scrollHeight}px`;
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      className="editbox"
+      value={value}
+      rows={1}
+      aria-label="Edited message"
+      onChange={(event) => onChange(event.target.value)}
+    />
   );
 }
 

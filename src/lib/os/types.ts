@@ -89,6 +89,42 @@ export type DecisionOption = {
   label: string;
 };
 
+export type DecisionChannel = "email" | "linkedin";
+
+export type DecisionBlockBy = "email and name" | "name only";
+
+export type DecisionBlockCheck = {
+  blocked: boolean;
+  at: string;
+  by: DecisionBlockBy;
+  reason?: string;
+};
+
+export type DecisionPerson = {
+  name?: string;
+  company?: string;
+  what_they_do?: string;
+  reach?: string;
+  source?: string;
+  block_check?: DecisionBlockCheck;
+};
+
+export type DecisionWords = {
+  quote?: string;
+  at?: string;
+  at_et?: string;
+  source?: string;
+  approx?: boolean;
+};
+
+export type DecisionEvent = {
+  at?: string;
+  at_et?: string;
+  event?: string;
+  source?: string;
+  approx?: boolean;
+};
+
 export type Decision = {
   title: string;
   since: string;
@@ -102,6 +138,19 @@ export type Decision = {
   exact_message?: string;
   requested_by?: string;
   created_at?: string;
+  to_email?: string;
+  cc?: string;
+  subject?: string;
+  thread_id?: string;
+  reply_to_msg_id?: string;
+  channel?: DecisionChannel;
+  person?: DecisionPerson;
+  their_words?: DecisionWords;
+  timeline?: DecisionEvent[];
+  why_ryan?: string;
+  body_formatted?: string;
+  context_raw?: string;
+  checks?: string[];
 };
 
 export const CRM_TRACKS = [

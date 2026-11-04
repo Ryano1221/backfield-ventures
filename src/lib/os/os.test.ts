@@ -112,6 +112,74 @@ test("schema rejects a bad status, a script URL, and a missing timestamp", () =>
   assert.equal(missing.ok, false);
 });
 
+test("schema keeps decision card fields, blank lines, and drops unknown keys", () => {
+  const result = validateSnapshot({
+    ...sample(),
+    decisions: [
+      {
+        title: "Reply to Casey Sample",
+        since: "2026-11-03T15:00:00.000Z",
+        link: null,
+        to_email: "casey.sample@example.com",
+        cc: "desk@example.com",
+        subject: "Hello — there",
+        thread_id: "thread-sample-1",
+        reply_to_msg_id: "msg-sample-1",
+        channel: "Email",
+        person: {
+          name: "Casey Sample",
+          company: "Sample Co",
+          what_they_do: "Makes sample goods",
+          reach: "10K readers",
+          source: "fixtures/sample.md",
+          block_check: { blocked: false, at: "2026-11-03T15:00:00.000Z", by: "email and name" },
+          extra_person: "drop",
+        },
+        their_words: {
+          quote: "A sample question?",
+          at: "2026-10-30T15:56:00.000Z",
+          at_et: "Fri Oct 30, 11:56 AM ET",
+          source: "reply to your note",
+          approx: true,
+        },
+        timeline: [{ at: "2026-10-29T15:34:00.000Z", at_et: "Thu Oct 29, 11:34 AM ET", event: "You sent the first note", source: "fixtures/sample.md", approx: false }],
+        why_ryan: "Because it is a sample.",
+        summary: "A sample summary.",
+        body_formatted: "Line one.\n\nLine two.",
+        context_raw: "RAW-MARKER-do-not-render",
+        checks: ["Not blocked"],
+        not_a_field: "drop-me",
+      },
+    ],
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const row = result.snapshot.decisions[0];
+  assert.equal(row?.body_formatted, "Line one.\n\nLine two.");
+  assert.equal(row?.context_raw, "RAW-MARKER-do-not-render");
+  assert.equal(row?.to_email, "casey.sample@example.com");
+  assert.equal(row?.cc, "desk@example.com");
+  assert.equal(row?.subject, "Hello — there");
+  assert.equal(row?.channel, "email");
+  assert.equal(row?.person?.name, "Casey Sample");
+  assert.equal(row?.person?.block_check?.blocked, false);
+  assert.equal(row?.person?.block_check?.by, "email and name");
+  assert.equal(row?.their_words?.approx, true);
+  assert.equal(row?.their_words?.at_et, "Fri Oct 30, 11:56 AM ET");
+  assert.equal(row?.timeline?.[0]?.event, "You sent the first note");
+  assert.deepEqual(row?.checks, ["Not blocked"]);
+  assert.equal(row ? "not_a_field" in row : false, false);
+  assert.equal(row?.person ? "extra_person" in row.person : false, false);
+});
+
+test("schema rejects a decision channel it does not know", () => {
+  const result = validateSnapshot({
+    ...sample(),
+    decisions: [{ title: "Reply to Casey Sample", since: "2026-11-03T15:00:00.000Z", link: null, channel: "sms" }],
+  });
+  assert.equal(result.ok, false);
+});
+
 test("schema accepts a bare bot array", () => {
   const result = validateSnapshot({ ...sample(), bots: sample().bots.bots });
   assert.equal(result.ok, true);
