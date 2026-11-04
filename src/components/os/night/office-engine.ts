@@ -7,8 +7,16 @@ const D = data;
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* Backfield bot office. Every bot, status, task and handoff comes from office-data.js (snapshot bots + interactions + os/packets). */
 const LIGHT=root.dataset.theme==='b';
-const T=16, GW=42, GH=25, W=GW*T, H=GH*T;
-const ROOMS={
+const portrait=window.matchMedia("(max-width: 640px)").matches;
+const T=16, GW=portrait?22:42, GH=portrait?36:25, W=GW*T, H=GH*T;
+const ROOMS=portrait?{
+  executive:{x0:12,x1:21,y0:0,y1:6,iy:2,per:3,floor:'wood',name:'Executive',laneY:7*T+14,doorX:12*T+12},
+  intelligence:{x0:0,x1:9,y0:9,y1:16,iy:11,per:3,floor:'slate',name:'Intelligence',laneY:7*T+14,doorX:9*T+6},
+  investment:{x0:12,x1:21,y0:9,y1:16,iy:11,per:3,floor:'sage',name:'Investment',laneY:7*T+14,doorX:12*T+12},
+  network:{x0:0,x1:9,y0:19,y1:26,iy:21,per:3,floor:'lav',name:'Network',laneY:17*T+14,doorX:9*T+6},
+  growth:{x0:12,x1:21,y0:19,y1:26,iy:21,per:3,floor:'sand',name:'Growth',laneY:17*T+14,doorX:12*T+12},
+  firm_os:{x0:0,x1:21,y0:29,y1:35,iy:31,per:6,floor:'concrete',name:'Firm OS',laneY:27*T+14,doorX:11*T-4},
+}:{
   intelligence:{x0:0,x1:13,top:true,name:'Intelligence',floor:'slate',per:3},
   executive:{x0:14,x1:29,top:true,name:'Executive',floor:'wood',per:4},
   investment:{x0:30,x1:41,top:true,name:'Investment',floor:'sage',per:2},
@@ -31,12 +39,20 @@ const bySlug={};bots.forEach(b=>bySlug[b.slug]=b);
 const teamName={};bots.forEach(b=>{if(b.role==='Director'||b.role==='Executive')teamName[b.room]=b.name});
 const SHORT={intelligence:'Intel',executive:'Exec',investment:'Invest',network:'Network',growth:'Growth',firm_os:'Firm'};
 for(const k in ROOMS){
-  const R=ROOMS[k];R.key=k;R.y0=R.top?0:13;R.y1=R.top?10:24;R.iy=R.top?2:15;
+  const R=ROOMS[k];R.key=k;
+  if(!portrait){R.y0=R.top?0:13;R.y1=R.top?10:24;R.iy=R.top?2:15;}
   const L=x=>(x.role==='Director'||x.role==='Executive')?1:0;const list=bots.filter(b=>b.room===k).sort((a,b)=>(L(b)-L(a))||a.name.localeCompare(b.name));
   R.bots=list;
-  list.forEach((b,i)=>{const col=i%R.per,row=Math.floor(i/R.per);b.sx=R.x0+3+col*3;b.sy=R.iy+row*3;
+  const seats=[];
+  if(portrait){
+    const cols=R.x1-R.x0>12?[0,3,6,13,16,19]:(R.x0>=12?[R.x0+1,R.x0+4,R.x0+7]:[R.x0,R.x0+3,R.x0+6]);
+    for(let sy=R.iy;sy<=R.y1-1 && seats.length<list.length;sy+=2) for(const sx of cols){ if(seats.length<list.length) seats.push({sx,sy}); }
+  }
+  list.forEach((b,i)=>{
+    if(portrait){const seat=seats[i]||{sx:R.x0+1,sy:R.iy};b.sx=seat.sx;b.sy=seat.sy;}
+    else{const col=i%R.per,row=Math.floor(i/R.per);b.sx=R.x0+3+col*3;b.sy=R.iy+row*3;}
     b.hx=b.sx*T+26;b.hy=(b.sy+1)*T+1;b.x=b.hx;b.y=b.hy;b.dir=1;b.walk=null;b.queue=[];b.stack=0;b.pulse=0;b.lead=(b.role==='Director'||b.role==='Executive');});
-  R.aisle=(R.x0+2)*T;R.door=R.top?(11*T):(15*T);
+  R.aisle=portrait?R.doorX:(R.x0+2)*T;R.door=portrait?R.laneY:(R.top?(11*T):(15*T));
 }
 const INBOX={x:40*T+8,y:12*T+2};
 const LANE_R=11*T+10, LANE_L=12*T+12;
@@ -70,6 +86,13 @@ function wall(R){
   const x0=R.x0*T,x1=(R.x1+1)*T,y=R.y0*T;
   R_(x0,y,x1-x0,32,'#d9d2c5',g);R_(x0,y,x1-x0,4,'#2a2622',g);R_(x0,y+4,x1-x0,2,'#efe9de',g);R_(x0,y+27,x1-x0,5,'#8b8173',g);R_(x0,y+26,x1-x0,1,'#b9b0a2',g);
   for(let k=0;k<x1-x0;k+=4)R_(x0+k,y+30,1,2,'#7a7064',g);
+  if(portrait){
+    if(R.y0>0 && R.doorX && R.x1-R.x0<12){
+      const dx=R.doorX-14;
+      R_(dx,y,28,32,'#1a1816',g);R_(dx+2,y+6,24,26,'#2c2a27',g);R_(dx-2,y+2,2,30,'#5b5248',g);R_(dx+28,y+2,2,30,'#5b5248',g);
+    }
+    return;
+  }
   if(!R.top){const dx=(R.x0+1)*T;R_(dx,y,32,32,'#000',g);R_(dx+2,y+4,28,28,'#2c2a27',g);R_(dx-2,y+2,2,30,'#5b5248',g);R_(dx+32,y+2,2,30,'#5b5248',g);}
 }
 function windowAt(x,y,w){R_(x-2,y-2,w+4,18,'#5b544b',g);const gr=g.createLinearGradient(0,y,0,y+14);gr.addColorStop(0,'#a9cbd9');gr.addColorStop(1,'#dbe9ea');g.fillStyle=gr;g.fillRect(x,y,w,14);R_(x+w/2-1,y,2,14,'#5b544b',g);R_(x+3,y+3,4,2,'#f4fbfb',g);R_(x+w/2+3,y+6,3,2,'#f4fbfb',g);R_(x-3,y+15,w+6,3,'#efe9de',g);}
@@ -82,7 +105,31 @@ function poster(x,y,col){R_(x,y,14,18,'#2a2622',g);R_(x+1,y+1,12,16,col,g);R_(x+
 function rug(x,y,w,h,a,b){R_(x,y,w,h,a,g);R_(x+2,y+2,w-4,h-4,b,g);R_(x+4,y+4,w-8,h-8,a,g);}
 function sofa(x,y){R_(x,y,40,10,'#6a3f34',g);R_(x,y+6,40,10,'#7d4c3f',g);R_(x-3,y+4,4,12,'#5e382e',g);R_(x+39,y+4,4,12,'#5e382e',g);}
 function cooler(x,y){R_(x-4,y-20,8,8,'#bfe0f0',g);R_(x-5,y-12,10,12,'#e8e4dc',g);R_(x-5,y-1,10,1,'#8b8173',g);R_(x-2,y-9,2,2,'#c47a6a',g);R_(x+1,y-9,2,2,'#3b6fb5',g);}
+function laneStrip(y){
+  for(let x=0;x<W;x+=T){R_(x,y,T,T*2,'#b9b2a6',g);R_(x+1,y+1,T-2,T*2-2,((x/T)%2)?'#c2bbaf':'#bdb6aa',g);}
+  R_(T,y+10,W-2*T,10,'#123D22',g);R_(T,y+10,W-2*T,1,'#7DBB91',g);R_(T,y+19,W-2*T,1,'#7DBB91',g);
+}
+function drawPortrait(){
+  R_(0,0,W,H,'#1a1816',g);
+  const ryanRoom={x0:0,x1:9,y0:0,y1:6,floor:'wood',name:'Ryan'};
+  floor(ryanRoom);wall(ryanRoom);
+  for(const k in ROOMS){floor(ROOMS[k]);wall(ROOMS[k]);}
+  for(let y=0;y<H;y+=T){R_(10*T,y,2*T,T,'#b9b2a6',g);R_(10*T+1,y+1,2*T-2,T-2,((y/T)%2)?'#c2bbaf':'#bdb6aa',g);}
+  R_(10*T+12,T,6,H-2*T,'#123D22',g);
+  laneStrip(7*T);laneStrip(17*T);laneStrip(27*T);
+  windowAt(16,8,40);windowAt(16*T,8,40);
+  windowAt(T,9*T+8,28);windowAt(15*T,9*T+8,28);
+  windowAt(T,19*T+8,28);windowAt(15*T,19*T+8,28);
+  windowAt(T,29*T+8,36);windowAt(15*T,29*T+8,36);
+  const rw=10*T, rh=7*T;
+  rug(16,40,rw-48,28,'#123D22','#2A6B40');
+  R_(16,72,36,14,'#8a6a48',g);R_(18,62,14,10,'#1a1a1a',g);R_(19,63,12,7,'#20352a',g);
+  R_(rw-28,rh-34,4,16,'#2a2622',g);R_(rw-31,rh-38,10,4,'#7DBB91',g);
+  plant(rw-18,rh-14,false);
+  sofa(17*T,5*T);plant(20*T+4,6*T,false);
+}
 function drawBG(){
+  if(portrait){drawPortrait();return;}
   R_(0,0,W,H,'#1a1816',g);
   // corridor
   for(let x=0;x<W;x+=T)for(let y=11*T;y<13*T;y+=T){R_(x,y,T,T,'#b9b2a6',g);R_(x+1,y+1,T-2,T-2,((x/T+y/T)%2)?'#c2bbaf':'#bdb6aa',g);}
@@ -175,11 +222,28 @@ function bot(x,y,b,s,t){
   c.globalAlpha=1;
 }
 /* ---------- movement ---------- */
-const RYAN={x:38*T+4,y:12*T,x0:35,x1:41,y0:10,y1:13,name:'Ryan',key:'ryan'};
-function frontOf(b){return{x:b.hx,y:(b.sy+2)*T+10}}
+const RYAN=portrait
+  ?{x:34,y:78,x0:0,x1:9,y0:0,y1:6,name:'Ryan',key:'ryan',laneY:7*T+14,doorX:9*T+6}
+  :{x:38*T+4,y:12*T,x0:35,x1:41,y0:10,y1:13,name:'Ryan',key:'ryan'};
+function frontOf(b){
+  const y=(b.sy+2)*T+10;
+  if(!portrait) return{x:b.hx,y};
+  const R=ROOMS[b.room];
+  return{x:b.hx,y:Math.min(y,(R.y1+1)*T-8)};
+}
 function exitPts(b){const R=ROOMS[b.room],side=b.sx*T+1,wy=(b.sy+2)*T+10;return[{x:side,y:b.hy-2},{x:side,y:wy},{x:R.aisle,y:wy}]}
 function route(from,to){
-  const a=bySlug[from],R=ROOMS[a.room];let p=exitPts(a);
+  const a=bySlug[from],R=ROOMS[a.room];
+  if(portrait){
+    const spine=11*T-4;
+    const start={x:a.hx,y:a.hy};
+    const dest=to==='ryan'
+      ?{laneY:RYAN.laneY,doorX:RYAN.doorX,x:RYAN.x,y:RYAN.y}
+      :(()=>{const b=bySlug[to],R2=ROOMS[b.room];return R2===R?null:{laneY:R2.laneY,doorX:R2.doorX,x:b.hx,y:frontOf(b).y};})();
+    if(!dest){const b=bySlug[to],f=frontOf(b);return[start,{x:R.aisle,y:a.hy},{x:R.aisle,y:f.y},{x:f.x,y:f.y}];}
+    return[start,{x:R.doorX,y:a.hy},{x:R.doorX,y:R.laneY},{x:spine,y:R.laneY},{x:spine,y:dest.laneY},{x:dest.doorX,y:dest.laneY},{x:dest.doorX,y:dest.y},{x:dest.x,y:dest.y}];
+  }
+  let p=exitPts(a);
   if(to==='ryan'){const lane=LANE_R;p.push({x:R.aisle,y:lane},{x:RYAN.x,y:lane},{x:RYAN.x,y:RYAN.y});return p;}
   const b=bySlug[to],R2=ROOMS[b.room],f=frontOf(b);
   if(R2===R){p.push({x:R.aisle,y:f.y},{x:f.x,y:f.y});return p;}
@@ -237,7 +301,11 @@ function fitInitial(){
   const vw=viewW(), vh=viewH();
   if(vw<40||vh<40||didFit) return;
   didFit=true;
-  if(vw<760){
+  if(portrait){
+    cam.z=Math.min(vw/W, vh/H);
+    cam.x=(W-vw/cam.z)/2;
+    cam.y=Math.max(0,(H-vh/cam.z)/2);
+  }else if(vw<760){
     cam.z=Math.min(vw/W, vh/H);
     cam.x=(W-vw/cam.z)/2;
     cam.y=0;
@@ -277,12 +345,17 @@ const ryanSign=document.createElement('div');ryanSign.className='sign';layer.app
 function placeSigns(){
   const narrow=viewW()<520;
   signs.forEach(([el,R])=>{
-    const py=R.top?(R.y1*T-6):(R.y0*T+36);
-    const p=toView((R.x0+0.55)*T, py);
+    const py=portrait?(R.y0*T+4):(R.top?(R.y1*T-6):(R.y0*T+36));
+    const p=toView((R.x0+(portrait?0.2:0.55))*T, py);
     const today=todayCount(R.key);
+    const n=R.bots.length;
+    const line=(portrait||narrow)?`${n===1?'1 bot':n+' bots'} · ${today} today`:`${n} · ${today} today`;
     el.className='sign'+(today>=8?' hot':'');
-    el.innerHTML=`<b>${narrow?(SHORT[R.key]||R.name):R.name}</b><span>${narrow?R.bots.length+'·'+today:R.bots.length+' · '+today+' today'}</span>`;
-    el.style.left=Math.max(2, Math.min(viewW()-4, p.left))+'px'; el.style.top=Math.max(2, p.top)+'px';
+    el.innerHTML=`<b>${narrow?(SHORT[R.key]||R.name):R.name}</b><span>${line}</span>`;
+    el.style.left='0px';
+    const width=el.offsetWidth||90;
+    el.style.left=Math.max(2, Math.min(viewW()-width-2, p.left))+'px';
+    el.style.top=Math.max(2, Math.min(viewH()-30, p.top))+'px';
   });
   const p=toView(RYAN.x0*T+8, RYAN.y0*T+8);
   const waiting=flyers.filter(f=>f.hold&&f.wait).length;
@@ -438,7 +511,7 @@ stage.addEventListener('pointermove',ev=>{
     const [a,b]=[...pointers.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
     const before=worldAt(ev);
-    cam.z=Math.max(0.9, Math.min(3.3, pinch.z*(d/pinch.d)));
+    cam.z=Math.max(portrait?0.45:0.9, Math.min(3.3, pinch.z*(d/pinch.d)));
     const after=worldAt(ev);
     cam.x+=before.x-after.x; cam.y+=before.y-after.y;
     clampCam(); aim=null; return;
@@ -459,7 +532,7 @@ stage.addEventListener('pointercancel', endPointer);
 stage.addEventListener('wheel', ev=>{
   ev.preventDefault();
   const before=worldAt(ev);
-  cam.z=Math.max(0.9, Math.min(3.3, cam.z*(ev.deltaY<0?1.1:0.9)));
+  cam.z=Math.max(portrait?0.45:0.9, Math.min(3.3, cam.z*(ev.deltaY<0?1.1:0.9)));
   const after=worldAt(ev);
   cam.x+=before.x-after.x; cam.y+=before.y-after.y;
   clampCam(); aim=null;
@@ -502,7 +575,7 @@ function frame(now){
   c.setTransform(1,0,0,1,0,0);
   c.clearRect(0,0,W,H);
   c.drawImage(bg,0,0);
-  if(night){c.globalAlpha=.55; WINDOWS.forEach(([x,y,w])=>R_(x,y,w,12,'#d5e6d4')); c.globalAlpha=1; R_(RYAN.x0*T+20, RYAN.y0*T+10, 28, 10, '#d5e6d4');}
+  if(night && !portrait){c.globalAlpha=.55; WINDOWS.forEach(([x,y,w])=>R_(x,y,w,12,'#d5e6d4')); c.globalAlpha=1; R_(RYAN.x0*T+20, RYAN.y0*T+10, 28, 10, '#d5e6d4');}
   const items=[];
   bots.forEach(b=>{items.push({y:(b.sy+1)*T+16,f:()=>{if(b.status==='Paused')c.globalAlpha=.38;chair(b);c.globalAlpha=1;bot(b.x,b.y,b,{sel:hover===b},now);desk(b,now)}});});
   items.sort((a,b)=>a.y-b.y).forEach(i=>i.f());
