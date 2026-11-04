@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { DealsDesk } from "@/components/os/night/DealsDesk";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { isOsHost } from "@/lib/os/host";
+import { osChromeCounts } from "@/lib/os/nav";
 import { buildDeals, buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
 
@@ -19,13 +20,8 @@ export default async function DealsPage() {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const model = buildToday(page.snapshot, page.actions);
   return (
-    <NightFrame onOs={isOsHost(host)} active="deals" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={isOsHost(host)} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <DealsDesk deals={buildDeals(page.snapshot)} reviewing={model.reviewingCount} />
     </NightFrame>
   );
-}
-
-function counts(snapshot: unknown, model: ReturnType<typeof buildToday>) {
-  if (!snapshot) return { today: null, deals: null, people: null };
-  return { today: model.ready.length + model.hold.length + model.open.length, deals: model.reviewingCount, people: model.peopleCount };
 }

@@ -34,9 +34,9 @@ const FLOORS = [
 
 const CREAM = "#f0ede8";
 const WHITE = "#ffffff";
-const FOREST = "#123D22";
+const FOREST = "#000000";
 const BLACK = "#000000";
-const ALERT = "#d42020";
+const ALERT = "#000000";
 
 type Point = { x: number; y: number; floor: number };
 type Actor = {
@@ -385,7 +385,7 @@ function drawFloor(ctx: CanvasRenderingContext2D, index: number, origin: { x: nu
   ctx.moveTo(corners[0].x, corners[0].y);
   corners.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
   ctx.closePath();
-  ctx.fillStyle = index % 2 ? "#0c2416" : FOREST;
+  ctx.fillStyle = index % 2 ? "#000000" : FOREST;
   ctx.fill();
   ctx.strokeStyle = CREAM;
   ctx.lineWidth = 1;
@@ -402,7 +402,7 @@ function drawFloor(ctx: CanvasRenderingContext2D, index: number, origin: { x: nu
 function drawDesk(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
-  ctx.fillStyle = "#0b1f14";
+  ctx.fillStyle = "#000000";
   ctx.fillRect(-8, 2, 16, 6);
   ctx.strokeStyle = CREAM;
   ctx.strokeRect(-8, 2, 16, 6);

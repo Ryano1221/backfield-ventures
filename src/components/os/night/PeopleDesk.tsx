@@ -45,7 +45,14 @@ export function PeopleDesk({
     });
   }, [query, rows, stage, track]);
   const visible = filtered.slice(0, shown);
-  const tiles = counts.filter((item) => !TAIL.has(item.stage) && (item.count > 0 || item.stageCount > 0));
+  const flag = counts.find((item) => item.stage === "im_in") ?? null;
+  const splitFlag = Boolean(flag && flag.count !== flag.stageCount);
+  const flagNames = splitFlag ? rows.filter((row) => row.imIn).map((row) => row.name) : [];
+  const tiles = counts.filter((item) => {
+    if (TAIL.has(item.stage)) return false;
+    if (item.stage === "im_in" && splitFlag) return item.stageCount > 0;
+    return item.count > 0 || item.stageCount > 0;
+  });
   const rest = counts.filter((item) => TAIL.has(item.stage) && item.stageCount > 0);
   const other = rest.reduce((sum, item) => sum + item.stageCount, 0);
   const covered = counted === total;
@@ -62,16 +69,34 @@ export function PeopleDesk({
           </>
         ) : null}
       </h1>
+      {splitFlag && flag ? (
+        <div className="kpi flag">
+          <div>
+            <div className="lbl">I&apos;m in · flag</div>
+            <div className="v">{flag.count.toLocaleString("en-US")}</div>
+          </div>
+          <div>
+            {flagNames.length ? <div className="names">{flagNames.join(", ")}</div> : null}
+            <div className="d">Said I&apos;m in. Counted by flag across stages, not added to the stage total.</div>
+          </div>
+        </div>
+      ) : null}
       {counts.length ? (
         <>
-          <div className="funnel" style={{ marginTop: 32 }}>
-            {tiles.map((item) => (
-              <div key={item.stage} className={WARM_STAGE.has(item.stage) ? "warmc" : ""}>
-                <div className="lbl">{item.label}</div>
-                <div className="v">{item.count.toLocaleString("en-US")}</div>
-                {item.detail ? <div className="sub">{item.detail}</div> : null}
-              </div>
-            ))}
+          <div className="lbl stage-note">Stages · each person counted once</div>
+          <div className="funnel">
+            {tiles.map((item) => {
+              const value = item.stage === "im_in" && splitFlag ? item.stageCount : item.count;
+              const label = item.stage === "im_in" && splitFlag ? "I'm in (stage)" : item.label;
+              const detail = item.stage === "im_in" && splitFlag ? "Stage only. Flag count is above." : item.detail;
+              return (
+                <div key={item.stage} className={WARM_STAGE.has(item.stage) ? "warmc" : ""}>
+                  <div className="lbl">{label}</div>
+                  <div className="v">{value.toLocaleString("en-US")}</div>
+                  {detail ? <div className="sub">{detail}</div> : null}
+                </div>
+              );
+            })}
             {rest.length ? (
               <div className="span">
                 <div className="lbl">Other</div>
@@ -86,8 +111,8 @@ export function PeopleDesk({
               </div>
             ) : null}
           </div>
-          <p className={`lbl muted funnel-check${covered ? "" : " is-off"}`}>
-            {counted.toLocaleString("en-US")} of {total.toLocaleString("en-US")}
+          <p className={`lbl funnel-check${covered ? "" : " is-off"}`}>
+            Stage tiles sum to <b>{counted.toLocaleString("en-US")} of {total.toLocaleString("en-US")}</b>
           </p>
         </>
       ) : null}
@@ -102,6 +127,7 @@ export function PeopleDesk({
           </button>
         ))}
       </div>
+      <div className="card">
       <div className="filterbar">
         <input className="search" value={query} onChange={(event) => { setQuery(event.target.value); setShown(PAGE); }} placeholder={`Search ${total.toLocaleString("en-US")} people by name or firm`} aria-label="Search people" />
         <label className="lbl muted">
@@ -113,7 +139,6 @@ export function PeopleDesk({
             ))}
           </select>
         </label>
-        <span className="right lbl">Warm first, then latest touch</span>
       </div>
       {visible.length ? (
         <div className="tbl-scroll">
@@ -149,10 +174,11 @@ export function PeopleDesk({
           </table>
         </div>
       ) : (
-        <p className="t-body muted">No people match.</p>
+        <p className="t-body muted" style={{ padding: "16px 18px" }}>No people match.</p>
       )}
-      <p className="lbl muted" style={{ marginTop: 16 }}>
-        Showing {visible.length.toLocaleString("en-US")} of {filtered.length.toLocaleString("en-US")}
+      </div>
+      <p className="note">
+        Warm first, then latest touch. Showing {visible.length.toLocaleString("en-US")} of {filtered.length.toLocaleString("en-US")}
         {shown < filtered.length ? (
           <>
             {" "}

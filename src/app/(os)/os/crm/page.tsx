@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { PeopleDesk } from "@/components/os/night/PeopleDesk";
 import { isOsHost } from "@/lib/os/host";
+import { osChromeCounts } from "@/lib/os/nav";
 import { buildPeople, buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
 
@@ -20,13 +21,8 @@ export default async function CrmPage() {
   const model = buildToday(page.snapshot, page.actions);
   const people = buildPeople(page.snapshot);
   return (
-    <NightFrame onOs={isOsHost(host)} active="people" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
+    <NightFrame onOs={isOsHost(host)} active="people" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <PeopleDesk rows={people.rows} counts={people.counts} tracks={people.tracks} total={people.total} warm={people.warm} counted={people.counted} onOs={isOsHost(host)} />
     </NightFrame>
   );
-}
-
-function counts(snapshot: unknown, model: ReturnType<typeof buildToday>) {
-  if (!snapshot) return { today: null, deals: null, people: null };
-  return { today: model.ready.length + model.hold.length + model.open.length, deals: model.reviewingCount, people: model.peopleCount };
 }
