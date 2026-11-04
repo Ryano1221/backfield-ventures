@@ -1,3 +1,4 @@
+import { sanitizePreviewHtml } from "./preview-html";
 import { blankToNull, normalizeDomain, normalizeLogoUrl } from "./present";
 import {
   CRM_TRACKS,
@@ -13,8 +14,12 @@ import {
   type Decision,
   type DecisionBlockCheck,
   type DecisionChannel,
+  type DecisionCompany,
+  type DecisionDetail,
   type DecisionEvent,
+  type DecisionFact,
   type DecisionOption,
+  type DecisionPreview,
   type DecisionPerson,
   type DecisionWords,
   type DirectorKey,
@@ -332,6 +337,10 @@ function validateDecision(value: unknown, path: string, issues: string[]): Decis
   if (body) decision.body_formatted = body;
   if (raw) decision.context_raw = raw;
   if (checks) decision.checks = checks;
+  if (value.detail !== undefined && value.detail !== null) {
+    const detail = validateDecisionDetail(value.detail, `${path}.detail`, issues);
+    if (detail) decision.detail = detail;
+  }
   return decision;
 }
 
@@ -507,6 +516,156 @@ function validateOptions(value: unknown, path: string, issues: string[]): Decisi
     if (optionValue && label) rows.push({ value: optionValue, label });
   }
   return rows;
+}
+
+function validateDecisionDetail(value: unknown, path: string, issues: string[]): DecisionDetail | undefined {
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return undefined;
+  }
+  const detail: DecisionDetail = {};
+  const kind = optStr(value.kind, `${path}.kind`, 40, issues);
+  if (kind) detail.kind = kind;
+  if (value.picks !== undefined) {
+    const picks = validateCompanies(value.picks, `${path}.picks`, 12, issues);
+    if (picks) detail.picks = picks;
+  }
+  if (value.candidates !== undefined) {
+    const candidates = validateCompanies(value.candidates, `${path}.candidates`, 24, issues);
+    if (candidates) detail.candidates = candidates;
+  }
+  if (value.preview !== undefined && value.preview !== null) {
+    const preview = validatePreview(value.preview, `${path}.preview`, issues);
+    if (preview) detail.preview = preview;
+  }
+  return Object.keys(detail).length ? detail : undefined;
+}
+
+function validateCompanies(value: unknown, path: string, max: number, issues: string[]): DecisionCompany[] | undefined {
+  if (!Array.isArray(value)) {
+    issues.push(`${path} must be an array`);
+    return undefined;
+  }
+  if (value.length > max) {
+    issues.push(`${path} is limited to ${max} companies`);
+    return undefined;
+  }
+  const rows: DecisionCompany[] = [];
+  for (let i = 0; i < value.length; i++) {
+    const company = validateCompany(value[i], `${path}[${i}]`, issues);
+    if (company) rows.push(company);
+  }
+  return rows;
+}
+
+function validateCompany(value: unknown, path: string, issues: string[]): DecisionCompany | null {
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return null;
+  }
+  const slug = optStr(value.slug, `${path}.slug`, 40, issues);
+  const name = publicText(value.name, 120);
+  if (!slug || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(slug) || !name) {
+    issues.push(`${path} needs a slug and a name`);
+    return null;
+  }
+  const company: DecisionCompany = { slug, name };
+  const one = publicText(value.one_liner, 240);
+  const category = publicText(value.category, 80);
+  const stage = publicText(value.stage, 80);
+  const location = publicText(value.location, 80);
+  const score = publicText(value.score, 40);
+  const why = publicText(value.why, 600);
+  const concerns = publicText(value.concerns, 600);
+  const source = publicText(value.source, 240);
+  const website = httpsUrl(value.website);
+  if (one) company.one_liner = one;
+  if (category) company.category = category;
+  if (stage) company.stage = stage;
+  else if (value.stage === null) company.stage = null;
+  if (location) company.location = location;
+  else if (value.location === null) company.location = null;
+  if (score) company.score = score;
+  else if (value.score === null) company.score = null;
+  if (why) company.why = why;
+  if (concerns) company.concerns = concerns;
+  else if (value.concerns === null) company.concerns = null;
+  if (source) company.source = source;
+  if (website) company.website = website;
+  else company.website = null;
+  if (value.facts !== undefined) {
+    const facts = validateFacts(value.facts, `${path}.facts`, issues);
+    if (facts?.length) company.facts = facts;
+  }
+  return company;
+}
+
+function validateFacts(value: unknown, path: string, issues: string[]): DecisionFact[] | undefined {
+  if (!Array.isArray(value)) {
+    issues.push(`${path} must be an array`);
+    return undefined;
+  }
+  const facts: DecisionFact[] = [];
+  for (let i = 0; i < Math.min(value.length, 12); i++) {
+    const item = value[i];
+    if (!isRecord(item)) continue;
+    const label = publicText(item.label, 80);
+    const factValue = publicText(item.value, 240);
+    if (!label || !factValue) continue;
+    const fact: DecisionFact = { label, value: factValue };
+    const source = publicText(item.source_note, 80);
+    if (source) fact.source_note = source;
+    facts.push(fact);
+  }
+  return facts;
+}
+
+function validatePreview(value: unknown, path: string, issues: string[]): DecisionPreview | undefined {
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return undefined;
+  }
+  const preview: DecisionPreview = {};
+  const subject = publicText(value.subject, 200);
+  const toLabel = publicText(value.to_label, 80);
+  const text = publicText(value.text, 8000);
+  const html = typeof value.html === "string" ? sanitizePreviewHtml(stripPrivate(value.html)).trim().slice(0, 20000) : "";
+  const attachment = publicText(value.attachment_label, 120);
+  const version = publicText(value.version, 40);
+  const hash = optStr(value.hash, `${path}.hash`, 80, issues);
+  // attachment_hash is a snapshot checksum. The preview view does not show it.
+  if (subject) preview.subject = subject;
+  if (toLabel) preview.to_label = toLabel;
+  if (text) preview.text = text;
+  if (html) preview.html = html;
+  if (attachment) preview.attachment_label = attachment;
+  if (version) preview.version = version;
+  if (hash && /^[a-f0-9]{64}$/.test(hash)) preview.hash = hash;
+  return Object.keys(preview).length ? preview : undefined;
+}
+
+function publicText(value: unknown, max: number): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const stripped = stripPrivate(value).replace(/\s{2,}/g, " ").trim();
+  if (!stripped) return undefined;
+  return stripped.slice(0, max);
+}
+
+function stripPrivate(value: string): string {
+  return value.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "").replace(/(?:\+?\d[\d\s().-]{7,}\d)/g, "");
+}
+
+function httpsUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 2000) return null;
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 function validateCrm(value: unknown, issues: string[]): CrmBook | null {

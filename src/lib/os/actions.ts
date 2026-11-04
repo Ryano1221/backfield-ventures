@@ -1,10 +1,12 @@
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { ACTION_TYPES, type ActionPayload, type ActionType, type Decision, type DecisionAnswer, type OsAction } from "./types";
+import { appendDecisionLog } from "./decision-log";
+import { ACTION_TYPES, type ActionPayload, type ActionType, type Decision, type DecisionAnswer, type DecisionSwap, type OsAction } from "./types";
 import { defaultSnapshotFile, SnapshotStoreError, storeKind } from "./store";
 
 export const ACTIONS_BLOB_PATH = "os-dashboard/actions.json";
+export const NOTE_MAX = 2000;
 const LEGACY_BLOB_PATH = "os-dashboard/decisions.json";
 const PAYLOAD_MAX = 8000;
 
@@ -20,6 +22,18 @@ export function sanitizePayload(value: unknown): ActionPayload | null {
   const payload: ActionPayload = {};
   for (const [key, item] of Object.entries(value)) {
     if (!/^[a-zA-Z][a-zA-Z0-9_]{0,40}$/.test(key)) continue;
+    if (key === "swaps" && Array.isArray(item)) {
+      const swaps = item
+        .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === "object" && !Array.isArray(row))
+        .slice(0, 8)
+        .map((row) => ({
+          out: typeof row.out === "string" ? row.out.trim().slice(0, 40) : "",
+          in: typeof row.in === "string" ? row.in.trim().slice(0, 40) : "",
+        }))
+        .filter((row) => row.out && row.in);
+      if (swaps.length) payload.swaps = swaps;
+      continue;
+    }
     if (item == null) payload[key] = null;
     else if (typeof item === "string") payload[key] = item.slice(0, 6000);
     else if (typeof item === "number" && Number.isFinite(item)) payload[key] = item;
@@ -34,8 +48,18 @@ export function normalizeDecidePayload(
   payload: ActionPayload,
 ): { ok: true; payload: ActionPayload } | { ok: false; error: string } {
   const choice = typeof payload.choice === "string" ? payload.choice.trim() : "";
-  const note = typeof payload.note === "string" ? payload.note.trim().slice(0, 500) : "";
+  const note = typeof payload.note === "string" ? payload.note.trim() : "";
   const edited = typeof payload.edited_message === "string" ? payload.edited_message.trim() : "";
+  if (note.length > NOTE_MAX) return { ok: false, error: "Note is too long" };
+  if (choice === "swap") {
+    const swaps = validateSwaps(decision, payload.swaps);
+    if (!swaps.ok) return swaps;
+    return { ok: true, payload: withHash(decision, payload, { choice: "swap", note: note || null, swaps: swaps.swaps }) };
+  }
+  if (choice === "reply") {
+    if (!note) return { ok: false, error: "Reply needs a note" };
+    return { ok: true, payload: withHash(decision, payload, { choice: "reply", note }) };
+  }
   if (!choice && !edited) return { ok: false, error: "Missing choice" };
   if (edited && edited !== (decision.exact_message || "")) {
     if (edited.length > 6000) return { ok: false, error: "Edited message is too long" };
@@ -54,9 +78,29 @@ export function normalizeDecidePayload(
     ? decision.options.map((option) => option.value)
     : ["approve", "skip", "yes", "no"];
   if (!choice || !allowed.includes(choice)) return { ok: false, error: "That choice is not offered" };
-  const next: ActionPayload = { choice, note: note || null };
-  if (decision.exact_message) next.exact_message_hash = exactMessageHash(decision.exact_message);
-  return { ok: true, payload: next };
+  return { ok: true, payload: withHash(decision, payload, { choice, note: note || null }) };
+}
+
+function withHash(decision: Decision, payload: ActionPayload, next: ActionPayload): ActionPayload {
+  const provided = typeof payload.exact_message_hash === "string" && /^[a-f0-9]{64}$/.test(payload.exact_message_hash) ? payload.exact_message_hash : "";
+  if (provided) next.exact_message_hash = provided;
+  else if (decision.exact_message) next.exact_message_hash = exactMessageHash(decision.exact_message);
+  else if (decision.detail?.preview?.hash) next.exact_message_hash = decision.detail.preview.hash;
+  return next;
+}
+
+function validateSwaps(decision: Decision, swaps: DecisionSwap[] | undefined): { ok: true; swaps: DecisionSwap[] } | { ok: false; error: string } {
+  if (!swaps?.length) return { ok: false, error: "Swap needs a pick and a replacement" };
+  if (swaps.length > 8) return { ok: false, error: "Too many swaps" };
+  const picks = new Set((decision.detail?.picks ?? []).map((company) => company.slug));
+  const candidates = new Set((decision.detail?.candidates ?? []).map((company) => company.slug));
+  const clean: DecisionSwap[] = [];
+  for (const swap of swaps) {
+    if (!picks.has(swap.out)) return { ok: false, error: "That pick is not in the pack" };
+    if (!candidates.has(swap.in)) return { ok: false, error: "That company is not a candidate" };
+    clean.push({ out: swap.out, in: swap.in });
+  }
+  return { ok: true, swaps: clean };
 }
 
 export function answersFromActions(actions: OsAction[]): DecisionAnswer[] {
@@ -69,6 +113,7 @@ export function answersFromActions(actions: OsAction[]): DecisionAnswer[] {
       decided_at: action.created_at,
       exact_message_hash: typeof action.payload.exact_message_hash === "string" ? action.payload.exact_message_hash : null,
       acked_at: action.acked_at,
+      ...(Array.isArray(action.payload.swaps) && action.payload.swaps.length ? { swaps: action.payload.swaps } : {}),
     }));
 }
 
@@ -103,7 +148,26 @@ export async function recordAction(
     status: "pending",
   };
   await writeActions([...current, action], env);
+  if (action.type === "decide") await logDecision(action, env);
   return { created: true, conflict: false, action };
+}
+
+async function logDecision(action: OsAction, env: Record<string, string | undefined>): Promise<void> {
+  try {
+    await appendDecisionLog(
+      {
+        at: action.created_at,
+        id: action.target_id,
+        answer: typeof action.payload.choice === "string" ? action.payload.choice : "",
+        hash: typeof action.payload.exact_message_hash === "string" ? action.payload.exact_message_hash : null,
+        note: typeof action.payload.note === "string" ? action.payload.note : null,
+        swaps: Array.isArray(action.payload.swaps) ? action.payload.swaps : null,
+      },
+      env,
+    );
+  } catch {
+    console.error("decision log failed");
+  }
 }
 
 function newDecisionRevision(previous: OsAction, input: { type: ActionType; payload: ActionPayload }): boolean {
@@ -136,6 +200,7 @@ async function writeRevision(
       : row,
   );
   await writeActions([...next, action], env);
+  if (action.type === "decide") await logDecision(action, env);
   return { created: true, conflict: false, action };
 }
 

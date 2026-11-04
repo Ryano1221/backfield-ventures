@@ -709,6 +709,144 @@
   ],
   "decisions": [
     {
+      "title": "EXAMPLE October partner pack",
+      "since": "2026-11-04T15:00:00.000Z",
+      "link": null,
+      "id": "example-pack",
+      "context": "EXAMPLE pack for the dashboard. These companies are examples.",
+      "summary": "EXAMPLE: a sample partner pack. These companies are not real.",
+      "requested_by": "EXAMPLE Investment",
+      "created_at": "2026-11-04T15:00:00.000Z",
+      "why_ryan": "EXAMPLE: this card shows the pack, other companies, and a preview. Nothing sends from it.",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ],
+      "exact_message": "EXAMPLE pack. This is sample copy for the dashboard. Nothing here is a real note or a real company.",
+      "timeline": [
+        {
+          "at": "2026-11-04T15:00:00.000Z",
+          "event": "EXAMPLE: Investment asked for a yes on this sample pack."
+        }
+      ],
+      "detail": {
+        "kind": "pack",
+        "picks": [
+          {
+            "slug": "example-weld",
+            "name": "EXAMPLE WELD",
+            "one_liner": "EXAMPLE welded goods for the sample pack.",
+            "category": "EXAMPLE hardware",
+            "stage": "EXAMPLE seed",
+            "location": "EXAMPLE Austin",
+            "score": "14/20",
+            "why": "EXAMPLE: pitched Backfield directly in this sample.",
+            "concerns": "EXAMPLE: early and unproven. Not a real concern.",
+            "source": "EXAMPLE fixture",
+            "website": "https://example.com/example-weld",
+            "facts": [
+              {
+                "label": "Founded",
+                "value": "EXAMPLE 2024",
+                "source_note": "example"
+              }
+            ]
+          },
+          {
+            "slug": "example-le-lick",
+            "name": "EXAMPLE Le Lick",
+            "one_liner": "EXAMPLE frozen treats for the sample pack.",
+            "category": "EXAMPLE food",
+            "stage": "EXAMPLE pre-seed",
+            "location": null,
+            "score": "11/20",
+            "why": "EXAMPLE: sent product in this sample.",
+            "concerns": null,
+            "source": "EXAMPLE fixture",
+            "website": "https://example.com/example-le-lick",
+            "facts": [
+              {
+                "label": "Channel",
+                "value": "EXAMPLE retail",
+                "source_note": "example"
+              }
+            ]
+          },
+          {
+            "slug": "example-skymd",
+            "name": "EXAMPLE SkyMD",
+            "one_liner": "EXAMPLE care visits for the sample pack.",
+            "category": "EXAMPLE health",
+            "stage": "EXAMPLE series A",
+            "location": "EXAMPLE remote",
+            "score": "16/20",
+            "why": "EXAMPLE: replaced another sample company in slot 3.",
+            "concerns": "EXAMPLE: regulated category in this sample.",
+            "source": "EXAMPLE fixture",
+            "website": "https://example.com/example-skymd",
+            "facts": [
+              {
+                "label": "Slot",
+                "value": "EXAMPLE 3",
+                "source_note": "example"
+              }
+            ]
+          }
+        ],
+        "candidates": [
+          {
+            "slug": "example-linea",
+            "name": "EXAMPLE LINEA",
+            "one_liner": "EXAMPLE apparel left out of the sample pack.",
+            "category": "EXAMPLE apparel",
+            "stage": "EXAMPLE seed",
+            "location": null,
+            "score": "12/20",
+            "why": "EXAMPLE: a company you can suggest in place of a pick.",
+            "concerns": "EXAMPLE: not in the pack.",
+            "source": "EXAMPLE fixture",
+            "website": "https://example.com/example-linea",
+            "facts": [
+              {
+                "label": "Status",
+                "value": "EXAMPLE candidate",
+                "source_note": "example"
+              }
+            ]
+          },
+          {
+            "slug": "example-north",
+            "name": "EXAMPLE North Sample",
+            "one_liner": "EXAMPLE outdoor gear left out of the sample pack.",
+            "category": "EXAMPLE outdoor",
+            "stage": null,
+            "location": "EXAMPLE Denver",
+            "score": null,
+            "why": "EXAMPLE: another company you can browse.",
+            "concerns": null,
+            "source": "EXAMPLE fixture",
+            "website": "https://example.com/example-north",
+            "facts": []
+          }
+        ],
+        "preview": {
+          "subject": "EXAMPLE October partner pack",
+          "to_label": "5 partners",
+          "text": "EXAMPLE pack. This is sample copy for the dashboard. Nothing here is a real note or a real company.",
+          "html": "<p><strong>EXAMPLE.</strong> This is sample copy for the dashboard. Nothing here is a real note or a real company.</p><p>Picks: EXAMPLE WELD, EXAMPLE Le Lick, and EXAMPLE SkyMD.</p><p><a href=\"https://example.com/example-pack\">EXAMPLE pack page</a></p>",
+          "attachment_label": "EXAMPLE one-pager",
+          "version": "example-1",
+          "hash": "f814929002bf44bc8999e264efc2f2ffa493fd6b1f1595110f9028203683371f"
+        }
+      }
+    },
+    {
       "title": "Email reply to FIXTURE Casey Sample",
       "since": "2026-10-30T15:56:00.000Z",
       "link": null,

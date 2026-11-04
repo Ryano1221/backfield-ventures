@@ -89,6 +89,49 @@ export type DecisionOption = {
   label: string;
 };
 
+export type DecisionFact = {
+  label: string;
+  value: string;
+  source_note?: string;
+};
+
+export type DecisionCompany = {
+  slug: string;
+  name: string;
+  one_liner?: string;
+  category?: string;
+  stage?: string | null;
+  location?: string | null;
+  score?: string | null;
+  why?: string;
+  concerns?: string | null;
+  source?: string;
+  website?: string | null;
+  facts?: DecisionFact[];
+};
+
+export type DecisionPreview = {
+  subject?: string;
+  to_label?: string;
+  text?: string;
+  html?: string;
+  attachment_label?: string;
+  version?: string;
+  hash?: string;
+};
+
+export type DecisionDetail = {
+  kind?: string;
+  picks?: DecisionCompany[];
+  candidates?: DecisionCompany[];
+  preview?: DecisionPreview;
+};
+
+export type DecisionSwap = {
+  out: string;
+  in: string;
+};
+
 export type DecisionChannel = "email" | "linkedin";
 
 export type DecisionBlockBy = "email and name" | "name only";
@@ -151,6 +194,7 @@ export type Decision = {
   body_formatted?: string;
   context_raw?: string;
   checks?: string[];
+  detail?: DecisionDetail;
 };
 
 export const CRM_TRACKS = [
@@ -208,7 +252,10 @@ export const ACTION_TYPES = [
 
 export type ActionType = (typeof ACTION_TYPES)[number];
 
-export type ActionPayload = Record<string, string | number | boolean | null>;
+export type ActionPayload = {
+  [key: string]: string | number | boolean | null | DecisionSwap[] | undefined;
+  swaps?: DecisionSwap[];
+};
 
 export type OsAction = {
   action_id: string;
@@ -233,6 +280,7 @@ export type DecisionAnswer = {
   decided_at: string;
   exact_message_hash: string | null;
   acked_at: string | null;
+  swaps?: DecisionSwap[] | null;
 };
 
 export type ActivityItem = {
