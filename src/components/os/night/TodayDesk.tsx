@@ -83,7 +83,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
             <div className="lbl">02 · Needs you</div>
             <h2 className="d-m">Decisions</h2>
           </div>
-          {items.length ? <div className="tools"><span className="lbl muted">J / K to move · Enter to approve</span></div> : null}
+          {items.length ? <div className="tools"><span className="lbl muted pointer-keys">J / K to move · Enter to approve</span></div> : null}
         </div>
         {item ? (
           <div className="mfirst">
@@ -182,36 +182,38 @@ function Group({
 
 export function DealTable({ deals }: { deals: DeskDeal[] }) {
   return (
-    <table className="tbl">
-      <thead>
-        <tr>
-          <th>Company</th>
-          <th className="hm">Sector</th>
-          <th>Stage</th>
-          <th>Score</th>
-          <th>In review</th>
-        </tr>
-      </thead>
-      <tbody>
-        {deals.map((deal) => (
-          <tr key={deal.company} id={`pitch:${deal.company}`}>
-            <td>
-              <div className="co">
-                <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} />
-                <div>
-                  <div className="n">{deal.company}</div>
-                  {deal.summary ? <div className="d clamp2">{deal.summary}</div> : null}
-                </div>
-              </div>
-            </td>
-            <td className="hm">{deal.sector || ""}</td>
-            <td>{deal.stage ? <span className="tag">{deal.stage}</span> : null}</td>
-            <td>{deal.pips == null ? <span className="lbl">Not scored</span> : <Pips n={deal.pips} />}</td>
-            <td className="nw">{deal.waiting || ""}</td>
+    <div className="tbl-scroll">
+      <table className="tbl">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th className="hm">Sector</th>
+            <th>Stage</th>
+            <th>Score</th>
+            <th>In review</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {deals.map((deal) => (
+            <tr key={deal.company} id={`pitch:${deal.company}`}>
+              <td>
+                <div className="co">
+                  <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} />
+                  <div>
+                    <div className="n">{deal.company}</div>
+                    {deal.summary ? <div className="d clamp2">{deal.summary}</div> : null}
+                  </div>
+                </div>
+              </td>
+              <td className="hm" data-label="Sector">{deal.sector || ""}</td>
+              <td data-label="Stage">{deal.stage ? <span className="tag">{deal.stage}</span> : null}</td>
+              <td data-label="Score">{deal.pips == null ? <span className="lbl">Not scored</span> : <Pips n={deal.pips} />}</td>
+              <td className="nw" data-label="In review">{deal.waiting || ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

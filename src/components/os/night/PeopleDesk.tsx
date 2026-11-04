@@ -75,7 +75,7 @@ export function PeopleDesk({
         <input className="search" value={query} onChange={(event) => { setQuery(event.target.value); setShown(PAGE); }} placeholder={`Search ${total.toLocaleString("en-US")} people by name or firm`} aria-label="Search people" />
         <label className="lbl muted">
           Stage
-          <select value={stage} onChange={(event) => { setStage(event.target.value); setShown(PAGE); }} aria-label="Stage" style={{ marginLeft: 8, background: "#000", color: "#f0ede8", border: "1px solid #333", height: 36 }}>
+          <select className="stage-select" value={stage} onChange={(event) => { setStage(event.target.value); setShown(PAGE); }} aria-label="Stage">
             <option value="all">Any</option>
             {counts.map((item) => (
               <option key={item.stage} value={item.stage}>{item.label}</option>
@@ -85,36 +85,38 @@ export function PeopleDesk({
         <span className="right lbl">Warm first, then latest touch</span>
       </div>
       {visible.length ? (
-        <table className="tbl">
-          <thead>
-            <tr>
-              <th>Person</th>
-              <th>Track</th>
-              <th>Stage</th>
-              <th className="hm">Last touch</th>
-              <th>Next step</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((row) => (
-              <tr key={row.id}>
-                <td>
-                  <a className="co" href={hrefs.person(row.id)}>
-                    <Logo name={row.firm || row.name} domain={row.domain} logoUrl={row.logoUrl} />
-                    <div>
-                      <div className="nm">{row.name}</div>
-                      {row.firm ? <div className="o">{row.firm}</div> : null}
-                    </div>
-                  </a>
-                </td>
-                <td>{row.trackLabel}</td>
-                <td>{row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}</td>
-                <td className="hm">{row.lastAge || row.last || ""}</td>
-                <td className="nx">{row.next || ""}</td>
+        <div className="tbl-scroll">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>Track</th>
+                <th>Stage</th>
+                <th className="hm">Last touch</th>
+                <th>Next step</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visible.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <a className="co" href={hrefs.person(row.id)}>
+                      <Logo name={row.firm || row.name} domain={row.domain} logoUrl={row.logoUrl} />
+                      <div>
+                        <div className="nm">{row.name}</div>
+                        {row.firm ? <div className="o">{row.firm}</div> : null}
+                      </div>
+                    </a>
+                  </td>
+                  <td data-label="Track">{row.trackLabel}</td>
+                  <td data-label="Stage">{row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}</td>
+                  <td className="hm" data-label="Last touch">{row.lastAge || row.last || ""}</td>
+                  <td className="nx" data-label="Next step">{row.next || ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p className="t-body muted">No people match.</p>
       )}
