@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { DeskDeal, DeskDecision, TodayModel } from "@/lib/os/night";
+import { type DeskDeal, type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { DecisionPane, DecisionRow } from "./DecisionPane";
 import { Logo } from "./Logo";
@@ -9,10 +9,16 @@ import { useNightActions } from "./NightFrame";
 
 export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
   const hrefs = osHrefs(onOs);
-  const items = useMemo(() => [...model.ready, ...model.hold, ...model.open], [model]);
+  const { submit, inflight, reportToday, actions } = useNightActions();
+  const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
+  const items = useMemo(() => [...view.ready, ...view.hold, ...view.open], [view]);
   const [current, setCurrent] = useState(0);
-  const { enqueue } = useNightActions();
   const item = items[current] ?? null;
+
+  useEffect(() => {
+    reportToday(items.length);
+    return () => reportToday(null);
+  }, [items.length, reportToday]);
   const next = item && items[current + 1] ? items[current + 1] : items.length > 1 ? items[0] : null;
 
   useEffect(() => {
@@ -26,42 +32,42 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       } else if (event.key === "k" || event.key === "ArrowUp") {
         event.preventDefault();
         setCurrent((index) => Math.max(0, index - 1));
-      } else if (event.key === "Enter" && item && !item.pending) {
+      } else if (event.key === "Enter" && item && !inflight[item.id] && !item.outcome) {
         event.preventDefault();
-        enqueue({
+        submit({
           type: "decide",
           target_id: item.id,
           payload: { choice: item.approveChoice },
-          label: `Queued approval for ${item.name}. Nothing sends until the office acts.`,
+          label: `Approved ${item.name}.`,
         });
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [enqueue, item, items.length]);
+  }, [inflight, item, items.length, submit]);
 
   return (
     <>
       <div className="hero">
         <div>
-          {model.weekday ? (
-            <div className="lbl eyebrow">{model.weekday}</div>
+          {view.weekday ? (
+            <div className="lbl eyebrow">{view.weekday}</div>
           ) : null}
           <h1 className="d-xl">
-            {model.headline}
-            {model.headlineDim ? (
+            {view.headline}
+            {view.headlineDim ? (
               <>
                 <br />
-                <span className="dim">{model.headlineDim}</span>
+                <span className="dim">{view.headlineDim}</span>
               </>
             ) : null}
           </h1>
-          {model.lede ? <p className="lede">{model.lede}</p> : null}
-          {model.instruction ? <p className="t-body">{model.instruction}</p> : null}
+          {view.lede ? <p className="lede">{view.lede}</p> : null}
+          {view.instruction ? <p className="t-body">{view.instruction}</p> : null}
         </div>
-        {model.kpis.length ? (
+        {view.kpis.length ? (
           <div className="kpis">
-            {model.kpis.map((kpi) => (
+            {view.kpis.map((kpi) => (
               <div className="kpi" key={kpi.label}>
                 <div className="lbl">{kpi.label}</div>
                 <div className="v">
@@ -74,6 +80,23 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
           </div>
         ) : null}
       </div>
+
+      {view.settled.length ? (
+        <section className="card" aria-label="Answered">
+          <div className="h">
+            <span className="lbl">Answered</span>
+          </div>
+          <ul className="settled">
+            {view.settled.map((row) => (
+              <li key={row.id}>
+                <b>{row.label}</b>
+                <span>{row.name}</span>
+                {row.at ? <span className="lbl">{row.at}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="card">
         <div className="h">
@@ -90,9 +113,9 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         {items.length ? (
           <div className="split">
             <div className="list">
-              <Group label="Ready to send" items={model.ready} all={items} current={current} onSelect={setCurrent} />
-              <Group label="On hold" items={model.hold} all={items} current={current} onSelect={setCurrent} />
-              <Group label="Open" items={model.open} all={items} current={current} onSelect={setCurrent} />
+              <Group label="Ready to send" items={view.ready} all={items} current={current} onSelect={setCurrent} />
+              <Group label="On hold" items={view.hold} all={items} current={current} onSelect={setCurrent} />
+              <Group label="Open" items={view.open} all={items} current={current} onSelect={setCurrent} />
             </div>
             {item ? (
               <DecisionPane

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { FinderItem } from "@/lib/os/finder";
 import { osHrefs } from "@/lib/os/nav";
@@ -24,6 +25,11 @@ type Draft = {
 type NightApi = {
   actions: OsAction[];
   enqueue: (draft: Draft) => void;
+  submit: (draft: Draft) => void;
+  retry: (targetId: string) => void;
+  inflight: Record<string, boolean>;
+  errors: Record<string, string>;
+  reportToday: (count: number | null) => void;
 };
 
 const Ctx = createContext<NightApi | null>(null);
@@ -62,6 +68,12 @@ export function NightFrame({
   const [toasts, setToasts] = useState<{ id: string; label: string; undo: boolean }[]>([]);
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [inflight, setInflight] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [liveToday, setLiveToday] = useState<number | null>(null);
+  const drafts = useRef(new Map<string, Draft & { key: string }>());
+  const inflightRef = useRef<Record<string, boolean>>({});
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const queuedRef = useRef<Queued[]>([]);
   const timers = useRef(new Map<string, number>());
@@ -112,6 +124,60 @@ export function NightFrame({
     queuedRef.current = queuedRef.current.filter((item) => item.batch !== batch);
     setQueued(queuedRef.current);
     setToasts((current) => current.filter((toast) => toast.id !== batch));
+  }, []);
+
+  const submit = useCallback((draft: Draft) => {
+    const id = draft.target_id;
+    if (inflightRef.current[id]) return;
+    const key = drafts.current.get(id)?.key || (draft.type === "decide" ? `decide:${id}` : crypto.randomUUID());
+    const saved = { ...draft, key };
+    drafts.current.set(id, saved);
+    inflightRef.current = { ...inflightRef.current, [id]: true };
+    setInflight(inflightRef.current);
+    setErrors((current) => {
+      if (!current[id]) return current;
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+    const item: Queued = {
+      batch: id,
+      idempotency_key: key,
+      type: saved.type,
+      target_id: id,
+      payload: saved.payload,
+      created_at: new Date().toISOString(),
+    };
+    void postAction(item).then((ok) => {
+      const next = { ...inflightRef.current };
+      delete next[id];
+      inflightRef.current = next;
+      setInflight(next);
+      if (ok.action) {
+        setActions((current) => (current.some((action) => action.action_id === ok.action?.action_id) ? current : [...current, ok.action!]));
+        setErrors((current) => {
+          if (!current[id]) return current;
+          const copy = { ...current };
+          delete copy[id];
+          return copy;
+        });
+        router.refresh();
+        return;
+      }
+      setErrors((current) => ({ ...current, [id]: ok.error || "Could not save that." }));
+    });
+  }, [router]);
+
+  const retry = useCallback(
+    (targetId: string) => {
+      const draft = drafts.current.get(targetId);
+      if (draft) submit(draft);
+    },
+    [submit],
+  );
+
+  const reportToday = useCallback((count: number | null) => {
+    setLiveToday(count);
   }, []);
 
   const enqueue = useCallback(
@@ -177,7 +243,7 @@ export function NightFrame({
 
   const hrefs = osHrefs(onOs);
   const links: { id: Section; label: string; href: string; count: number | null }[] = [
-    { id: "today", label: "Today", href: hrefs.today, count: counts.today },
+    { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
     { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
     { id: "people", label: "People", href: hrefs.people, count: counts.people },
     { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
@@ -195,7 +261,7 @@ export function NightFrame({
   }
 
   return (
-    <Ctx.Provider value={{ actions: visible, enqueue }}>
+    <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday }}>
       <header className="mbar">
         <a href={hrefs.today}>
           <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
@@ -369,10 +435,10 @@ async function postAction(item: Queued): Promise<{ action?: OsAction; error?: st
         idempotency_key: item.idempotency_key,
       }),
     });
-    if (res.status === 409) return { error: "Already answered." };
-    if (!res.ok) return { error: "Could not save that." };
-    const body = (await res.json()) as { action?: OsAction };
-    return { action: body.action };
+    const body = (await res.json().catch(() => ({}))) as { action?: OsAction; error?: string };
+    if (body.action && (res.ok || res.status === 409)) return { action: body.action };
+    if (!res.ok) return { error: body.error || "Could not save that." };
+    return { error: "Could not save that." };
   } catch {
     return { error: "Could not save that." };
   }

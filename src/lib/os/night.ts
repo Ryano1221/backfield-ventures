@@ -1,3 +1,4 @@
+import { storedDecisionAnswer, type AnswerLabel } from "./decision-merge";
 import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
 import { botPaused, isSnoozed } from "./overlays";
@@ -101,6 +102,14 @@ export type DeskDecision = {
   notNow: { kind: "decide"; choice: string } | { kind: "snooze" };
   linked: DeskLink[];
   pending: boolean;
+  outcome: { label: AnswerLabel; at: string } | null;
+};
+
+export type SettledDecision = {
+  id: string;
+  name: string;
+  label: AnswerLabel;
+  at: string;
 };
 
 export type DeskDeal = {
@@ -130,6 +139,7 @@ export type TodayModel = {
   ready: DeskDecision[];
   hold: DeskDecision[];
   open: DeskDecision[];
+  settled: SettledDecision[];
   deals: DeskDeal[];
   pitchCount: number;
   reviewingCount: number;
@@ -368,6 +378,7 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
       ready: [],
       hold: [],
       open: [],
+      settled: [],
       deals: [],
       pitchCount: 0,
       reviewingCount: 0,
@@ -377,9 +388,17 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
       snapshotLabel: null,
     };
   }
+  const settled: SettledDecision[] = [];
   const decisions = snapshot.decisions
     .map((decision) => presentDecision(decision, snapshot, actions, now))
-    .filter((decision) => !isSnoozed(decision.id, actions, now));
+    .filter((decision) => {
+      const answer = storedDecisionAnswer(actions, decision.id, now);
+      if (answer) {
+        settled.push({ id: decision.id, name: decision.name, label: answer.label, at: formatCt(answer.at, true) || "" });
+        return false;
+      }
+      return !isSnoozed(decision.id, actions, now);
+    });
   const ready = decisions.filter((decision) => decision.reply && !decision.hold);
   const hold = decisions.filter((decision) => decision.hold);
   const open = decisions.filter((decision) => !decision.reply && !decision.hold);
@@ -421,6 +440,7 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
     ready,
     hold,
     open,
+    settled,
     deals,
     pitchCount: snapshot.pitches.length,
     reviewingCount: reviewing.length,
@@ -539,7 +559,6 @@ export function buildOffice(snapshot: Snapshot | null, actions: OsAction[] = [])
 }
 
 export function presentDecision(decision: Decision, snapshot: Snapshot, actions: OsAction[], now: number): DeskDecision {
-  void now;
   const id = decisionKey(decision);
   const hold = isHoldDecision(decision);
   const message = outgoingBody(decision.body_formatted) || outgoingBody(decision.exact_message);
@@ -553,7 +572,7 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
   const domain = decision.domain || org?.domain || null;
   const logoUrl = decision.logo_url || org?.logoUrl || null;
   const approve = approveChoice(decision);
-  const pending = actions.some((action) => action.type === "decide" && action.target_id === id && action.status !== "failed");
+  const answer = storedDecisionAnswer(actions, id, now);
   const linkedin = channel === "LinkedIn";
   const crm = crmMatch(name, decision, snapshot);
   return {
@@ -587,7 +606,43 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
     approveLabel: approve.label,
     notNow: notNowChoice(decision),
     linked: linksFor(decision, name, snapshot),
-    pending,
+    pending: false,
+    outcome: answer ? { label: answer.label, at: formatCt(answer.at, true) || "" } : null,
+  };
+}
+
+export function withLiveAnswers(model: TodayModel, actions: OsAction[], now = Date.now()): TodayModel {
+  const settled = [...model.settled];
+  const seen = new Set(settled.map((row) => row.id));
+  const keep: DeskDecision[] = [];
+  for (const card of [...model.ready, ...model.hold, ...model.open]) {
+    const answer = storedDecisionAnswer(actions, card.id, now);
+    if (answer) {
+      if (!seen.has(card.id)) {
+        settled.push({ id: card.id, name: card.name, label: answer.label, at: formatCt(answer.at, true) || "" });
+        seen.add(card.id);
+      }
+      continue;
+    }
+    if (isSnoozed(card.id, actions, now)) continue;
+    keep.push(card);
+  }
+  const ready = keep.filter((decision) => decision.reply && !decision.hold);
+  const hold = keep.filter((decision) => decision.hold);
+  const open = keep.filter((decision) => !decision.reply && !decision.hold);
+  if (!model.hasSnapshot) return { ...model, ready, hold, open, settled };
+  const lines = headlineLines(ready.length, hold.length, open.length);
+  return {
+    ...model,
+    headline: lines.lead,
+    headlineDim: lines.dim,
+    lede: daySentence({ replies: ready.length, holds: hold.length, deals: model.reviewingCount, waitingBots: model.waiting.length }),
+    instruction: ready.length ? "Each one is the exact message that goes out. Read it, approve it, done." : null,
+    kpis: model.kpis.map((kpi) => (kpi.label === "Needs you" ? { ...kpi, value: String(keep.length), sub: needsSub(ready.length, hold.length, open.length) } : kpi)),
+    ready,
+    hold,
+    open,
+    settled,
   };
 }
 
