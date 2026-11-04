@@ -1,0 +1,51 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { buildFinder } from "./finder";
+import { decisionNeedsPickup, PICKUP_LINE, ratingNeedsPickup, waitingActions } from "./waiting";
+import type { OsAction, Snapshot } from "./types";
+
+test("search uses the people stage words", () => {
+  const snapshot = {
+    generated_at: "2026-11-04T18:00:00.000Z",
+    pitches: [],
+    bots: { bots: [] },
+    outreach: [],
+    decisions: [],
+    activity: [],
+    interactions: [],
+    crm: { people: [{ id: "p1", name: "Ada", firm: "Harbor", track: "investor", stage: "im_in", owner: null, last_touch_at: null, last_touch_channel: null, next_step: null, next_step_due: null, email: null, linkedin: null, notes: null }] },
+  } as Snapshot;
+  const person = buildFinder(snapshot).find((item) => item.kind === "person");
+  assert.equal(person?.hint, "Harbor · I'm in");
+  assert.equal(person?.hint.includes("im_in"), false);
+});
+
+test("yes, no, reply, swap, and a rating say they are waiting on the office", () => {
+  const yes = action("decide", "dec-1", { choice: "yes" });
+  const swap = action("decide", "dec-2", { choice: "swap" });
+  const edit = action("decide", "dec-3", { choice: "edit" });
+  const acked = { ...action("decide", "dec-4", { choice: "no" }), acked_at: "2026-11-04T19:00:00.000Z", status: "done" as const };
+  const rate = action("rate", "pitch_example", { rating: "great" });
+  const actions = [yes, swap, edit, acked, rate];
+  assert.equal(decisionNeedsPickup(actions, "dec-1"), true);
+  assert.equal(decisionNeedsPickup(actions, "dec-2"), true);
+  assert.equal(decisionNeedsPickup(actions, "dec-3"), false);
+  assert.equal(decisionNeedsPickup(actions, "dec-4"), false);
+  assert.equal(ratingNeedsPickup(actions, "pitch_example"), true);
+  assert.equal(waitingActions(actions).some((row) => row.target_id === "dec-4"), false);
+  assert.equal(PICKUP_LINE, "Saved. The office has not picked this up yet.");
+});
+
+function action(type: OsAction["type"], target: string, payload: OsAction["payload"]): OsAction {
+  return {
+    action_id: `${type}-${target}`,
+    type,
+    target_id: target,
+    payload,
+    created_at: "2026-11-04T18:00:00.000Z",
+    idempotency_key: `${type}:${target}:1`,
+    acked_at: null,
+    result: null,
+    status: "pending",
+  };
+}

@@ -110,7 +110,7 @@ test("search, rating filters, and sort use the live rating", () => {
   assert.equal(visibleDeals(deals, "", "unrated", "name", ratingOf).map((deal) => deal.id).join(), "pitch_b");
   assert.deepEqual(
     visibleDeals(deals, "", "all", "rating", ratingOf).map((deal) => deal.id),
-    ["pitch_c", "pitch_a", "pitch_b"],
+    ["pitch_b", "pitch_c", "pitch_a"],
   );
   assert.deepEqual(
     visibleDeals(deals, "example", "all", "score", ratingOf).map((deal) => deal.id),

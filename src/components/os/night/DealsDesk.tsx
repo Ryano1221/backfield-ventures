@@ -26,9 +26,11 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
     <>
       <div className="lbl eyebrow">Deals</div>
       <h1 className="d-xl">
-        {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "deal is" : "deals are"} in review.
+        {deals.length.toLocaleString("en-US")} {deals.length === 1 ? "pitch" : "pitches"}.
       </h1>
-      <p className="lede">{deals.length.toLocaleString("en-US")} pitches in this snapshot.</p>
+      <p className="lede">
+        {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
+      </p>
       <section className="card">
         <div className="h">
           <span className="lbl">Pitches</span>

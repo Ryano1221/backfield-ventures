@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { RATING_ORDER, shownPitchRating } from "@/lib/os/pitch-rate";
 import type { PitchRating } from "@/lib/os/types";
+import { PICKUP_LINE, ratingNeedsPickup } from "@/lib/os/waiting";
 import { useNightActions } from "./NightFrame";
 
 export function RateControl({
@@ -50,6 +51,8 @@ export function RateControl({
         <p className="os-error" role="alert">
           {error}
         </p>
+      ) : ratingNeedsPickup(actions, id) ? (
+        <p className="pickup">{PICKUP_LINE}</p>
       ) : null}
     </div>
   );

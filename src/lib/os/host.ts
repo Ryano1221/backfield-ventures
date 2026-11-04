@@ -97,6 +97,7 @@ const OS_PAGE_REWRITES: Record<string, string> = {
   "/pipeline": "/os/pipeline",
   "/activity": "/os/activity",
   "/email": "/os/email",
+  "/waiting": "/os/waiting",
 };
 
 function nestedOsPage(path: string): string | null {
