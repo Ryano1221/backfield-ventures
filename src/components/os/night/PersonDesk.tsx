@@ -9,7 +9,7 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
         {person.trackLabel ? ` / ${person.trackLabel}` : ""} / {person.name}
       </div>
       <div className="phead">
-        <Logo name={person.firm || person.name} domain={person.domain} logoUrl={person.logoUrl} large />
+        <Logo key={person.id} name={person.firm || person.name} domain={person.domain} logoUrl={person.logoUrl} large />
         <div>
           <h1 className="d-l">{person.name}</h1>
           {person.tags.length ? (

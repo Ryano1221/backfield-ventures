@@ -31,6 +31,7 @@ export function DecisionDesk({
       </div>
       <div className="dgrid">
         <DecisionPane
+          key={item.id}
           item={item}
           index={index}
           total={total}

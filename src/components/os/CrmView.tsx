@@ -214,6 +214,7 @@ export function CrmView({ people, snapshot }: { people: CrmPerson[]; snapshot: S
       </div>
       {person ? (
         <PersonDrawer
+          key={person.id}
           person={person}
           snapshot={snapshot}
           onClose={() => setOpen(null)}

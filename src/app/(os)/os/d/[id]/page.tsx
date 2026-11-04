@@ -34,7 +34,7 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
   return (
     <NightFrame onOs={onOs} active="today" counts={counts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       {item ? (
-        <DecisionDesk item={item} index={index} total={items.length} next={items[index + 1] ?? null} onOs={onOs} />
+        <DecisionDesk key={item.id} item={item} index={index} total={items.length} next={items[index + 1] ?? null} onOs={onOs} />
       ) : (
         <p className="t-body muted">That decision is not in this snapshot.</p>
       )}
