@@ -1,8 +1,8 @@
 import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
 import { botPaused, isSnoozed } from "./overlays";
-import { blankToNull, readableDetail, shortTitle } from "./present";
-import type { BotRecord, CrmPerson, Decision, Interaction, OsAction, Pitch, Snapshot } from "./types";
+import { blankToNull, shortTitle } from "./present";
+import type { BotRecord, CrmPerson, Decision, DecisionEvent, Interaction, OsAction, Pitch, Snapshot } from "./types";
 
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
 
@@ -52,19 +52,45 @@ export type DeskLink = {
   stage: string | null;
 };
 
+export type DeskFact = { label: string; value: string };
+
+export type DeskQuote = {
+  text: string;
+  at: string | null;
+  summary: boolean;
+};
+
+export type DeskTimelineRow = {
+  at: string | null;
+  event: string;
+  tone: "you" | "them" | "pend";
+};
+
 export type DeskDecision = {
   id: string;
   name: string;
   org: string | null;
   summary: string | null;
   happened: string | null;
+  why: string | null;
+  quote: DeskQuote | null;
+  timeline: DeskTimelineRow[];
   message: string | null;
   channel: string | null;
+  channelCrumb: string | null;
   waiting: string | null;
   drafted: string | null;
   hold: boolean;
   reply: boolean;
-  toLine: string | null;
+  toName: string | null;
+  toEmail: string | null;
+  toDetail: string | null;
+  cc: string | null;
+  subject: string | null;
+  fromLine: string | null;
+  checks: string[];
+  details: DeskFact[];
+  personFacts: DeskFact[];
   logoUrl: string | null;
   domain: string | null;
   approveChoice: string;
@@ -245,6 +271,30 @@ export function formatCt(value: string | null | undefined, withTime = true): str
   if (!withTime) return `${get("month")} ${get("day")}`;
   const period = get("dayPeriod").toLowerCase().replace(/\./g, "");
   return `${get("month")} ${get("day")}, ${get("hour")}:${get("minute")}${period} CT`;
+}
+
+export function formatCtStamp(value: string | null | undefined, kind: "quote" | "row", approx = false): string | null {
+  const raw = blankToNull(value);
+  if (!raw || /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const day = formatCt(raw, false);
+    return day;
+  }
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  const period = get("dayPeriod").toLowerCase().replace(/\./g, "");
+  const time = `${approx ? "~" : ""}${get("hour")}:${get("minute")}${period}`;
+  if (kind === "row") return `${get("weekday")} ${get("month")} ${get("day")} · ${time} CT`;
+  return `${get("weekday")} ${get("month")} ${get("day")}, ${time} CT`;
 }
 
 export function weekdayCt(value: string | null | undefined): string | null {
@@ -462,31 +512,48 @@ export function buildOffice(snapshot: Snapshot | null, actions: OsAction[] = [])
 }
 
 export function presentDecision(decision: Decision, snapshot: Snapshot, actions: OsAction[], now: number): DeskDecision {
+  void now;
   const id = decisionKey(decision);
   const hold = isHoldDecision(decision);
-  const message = blankToNull(decision.exact_message);
-  const name = decisionName(decision);
-  const happened = sentenceOrNull(readableDetail(decision.context));
-  const summary = sentenceOrNull(blankToNull(decision.summary)) || (happened ? clip(happened, 180) : null);
-  const channel = channelOf(decision);
+  const message = outgoingBody(decision.body_formatted) || outgoingBody(decision.exact_message);
+  const name = blankToNull(decision.person?.name) || decisionName(decision);
+  const happened = sentenceOrNull(blankToNull(decision.summary)) || sentenceOrNull(blankToNull(decision.context));
+  const summary = happened ? clip(happened, 180) : null;
+  const channel = channelLabel(decision);
   const org = orgFor(name, decision, snapshot);
+  const company = blankToNull(decision.person?.company) || org?.label || null;
+  const does = blankToNull(decision.person?.what_they_do);
   const domain = decision.domain || org?.domain || null;
   const logoUrl = decision.logo_url || org?.logoUrl || null;
   const approve = approveChoice(decision);
   const pending = actions.some((action) => action.type === "decide" && action.target_id === id && action.status !== "failed");
+  const linkedin = channel === "LinkedIn";
+  const crm = crmMatch(name, decision, snapshot);
   return {
     id,
     name,
-    org: org?.label || null,
+    org: [company, does].filter(Boolean).join(" · ") || null,
     summary: summary && summary !== name ? summary : null,
     happened,
-    message: message ? sentence(message) : null,
+    why: blankToNull(decision.why_ryan),
+    quote: presentQuote(decision, name),
+    timeline: presentTimeline(decision.timeline),
+    message,
     channel,
-    waiting: waitingLabel(decision.since, snapshot.generated_at),
-    drafted: formatCt(decision.since, true),
+    channelCrumb: channelCrumb(channel),
+    waiting: waitingLabel(theirSpokeAt(decision) || decision.since, snapshot.generated_at),
+    drafted: formatCt(decision.created_at || decision.since, true),
     hold,
     reply: Boolean(message) && !hold,
-    toLine: toLine(name, channel),
+    toName: name || null,
+    toEmail: linkedin ? null : blankToNull(decision.to_email),
+    toDetail: linkedin ? "LinkedIn DM, personal" : null,
+    cc: blankToNull(decision.cc),
+    subject: decision.subject ? sentenceOrNull(decision.subject) : null,
+    fromLine: fromLine(channel, decision.thread_id),
+    checks: decision.checks ?? [],
+    details: detailFacts(decision),
+    personFacts: personFacts(decision, name, company, crm),
     logoUrl,
     domain,
     approveChoice: approve.choice,
@@ -495,6 +562,12 @@ export function presentDecision(decision: Decision, snapshot: Snapshot, actions:
     linked: linksFor(decision, name, snapshot),
     pending,
   };
+}
+
+function outgoingBody(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/\r\n/g, "\n").trim();
+  return text || null;
 }
 
 function presentDeal(pitch: Pitch, generatedAt: string): DeskDeal {
@@ -628,7 +701,9 @@ function decisionName(decision: Decision): string {
   return titled || decision.title;
 }
 
-function channelOf(decision: Decision): string | null {
+function channelLabel(decision: Decision): string | null {
+  if (decision.channel === "email") return "Email";
+  if (decision.channel === "linkedin") return "LinkedIn";
   const blob = `${decision.title}\n${decision.context || ""}\n${decision.summary || ""}`.toLowerCase();
   if (/\blinkedin\b/.test(blob)) return "LinkedIn";
   if (/\b(e-?mail|gmail)\b/.test(blob)) return "Email";
@@ -636,9 +711,127 @@ function channelOf(decision: Decision): string | null {
   return null;
 }
 
-function toLine(name: string, channel: string | null): string | null {
-  if (!name) return channel;
-  return channel ? `${name} · ${channel}` : name;
+function channelCrumb(channel: string | null): string | null {
+  if (channel === "Email") return "Reply by email";
+  if (channel === "LinkedIn") return "Reply on LinkedIn";
+  if (channel === "Slack") return "Reply in Slack";
+  return null;
+}
+
+function fromLine(channel: string | null, threadId: string | undefined): string | null {
+  if (channel !== "Email") return null;
+  return threadId ? "ryan@backfieldventures.com · reply in thread" : "ryan@backfieldventures.com";
+}
+
+function theirSpokeAt(decision: Decision): string | null {
+  const wordAt = decision.their_words?.at;
+  if (wordAt && Number.isFinite(Date.parse(wordAt))) return wordAt;
+  for (const row of decision.timeline ?? []) {
+    if (!row.at || !Number.isFinite(Date.parse(row.at))) continue;
+    if (toneOf(row.event || "") === "them") return row.at;
+  }
+  return null;
+}
+
+function presentQuote(decision: Decision, name: string): DeskQuote | null {
+  const words = decision.their_words;
+  const summaryEvent = (decision.timeline ?? []).find((row) => isParaphrase(row.event));
+  const quote = blankToNull(words?.quote);
+  const summary = isParaphrase(words?.source) || isParaphrase(quote) || (!quote && Boolean(summaryEvent));
+  const text = quote || (summaryEvent ? cleanParaphrase(summaryEvent.event || "") : null);
+  if (!text) return null;
+  const atIso = words?.at || summaryEvent?.at || null;
+  const approx = words?.approx === true || (words?.approx == null && summaryEvent?.approx === true);
+  const when = formatCtStamp(atIso, "quote", approx);
+  const source = blankToNull(words?.source);
+  const human = source && !isMachineSource(source) ? source : null;
+  const at = [firstName(name), when, human].filter(Boolean).join(" · ") || null;
+  return { text, at, summary };
+}
+
+function presentTimeline(rows: DecisionEvent[] | undefined): DeskTimelineRow[] {
+  if (!rows?.length) return [];
+  const out: DeskTimelineRow[] = [];
+  for (const row of rows) {
+    const event = blankToNull(row.event);
+    if (!event) continue;
+    out.push({
+      at: formatCtStamp(row.at, "row", row.approx === true),
+      event,
+      tone: toneOf(event),
+    });
+  }
+  return out;
+}
+
+function toneOf(event: string): DeskTimelineRow["tone"] {
+  if (/\b(never sent|not sent|waiting on|was drafted|saved in)\b/i.test(event)) return "pend";
+  if (/^(you|ryan)\b/i.test(event.trim())) return "you";
+  return "them";
+}
+
+function isParaphrase(value: string | null | undefined): boolean {
+  if (!value) return false;
+  return /not (?:his|her|their) words|not a quote|summary,\s*not/i.test(value);
+}
+
+function cleanParaphrase(event: string): string | null {
+  const cleaned = event
+    .replace(/summary,\s*not a quote[:\s-]*/i, "")
+    .replace(/not (?:his|her|their) words[:\s-]*/i, "")
+    .trim();
+  return blankToNull(cleaned);
+}
+
+function personFacts(decision: Decision, name: string, company: string | null, crm: CrmPerson | null): DeskFact[] {
+  const does = blankToNull(decision.person?.what_they_do);
+  const reach = blankToNull(decision.person?.reach);
+  const stage = crm ? [stageLabel(crm.stage), trackLabel(crm.track)].filter(Boolean).join(" · ") : "";
+  if (!decision.person && !crm) return [];
+  if (!company && !does && !reach && !stage && !decision.person?.name) return [];
+  const facts: DeskFact[] = [{ label: "Name", value: blankToNull(decision.person?.name) || name }];
+  if (company) facts.push({ label: "Company", value: company });
+  if (does) facts.push({ label: "Does", value: does });
+  if (reach) facts.push({ label: "Reach", value: reach });
+  if (stage) facts.push({ label: "Stage", value: stage });
+  return facts;
+}
+
+function detailFacts(decision: Decision): DeskFact[] {
+  const facts: DeskFact[] = [];
+  if (decision.thread_id) facts.push({ label: "Thread", value: decision.thread_id });
+  if (decision.reply_to_msg_id) facts.push({ label: "Reply to", value: decision.reply_to_msg_id });
+  for (const source of machineSources(decision)) facts.push({ label: "Source", value: source });
+  return facts;
+}
+
+function machineSources(decision: Decision): string[] {
+  const raw = [decision.person?.source, decision.their_words?.source, ...(decision.timeline ?? []).map((row) => row.source)];
+  const out: string[] = [];
+  for (const item of raw) {
+    const text = blankToNull(item);
+    if (!text || !isMachineSource(text) || out.includes(text)) continue;
+    out.push(text);
+  }
+  return out;
+}
+
+function isMachineSource(value: string): boolean {
+  const text = value.trim();
+  if (/[/\\]/.test(text) || /\.[a-z0-9]{1,4}$/i.test(text)) return true;
+  return /^[a-z0-9_-]{12,}$/i.test(text);
+}
+
+function firstName(name: string): string {
+  return name.trim().split(/\s+/)[0] || name;
+}
+
+function crmMatch(name: string, decision: Decision, snapshot: Snapshot): CrmPerson | null {
+  const email = blankToNull(decision.to_email)?.toLowerCase();
+  return (
+    snapshot.crm.people.find((row) => namesMatch(row.name, name) || (email && row.email?.toLowerCase() === email) || textHas(decision, row.name)) ||
+    null
+  );
 }
 
 function orgFor(name: string, decision: Decision, snapshot: Snapshot): { label: string; domain: string | null; logoUrl: string | null } | null {

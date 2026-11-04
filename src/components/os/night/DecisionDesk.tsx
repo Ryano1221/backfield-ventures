@@ -19,11 +19,6 @@ export function DecisionDesk({
   onOs: boolean;
 }) {
   const hrefs = osHrefs(onOs);
-  const facts: { label: string; value: string }[] = [];
-  if (item.channel) facts.push({ label: "Channel", value: item.channel });
-  if (item.toLine) facts.push({ label: "To", value: item.toLine });
-  if (item.waiting) facts.push({ label: "Waiting", value: item.waiting });
-  if (item.drafted) facts.push({ label: "Drafted", value: item.drafted });
   return (
     <>
       <div className="lbl eyebrow">
@@ -31,23 +26,53 @@ export function DecisionDesk({
       </div>
       <div className="dgrid">
         <DecisionPane
+          key={item.id}
           item={item}
           index={index}
           total={total}
           next={next ? { href: hrefs.decision(next.id), label: [next.name, next.org].filter(Boolean).join(", ") } : null}
         />
         <aside className="side">
-          {facts.length ? (
+          {item.personFacts.length ? (
             <div className="card">
-              <div className="h lbl">Details</div>
+              <div className="h lbl">Who they are</div>
               <dl className="dl">
-                {facts.map((fact) => (
+                {item.personFacts.map((fact) => (
                   <span key={fact.label} style={{ display: "contents" }}>
                     <dt>{fact.label}</dt>
                     <dd>{fact.value}</dd>
                   </span>
                 ))}
               </dl>
+            </div>
+          ) : null}
+          {item.checks.length ? (
+            <div className="card">
+              <div className="h lbl">Checks</div>
+              <div className="checks">
+                {item.checks.map((check) => (
+                  <div key={check}>{check}</div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {item.details.length ? (
+            <div className="card">
+              <details>
+                <summary className="lbl">
+                  <span>Details</span>
+                  <span className="tap tap-closed">Tap to show +</span>
+                  <span className="tap tap-open">Hide −</span>
+                </summary>
+                <dl className="dl">
+                  {item.details.map((fact) => (
+                    <span key={`${fact.label}:${fact.value}`} style={{ display: "contents" }}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.value}</dd>
+                    </span>
+                  ))}
+                </dl>
+              </details>
             </div>
           ) : null}
           {item.linked.length ? (

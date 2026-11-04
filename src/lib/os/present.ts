@@ -73,16 +73,27 @@ export function readableDetail(value: string | null | undefined): string {
   return mostlyShouty(text) ? sentenceCase(stripAsides(text)) : stripAsides(text);
 }
 
-function stripAsides(value: string): string {
+export function stripAsides(value: string): string {
   return value
     .replace(/\([^)]*\)/g, " ")
     .replace(/\[[^\]]*\]/g, " ")
     .replace(/"[^"]{24,}"/g, " ")
     .replace(/\bPKT_[A-Z0-9]+\b/gi, " ")
     .replace(/\b[\w.-]+\.md\b/gi, " ")
-    .replace(/(?:^|\s)[\w.-]+(?:\/[\w.-]+)+/g, " ")
+    .replace(/(?:^|\s)\/?(?:[\w.-]+\/)+[\w.-]*\/?/g, (match) => (isDateToken(match) ? match : " "))
+    .replace(/\bSource:\s*\/?\s*(?=[.;,]|$)/gi, " ")
+    .replace(/(?:^|\s)\/+(?=\s|$|[.;,])/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isDateToken(match: string): boolean {
+  const body = match
+    .trim()
+    .replace(/^[:(]+/, "")
+    .replace(/^\/+/, "")
+    .replace(/[.]+$/, "");
+  return /^\d{1,4}(?:\/\d{1,4}){1,2}$/.test(body);
 }
 
 function replyTitle(text: string): string | null {

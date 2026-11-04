@@ -11,7 +11,12 @@ import {
   type CrmPerson,
   type CrmTrack,
   type Decision,
+  type DecisionBlockCheck,
+  type DecisionChannel,
+  type DecisionEvent,
   type DecisionOption,
+  type DecisionPerson,
+  type DecisionWords,
   type DirectorKey,
   type Interaction,
   type InteractionKind,
@@ -301,7 +306,184 @@ function validateDecision(value: unknown, path: string, issues: string[]): Decis
     const options = validateOptions(value.options, `${path}.options`, issues);
     if (options) decision.options = options;
   }
+  const toEmail = optStr(value.to_email, `${path}.to_email`, 200, issues);
+  const cc = optStr(value.cc, `${path}.cc`, 500, issues);
+  const subject = optStr(value.subject, `${path}.subject`, 300, issues);
+  const threadId = optStr(value.thread_id, `${path}.thread_id`, 200, issues);
+  const replyTo = optStr(value.reply_to_msg_id, `${path}.reply_to_msg_id`, 200, issues);
+  const channel = decisionChannel(value.channel, `${path}.channel`, issues);
+  const person = validateDecisionPerson(value.person, `${path}.person`, issues);
+  const words = validateTheirWords(value.their_words, `${path}.their_words`, issues);
+  const timeline = validateTimeline(value.timeline, `${path}.timeline`, issues);
+  const why = softBlock(value.why_ryan, 2000, `${path}.why_ryan`, issues);
+  const body = softBlock(value.body_formatted, 8000, `${path}.body_formatted`, issues);
+  const raw = softBlock(value.context_raw, 8000, `${path}.context_raw`, issues);
+  const checks = validateChecks(value.checks, `${path}.checks`, issues);
+  if (toEmail) decision.to_email = toEmail;
+  if (cc) decision.cc = cc;
+  if (subject) decision.subject = subject;
+  if (threadId) decision.thread_id = threadId;
+  if (replyTo) decision.reply_to_msg_id = replyTo;
+  if (channel) decision.channel = channel;
+  if (person) decision.person = person;
+  if (words) decision.their_words = words;
+  if (timeline) decision.timeline = timeline;
+  if (why) decision.why_ryan = why;
+  if (body) decision.body_formatted = body;
+  if (raw) decision.context_raw = raw;
+  if (checks) decision.checks = checks;
   return decision;
+}
+
+function decisionChannel(value: unknown, path: string, issues: string[]): DecisionChannel | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value !== "string") {
+    issues.push(`${path} must be email or linkedin`);
+    return undefined;
+  }
+  const channel = value.trim().toLowerCase();
+  if (channel === "email" || channel === "linkedin") return channel;
+  issues.push(`${path} must be email or linkedin`);
+  return undefined;
+}
+
+function validateDecisionPerson(value: unknown, path: string, issues: string[]): DecisionPerson | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return undefined;
+  }
+  const person: DecisionPerson = {};
+  const name = optStr(value.name, `${path}.name`, 120, issues);
+  const company = optStr(value.company, `${path}.company`, 160, issues);
+  const does = optStr(value.what_they_do, `${path}.what_they_do`, 240, issues);
+  const reach = optStr(value.reach, `${path}.reach`, 160, issues);
+  const source = optStr(value.source, `${path}.source`, 500, issues);
+  if (name) person.name = name;
+  if (company) person.company = company;
+  if (does) person.what_they_do = does;
+  if (reach) person.reach = reach;
+  if (source) person.source = source;
+  if (value.block_check !== undefined && value.block_check !== null) {
+    const check = validateBlockCheck(value.block_check, `${path}.block_check`, issues);
+    if (check) person.block_check = check;
+  }
+  return Object.keys(person).length ? person : undefined;
+}
+
+function validateBlockCheck(value: unknown, path: string, issues: string[]): DecisionBlockCheck | undefined {
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return undefined;
+  }
+  if (typeof value.blocked !== "boolean") {
+    issues.push(`${path}.blocked must be a boolean`);
+    return undefined;
+  }
+  const at = optStr(value.at, `${path}.at`, 80, issues);
+  if (at && !isDate(at)) issues.push(`${path}.at must be a date`);
+  const byRaw = typeof value.by === "string" ? value.by.trim().toLowerCase() : "";
+  const by = byRaw === "email and name" || byRaw === "name only" ? byRaw : null;
+  if (!by) issues.push(`${path}.by must be "email and name" or "name only"`);
+  const reason = softBlock(value.reason, 300, `${path}.reason`, issues);
+  if (!at || !isDate(at) || !by) return undefined;
+  const check: DecisionBlockCheck = { blocked: value.blocked, at, by };
+  if (reason) check.reason = reason;
+  return check;
+}
+
+function validateTheirWords(value: unknown, path: string, issues: string[]): DecisionWords | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!isRecord(value)) {
+    issues.push(`${path} must be an object`);
+    return undefined;
+  }
+  const words: DecisionWords = {};
+  const quote = softBlock(value.quote, 2000, `${path}.quote`, issues);
+  const at = optStr(value.at, `${path}.at`, 80, issues);
+  const atEt = optStr(value.at_et, `${path}.at_et`, 120, issues);
+  const source = optStr(value.source, `${path}.source`, 500, issues);
+  if (quote) words.quote = quote;
+  if (at) {
+    if (!isDate(at)) issues.push(`${path}.at must be a date`);
+    else words.at = at;
+  }
+  if (atEt) words.at_et = atEt;
+  if (source) words.source = source;
+  const approx = optionalBool(value.approx, `${path}.approx`, issues);
+  if (approx !== undefined) words.approx = approx;
+  return Object.keys(words).length ? words : undefined;
+}
+
+function validateTimeline(value: unknown, path: string, issues: string[]): DecisionEvent[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!Array.isArray(value)) {
+    issues.push(`${path} must be an array`);
+    return undefined;
+  }
+  const rows: DecisionEvent[] = [];
+  for (let i = 0; i < value.length && rows.length < 40; i++) {
+    const item = value[i];
+    if (!isRecord(item)) {
+      issues.push(`${path}[${i}] must be an object`);
+      continue;
+    }
+    const row: DecisionEvent = {};
+    const at = optStr(item.at, `${path}[${i}].at`, 80, issues);
+    const atEt = optStr(item.at_et, `${path}[${i}].at_et`, 120, issues);
+    const event = softBlock(item.event, 1000, `${path}[${i}].event`, issues);
+    const source = optStr(item.source, `${path}[${i}].source`, 500, issues);
+    if (at) {
+      if (!isDate(at)) issues.push(`${path}[${i}].at must be a date`);
+      else row.at = at;
+    }
+    if (atEt) row.at_et = atEt;
+    if (event) row.event = event;
+    if (source) row.source = source;
+    const approx = optionalBool(item.approx, `${path}[${i}].approx`, issues);
+    if (approx !== undefined) row.approx = approx;
+    if (Object.keys(row).length) rows.push(row);
+  }
+  return rows.length ? rows : undefined;
+}
+
+function validateChecks(value: unknown, path: string, issues: string[]): string[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!Array.isArray(value)) {
+    issues.push(`${path} must be an array`);
+    return undefined;
+  }
+  const checks: string[] = [];
+  for (const item of value) {
+    if (checks.length >= 12) break;
+    if (typeof item !== "string") {
+      issues.push(`${path} must be strings`);
+      continue;
+    }
+    const text = item.trim();
+    if (text) checks.push(text.slice(0, 400));
+  }
+  return checks.length ? checks : undefined;
+}
+
+function optionalBool(value: unknown, path: string, issues: string[]): boolean | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "boolean") {
+    issues.push(`${path} must be a boolean`);
+    return undefined;
+  }
+  return value;
+}
+
+function softBlock(value: unknown, max: number, path: string, issues: string[]): string | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value !== "string") {
+    issues.push(`${path} must be a string`);
+    return undefined;
+  }
+  const trimmed = value.replace(/\r\n/g, "\n").trim();
+  if (!trimmed) return undefined;
+  return trimmed.length > max ? trimmed.slice(0, max) : trimmed;
 }
 
 function validateOptions(value: unknown, path: string, issues: string[]): DecisionOption[] | null {

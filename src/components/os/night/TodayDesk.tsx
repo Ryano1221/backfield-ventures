@@ -87,7 +87,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         </div>
         {item ? (
           <div className="mfirst">
-            <DecisionPane item={item} index={current} total={items.length} />
+            <DecisionPane key={item.id} item={item} index={current} total={items.length} />
           </div>
         ) : (
           <p className="t-body muted">No decisions in this snapshot.</p>
@@ -101,6 +101,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
             </div>
             {item ? (
               <DecisionPane
+                key={item.id}
                 className="desk"
                 item={item}
                 index={current}

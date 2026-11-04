@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { blankToNull, shortTitle, summaryLine } from "./present";
+import { blankToNull, readableDetail, shortTitle, stripAsides, summaryLine } from "./present";
 
 test("short titles drop packet ids and shouty status lines", () => {
   assert.equal(
@@ -18,4 +18,14 @@ test("short titles drop packet ids and shouty status lines", () => {
   assert.equal(blankToNull("unknown"), null);
   assert.equal(blankToNull(" Sports "), "Sports");
   assert.equal(summaryLine("Internal deal note.", "IGNORE"), "Internal deal note.");
+});
+
+test("stripAsides keeps calendar dates and does not leave a source slash", () => {
+  const cleaned = stripAsides("Asked on 10/30; Source: /comms/drafts/note.md");
+  assert.equal(cleaned, "Asked on 10/30;");
+  assert.equal(cleaned.includes("Source: /"), false);
+  const dated = readableDetail("Heard back 10/30/2026. Source: /ops/sample/note.md");
+  assert.match(dated, /10\/30\/2026/);
+  assert.equal(dated.includes("Source:"), false);
+  assert.equal(stripAsides("Source: /"), "");
 });
