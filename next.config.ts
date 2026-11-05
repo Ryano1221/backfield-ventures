@@ -8,6 +8,7 @@ const osHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   outputFileTracingIncludes: {
     "/api/handoff-subscribe": ["./src/lib/handoff-roster-email.html"],
   },

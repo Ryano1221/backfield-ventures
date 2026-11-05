@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RATING_FILTERS, visibleDeals, ratingCounts, type DealFilter, type DealSort } from "@/lib/os/deals";
 import type { DeskDeal } from "@/lib/os/night";
@@ -58,20 +59,18 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
           <div className="deal-list">
             {rows.map((deal) => (
               <article className="deal-card" key={deal.id} id={deal.id}>
-                <a className="deal-open" href={hrefs.deal(deal.id)}>
+                <Link className="deal-open" href={hrefs.deal(deal.id)} prefetch>
                   <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} />
                   <div>
                     <div className="n">{deal.company}</div>
-                    {deal.title ? <div className="d">{deal.title}</div> : null}
-                    {deal.summary ? <div className="d clamp2">{deal.summary}</div> : null}
+                    <p className="clamp1">{deal.summary || deal.title || "No summary in this snapshot."}</p>
                     <div className="deal-meta">
-                      {deal.sector ? <span>{deal.sector}</span> : null}
-                      {deal.stage ? <span className="tag">{deal.stage}</span> : null}
-                      {deal.score == null ? <span className="lbl">Not scored</span> : <span className="lbl">Score {deal.score}</span>}
-                      {deal.waiting ? <span className="lbl">{deal.waiting}</span> : null}
+                      {deal.sector ? <span className="chip">{deal.sector}</span> : null}
+                      {deal.stage ? <span className="chip">{deal.stage}</span> : null}
+                      <span className="num chip">{deal.score == null ? "No score" : `Score ${deal.score}`}</span>
                     </div>
                   </div>
-                </a>
+                </Link>
                 <DealLinks deal={deal} />
                 <RateControl id={deal.id} company={deal.company} logged={deal.loggedRating} generatedAt={deal.generatedAt} />
               </article>
@@ -92,12 +91,12 @@ export function DealLinks({ deal }: { deal: DeskDeal }) {
   return (
     <div className="deal-links">
       {deal.website ? (
-        <a className="lnk" href={deal.website} target="_blank" rel="noopener noreferrer">
+        <a className="btn" href={deal.website} target="_blank" rel="noopener noreferrer">
           Website
         </a>
       ) : null}
       {deal.deckUrl ? (
-        <a className="lnk" href={deal.deckUrl} target="_blank" rel="noopener noreferrer">
+        <a className="btn" href={deal.deckUrl} target="_blank" rel="noopener noreferrer">
           Deck
         </a>
       ) : null}

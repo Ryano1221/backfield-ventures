@@ -10,6 +10,7 @@ export function PersonActions({ person }: { person: PersonModel }) {
   const { submit, actions } = useNightActions();
   const [stage, setStage] = useState(person.stage || "unknown");
   const [note, setNote] = useState("");
+  const [draft, setDraft] = useState("");
   const latest = [...actions].reverse().find((action) => action.target_id === person.id && (action.type === "crm_next_step" || action.type === "crm_note" || action.type === "crm_stage"));
   const status = latest ? officeStatus(latest, "the office") : null;
 
@@ -54,6 +55,56 @@ export function PersonActions({ person }: { person: PersonModel }) {
           ))}
         </select>
       </label>
+      <label className="note-field">
+        <span className="lbl">Draft follow-up</span>
+        <textarea aria-label={`Follow-up for ${person.name}`} value={draft} maxLength={2000} placeholder="The words you want drafted. Nothing sends." onChange={(event) => setDraft(event.target.value)} />
+        <button
+          type="button"
+          className="btn primary"
+          disabled={!draft.trim()}
+          onClick={() => {
+            submit({
+              type: "draft_followup",
+              target_id: person.id,
+              payload: { text: draft.trim() },
+              label: `Follow-up queued for ${person.name}.`,
+            });
+            setDraft("");
+          }}
+        >
+          Queue follow-up
+        </button>
+      </label>
+      <div className="rate-row">
+        <button
+          type="button"
+          className="btn"
+          onClick={() =>
+            submit({
+              type: "crm_hold",
+              target_id: person.id,
+              payload: { hold: true },
+              label: `Holding ${person.name}.`,
+            })
+          }
+        >
+          Hold
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() =>
+            submit({
+              type: "crm_dnc",
+              target_id: person.id,
+              payload: { dnc: true },
+              label: `Do not contact ${person.name}.`,
+            })
+          }
+        >
+          Do not contact
+        </button>
+      </div>
       <label className="note-field">
         <span className="lbl">Note</span>
         <textarea aria-label={`Note for ${person.name}`} value={note} maxLength={2000} onChange={(event) => setNote(event.target.value)} />

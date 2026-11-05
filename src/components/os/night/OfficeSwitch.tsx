@@ -120,6 +120,7 @@ export function OfficeSwitch({
                       {bot.decision.label}
                     </a>
                   ) : null}
+                  <BotQuick name={bot.name} />
                 </article>
               ))}
             </div>
@@ -186,6 +187,7 @@ export function OfficeSwitch({
                       ) : null}
                       {bot.usage != null ? <Usage value={bot.usage} /> : null}
                       {bot.director ? <p className="bots-director">Director · {bot.director}</p> : null}
+                      <BotQuick name={bot.name} />
                     </article>
                   ))}
                 </div>
@@ -407,6 +409,23 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
         ) : null}
       </aside>
     </>
+  );
+}
+
+function BotQuick({ name }: { name: string }) {
+  const { submit, actions } = useNightActions();
+  const paused = [...actions].reverse().find((action) => action.target_id === name && (action.type === "bot_pause" || action.type === "bot_resume"));
+  const holding = paused?.type === "bot_pause" && paused.status !== "failed";
+  return (
+    <div className="rate-row">
+      <button
+        type="button"
+        className="btn"
+        onClick={() => submit({ type: holding ? "bot_resume" : "bot_pause", target_id: name, payload: {}, label: `${holding ? "Resume" : "Pause"} ${name}.` })}
+      >
+        {holding ? "Resume" : "Pause"}
+      </button>
+    </div>
   );
 }
 

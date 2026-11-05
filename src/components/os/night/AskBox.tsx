@@ -23,12 +23,18 @@ export function AskBox({
   actions,
   context,
   onSubmit,
+  bots = [],
 }: {
   actions: OsAction[];
   context: AskContext;
   onSubmit?: (draft: Filed) => void;
+  bots?: string[];
 }) {
   const [text, setText] = useState("");
+  const [bot, setBot] = useState(context.botName || "");
+  useEffect(() => {
+    if (context.botName) setBot(context.botName);
+  }, [context.botName]);
   const [local, setLocal] = useState<OsAction[]>([]);
   const [error, setError] = useState("");
   const asks = askActions(onSubmit ? actions : [...local, ...actions]).slice(0, 6);
@@ -58,7 +64,7 @@ export function AskBox({
       text,
       page: context.page,
       about: context.about,
-      botName: context.botName,
+      botName: bot || context.botName,
       requestedBy: context.requestedBy,
     });
     if (typeof routed.payload.text !== "string" || !routed.payload.text) return;
@@ -90,9 +96,20 @@ export function AskBox({
   return (
     <div className="ask">
       <form onSubmit={file}>
+        <label className="ask-who">
+          <span>Who</span>
+          <select aria-label="Which bot" value={bot} onChange={(event) => setBot(event.target.value)}>
+            <option value="">The office</option>
+            {bots.filter((name, index) => bots.indexOf(name) === index).map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
         <input
           aria-label="Ask the firm"
-          placeholder={context.botName ? `Ask ${context.botName}` : "Ask the firm"}
+          placeholder={bot ? `Ask ${bot}` : "Ask the firm"}
           value={text}
           maxLength={2000}
           onChange={(event) => setText(event.target.value)}

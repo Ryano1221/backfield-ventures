@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { PeopleRow, StageCount } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
@@ -76,7 +77,7 @@ export function PeopleDesk({
             <div className="v">{flag.count.toLocaleString("en-US")}</div>
           </div>
           <div>
-            {flagNames.length ? <div className="names">{flagNames.join(", ")}</div> : null}
+            {flagNames.length ? <div className="names">{flagNames.slice(0, 4).join(", ")}{flagNames.length > 4 ? ` and ${(flagNames.length - 4).toLocaleString("en-US")} more` : ""}</div> : null}
             <div className="d">Said I&apos;m in. Counted by flag across stages, not added to the stage total.</div>
           </div>
         </div>
@@ -156,13 +157,13 @@ export function PeopleDesk({
               {visible.map((row) => (
                 <tr key={row.id}>
                   <td>
-                    <a className="co" href={hrefs.person(row.id)}>
+                    <Link className="co" href={hrefs.person(row.id)} prefetch>
                       <Logo name={row.firm || row.name} domain={row.domain} logoUrl={row.logoUrl} />
                       <div>
                         <div className="nm">{row.name}</div>
                         {row.firm ? <div className="o">{row.firm}</div> : null}
                       </div>
-                    </a>
+                    </Link>
                   </td>
                   <td data-label="Track">{row.trackLabel}</td>
                   <td data-label="Stage">{row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}</td>

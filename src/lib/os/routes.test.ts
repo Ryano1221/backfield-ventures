@@ -76,6 +76,10 @@ test("detail links from a live-shaped snapshot resolve instead of 404", () => {
     assert.equal(decision.kind, "rewrite", href);
   }
 
+  for (const href of ["/", "/deals", "/crm", "/bots", "/activity", "/waiting", "/email"]) {
+    assert.equal(decideOs({ host: HOST, pathname: href, authed: true }).kind, "rewrite", href);
+  }
+  assert.equal(decideOs({ host: HOST, pathname: "/ask", authed: true }).kind, "not-found");
   assert.equal(decideOs({ host: HOST, pathname: "/deals", authed: true }).kind, "rewrite");
   assert.equal(decideOs({ host: "backfieldventures.com", pathname: "/os/deals/pitch_easzotic-com", authed: true, vercelEnv: "production" }).kind, "not-found");
   assert.equal(decideOs({ host: HOST, pathname: "/api/os/snapshot", authed: false }).kind, "unauthorized");
