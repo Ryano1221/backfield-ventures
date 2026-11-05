@@ -1,5 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, unlinkSync } from "node:fs";
+
+test.beforeAll(() => {
+  try {
+    unlinkSync("/tmp/os-e2e-none.json");
+  } catch {
+    /* The crawl test is the only writer of this file. */
+  }
+});
 
 const PASSWORD = "e2e-session-only";
 
@@ -115,7 +123,8 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   const chip = ask.getByRole("button", { name: "FIXTURE Executive" });
   const chipBox = await chip.boundingBox();
   const fieldBox = await field.boundingBox();
-  expect(chipBox && fieldBox && chipBox.y).toBeLessThan(fieldBox.y);
+  if (!chipBox || !fieldBox) throw new Error("ask layout missing");
+  expect(chipBox.y).toBeLessThan(fieldBox.y);
   await field.fill("What is the example status?");
   await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
   await field.fill("What is the example status?");

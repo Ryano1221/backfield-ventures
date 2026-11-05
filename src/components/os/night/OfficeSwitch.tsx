@@ -265,7 +265,7 @@ function Summary({
       </div>
       {counts.failedRoutines > 0 ? (
         <button type="button" className="bots-failed" onClick={onRoutines}>
-          {counts.failedRoutines.toLocaleString("en-US")} routines failed
+          {counts.failedRoutines === 1 ? "1 routine failed" : `${counts.failedRoutines.toLocaleString("en-US")} routines failed`}
         </button>
       ) : null}
     </div>

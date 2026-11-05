@@ -145,7 +145,7 @@ test("dry-run send returns dryRun and never calls fetch", () => {
       {
         from: HANDOFF_FROM,
         replyTo: HANDOFF_REPLY_TO,
-        to: "ryan@backfieldventures.com",
+        to: "owner@example.com",
         subject: HANDOFF_SUBJECT,
         html: HANDOFF_HTML,
         text: HANDOFF_TEXT,
@@ -162,7 +162,7 @@ test("dry-run send returns dryRun and never calls fetch", () => {
       {
         from: HANDOFF_FROM,
         replyTo: HANDOFF_REPLY_TO,
-        to: "ryan@backfieldventures.com",
+        to: "owner@example.com",
         subject: HANDOFF_SUBJECT,
         html: "<p>Hi</p>",
         text: "Hi",
