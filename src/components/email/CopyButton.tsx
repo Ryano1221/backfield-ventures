@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function CopyButton({
   value,
@@ -11,22 +11,30 @@ export function CopyButton({
   label: string;
   primary?: boolean;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+  const shown = state === "copied" ? "Copied" : state === "failed" ? "Could not copy" : label;
+
+  useEffect(() => {
+    if (state !== "failed") return;
+    const timer = window.setTimeout(() => setState("idle"), 4000);
+    return () => window.clearTimeout(timer);
+  }, [state]);
 
   return (
     <button
       type="button"
       className={primary ? "primary-btn" : "text-btn"}
+      aria-live="polite"
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(value);
-          setCopied(true);
+          setState("copied");
         } catch {
-          setCopied(false);
+          setState("failed");
         }
       }}
     >
-      {copied ? "Copied" : label}
+      {shown}
     </button>
   );
 }

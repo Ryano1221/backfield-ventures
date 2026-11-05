@@ -91,7 +91,15 @@ test("decision times render in CT and a formatted body keeps its blank lines", (
       { at: "2026-10-30T15:56:00.000Z", event: "Casey replied with a question", approx: true, source: "fixtures/sample.md" },
     ],
   };
-  const model = buildToday({ ...sample(), decisions: [decision, sample().decisions[1]!] }, [], NOW);
+  const previousMailbox = process.env.OS_FROM_MAILBOX;
+  process.env.OS_FROM_MAILBOX = "owner@example.com";
+  let model;
+  try {
+    model = buildToday({ ...sample(), decisions: [decision, sample().decisions[1]!] }, [], NOW);
+  } finally {
+    if (previousMailbox === undefined) delete process.env.OS_FROM_MAILBOX;
+    else process.env.OS_FROM_MAILBOX = previousMailbox;
+  }
   const card = model.ready[0];
   assert.equal(card?.message, body);
   assert.equal(card?.name, "Casey Sample");
@@ -100,7 +108,7 @@ test("decision times render in CT and a formatted body keeps its blank lines", (
   assert.equal(card?.toEmail, "casey.sample@example.com");
   assert.equal(card?.cc, "desk@example.com");
   assert.equal(card?.subject, "Hello, there");
-  assert.equal(card?.fromLine, "ryan@backfieldventures.com · reply in thread");
+  assert.equal(card?.fromLine, "owner@example.com · reply in thread");
   assert.equal(card?.channelCrumb, "Reply by email");
   assert.equal(card?.why, "Asked on Fri Oct 30 at 11:56 AM ET.");
   assert.equal(card?.happened, "A sample summary of what happened.");
@@ -123,6 +131,26 @@ test("decision times render in CT and a formatted body keeps its blank lines", (
   const queued = normalizeDecidePayload(decision, { choice: "edit", edited_message: card?.message || "" });
   assert.equal(queued.ok, true);
   if (queued.ok) assert.equal(queued.payload.edited_message, "Line one.\n\nLine two.");
+});
+
+test("a pitch received value is Central Time, and a value that is not a time stays as written", () => {
+  const base = sample().pitches[0]!;
+  const model = buildToday(
+    {
+      ...sample(),
+      pitches: [
+        { ...base, company: "EXAMPLE Day", received: "2026-09-01" },
+        { ...base, company: "EXAMPLE Time", received: "2026-11-03T18:30:00.000Z" },
+        { ...base, company: "EXAMPLE Bad", received: "not-a-date" },
+      ],
+    },
+    [],
+    NOW,
+  );
+  const received = (company: string) => model.deals.find((deal) => deal.company === company)?.received;
+  assert.equal(received("EXAMPLE Day"), "Sep 1");
+  assert.equal(received("EXAMPLE Time"), "Nov 3, 12:30pm CT");
+  assert.equal(received("EXAMPLE Bad"), "not-a-date");
 });
 
 test("office walks only handoffs whose bots are in the snapshot", () => {
