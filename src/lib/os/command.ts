@@ -14,8 +14,11 @@ export type DueRow = { id: string; name: string; what: string; when: string; ove
 export type DealRow = { id: string; company: string; line: string; age: string };
 export type BotLine = { name: string; text: string; tone: "done" | "stuck" | "waiting" };
 
+export type FunnelStep = { key: string; label: string; count: number };
+
 export type CommandModel = {
   raise: RaiseSummary;
+  funnel: FunnelStep[];
   chase: ChaseRow[];
   due: DueRow[];
   deals: { fresh: number; reviewing: number; unrated: number; advanced: number; newest: DealRow[] };
@@ -27,7 +30,7 @@ const DAY = 86_400_000;
 export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, desk: BotDesk | null, now = Date.now()): CommandModel {
   const raise = summarizeRaise(ledger, now);
   if (!snapshot) {
-    return { raise, chase: [], due: [], deals: { fresh: 0, reviewing: 0, unrated: 0, advanced: 0, newest: [] }, bots: { done: 0, working: 0, stuck: 0, waiting: 0, lines: [] } };
+    return { raise, funnel: [], chase: [], due: [], deals: { fresh: 0, reviewing: 0, unrated: 0, advanced: 0, newest: [] }, bots: { done: 0, working: 0, stuck: 0, waiting: 0, lines: [] } };
   }
   const today = ctDay(now);
   const people = snapshot.crm.people;
@@ -41,7 +44,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
       const overdue = Boolean(due && due <= today);
       const last = person.last_touch_at ? Date.parse(person.last_touch_at) : NaN;
       const quiet = Number.isFinite(last) ? Math.floor((now - last) / DAY) : null;
-      const why = overdue && person.next_step ? `Due: ${person.next_step}` : quiet != null ? (quiet === 0 ? "Touched today" : `Quiet ${quiet} ${quiet === 1 ? "day" : "days"}`) : "Never touched";
+      const why = overdue && person.next_step ? `Due: ${shortStep(person.next_step)}` : quiet != null ? (quiet === 0 ? "Touched today" : `Quiet ${quiet} ${quiet === 1 ? "day" : "days"}`) : "Never touched";
       return { row: { id: person.id, name: person.name, firm: person.firm, stage: stageLabel(person.stage) || null, why, overdue }, score: (overdue ? 10_000 : 0) + (quiet ?? 5_000) };
     })
     .sort((a, b) => b.score - a.score)
@@ -54,7 +57,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
     .slice(0, 6)
     .map((person) => {
       const day = (person.next_step_due || "").slice(0, 10);
-      return { id: person.id, name: person.name, what: person.next_step || "", when: day === today ? "Today" : `Since ${shortDay(day)}`, overdue: day < today };
+      return { id: person.id, name: person.name, what: shortStep(person.next_step || ""), when: day === today ? "Today" : `Since ${shortDay(day)}`, overdue: day < today };
     });
 
   const pitches = snapshot.pitches;
@@ -82,6 +85,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
 
   return {
     raise,
+    funnel: lpFunnel(snapshot, ledger),
     chase,
     due,
     deals: {
@@ -99,6 +103,56 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
       lines,
     },
   };
+}
+
+// Cumulative LP funnel: everyone at or past each step. Committed also
+// counts hard commitments from the Fund I ledger that the CRM has not caught up on.
+const FUNNEL: { key: string; label: string; stages: string[] }[] = [
+  { key: "reached", label: "Reached", stages: ["contacted", "nudged"] },
+  { key: "replied", label: "Replied", stages: ["replied", "call_asked", "im_in"] },
+  { key: "call", label: "Call", stages: ["call_booked", "call_held"] },
+  { key: "materials", label: "Deck or data room", stages: ["one_pager_sent", "data_room"] },
+  { key: "soft", label: "Soft circle", stages: ["soft_circle", "docs"] },
+  { key: "committed", label: "Committed", stages: ["committed", "closed"] },
+];
+
+export function lpFunnel(snapshot: Snapshot, ledger: RaiseLedger): FunnelStep[] {
+  const rank = new Map<string, number>();
+  FUNNEL.forEach((step, index) => step.stages.forEach((stage) => rank.set(stage, index)));
+  const lps = snapshot.crm.people.filter((person) => person.lp);
+  const reached = lps.map((person) => {
+    const stage = (person.stage || "").toLowerCase();
+    let at = rank.get(stage) ?? -1;
+    if (person.im_in) at = Math.max(at, 1);
+    return at;
+  });
+  const hardInLedger = ledger.commitments.filter((row) => row.status !== "soft").length;
+  const softInLedger = ledger.commitments.filter((row) => row.status === "soft").length;
+  const steps = FUNNEL.map((step, index) => {
+    let count = reached.filter((at) => at >= index).length;
+    if (step.key === "committed") count = Math.max(count, hardInLedger);
+    if (step.key === "soft") count = Math.max(count, hardInLedger + softInLedger);
+    return { key: step.key, label: step.label, count };
+  });
+  // Someone who committed also got past every earlier step.
+  for (let i = steps.length - 2; i >= 0; i--) steps[i]!.count = Math.max(steps[i]!.count, steps[i + 1]!.count);
+  return steps;
+}
+
+/**
+ * A bot's next step reads like a log line. Keep the action: the first
+ * sentence, without clock times or parentheticals, cut at a word.
+ */
+export function shortStep(value: string): string {
+  const first = value.split(/(?<=[.;])\s+/)[0] || value;
+  const clean = first
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\b\d{1,2}:\d{2}\s*(?:am|pm)?\s*(?:CT)?\b/gi, "")
+    .replace(/\s+([,.;:])/g, "$1")
+    .replace(/[.;\s]+$/, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return clip(clean, 80);
 }
 
 function ctDay(now: number): string {

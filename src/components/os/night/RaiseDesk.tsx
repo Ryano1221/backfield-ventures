@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { ChaseRow } from "@/lib/os/command";
+import type { ChaseRow, FunnelStep } from "@/lib/os/command";
 import { COMMIT_STATUSES, summarizeRaise, usd, type CommitStatus, type Commitment, type RaiseLedger } from "@/lib/os/raise-model";
 
 const STATUS_LABEL: Record<CommitStatus, string> = { soft: "Soft circle", committed: "Committed", wired: "Wired" };
@@ -13,11 +13,13 @@ const STATUS_LABEL: Record<CommitStatus, string> = { soft: "Soft circle", commit
  */
 export function RaiseDesk({
   initial,
+  funnel,
   chase,
   lps,
   personRoot,
 }: {
   initial: RaiseLedger;
+  funnel: FunnelStep[];
   chase: ChaseRow[];
   lps: { id: string; name: string; firm: string | null }[];
   personRoot: string;
@@ -102,6 +104,8 @@ export function RaiseDesk({
         <p className="raise-empty">Set a target and close date to see progress and the weekly pace you need.</p>
       )}
 
+      <Funnel steps={funnel} />
+
       {error ? (
         <p className="os-error" role="alert">
           {error}
@@ -176,6 +180,32 @@ export function RaiseDesk({
         </section>
       </div>
     </div>
+  );
+}
+
+function Funnel({ steps }: { steps: FunnelStep[] }) {
+  const top = steps[0]?.count ?? 0;
+  if (!top) return null;
+  return (
+    <section className="stack" aria-label="LP funnel">
+      <h2>LP funnel</h2>
+      <ol className="funnel-bars">
+        {steps.map((step, index) => {
+          const prev = index ? steps[index - 1]!.count : null;
+          const rate = prev ? Math.round((step.count / prev) * 100) : null;
+          return (
+            <li key={step.key}>
+              <span className="fb-label">{step.label}</span>
+              <span className="fb-track" aria-hidden="true">
+                <i style={{ width: `${Math.max(2, (step.count / top) * 100)}%` }} />
+              </span>
+              <b className="fb-n">{step.count.toLocaleString("en-US")}</b>
+              <span className="fb-rate">{rate != null ? `${rate}% of ${steps[index - 1]!.label.toLowerCase()}` : "LPs"}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 

@@ -20,8 +20,10 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
     () => (deal: DeskDeal) => shownPitchRating({ logged: deal.loggedRating, generatedAt: deal.generatedAt, actions, pitchId: deal.id }),
     [actions],
   );
+  const [stage, setStage] = useState<string>("all");
   const counts = ratingCounts(deals, ratingOf);
-  const rows = visibleDeals(deals, query, filter, sort, ratingOf);
+  const rows = visibleDeals(deals, query, filter, sort, ratingOf).filter((deal) => stage === "all" || deal.status === stage);
+  const pipeline = PIPELINE.map((step) => ({ ...step, count: deals.filter((deal) => deal.status === step.id).length }));
 
   return (
     <>
@@ -32,6 +34,14 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
       <p className="lede">
         {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
       </p>
+      <nav className="deal-pipeline" aria-label="Pipeline">
+        {pipeline.map((step) => (
+          <button key={step.id} type="button" aria-pressed={stage === step.id} onClick={() => setStage((current) => (current === step.id ? "all" : step.id))}>
+            <b>{step.count.toLocaleString("en-US")}</b>
+            <span>{step.label}</span>
+          </button>
+        ))}
+      </nav>
       <div className="deals-tools">
         <input className="pill" value={query} placeholder="Search pitches" aria-label="Search pitches" onChange={(event) => setQuery(event.target.value)} />
         <div className="segment" role="group" aria-label="Sort pitches">
@@ -60,6 +70,7 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
                     <div className="n">{deal.company}</div>
                     <p className="clamp1">{deal.summary || deal.title || "No summary in this snapshot."}</p>
                     <div className="deal-meta">
+                      <span className={`chip st-${deal.status}`}>{deal.statusLabel}</span>
                       {deal.sector ? <span className="chip">{deal.sector}</span> : null}
                       {deal.stage ? <span className="chip">{deal.stage}</span> : null}
                       <span className="num chip">{deal.score == null ? "No score" : `Score ${deal.score}`}</span>
@@ -80,6 +91,13 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
     </>
   );
 }
+
+const PIPELINE = [
+  { id: "new", label: "New" },
+  { id: "reviewing", label: "In review" },
+  { id: "advanced", label: "Advanced" },
+  { id: "passed", label: "Passed" },
+];
 
 export function DealLinks({ deal }: { deal: DeskDeal }) {
   if (!deal.website && !deal.deckUrl) return null;

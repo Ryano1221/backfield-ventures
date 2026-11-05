@@ -1828,3 +1828,23 @@ body.os .raise-add .segment button { padding: 0 14px; white-space: nowrap; }
 @media (min-width: 900px) {
   body.os .inbox-page .approve-all { grid-column: 1; }
 }
+body.os .funnel-bars { list-style: none; margin: 0; padding: 14px 16px; display: grid; gap: 10px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 18px; }
+body.os .funnel-bars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label n" "track track" "rate rate"; gap: 2px 12px; align-items: center; }
+body.os .fb-label { grid-area: label; font-size: 14px; font-weight: 600; }
+body.os .fb-n { grid-area: n; font-size: 16px; font-variant-numeric: tabular-nums; }
+body.os .fb-track { grid-area: track; display: block; height: 10px; border-radius: 999px; background: #f0ede8; overflow: hidden; }
+body.os .fb-track i { display: block; height: 100%; background: #123D22; border-radius: 999px; }
+body.os .fb-rate { grid-area: rate; font-size: 12px; color: rgba(0, 0, 0, 0.62); }
+@media (min-width: 900px) {
+  body.os .funnel-bars li { grid-template-columns: 160px minmax(0, 1fr) 56px 150px; grid-template-areas: "label track n rate"; }
+  body.os .fb-n { text-align: right; }
+}
+body.os .deal-pipeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 4px 0 12px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 18px; overflow: hidden; }
+body.os .deal-pipeline button { display: grid; gap: 2px; justify-items: start; min-height: 64px; padding: 12px 14px; border: 0; border-right: 1px solid rgba(0, 0, 0, 0.08); background: transparent; color: #000; font: inherit; text-align: left; cursor: pointer; border-radius: 0; }
+body.os .deal-pipeline button:last-child { border-right: 0; }
+body.os .deal-pipeline button b { font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+body.os .deal-pipeline button span { font-size: 13px; color: rgba(0, 0, 0, 0.62); }
+body.os .deal-pipeline button[aria-pressed="true"] { background: #123D22; color: #fff; }
+body.os .deal-pipeline button[aria-pressed="true"] span { color: rgba(255, 255, 255, 0.82); }
+body.os .deal-meta .chip.st-advanced { background: #123D22; border-color: #123D22; color: #fff; }
+body.os .deal-meta .chip.st-passed { color: rgba(0, 0, 0, 0.62); border-style: dashed; }

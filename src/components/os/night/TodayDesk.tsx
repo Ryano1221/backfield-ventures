@@ -348,7 +348,7 @@ function CommandStrip({ command, hrefs, briefs }: { command: CommandModel; hrefs
             : "Set your target"}
         </span>
       </Link>
-      <Link className="cmd" href={hrefs.people} prefetch>
+      <Link className="cmd" href={due.length ? "#day" : hrefs.people} prefetch>
         <span className="cmd-k">Your day</span>
         <b className="cmd-v">
           {due.length + briefs}
@@ -385,7 +385,7 @@ function CommandLists({ command, hrefs }: { command: CommandModel; hrefs: Return
       {due.length || command.chase.length || bots.lines.length ? (
         <div className="cmd-lists">
           {due.length ? (
-            <div>
+            <div id="day">
               <h2>Follow-ups due</h2>
               <ul className="bot-list">
                 {due.map((row) => (

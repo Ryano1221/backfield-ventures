@@ -29,7 +29,7 @@ export default async function RaisePage() {
   const lps = (page.snapshot?.crm.people ?? []).filter((person) => person.lp).map((person) => ({ id: person.id, name: person.name, firm: person.firm }));
   return (
     <NightFrame onOs={onOs} active="raise" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <RaiseDesk initial={ledger} chase={command.chase} lps={lps} personRoot={onOs ? "/crm" : "/os/crm"} />
+      <RaiseDesk initial={ledger} funnel={command.funnel} chase={command.chase} lps={lps} personRoot={onOs ? "/crm" : "/os/crm"} />
     </NightFrame>
   );
 }

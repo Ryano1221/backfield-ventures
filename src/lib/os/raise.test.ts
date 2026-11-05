@@ -80,3 +80,25 @@ test("the command strip chases LPs and skips ones already in", () => {
   assert.equal(model.raise.hard, 1_350_000);
   assert.ok(model.deals.reviewing >= 0);
 });
+
+test("next steps read as one short action", async () => {
+  const { shortStep } = await import("./command");
+  assert.equal(
+    shortStep("Nudge with 3 open slots + link sent 10/27 12:27pm CT (approved). Await pick; bring any time back first. Day-12 nudge if no reply."),
+    "Nudge with 3 open slots + link sent 10/27",
+  );
+  assert.equal(shortStep("Send the sample one-pager"), "Send the sample one-pager");
+  assert.ok(shortStep("word ".repeat(40)).length <= 80);
+});
+
+test("the LP funnel is cumulative and counts ledger commitments", async () => {
+  const { lpFunnel } = await import("./command");
+  const snapshot: Snapshot = JSON.parse(readFileSync(path.join(process.cwd(), "src/fixtures/os-dashboard.sample.json"), "utf8"));
+  const base = snapshot.crm.people[0]!;
+  const people = ["contacted", "replied", "call_held", "data_room", "soft_circle"].map((stage, index) => ({ ...base, id: `lp-${index}`, name: `Example LP ${index}`, lp: true, im_in: false, stage }));
+  const steps = lpFunnel({ ...snapshot, crm: { ...snapshot.crm, people } }, ledger());
+  assert.deepEqual(
+    steps.map((step) => step.count),
+    [5, 4, 3, 3, 3, 2],
+  );
+});
