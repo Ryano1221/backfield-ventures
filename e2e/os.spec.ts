@@ -15,10 +15,12 @@ const PASSWORD = "e2e-session-only";
 // Every test starts with no saved actions, so an approval in one test or
 // project never hides cards from the next one.
 test.beforeEach(() => {
-  try {
-    unlinkSync("/tmp/os-actions.json");
-  } catch {
-    /* nothing saved yet */
+  for (const file of ["/tmp/os-actions.json", "/tmp/os-raise.json"]) {
+    try {
+      unlinkSync(file);
+    } catch {
+      /* nothing saved yet */
+    }
   }
 });
 
@@ -283,6 +285,26 @@ test("dark system setting keeps the light palette and passes contrast", async ({
     const scan = await new AxeBuilder({ page }).withRules(["color-contrast"]).exclude(".tower .hall").analyze();
     expect(scan.violations.map((v) => `${path} ${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
   }
+});
+
+test("Fund I tracks the raise and Today shows it", async ({ page }) => {
+  await signIn(page);
+  await expect(page.locator(".command")).toBeVisible();
+  await page.goto("/os/raise");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("$0");
+  await page.locator("#raise-target").fill("$10M");
+  await page.locator("#raise-close").fill("2027-03-31");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.locator(".raise-bar")).toBeVisible();
+  await page.locator("#raise-add-name").fill("Example LP");
+  await page.locator("#raise-add-amount").fill("$250k");
+  await page.locator(".raise-add").getByRole("button", { name: "Committed" }).click();
+  await page.locator(".raise-add").getByRole("button", { name: "Add", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("$250K");
+  await expect(page.locator(".raise-list")).toContainText("Example LP");
+  await page.goto("/os");
+  await expect(page.locator(".cmd-raise")).toContainText("$250K");
+  await expect(page.locator(".cmd-raise")).toContainText("$10M");
 });
 
 test("an unknown OS path uses the OS missing page", async ({ page }) => {

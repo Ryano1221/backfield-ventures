@@ -1,0 +1,299 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import type { ChaseRow } from "@/lib/os/command";
+import { COMMIT_STATUSES, summarizeRaise, usd, type CommitStatus, type Commitment, type RaiseLedger } from "@/lib/os/raise-model";
+
+const STATUS_LABEL: Record<CommitStatus, string> = { soft: "Soft circle", committed: "Committed", wired: "Wired" };
+
+/**
+ * Fund I: where the raise stands, who has said yes, and who to chase next.
+ * Everything here is Ryan's own ledger; bots never write to it.
+ */
+export function RaiseDesk({
+  initial,
+  chase,
+  lps,
+  personRoot,
+}: {
+  initial: RaiseLedger;
+  chase: ChaseRow[];
+  lps: { id: string; name: string; firm: string | null }[];
+  personRoot: string;
+}) {
+  const [ledger, setLedger] = useState(initial);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  const summary = useMemo(() => summarizeRaise(ledger), [ledger]);
+  const rows = useMemo(() => {
+    const order: Record<CommitStatus, number> = { wired: 0, committed: 1, soft: 2 };
+    return [...ledger.commitments].sort((a, b) => order[a.status] - order[b.status] || b.amount_usd - a.amount_usd);
+  }, [ledger.commitments]);
+
+  async function send(body: unknown): Promise<boolean> {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/os/raise", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = (await res.json().catch(() => ({}))) as { ledger?: RaiseLedger; error?: string };
+      if (!res.ok || !data.ledger) {
+        setError(data.error || "Could not save that. Try again.");
+        return false;
+      }
+      setLedger(data.ledger);
+      return true;
+    } catch {
+      setError("Could not reach the OS. Check your connection and try again.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const hardPct = summary.pctHard ?? 0;
+  const softPct = Math.max(0, (summary.pctSoft ?? 0) - hardPct);
+
+  return (
+    <div className="raise">
+      <div className="lbl eyebrow">Fundraise</div>
+      <header className="raise-hero">
+        <div>
+          <h1 className="d-xl">
+            {usd(summary.hard)} <span className="dim">{summary.target ? `of ${usd(summary.target)}` : "committed"}</span>
+          </h1>
+          <p className="lede">
+            {summary.fund}. {summary.lpCount} {summary.lpCount === 1 ? "LP" : "LPs"} committed
+            {summary.soft ? `, ${usd(summary.soft)} more soft circled from ${summary.softCount}` : ""}
+            {summary.wired ? `. ${usd(summary.wired)} wired` : ""}.
+          </p>
+        </div>
+        <Settings ledger={ledger} saving={saving} onSave={send} />
+      </header>
+
+      {summary.target ? (
+        <section className="raise-bar-wrap" aria-label="Progress to target">
+          <div className="raise-bar" role="img" aria-label={`${Math.round(hardPct)}% committed, ${Math.round(softPct)}% more soft circled`}>
+            <i className="hard" style={{ width: `${hardPct}%` }} />
+            <i className="soft" style={{ width: `${softPct}%` }} />
+          </div>
+          <dl className="raise-stats">
+            <div>
+              <dt>Committed</dt>
+              <dd>{Math.round(hardPct)}%</dd>
+            </div>
+            <div>
+              <dt>Still to raise</dt>
+              <dd>{usd(summary.remaining ?? 0)}</dd>
+            </div>
+            <div>
+              <dt>Close</dt>
+              <dd>{summary.closeLabel ? `${summary.closeLabel} · ${summary.daysLeft} days` : "Not set"}</dd>
+            </div>
+            <div>
+              <dt>Pace needed</dt>
+              <dd>{summary.perWeekNeeded != null && summary.daysLeft != null ? `${usd(summary.perWeekNeeded)} a week` : "Set a close date"}</dd>
+            </div>
+          </dl>
+        </section>
+      ) : (
+        <p className="raise-empty">Set a target and close date to see progress and the weekly pace you need.</p>
+      )}
+
+      {error ? (
+        <p className="os-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="raise-grid">
+        <section className="stack" aria-label="Commitments">
+          <h2>Commitments</h2>
+          <AddForm lps={lps} saving={saving} onSave={send} />
+          {rows.length ? (
+            <ul className="raise-list">
+              {rows.map((row) =>
+                editing === row.id ? (
+                  <li key={row.id}>
+                    <EditRow row={row} saving={saving} onCancel={() => setEditing(null)} onSave={async (body) => (await send(body)) && setEditing(null)} />
+                  </li>
+                ) : (
+                  <li key={row.id} className={`is-${row.status}`}>
+                    <div className="raise-who">
+                      <b>{row.person_id ? <Link href={`${personRoot}/${encodeURIComponent(row.person_id)}`}>{row.name}</Link> : row.name}</b>
+                      {row.firm ? <span>{row.firm}</span> : null}
+                      {row.note ? <span className="raise-note">{row.note}</span> : null}
+                    </div>
+                    <span className="raise-amt">{usd(row.amount_usd)}</span>
+                    <span className={`raise-pill p-${row.status}`}>{STATUS_LABEL[row.status]}</span>
+                    <div className="raise-row-actions">
+                      <button type="button" className="btn quiet" onClick={() => setEditing(row.id)}>
+                        Edit
+                      </button>
+                      {confirmRemove === row.id ? (
+                        <>
+                          <button type="button" className="btn primary" disabled={saving} onClick={async () => (await send({ op: "remove", id: row.id })) && setConfirmRemove(null)}>
+                            Remove
+                          </button>
+                          <button type="button" className="btn quiet" onClick={() => setConfirmRemove(null)}>
+                            Keep
+                          </button>
+                        </>
+                      ) : (
+                        <button type="button" className="btn quiet" onClick={() => setConfirmRemove(row.id)} aria-label={`Remove ${row.name}`}>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ),
+              )}
+            </ul>
+          ) : (
+            <p className="raise-empty">No commitments yet. Add the first one above when an LP says yes, even a soft yes.</p>
+          )}
+        </section>
+
+        <section className="stack" aria-label="LPs to chase">
+          <h2>Chase next</h2>
+          {chase.length ? (
+            <ul className="bot-list">
+              {chase.map((row) => (
+                <li key={row.id}>
+                  <Link className="note-row raise-chase" href={`${personRoot}/${encodeURIComponent(row.id)}`}>
+                    <span className="bot-wait-name">{row.name}</span>
+                    <span className={`bot-wait-when${row.overdue ? " is-due" : ""}`}>{row.why}</span>
+                    {row.firm || row.stage ? <span className="bot-wait-sum">{[row.firm, row.stage].filter(Boolean).join(" · ")}</span> : null}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="raise-empty">No LPs flagged in the CRM yet. Mark people as LPs and they show up here, oldest touch first.</p>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function Settings({ ledger, saving, onSave }: { ledger: RaiseLedger; saving: boolean; onSave: (body: unknown) => Promise<boolean> }) {
+  const [open, setOpen] = useState(!ledger.target_usd);
+  const [target, setTarget] = useState(ledger.target_usd ? String(ledger.target_usd) : "");
+  const [close, setClose] = useState(ledger.close_date ?? "");
+  if (!open) {
+    return (
+      <button type="button" className="btn quiet raise-settings-btn" onClick={() => setOpen(true)}>
+        Target and close date
+      </button>
+    );
+  }
+  return (
+    <form
+      className="raise-settings"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (await onSave({ op: "settings", target_usd: target, close_date: close })) setOpen(false);
+      }}
+    >
+      <label>
+        <span>Target</span>
+        <input id="raise-target" className="pill" inputMode="decimal" placeholder="$10M" value={target} onChange={(event) => setTarget(event.target.value)} />
+      </label>
+      <label>
+        <span>Final close</span>
+        <input id="raise-close" className="pill" type="date" value={close} onChange={(event) => setClose(event.target.value)} />
+      </label>
+      <button type="submit" className="btn primary" disabled={saving}>
+        Save
+      </button>
+    </form>
+  );
+}
+
+function AddForm({ lps, saving, onSave }: { lps: { id: string; name: string; firm: string | null }[]; saving: boolean; onSave: (body: unknown) => Promise<boolean> }) {
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [status, setStatus] = useState<CommitStatus>("soft");
+  const match = lps.find((lp) => lp.name.toLowerCase() === name.trim().toLowerCase()) ?? null;
+  return (
+    <form
+      className="raise-add"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const ok = await onSave({ op: "upsert", commitment: { name, amount_usd: amount, status, person_id: match?.id ?? null, firm: match?.firm ?? null } });
+        if (ok) {
+          setName("");
+          setAmount("");
+          setStatus("soft");
+        }
+      }}
+    >
+      <label className="raise-add-name">
+        <span>LP</span>
+        <input id="raise-add-name" className="pill" list="raise-lps" placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} />
+        <datalist id="raise-lps">
+          {lps.map((lp) => (
+            <option key={lp.id} value={lp.name}>
+              {lp.firm ?? ""}
+            </option>
+          ))}
+        </datalist>
+      </label>
+      <label>
+        <span>Amount</span>
+        <input id="raise-add-amount" className="pill" inputMode="decimal" placeholder="$250K" value={amount} onChange={(event) => setAmount(event.target.value)} />
+      </label>
+      <div className="segment" role="group" aria-label="Status">
+        {COMMIT_STATUSES.map((value) => (
+          <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(value)}>
+            {STATUS_LABEL[value]}
+          </button>
+        ))}
+      </div>
+      <button type="submit" className="btn primary" disabled={saving || !name.trim() || !amount.trim()}>
+        Add
+      </button>
+    </form>
+  );
+}
+
+function EditRow({ row, saving, onCancel, onSave }: { row: Commitment; saving: boolean; onCancel: () => void; onSave: (body: unknown) => Promise<unknown> }) {
+  const [amount, setAmount] = useState(String(row.amount_usd));
+  const [status, setStatus] = useState<CommitStatus>(row.status);
+  const [note, setNote] = useState(row.note ?? "");
+  return (
+    <form
+      className="raise-add raise-edit"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        await onSave({ op: "upsert", commitment: { ...row, amount_usd: amount, status, note } });
+      }}
+    >
+      <b className="raise-edit-name">{row.name}</b>
+      <label>
+        <span>Amount</span>
+        <input id={`raise-amt-${row.id}`} className="pill" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} />
+      </label>
+      <div className="segment" role="group" aria-label="Status">
+        {COMMIT_STATUSES.map((value) => (
+          <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(value)}>
+            {STATUS_LABEL[value]}
+          </button>
+        ))}
+      </div>
+      <label className="raise-add-name">
+        <span>Note</span>
+        <input id={`raise-note-${row.id}`} className="pill" placeholder="Side letter, wire date, anything" value={note} onChange={(event) => setNote(event.target.value)} />
+      </label>
+      <button type="submit" className="btn primary" disabled={saving}>
+        Save
+      </button>
+      <button type="button" className="btn quiet" onClick={onCancel}>
+        Cancel
+      </button>
+    </form>
+  );
+}

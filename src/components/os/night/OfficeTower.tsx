@@ -60,7 +60,10 @@ function FloorView({ floor, top, onOpenBot }: { floor: Floor; top: boolean; onOp
   const standup = floor.bots.filter((bot) => bot.spot === "standup");
   const coffee = floor.bots.filter((bot) => bot.spot === "coffee");
   const flags = floor.bots.filter((bot) => bot.spot === "ryan");
-  const deskBots = floor.bots;
+  // Idle bots hot-desk: they sit at the coffee bar and give up their desk, so
+  // a quiet floor reads as quiet instead of a row of empty chairs. Bots at the
+  // standup or the lift keep their desk, since they are coming back to it.
+  const deskBots = floor.bots.filter((bot) => bot.spot !== "coffee");
   return (
     <article className="floor" id={`floor-${floor.key}`} aria-labelledby={`floor-h-${floor.key}`}>
       <header className="floor-head">
@@ -90,7 +93,8 @@ function FloorView({ floor, top, onOpenBot }: { floor: Floor; top: boolean; onOp
             </div>
           </div>
         ) : null}
-        <ol className="desks" aria-label="Desks">
+        {deskBots.length ? null : <p className="desks-quiet">Quiet floor. Everyone is at the coffee bar.</p>}
+        <ol className="desks" aria-label="Desks" hidden={!deskBots.length}>
           {deskBots.map((bot) => (
             <li key={bot.id} className={`desk${bot.spot === "desk" || bot.spot === "asleep" ? " is-in" : " is-away"}`}>
               <div className={`monitor m-${bot.screen}`} aria-hidden="true">
@@ -110,8 +114,8 @@ function FloorView({ floor, top, onOpenBot }: { floor: Floor; top: boolean; onOp
           ))}
         </ol>
         <div className="room lounge" aria-label="Coffee bar and lift">
-          <div className="coffee">
-            <span>COFFEE</span>
+          <div className={`coffee${coffee.length > 4 ? " is-crowded" : ""}`}>
+            <span>COFFEE{coffee.length ? ` · ${coffee.length}` : ""}</span>
             <div className="room-bots">
               {coffee.map((bot) => (
                 <BotButton key={bot.id} bot={bot} onOpenBot={onOpenBot} />

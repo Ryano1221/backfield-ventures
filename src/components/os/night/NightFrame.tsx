@@ -51,7 +51,7 @@ export function useNightActions(): NightApi {
 
 const SINGLETON = new Set<ActionType>(["decide", "pitch_status", "crm_stage", "crm_hold", "crm_dnc", "bot_pause", "bot_resume", "snooze"]);
 
-type Section = "today" | "deals" | "people" | "bots" | "activity" | "email" | "waiting";
+type Section = "today" | "raise" | "deals" | "people" | "bots" | "activity" | "email" | "waiting";
 
 export function NightFrame({
   active,
@@ -379,6 +379,7 @@ export function NightFrame({
   const waitingCount = waitingActions(actions.filter((action) => !action.action_id.startsWith("local:"))).length;
   const links: { id: Section; label: string; href: string; count: number | null }[] = [
     { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
+    { id: "raise", label: "Fund I", href: hrefs.raise, count: null },
     { id: "waiting", label: "Waiting", href: hrefs.waiting, count: waitingCount },
     { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
     { id: "people", label: "People", href: hrefs.people, count: counts.people },

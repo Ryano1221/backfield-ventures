@@ -5,6 +5,9 @@ import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts } from "@/lib/os/nav";
 import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
+import { buildBotDesk } from "@/lib/os/bot-desk";
+import { buildCommand } from "@/lib/os/command";
+import { readRaise } from "@/lib/os/raise";
 import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +22,15 @@ export default async function OsPage() {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const model = buildToday(page.snapshot, page.actions);
+  const now = readClock();
+  const command = buildCommand(page.snapshot, await readRaise(), page.snapshot ? buildBotDesk(page.snapshot, page.actions, now) : null, now);
   return (
     <NightFrame onOs={isOsHost(host)} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} />
+      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} />
     </NightFrame>
   );
+}
+
+function readClock(): number {
+  return Date.now();
 }
