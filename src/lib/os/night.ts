@@ -702,7 +702,7 @@ function presentDeal(pitch: Pitch, generatedAt: string): DeskDeal {
     score: pitch.score,
     pips: scorePips(pitch.score),
     waiting: waitingLabel(pitch.received.length === 10 ? `${pitch.received}T12:00:00-06:00` : pitch.received, generatedAt),
-    received: pitch.received,
+    received: formatCt(pitch.received, pitch.received.length > 10) || pitch.received,
     founder: blankToNull(pitch.founder),
     domain: pitch.domain || null,
     website: pitch.website || (pitch.domain ? `https://${pitch.domain}` : null),
@@ -890,7 +890,8 @@ function channelCrumb(channel: string | null): string | null {
 
 function fromLine(channel: string | null, threadId: string | undefined): string | null {
   if (channel !== "Email") return null;
-  return threadId ? "ryan@backfieldventures.com · reply in thread" : "ryan@backfieldventures.com";
+  const mailbox = process.env.OS_FROM_MAILBOX?.trim() || "ryan@backfieldventures.com";
+  return threadId ? `${mailbox} · reply in thread` : mailbox;
 }
 
 function theirSpokeAt(decision: Decision): string | null {
