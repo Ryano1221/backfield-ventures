@@ -138,7 +138,7 @@ function PeopleList({
             <span className="num">{total.toLocaleString("en-US")}</span>
           </button>
           {counts.map((item) => {
-            const value = item.stage === "im_in" && splitFlag ? item.count : item.stageCount || item.count;
+            const value = item.stage === "im_in" ? item.count : item.stageCount || item.count;
             return (
               <button key={item.stage} type="button" aria-pressed={stage === item.stage} onClick={() => { setStage(item.stage); setShown(PAGE); }}>
                 <span>{item.label}</span>
@@ -175,7 +175,10 @@ function PeopleList({
                     </Link>
                   </td>
                   <td data-label="Track">{row.trackLabel}</td>
-                  <td data-label="Stage">{row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}</td>
+                  <td data-label="Stage">
+                    {row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}
+                    {row.imIn && row.stage !== "im_in" ? <span className="tag warm">I&apos;m in</span> : null}
+                  </td>
                   <td className="hm" data-label="Last touch">{row.lastAge || row.last || ""}</td>
                   <td className="nx" data-label="Next step">{row.next || ""}</td>
                 </tr>

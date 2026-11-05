@@ -730,7 +730,17 @@ function validateCrm(value: unknown, issues: string[]): CrmBook | null {
     const person = validatePerson(value.people[i], `crm.people[${i}]`, issues);
     if (person) people.push(person);
   }
-  return { people };
+  const book: CrmBook = { people };
+  const counts = crmCounts(value.counts);
+  if (counts) book.counts = counts;
+  return book;
+}
+
+function crmCounts(value: unknown): { im_in: number } | undefined {
+  if (!isRecord(value) || !("im_in" in value)) return undefined;
+  const count = value.im_in;
+  if (typeof count !== "number" || !Number.isFinite(count)) return undefined;
+  return { im_in: Math.max(0, Math.round(count)) };
 }
 
 function validatePerson(value: unknown, path: string, issues: string[]): CrmPerson | null {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeDecidePayload } from "./actions";
+import { validateSnapshot } from "./schema";
 import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, stageLabel, todayLine } from "./night";
 import type { CrmPerson, Snapshot } from "./types";
 
@@ -255,8 +256,8 @@ function crmPerson(partial: Pick<CrmPerson, "id" | "name" | "track"> & Partial<C
   };
 }
 
-function peopleSnapshot(people: CrmPerson[]): Snapshot {
-  return { ...sample(), crm: { people } };
+function peopleSnapshot(people: CrmPerson[], imIn?: number): Snapshot {
+  return { ...sample(), crm: { people, ...(imIn === undefined ? {} : { counts: { im_in: imIn } }) } };
 }
 
 test("people stages stay in funnel order and the tiles cover every person", () => {
@@ -278,7 +279,7 @@ test("people stages stay in funnel order and the tiles cover every person", () =
     people.counts.map((item) => item.stage),
     ["ready", "queued", "call_asked", "call_booked", "im_in", "hold", "unknown"],
   );
-  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 0);
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.label, "I'm in");
   assert.equal(people.counts.find((item) => item.stage === "unknown")?.count, 1);
   assert.equal(people.counts.find((item) => item.stage === "queued")?.detail, null);
@@ -315,6 +316,34 @@ test("pipeline stages after a booked call are labeled, and an unknown stage is t
     ["call_booked", "call_held", "one_pager_sent", "data_room", "soft_circle", "docs", "committed", "closed", "im_in", "not_a_stage"],
   );
   assert.equal(people.counts.find((item) => item.stage === "not_a_stage")?.label, "Not A Stage");
+});
+
+test("I'm in counts the flag after someone moves to a later stage", () => {
+  const people = buildPeople(
+    peopleSnapshot([
+      crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
+      crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "call_booked", im_in: true }),
+      crmPerson({ id: "3", name: "East Sample", track: "athlete", stage: "call_asked", im_in: true }),
+      crmPerson({ id: "4", name: "South Sample", track: "creator", stage: "im_in", im_in: false }),
+    ]),
+  );
+  assert.equal(people.rows.find((row) => row.id === "1")?.imIn, true);
+  assert.equal(people.rows.find((row) => row.id === "4")?.imIn, false);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.stageCount, 1);
+  const published = buildPeople(peopleSnapshot([
+    crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
+    crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "im_in", im_in: false }),
+  ], 8));
+  assert.equal(published.counts.find((item) => item.stage === "im_in")?.count, 8);
+  assert.equal(published.counts.find((item) => item.stage === "im_in")?.stageCount, 1);
+  const base = sample();
+  const kept = validateSnapshot({ ...base, crm: { ...base.crm, counts: { im_in: 8 } } });
+  assert.equal(kept.ok, true);
+  if (kept.ok) assert.equal(kept.snapshot.crm.counts?.im_in, 8);
+  const absent = validateSnapshot({ ...base, crm: { people: base.crm.people } });
+  assert.equal(absent.ok, true);
+  if (absent.ok) assert.equal(absent.snapshot.crm.counts, undefined);
 });
 
 test("a lasting yes flag counts I'm in, and LP stays on the real track", () => {

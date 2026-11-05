@@ -65,7 +65,6 @@ const STAGE_ORDER = [
   "unknown",
 ];
 const WARM = new Set(["replied", "im_in", "call_asked", "call_booked"]);
-const YES_STAGES = new Set(["im_in", "call_asked", "call_booked"]);
 const ROOM_NAME: Record<string, string> = {
   executive: "Executive",
   network: "Network",
@@ -531,7 +530,7 @@ export function buildPeople(snapshot: Snapshot | null): { rows: PeopleRow[]; cou
     stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1);
     if (person.track !== "lp") trackCounts.set(person.track, (trackCounts.get(person.track) || 0) + 1);
   }
-  const imInCount = people.filter((person) => personIsImIn(person, useImIn)).length;
+  const imInCount = imInTotal(snapshot.crm, people);
   if (imInCount > 0) stageCounts.set("im_in", stageCounts.get("im_in") || 0);
   const queuedLine = queuedDetail(people);
   const counts = [...stageCounts.entries()]
@@ -790,7 +789,7 @@ function presentPersonRow(person: CrmPerson, generatedAt: string, useImIn: boole
     stage,
     stageLabel: stageLabel(stage),
     warm: personIsWarm(person, useImIn),
-    imIn: personIsImIn(person, useImIn),
+    imIn: personIsImIn(person),
     lp: personIsLp(person, useLp),
     last: formatCt(person.last_touch_at, false),
     lastAge: waitingLabel(person.last_touch_at, generatedAt),
@@ -1194,9 +1193,15 @@ function stageKey(person: CrmPerson): string {
   return raw;
 }
 
-function personIsImIn(person: CrmPerson, useFlag: boolean): boolean {
-  if (useFlag) return person.im_in === true;
-  return Boolean(person.stage && YES_STAGES.has(person.stage));
+function personIsImIn(person: CrmPerson): boolean {
+  return person.im_in === true;
+}
+
+/** Snapshot total when the builder sent one. Otherwise people who still carry the flag. */
+function imInTotal(crm: Snapshot["crm"], people: CrmPerson[]): number {
+  const given = crm.counts?.im_in;
+  if (typeof given === "number" && Number.isFinite(given)) return Math.max(0, Math.round(given));
+  return people.filter((person) => person.im_in === true).length;
 }
 
 function personIsWarm(person: CrmPerson, useFlag: boolean): boolean {

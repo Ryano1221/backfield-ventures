@@ -283,6 +283,8 @@ export type OsAction = {
 
 export type CrmBook = {
   people: CrmPerson[];
+  /** Optional builder total. I'm-in badges use this instead of counting stages. */
+  counts?: { im_in?: number };
 };
 
 export type DecisionAnswer = {
