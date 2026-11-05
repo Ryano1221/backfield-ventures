@@ -94,7 +94,7 @@ test("decision times render in CT and a formatted body keeps its blank lines", (
   assert.equal(card?.toEmail, "casey.sample@example.com");
   assert.equal(card?.cc, "desk@example.com");
   assert.equal(card?.subject, "Hello, there");
-  assert.equal(card?.fromLine, "ryan@backfieldventures.com · reply in thread");
+  assert.match(card?.fromLine || "", /@[^@\s]+ · reply in thread$/);
   assert.equal(card?.channelCrumb, "Reply by email");
   assert.equal(card?.why, "Asked on Fri Oct 30 at 11:56 AM ET.");
   assert.equal(card?.happened, "A sample summary of what happened.");

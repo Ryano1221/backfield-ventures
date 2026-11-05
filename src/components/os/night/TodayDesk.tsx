@@ -206,6 +206,8 @@ function InboxCard({
   }
 
   function onPointerDown(event: React.PointerEvent) {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("button, a, input, textarea, select")) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     start.current = { x: event.clientX, y: event.clientY, drag: false };
     try {

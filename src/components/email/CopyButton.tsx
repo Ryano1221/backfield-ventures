@@ -11,7 +11,8 @@ export function CopyButton({
   label: string;
   primary?: boolean;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+  const shown = state === "copied" ? "Copied" : state === "failed" ? "Could not copy" : label;
 
   return (
     <button
@@ -20,13 +21,13 @@ export function CopyButton({
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(value);
-          setCopied(true);
+          setState("copied");
         } catch {
-          setCopied(false);
+          setState("failed");
         }
       }}
     >
-      {copied ? "Copied" : label}
+      {shown}
     </button>
   );
 }

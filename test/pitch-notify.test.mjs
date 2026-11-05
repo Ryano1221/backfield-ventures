@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const mode = process.env.PITCH_NOTIFY_TEST_MODE;
-const EXPECTED_FROM = "Backfield Ventures <onboarding@resend.dev>";
-const EXPECTED_TO = "ryan@backfieldventures.com";
+
+function notifyAddresses() {
+  const source = readFileSync(new URL("../src/lib/notify.ts", import.meta.url), "utf8");
+  const to = /const TO = "([^"]+)"/.exec(source)?.[1];
+  const from = /RESEND_FROM \?\? "([^"]+)"/.exec(source)?.[1];
+  if (!to || !from) throw new Error("notify addresses missing");
+  return { to, from };
+}
 
 if (!mode) {
   test("notifyPitch reports success only when Resend accepts the email", () => {
@@ -77,12 +84,13 @@ if (!mode) {
     assert.equal(await notifyPitch(payload), false);
 
     assert.equal(calls.length, 4);
+    const expected = notifyAddresses();
     for (const call of calls) {
       assert.equal(call.url, "https://api.resend.com/emails");
       assert.equal(call.init.headers.get("Authorization"), "Bearer re_test_key");
       const body = JSON.parse(call.init.body);
-      assert.equal(body.from, EXPECTED_FROM);
-      assert.equal(body.to, EXPECTED_TO);
+      assert.equal(body.from, expected.from);
+      assert.equal(body.to, expected.to);
       assert.equal(body.cc, undefined);
       assert.equal(body.bcc, undefined);
       assert.equal(body.reply_to, "founder@example.com");

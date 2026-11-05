@@ -160,7 +160,7 @@ body:has(.email) {
 
 .email .main {
   padding: 30px 40px 48px;
-  max-width: none;
+  max-width: 920px;
   min-width: 0;
 }
 

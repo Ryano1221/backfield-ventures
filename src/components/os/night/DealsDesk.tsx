@@ -93,10 +93,30 @@ export function DealLinks({ deal }: { deal: DeskDeal }) {
           Deck
         </a>
       ) : deal.deckNote ? (
-        <span className="deck-state" title={deal.deckNote} aria-label={deal.deckNote}>
-          Deck
-        </span>
+        <DeckNote note={deal.deckNote} />
       ) : null}
     </div>
+  );
+}
+
+function DeckNote({ note }: { note: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="deck-state" aria-expanded={open} onClick={() => setOpen(true)}>
+        Deck
+      </button>
+      {open ? (
+        <div className="who-sheet" role="dialog" aria-label="Deck">
+          <button type="button" className="sheet-scrim" aria-label="Close" onClick={() => setOpen(false)} />
+          <div className="who-card">
+            <p>{note}</p>
+            <button type="button" onClick={() => setOpen(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

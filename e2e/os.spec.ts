@@ -1,5 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, unlinkSync } from "node:fs";
+
+test.beforeAll(() => {
+  try {
+    unlinkSync("/tmp/os-e2e-none.json");
+  } catch {
+    /* The crawl test is the only writer of this file. */
+  }
+});
 
 const PASSWORD = "e2e-session-only";
 

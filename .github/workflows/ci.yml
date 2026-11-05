@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - name: Fixture and test emails stay on example domains
+        run: npm run test:fixture-emails
+      - run: npm run build
+      - run: npx playwright install --with-deps chrome
+      - name: End-to-end
+        run: npm run e2e
+      - name: OS crawler
+        run: npm run test:crawl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: os-crawl-report
+          path: |
+            test-results
+            playwright-report
+            artifacts/os-checker
+          if-no-files-found: ignore
