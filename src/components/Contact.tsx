@@ -18,7 +18,7 @@ export default function Contact() {
           <button
             className="contact__card reveal-bottom"
             aria-label="Send your deck to Backfield Ventures"
-            onClick={() => (window as any).bfvOpen('pitch')}
+            onClick={() => window.bfvOpen('pitch')}
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -33,7 +33,7 @@ export default function Contact() {
           <button
             className="contact__card reveal-bottom"
             aria-label="Partner with Backfield Ventures"
-            onClick={() => (window as any).bfvPartnerOpen()}
+            onClick={() => window.bfvPartnerOpen()}
           >
             <div className="contact__card-icon" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">

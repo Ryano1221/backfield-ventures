@@ -1799,7 +1799,7 @@ export default function BackfieldDeck() {
   ];
 
   // Mobile-specific bottom nav bar with prev/dots/next, plus tap zones
-  const MobileNav=()=>(
+  const mobileNav=(
     <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:30,background:"linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,.85) 60%,rgba(0,0,0,0))",padding:"18px 16px 22px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,pointerEvents:"none"}}>
       <button
         onClick={prev}
@@ -1832,7 +1832,7 @@ export default function BackfieldDeck() {
             {mobileSlides[slide]}
           </div>
         </div>
-        <MobileNav/>
+        {mobileNav}
       </>
     );
   }

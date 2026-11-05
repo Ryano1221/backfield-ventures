@@ -48,7 +48,7 @@ export default function Nav() {
         </ul>
 
         <div className="nav__cta-group">
-          <button className="bfv-btn" onClick={() => (window as any).bfvOpen('pitch')}>
+          <button className="bfv-btn" onClick={() => window.bfvOpen('pitch')}>
             PITCH <span className="bfv-arrow">→</span>
           </button>
         </div>
@@ -69,7 +69,7 @@ export default function Nav() {
         <Link href="/#philosophy" className="nav__mobile-link" onClick={closeMenu}>PHILOSOPHY</Link>
         <Link href="/#contact" className="nav__mobile-link" onClick={closeMenu}>CONTACT</Link>
         <Link href="/handoff?src=site-nav-mobile" className="nav__mobile-link" onClick={closeMenu} aria-current={onHandoff ? "page" : undefined}>HANDOFF</Link>
-        <button className="bfv-btn" onClick={() => { closeMenu(); (window as any).bfvOpen('pitch'); }}>
+        <button className="bfv-btn" onClick={() => { closeMenu(); window.bfvOpen('pitch'); }}>
           PITCH <span className="bfv-arrow">→</span>
         </button>
       </div>
