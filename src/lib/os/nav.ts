@@ -43,6 +43,7 @@ export function osHrefs(onOs: boolean) {
     activity: `${root}/activity`,
     email: onOs ? "/email" : "/os/email",
     waiting: `${root}/waiting`,
+    raise: `${root}/raise`,
     login: onOs ? "/login" : "/os/login",
     decision: (id: string) => `${root}/d/${encodeURIComponent(id)}`,
     deal: (id: string) => `${root}/deals/${encodeURIComponent(id)}`,

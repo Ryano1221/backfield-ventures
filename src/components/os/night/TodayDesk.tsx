@@ -7,6 +7,8 @@ import { postStatusLabel, type DeskDecision, type TodayModel, withLiveAnswers } 
 import { snoozeUntil } from "@/lib/os/snooze";
 import { osHrefs, waitingOnYou } from "@/lib/os/nav";
 import type { AnsweredDecision, OsPost, OsScheduleItem, OsTodayNote } from "@/lib/os/types";
+import type { CommandModel } from "@/lib/os/command";
+import { usd } from "@/lib/os/raise-model";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
 
@@ -18,6 +20,7 @@ export function TodayDesk({
   warmups = [],
   briefs = [],
   answered = [],
+  command = null,
 }: {
   model: TodayModel;
   onOs: boolean;
@@ -26,6 +29,7 @@ export function TodayDesk({
   warmups?: OsTodayNote[];
   briefs?: OsTodayNote[];
   answered?: AnsweredDecision[];
+  command?: CommandModel | null;
 }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
@@ -89,6 +93,13 @@ export function TodayDesk({
     });
   }
 
+  // One tap for every reply that is drafted and ready. Holds and open
+  // questions still need a look. Each goes into the same undo window.
+  const readyNow = view.ready.filter((decision) => !inflight[decision.id]);
+  function approveAllReady() {
+    for (const decision of readyNow) approve(decision);
+  }
+
   function dismiss(decision: DeskDecision) {
     if (decision.notNow.kind === "decide") {
       enqueue({
@@ -117,6 +128,17 @@ export function TodayDesk({
           : "Nothing needs you right now."}
       </p>
       <p className="pointer-keys keys">J and K move. E approves. / searches.</p>
+      {command ? <CommandStrip command={command} hrefs={hrefs} briefs={briefs.length} /> : null}
+      {readyNow.length > 1 ? (
+        <div className="approve-all">
+          <p>
+            {readyNow.length} replies are drafted and ready. Each one still gets the 10 second undo.
+          </p>
+          <button type="button" className="btn primary" onClick={approveAllReady}>
+            Approve all {readyNow.length}
+          </button>
+        </div>
+      ) : null}
 
       {items.length ? (
         <ol className="inbox">
@@ -138,6 +160,7 @@ export function TodayDesk({
       )}
 
       <aside className="inbox-side">
+      {command ? <CommandLists command={command} hrefs={hrefs} /> : null}
       {bots.length ? (
         <section className="stack" aria-label="Bots waiting on you">
           <h2>Bots waiting</h2>
@@ -298,6 +321,120 @@ function InboxCard({
         </div>
       </article>
     </li>
+  );
+}
+
+function CommandStrip({ command, hrefs, briefs }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs>; briefs: number }) {
+  const { raise, deals, bots, due } = command;
+  const hard = raise.pctHard ?? 0;
+  const soft = Math.max(0, (raise.pctSoft ?? 0) - hard);
+  return (
+    <section className="command" aria-label="Firm at a glance">
+      <Link className="cmd cmd-raise" href={hrefs.raise} prefetch>
+        <span className="cmd-k">{raise.fund}</span>
+        <b className="cmd-v">
+          {usd(raise.hard)}
+          {raise.target ? <small> of {usd(raise.target)}</small> : null}
+        </b>
+        {raise.target ? (
+          <span className="cmd-bar" aria-hidden="true">
+            <i className="hard" style={{ width: `${hard}%` }} />
+            <i className="soft" style={{ width: `${soft}%` }} />
+          </span>
+        ) : null}
+        <span className="cmd-s">
+          {raise.target
+            ? [raise.soft ? `${usd(raise.soft)} soft` : null, raise.daysLeft != null ? `${raise.daysLeft} days to close` : null].filter(Boolean).join(" · ") || `${raise.lpCount} LPs in`
+            : "Set your target"}
+        </span>
+      </Link>
+      <Link className="cmd" href={hrefs.people} prefetch>
+        <span className="cmd-k">Your day</span>
+        <b className="cmd-v">
+          {due.length + briefs}
+          <small> {due.length + briefs === 1 ? "thing" : "things"}</small>
+        </b>
+        <span className="cmd-s">
+          {[briefs ? `${briefs} ${briefs === 1 ? "call" : "calls"}` : null, due.length ? `${due.length} follow-${due.length === 1 ? "up" : "ups"} due` : null].filter(Boolean).join(" · ") || "No calls or follow-ups due"}
+        </span>
+      </Link>
+      <Link className="cmd" href={hrefs.deals} prefetch>
+        <span className="cmd-k">Deal flow</span>
+        <b className="cmd-v">
+          {deals.fresh}
+          <small> new this week</small>
+        </b>
+        <span className="cmd-s">{[`${deals.reviewing} in review`, deals.unrated ? `${deals.unrated} to rate` : null, deals.advanced ? `${deals.advanced} advanced` : null].filter(Boolean).join(" · ")}</span>
+      </Link>
+      <Link className={`cmd${bots.stuck ? " is-alert" : ""}`} href={hrefs.bots} prefetch>
+        <span className="cmd-k">The office</span>
+        <b className="cmd-v">
+          {bots.done}
+          <small> done today</small>
+        </b>
+        <span className="cmd-s">{[`${bots.working} working`, bots.stuck ? `${bots.stuck} stuck` : null, bots.waiting ? `${bots.waiting} need you` : null].filter(Boolean).join(" · ")}</span>
+      </Link>
+    </section>
+  );
+}
+
+function CommandLists({ command, hrefs }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs> }) {
+  const { bots, due } = command;
+  return (
+    <>
+      {due.length || command.chase.length || bots.lines.length ? (
+        <div className="cmd-lists">
+          {due.length ? (
+            <div>
+              <h2>Follow-ups due</h2>
+              <ul className="bot-list">
+                {due.map((row) => (
+                  <li key={row.id}>
+                    <Link className="note-row" href={hrefs.person(row.id)} prefetch>
+                      <span className="bot-wait-name">{row.name}</span>
+                      <span className={`bot-wait-when${row.overdue ? " is-due" : ""}`}>{row.when}</span>
+                      <span className="bot-wait-sum">{row.what}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {command.chase.length ? (
+            <div>
+              <h2>LPs to chase</h2>
+              <ul className="bot-list">
+                {command.chase.slice(0, 4).map((row) => (
+                  <li key={row.id}>
+                    <Link className="note-row" href={hrefs.person(row.id)} prefetch>
+                      <span className="bot-wait-name">{row.name}</span>
+                      <span className={`bot-wait-when${row.overdue ? " is-due" : ""}`}>{row.why}</span>
+                      {row.firm || row.stage ? <span className="bot-wait-sum">{[row.firm, row.stage].filter(Boolean).join(" · ")}</span> : null}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {bots.lines.length ? (
+            <div>
+              <h2>Overnight</h2>
+              <ul className="bot-list">
+                {bots.lines.map((line) => (
+                  <li key={`${line.name}-${line.text}`}>
+                    <div className="note-row">
+                      <span className="bot-wait-name">{line.name}</span>
+                      <span className={`bot-wait-when${line.tone === "stuck" ? " is-due" : ""}`}>{line.tone === "stuck" ? "Stuck" : "Done"}</span>
+                      <span className="bot-wait-sum">{line.text}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </>
   );
 }
 
