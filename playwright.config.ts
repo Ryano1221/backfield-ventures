@@ -16,6 +16,7 @@ export default defineConfig({
   },
   projects: [
     { name: "phone", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: "dark" } },
+    { name: "phone-dark", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: "dark" } },
     { name: "phone-light", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: "light" } },
     { name: "tablet", use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 768 }, hasTouch: false, isMobile: false } },
     { name: "desk", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, hasTouch: false, isMobile: false } },

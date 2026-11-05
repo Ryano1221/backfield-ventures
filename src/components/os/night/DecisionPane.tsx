@@ -6,7 +6,6 @@ import type { DeskDecision } from "@/lib/os/night";
 import type { ActionPayload, DecisionSwap } from "@/lib/os/types";
 import { officeStatus, whoLabel } from "@/lib/os/ask";
 import { decisionNeedsPickup } from "@/lib/os/waiting";
-import { monogram } from "@/lib/os/logo-mark";
 import { DecisionDetailView } from "./DecisionDetail";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
@@ -24,7 +23,7 @@ export function DecisionPane({
   next?: { href: string; label: string } | null;
   className?: string;
 }) {
-  const { submit, retry, inflight, errors, actions } = useNightActions();
+  const { enqueue, submit, retry, inflight, errors, actions } = useNightActions();
   const pickup = decisionNeedsPickup(actions, item.id);
   const savedAction = [...actions].reverse().find((action) => action.type === "decide" && action.target_id === item.id) ?? null;
   const pickupStatus = savedAction ? officeStatus(savedAction, whoLabel(item.requestedBy || "the office")) : null;
@@ -50,7 +49,7 @@ export function DecisionPane({
   }
 
   function choose(choice: string, label: string) {
-    submit({
+    enqueue({
       type: "decide",
       target_id: item.id,
       payload: answerPayload(choice, ""),
@@ -67,7 +66,7 @@ export function DecisionPane({
       choose(item.notNow.choice, `Not now for ${item.name}.`);
       return;
     }
-    submit({
+    enqueue({
       type: "snooze",
       target_id: item.id,
       payload: { until: snoozeUntil("tomorrow") },
@@ -98,7 +97,7 @@ export function DecisionPane({
   function saveEdit() {
     const text = draft.trim();
     if (!text || text === saved) return;
-    submit({
+    enqueue({
       type: "decide",
       target_id: item.id,
       payload: { choice: "edit", edited_message: text },
@@ -114,7 +113,6 @@ export function DecisionPane({
         {meta.length ? <span>{meta.join(" · ")}</span> : null}
       </div>
       <div className="who inbox-who">
-        <span className="logo fb lg" aria-hidden="true">{monogram(item.name)}</span>
         <div>
           <h1 className="d-l">{item.name}</h1>
           {item.org ? <div className="sub">{item.org}</div> : null}

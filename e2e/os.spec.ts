@@ -200,6 +200,25 @@ test("a long decision stays on the phone", async ({ page }) => {
   expect(scrollWidth).toBeLessThanOrEqual(390);
 });
 
+test("decision approve waits for undo before it posts", async ({ page }) => {
+  await page.goto("/os/login");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Enter" }).click();
+  await page.goto("/os/d/fix-dec-1");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  let posted = false;
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.url().includes("/api/os/action")) posted = true;
+  });
+  await page.locator(".inbox-actions").getByRole("button", { name: "Approve", exact: true }).first().click();
+  const undo = page.getByRole("button", { name: "Undo" });
+  await expect(undo).toBeVisible();
+  await undo.click();
+  await expect(undo).toHaveCount(0);
+  await page.waitForTimeout(400);
+  expect(posted).toBe(false);
+});
+
 test("an unknown OS path uses the OS missing page", async ({ page }) => {
   await page.goto("/os/login");
   await page.getByLabel("Password").fill(PASSWORD);

@@ -16,7 +16,8 @@ export function TodayDesk({ model, onOs, posts = [], schedule = [] }: { model: T
   const [current, setCurrent] = useState(0);
   const selected = Math.min(current, Math.max(0, items.length - 1));
   const item = items[selected] ?? null;
-  const waiting = items.length + model.waiting.length;
+  const bots = model.waiting.filter((bot) => !items.some((row) => (row.requestedBy || "").toLowerCase() === bot.name.toLowerCase()));
+  const waiting = items.length + bots.length;
   const outreach = view.kpis.find((kpi) => kpi.label === "Outreach today") ?? null;
 
   useEffect(() => {
@@ -93,7 +94,7 @@ export function TodayDesk({ model, onOs, posts = [], schedule = [] }: { model: T
       <h1 className="d-xl">{waiting ? `${waiting} waiting on you` : "You're clear"}</h1>
       <p className="lede">
         {waiting
-          ? `${items.length.toLocaleString("en-US")} ${items.length === 1 ? "decision" : "decisions"}, ${model.waiting.length.toLocaleString("en-US")} ${model.waiting.length === 1 ? "bot" : "bots"}.`
+          ? `${items.length.toLocaleString("en-US")} ${items.length === 1 ? "decision" : "decisions"}, ${bots.length.toLocaleString("en-US")} ${bots.length === 1 ? "bot" : "bots"}.`
           : "Nothing needs you right now."}
       </p>
       <p className="pointer-keys keys">J and K move. E approves. / searches.</p>
@@ -117,31 +118,24 @@ export function TodayDesk({ model, onOs, posts = [], schedule = [] }: { model: T
         <p className="empty-clear">Inbox clear.</p>
       )}
 
-      {model.waiting.length ? (
+      <aside className="inbox-side">
+      {bots.length ? (
         <section className="stack" aria-label="Bots waiting on you">
           <h2>Bots waiting</h2>
-          {model.waiting.map((bot) => {
-            const decision = items.find((row) => (row.requestedBy || "").toLowerCase() === bot.name.toLowerCase());
-            return (
-              <article className="bot-wait" key={bot.slug}>
-                <b>{bot.name}</b>
-                <p className="bot-wait-sum">{bot.ask}</p>
-                <p className="bot-wait-meta">
-                  {bot.when ? <span>{bot.when}</span> : null}
-                  <span className="chip">{bot.status}</span>
-                </p>
-                {decision ? (
-                  <button type="button" className="btn primary" disabled={Boolean(inflight[decision.id])} onClick={() => approve(decision)}>
-                    Approve
-                  </button>
-                ) : null}
-                <details>
-                  <summary className="btn quiet">Open</summary>
-                  <p className="bot-wait-detail">{bot.detail}</p>
-                </details>
-              </article>
-            );
-          })}
+          {bots.map((bot) => (
+            <article className="bot-wait" key={bot.slug}>
+              <b>{bot.name}</b>
+              <p className="bot-wait-sum">{bot.ask}</p>
+              <p className="bot-wait-meta">
+                {bot.when ? <span>{bot.when}</span> : null}
+                <span className="chip">{bot.status}</span>
+              </p>
+              <details>
+                <summary className="btn quiet">Open</summary>
+                <p className="bot-wait-detail">{bot.detail}</p>
+              </details>
+            </article>
+          ))}
         </section>
       ) : null}
 
@@ -162,6 +156,7 @@ export function TodayDesk({ model, onOs, posts = [], schedule = [] }: { model: T
           <span>{model.reviewingCount.toLocaleString("en-US")} in review</span>
         </Link>
       </section>
+      </aside>
 
       {view.settled.length ? (
         <section className="stack" aria-label="Answered">
@@ -240,7 +235,7 @@ function InboxCard({
     start.current = null;
   }
 
-  const line = item.message || item.summary || item.happened;
+  const line = previewCopy(item.message || item.summary || item.happened || "");
   const [open, setOpen] = useState(false);
   const kind = item.channel || (item.hold ? "Hold" : "Decision");
 
@@ -261,7 +256,7 @@ function InboxCard({
         </div>
         {line ? <p className="inbox-line">{line}</p> : null}
         <div className="inbox-actions">
-          <button type="button" className="btn primary" disabled={busy} onClick={onApprove}>
+          <button type="button" className={selected ? "btn primary" : "btn is-outline"} disabled={busy} onClick={onApprove}>
             Approve
           </button>
           <button type="button" className="btn quiet" disabled={busy} onClick={onDismiss}>
@@ -280,6 +275,34 @@ function InboxCard({
   );
 }
 
+function previewCopy(value: string): string {
+  return value.replace(/^\s*(hey|hi|hello|dear)\b[^,\n]*,?\s*/i, "").replace(/\s+/g, " ").trim();
+}
+
+function platformLabel(platform: string | null | undefined): string {
+  const key = (platform || "").trim().toLowerCase();
+  if (key === "x" || key === "twitter") return "X";
+  if (!key) return "Post";
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+function passedGate(status: string | null | undefined): boolean {
+  return (status || "").trim().toLowerCase() === "brand_pass";
+}
+
+function scheduleWhen(date: string | null | undefined, time: string | null | undefined): string {
+  let day = (date || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    const parsed = new Date(`${day}T12:00:00-06:00`);
+    if (!Number.isNaN(parsed.getTime())) {
+      day = new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", weekday: "short", month: "short", day: "numeric" }).format(parsed);
+    }
+  }
+  let clock = (time || "").trim();
+  if (clock && !/\bCT\b/i.test(clock)) clock = `${clock} CT`;
+  return [day, clock].filter(Boolean).join(" · ");
+}
+
 function CardLogo({ url }: { url: string }) {
   const [shown, setShown] = useState(true);
   if (!shown) return null;
@@ -293,14 +316,14 @@ function PostsAndSchedule({ posts, schedule }: { posts: OsPost[]; schedule: OsSc
   const rows = [
     ...posts.map((post, index) => ({
       key: post.id || `post-${index}`,
-      title: [post.platform, postStatusLabel(post.status)].filter(Boolean).join(" · "),
-      meta: post.gate || null,
+      title: platformLabel(post.platform),
+      meta: passedGate(post.status) ? null : [postStatusLabel(post.status), post.gate].filter(Boolean).join(" · ") || null,
       note: null as string | null,
     })),
     ...schedule.map((row, index) => ({
       key: `schedule-${index}`,
       title: row.item || row.platform || "Scheduled item",
-      meta: [row.date, row.time_ct, postStatusLabel(row.status)].filter(Boolean).join(" · "),
+      meta: [scheduleWhen(row.date, row.time_ct), postStatusLabel(row.status)].filter(Boolean).join(" · "),
       note: row.note || null,
     })),
   ];

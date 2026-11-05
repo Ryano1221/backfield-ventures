@@ -159,7 +159,7 @@ export function NightFrame({
       for (const item of items) {
         const ok = await postAction(item);
         if (ok.action) setActions((current) => (current.some((action) => action.action_id === ok.action?.action_id) ? current : [...current, ok.action!]));
-        else if (ok.error) setToasts([{ id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
+        else if (ok.error) setToasts((current) => [...current.filter((toast) => toast.undo), { id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
       }
     });
   }, []);
@@ -208,8 +208,8 @@ export function NightFrame({
           delete copy[id];
           return copy;
         });
-        setToasts([{ id: key, label: saved.label, undo: false }]);
-        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 4_000);
+        setToasts((current) => [...current.filter((toast) => toast.undo), { id: key, label: saved.label, undo: false }]);
+        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 10_000);
         router.refresh();
         return;
       }
@@ -229,6 +229,34 @@ export function NightFrame({
     setLiveToday(count);
   }, []);
 
+  const HOLD_MS = 10_000;
+  const ends = useRef(new Map<string, number>());
+  const arm = useCallback(
+    (batch: string, ms: number) => {
+      const timer = timers.current.get(batch);
+      if (timer) window.clearTimeout(timer);
+      ends.current.set(batch, Date.now() + ms);
+      timers.current.set(batch, window.setTimeout(() => commitBatch(batch), ms));
+    },
+    [commitBatch],
+  );
+  const pauseBatch = useCallback((batch: string) => {
+    const end = ends.current.get(batch);
+    const timer = timers.current.get(batch);
+    if (timer) window.clearTimeout(timer);
+    timers.current.delete(batch);
+    if (end) ends.current.set(batch, Math.max(1000, end - Date.now()));
+  }, []);
+  const resumeBatch = useCallback(
+    (batch: string) => {
+      if (timers.current.has(batch)) return;
+      if (!queuedRef.current.some((item) => item.batch === batch)) return;
+      const left = ends.current.get(batch) ?? HOLD_MS;
+      arm(batch, left > 60_000 ? HOLD_MS : left);
+    },
+    [arm],
+  );
+
   const enqueue = useCallback(
     (draft: Draft) => {
       if (SINGLETON.has(draft.type) && queuedRef.current.some((item) => item.type === draft.type && item.target_id === draft.target_id)) return;
@@ -243,10 +271,10 @@ export function NightFrame({
       };
       queuedRef.current = [...queuedRef.current, item];
       setQueued(queuedRef.current);
-      setToasts([{ id: batch, label: draft.label, undo: true }]);
-      timers.current.set(batch, window.setTimeout(() => commitBatch(batch), 4_000));
+      setToasts((current) => [...current.filter((toast) => toast.undo && toast.id !== batch), { id: batch, label: draft.label, undo: true }]);
+      arm(batch, HOLD_MS);
     },
-    [commitBatch],
+    [arm],
   );
 
   useEffect(() => {
@@ -304,7 +332,7 @@ export function NightFrame({
   }, []);
 
   const hrefs = osHrefs(onOs);
-  const waitingCount = waitingActions(actions).length;
+  const waitingCount = waitingActions(actions.filter((action) => !action.action_id.startsWith("local:"))).length;
   const links: { id: Section; label: string; href: string; count: number | null }[] = [
     { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
     { id: "waiting", label: "Waiting", href: hrefs.waiting, count: waitingCount },
@@ -351,7 +379,6 @@ export function NightFrame({
           <a className="brand wordmark" href={hrefs.today}>
             <img src="/logo-text.png" alt="Backfield Ventures" />
           </a>
-          <div className="sub lbl">OS · {pageLabel}</div>
           <nav>
             {links.map((link) => (
               <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
@@ -370,33 +397,21 @@ export function NightFrame({
             <button type="button" onClick={signOut}>
               Sign out
             </button>
-            <span>Private to Ryan</span>
           </div>
         </aside>
         <div className="os-col">
           <header className="crumb lbl">
-            <Link href={hrefs.today} className="wordmark" prefetch>
-              <img src="/logo-text.png" alt="Backfield Ventures" />
-            </Link>
-            <span>
-              <span className="sep">/</span> {pageLabel}
-            </span>
+            <span>{pageLabel}</span>
             <span className="r">
-              <AskBox actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
                 <span>Search</span>
                 <kbd className="pointer-keys">⌘K</kbd>
               </button>
-              {stamp ? (
-                <span className="stamp">
-                  <i className={`dot${stale ? " wait" : ""}`} />
-                  Updated {stamp.replace(/,\s*\d{4}/, "")}
-                </span>
-              ) : (
-                <span className="stamp">Waiting on the first ingest</span>
-              )}
-              <span className="private">Private to Ryan</span>
+              <span className={stale ? "quiet-line is-stale" : "quiet-line"}>
+                {stamp ? `Updated ${stamp.replace(/,\s*\d{4}/, "")}` : "Waiting on the first ingest"}
+                {" · Private to Ryan"}
+              </span>
             </span>
           </header>
           <main className="main">
@@ -506,7 +521,15 @@ export function NightFrame({
       </nav>
       <div className="toasts" aria-live="polite">
         {toasts.map((toast) => (
-          <div className="toast" key={toast.id} role="status">
+          <div
+            className="toast"
+            key={toast.id}
+            role="status"
+            onMouseEnter={() => toast.undo && pauseBatch(toast.id)}
+            onMouseLeave={() => toast.undo && resumeBatch(toast.id)}
+            onFocus={() => toast.undo && pauseBatch(toast.id)}
+            onBlur={() => toast.undo && resumeBatch(toast.id)}
+          >
             <span>{toast.label}</span>
             {toast.undo ? (
               <button type="button" onClick={() => undo(toast.id)}>

@@ -41,7 +41,7 @@ export function RateControl({
       <div className="segment rate-row" role="group" aria-label={`Rating for ${company}`}>
         {RATING_ORDER.map((rating) => (
           <button key={rating} type="button" className="deal-chip" aria-pressed={shown === rating} disabled={pending} onClick={() => choose(rating)}>
-            {rating}
+            {rating.charAt(0).toUpperCase() + rating.slice(1)}
           </button>
         ))}
       </div>
