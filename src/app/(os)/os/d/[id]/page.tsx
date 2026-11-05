@@ -28,7 +28,7 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
     key = id;
   }
   const items = page.snapshot
-    ? page.snapshot.decisions.map((decision) => presentDecision(decision, page.snapshot!, page.actions, Date.now()))
+    ? page.snapshot.decisions.map((decision) => presentDecision(decision, page.snapshot!, page.actions, clock()))
     : [];
   const index = items.findIndex((item) => item.id === key);
   const item = index >= 0 ? items[index] : null;
@@ -41,4 +41,8 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
       )}
     </NightFrame>
   );
+}
+
+function clock(): number {
+  return Date.now();
 }

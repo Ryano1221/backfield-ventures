@@ -11,50 +11,61 @@ export function PersonActions({ person }: { person: PersonModel }) {
   const [stage, setStage] = useState(person.stage || "unknown");
   const [note, setNote] = useState("");
   const [draft, setDraft] = useState("");
+  const [stageOpen, setStageOpen] = useState(false);
   const latest = [...actions].reverse().find((action) => action.target_id === person.id && (action.type === "crm_next_step" || action.type === "crm_note" || action.type === "crm_stage"));
   const status = latest ? officeStatus(latest, "the office") : null;
 
   return (
     <div className="person-actions">
       {person.next ? (
-        <button
-          type="button"
-          className="btn primary"
-          onClick={() =>
-            submit({
-              type: "crm_next_step",
-              target_id: person.id,
-              payload: { next_step: "", next_step_due: "" },
-              label: `Marked the next step done for ${person.name}.`,
-            })
-          }
-        >
-          {person.next}
-        </button>
+        <div className="next-step">
+          <p>{person.next}</p>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={() =>
+              submit({
+                type: "crm_next_step",
+                target_id: person.id,
+                payload: { next_step: "", next_step_due: "" },
+                label: `Marked the next step done for ${person.name}.`,
+              })
+            }
+          >
+            Mark done
+          </button>
+        </div>
       ) : null}
-      <label className="note-field">
-        <span className="lbl">Stage</span>
-        <select
-          aria-label={`Stage for ${person.name}`}
-          value={stage}
-          onChange={(event) => {
-            const next = event.target.value;
-            setStage(next);
-            submit({
-              type: "crm_stage",
-              target_id: person.id,
-              payload: { stage: next },
-              label: `Stage set for ${person.name}.`,
-            });
-          }}
-        >
-          {stageChoices().map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <button type="button" className="who-chip" aria-expanded={stageOpen} onClick={() => setStageOpen(true)}>
+        Stage · {stageChoices().find((option) => option.value === stage)?.label || stage}
+      </button>
+      {stageOpen ? (
+        <div className="who-sheet" role="dialog" aria-label={`Stage for ${person.name}`}>
+          <button type="button" className="sheet-scrim" aria-label="Close" onClick={() => setStageOpen(false)} />
+          <div className="who-card">
+            <div className="sheet-handle" aria-hidden />
+            {stageChoices().map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={stage === option.value}
+                onClick={() => {
+                  setStage(option.value);
+                  setStageOpen(false);
+                  submit({
+                    type: "crm_stage",
+                    target_id: person.id,
+                    payload: { stage: option.value },
+                    label: `Stage set for ${person.name}.`,
+                  });
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <label className="note-field">
         <span className="lbl">Draft follow-up</span>
         <textarea aria-label={`Follow-up for ${person.name}`} value={draft} maxLength={2000} placeholder="The words you want drafted. Nothing sends." onChange={(event) => setDraft(event.target.value)} />

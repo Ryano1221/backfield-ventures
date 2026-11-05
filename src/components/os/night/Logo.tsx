@@ -23,7 +23,22 @@ export function Logo({
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    setShown(logoReady(ref.current));
+    if (!src) return;
+    let cancel = false;
+    let objectUrl = "";
+    fetch(src)
+      .then(async (res) => {
+        if (cancel || !res.ok || res.headers.get("x-logo-miss") === "1") return;
+        const blob = await res.blob();
+        if (cancel || !blob.type.startsWith("image/")) return;
+        objectUrl = URL.createObjectURL(blob);
+        if (ref.current) ref.current.src = objectUrl;
+      })
+      .catch(() => undefined);
+    return () => {
+      cancel = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [src]);
 
   if (!src) {
@@ -35,7 +50,6 @@ export function Logo({
       {shown ? null : monogram(name)}
       <img
         ref={ref}
-        src={src}
         alt=""
         className={shown ? undefined : "pending"}
         onLoad={(event) => setShown(logoReady(event.currentTarget))}

@@ -32,6 +32,7 @@ export function PeopleDesk({
   const [stage, setStage] = useState("all");
   const [query, setQuery] = useState("");
   const [shown, setShown] = useState(PAGE);
+  const [stageOpen, setStageOpen] = useState(false);
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((row) => {
@@ -130,16 +131,26 @@ export function PeopleDesk({
       </div>
       <div className="card">
       <div className="filterbar">
-        <input className="search" value={query} onChange={(event) => { setQuery(event.target.value); setShown(PAGE); }} placeholder={`Search ${total.toLocaleString("en-US")} people by name or firm`} aria-label="Search people" />
-        <label className="lbl muted">
-          Stage
-          <select className="stage-select" value={stage} onChange={(event) => { setStage(event.target.value); setShown(PAGE); }} aria-label="Stage">
-            <option value="all">Any</option>
-            {counts.map((item) => (
-              <option key={item.stage} value={item.stage}>{item.label}</option>
-            ))}
-          </select>
-        </label>
+        <input className="pill" value={query} onChange={(event) => { setQuery(event.target.value); setShown(PAGE); }} placeholder="Search people" aria-label="Search people" />
+        <button type="button" className="who-chip" aria-expanded={stageOpen} onClick={() => setStageOpen(true)}>
+          {stage === "all" ? "Any stage" : counts.find((item) => item.stage === stage)?.label || stage}
+        </button>
+        {stageOpen ? (
+          <div className="who-sheet" role="dialog" aria-label="Stage">
+            <button type="button" className="sheet-scrim" aria-label="Close" onClick={() => setStageOpen(false)} />
+            <div className="who-card">
+              <div className="sheet-handle" aria-hidden />
+              <button type="button" aria-pressed={stage === "all"} onClick={() => { setStage("all"); setShown(PAGE); setStageOpen(false); }}>
+                Any stage
+              </button>
+              {counts.map((item) => (
+                <button key={item.stage} type="button" aria-pressed={stage === item.stage} onClick={() => { setStage(item.stage); setShown(PAGE); setStageOpen(false); }}>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
       {visible.length ? (
         <div className="tbl-scroll">

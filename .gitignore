@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local operating-dashboard snapshots
 .data/
+test-results/
+playwright-report/
+blob-report/

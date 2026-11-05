@@ -24,17 +24,18 @@ export function AskBox({
   context,
   onSubmit,
   bots = [],
+  variant = "bar",
 }: {
   actions: OsAction[];
   context: AskContext;
   onSubmit?: (draft: Filed) => void;
   bots?: string[];
+  variant?: "bar" | "sheet";
 }) {
   const [text, setText] = useState("");
-  const [bot, setBot] = useState(context.botName || "");
-  useEffect(() => {
-    if (context.botName) setBot(context.botName);
-  }, [context.botName]);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [whoOpen, setWhoOpen] = useState(false);
+  const bot = picked ?? context.botName ?? "";
   const [local, setLocal] = useState<OsAction[]>([]);
   const [error, setError] = useState("");
   const asks = askActions(onSubmit ? actions : [...local, ...actions]).slice(0, 6);
@@ -93,63 +94,78 @@ export function AskBox({
     setText("");
   }
 
+  const names = bots.filter((name, index) => bots.indexOf(name) === index);
+  const who = bot || "The office";
+
   return (
-    <div className="ask">
-      <form onSubmit={file}>
-        <label className="ask-who">
-          <span>Who</span>
-          <select aria-label="Which bot" value={bot} onChange={(event) => setBot(event.target.value)}>
-            <option value="">The office</option>
-            {bots.filter((name, index) => bots.indexOf(name) === index).map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
+    <div className={variant === "sheet" ? "ask is-sheet" : "ask"}>
+      {variant === "sheet" ? <div className="ask-thread">
+        <p className="ask-note">This files a request. Nothing sends until you approve the exact text.</p>
+        {asks.length ? (
+          <ul className="ask-list">
+            {asks.map((ask) => {
+              const status = officeStatus(ask, whoLabel(ask.target_id));
+              return (
+                <li key={ask.action_id}>
+                  <span>{typeof ask.payload.text === "string" ? ask.payload.text : "Ask"}</span>
+                  {status ? <span>{status.line}{status.note ? ` ${status.note}` : ""}</span> : null}
+                  {status?.retry && onSubmit ? (
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() =>
+                        onSubmit({
+                          type: ask.type,
+                          target_id: ask.target_id,
+                          payload: ask.payload,
+                          label: "Retry the ask.",
+                          retry: true,
+                        })
+                      }
+                    >
+                      Retry
+                    </button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="ask-empty">No asks yet.</p>
+        )}
+        {error ? <p className="os-error">{error}</p> : null}
+      </div> : error ? <p className="os-error">{error}</p> : null}
+      <form className="ask-compose" onSubmit={file}>
+        <button type="button" className="who-chip" aria-expanded={whoOpen} onClick={() => setWhoOpen(true)}>
+          {who}
+        </button>
         <input
+          className="pill"
           aria-label="Ask the firm"
           placeholder={bot ? `Ask ${bot}` : "Ask the firm"}
           value={text}
           maxLength={2000}
           onChange={(event) => setText(event.target.value)}
         />
+        <button type="submit" className="btn primary" disabled={!text.trim()}>
+          Ask
+        </button>
       </form>
-      {error ? <p className="os-error">{error}</p> : null}
-      {asks.length ? (
-        <ul className="ask-list">
-          {asks.map((ask) => {
-            const status = officeStatus(ask, whoLabel(ask.target_id));
-            return (
-              <li key={ask.action_id}>
-                <span>{typeof ask.payload.text === "string" ? ask.payload.text : "Ask"}</span>
-                {status ? (
-                  <span className="lbl">
-                    {status.line}
-                    {status.note ? ` ${status.note}` : ""}
-                  </span>
-                ) : null}
-                {status?.retry && onSubmit ? (
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() =>
-                      onSubmit({
-                        type: ask.type,
-                        target_id: ask.target_id,
-                        payload: ask.payload,
-                        label: "Retry the ask.",
-                        retry: true,
-                      })
-                    }
-                  >
-                    Retry
-                  </button>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
+      {whoOpen ? (
+        <div className="who-sheet" role="dialog" aria-label="Which bot">
+          <button type="button" className="sheet-scrim" aria-label="Close" onClick={() => setWhoOpen(false)} />
+          <div className="who-card">
+            <div className="sheet-handle" aria-hidden />
+            <button type="button" aria-pressed={!bot} onClick={() => { setPicked(""); setWhoOpen(false); }}>
+              The office
+            </button>
+            {names.map((name) => (
+              <button key={name} type="button" aria-pressed={bot === name} onClick={() => { setPicked(name); setWhoOpen(false); }}>
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
       ) : null}
     </div>
   );
