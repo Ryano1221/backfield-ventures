@@ -159,7 +159,7 @@ export function NightFrame({
       for (const item of items) {
         const ok = await postAction(item);
         if (ok.action) setActions((current) => (current.some((action) => action.action_id === ok.action?.action_id) ? current : [...current, ok.action!]));
-        else if (ok.error) setToasts((current) => [...current, { id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
+        else if (ok.error) setToasts([{ id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
       }
     });
   }, []);
@@ -208,8 +208,8 @@ export function NightFrame({
           delete copy[id];
           return copy;
         });
-        setToasts((current) => [...current, { id: key, label: saved.label, undo: false }]);
-        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 2400);
+        setToasts([{ id: key, label: saved.label, undo: false }]);
+        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 4_000);
         router.refresh();
         return;
       }
@@ -243,8 +243,8 @@ export function NightFrame({
       };
       queuedRef.current = [...queuedRef.current, item];
       setQueued(queuedRef.current);
-      setToasts((current) => [...current, { id: batch, label: draft.label, undo: true }]);
-      timers.current.set(batch, window.setTimeout(() => commitBatch(batch), 10_000));
+      setToasts([{ id: batch, label: draft.label, undo: true }]);
+      timers.current.set(batch, window.setTimeout(() => commitBatch(batch), 4_000));
     },
     [commitBatch],
   );
@@ -483,13 +483,13 @@ export function NightFrame({
           .filter((link) => link.id === "today" || link.id === "deals" || link.id === "people" || link.id === "bots")
           .map((link) => (
             <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
-              <TabIcon id={link.id} />
+              <TabIcon id={link.id} on={active === link.id} />
               <span>{link.label}</span>
               {link.id === "today" && link.count ? <span className="tab-badge">{link.count > 99 ? "99+" : link.count}</span> : null}
             </Link>
           ))}
         <button type="button" className={askOpen ? "on" : ""} onClick={() => setAskOpen(true)}>
-          <TabIcon id="ask" />
+          <TabIcon id="ask" on={askOpen} />
           <span>Ask</span>
         </button>
       </nav>
@@ -526,13 +526,13 @@ function finderHref(item: FinderItem, hrefs: ReturnType<typeof osHrefs>): string
   return hrefs.bots;
 }
 
-function TabIcon({ id }: { id: string }) {
-  const common = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, "aria-hidden": true as const };
-  if (id === "deals") return <svg {...common}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 9h8M8 13h5" /></svg>;
+function TabIcon({ id, on }: { id: string; on: boolean }) {
+  const common = { width: 22, height: 22, viewBox: "0 0 24 24", fill: on ? "currentColor" : "none", stroke: "currentColor", strokeWidth: on ? 1.2 : 1.7, "aria-hidden": true as const };
+  if (id === "deals") return <svg {...common}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 9h8M8 13h5" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
   if (id === "people") return <svg {...common}><circle cx="12" cy="8" r="3" /><path d="M5 19c1.4-3 3.8-4.5 7-4.5S17.6 16 19 19" /></svg>;
-  if (id === "bots") return <svg {...common}><rect x="6" y="7" width="12" height="10" rx="2" /><path d="M12 7V4M9 12h.01M15 12h.01" /></svg>;
+  if (id === "bots") return <svg {...common}><rect x="6" y="7" width="12" height="10" rx="2" /><path d="M12 7V4M9 12h.01M15 12h.01" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
   if (id === "ask") return <svg {...common}><path d="M5 6h14v9H8l-3 3V6z" /></svg>;
-  return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" /></svg>;
+  return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
 }
 
 function SearchIcon() {

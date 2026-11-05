@@ -215,7 +215,7 @@ export function OfficeSwitch({
         ) : null}
       </div>
       <div className="bots-map">
-        {office.bots.length ? (
+        {view === "map" && office.bots.length ? (
           <PixelOffice
             data={office}
             now={now}

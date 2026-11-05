@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { askActions, officeStatus, routeAsk, whoLabel } from "@/lib/os/ask";
+import { dedupedAsks, officeStatus, routeAsk, whoLabel } from "@/lib/os/ask";
 import type { ActionPayload, ActionType, OsAction } from "@/lib/os/types";
 
 export type AskContext = {
@@ -38,7 +38,7 @@ export function AskBox({
   const bot = picked ?? context.botName ?? "";
   const [local, setLocal] = useState<OsAction[]>([]);
   const [error, setError] = useState("");
-  const asks = askActions(onSubmit ? actions : [...local, ...actions]).slice(0, 6);
+  const asks = dedupedAsks(onSubmit ? actions : [...local, ...actions]).slice(-8);
 
   useEffect(() => {
     if (onSubmit) return;
@@ -105,10 +105,11 @@ export function AskBox({
           <ul className="ask-list">
             {asks.map((ask) => {
               const status = officeStatus(ask, whoLabel(ask.target_id));
+              const text = typeof ask.payload.text === "string" ? ask.payload.text : "Ask";
               return (
-                <li key={ask.action_id}>
-                  <span>{typeof ask.payload.text === "string" ? ask.payload.text : "Ask"}</span>
-                  {status ? <span>{status.line}{status.note ? ` ${status.note}` : ""}</span> : null}
+                <li className="bubble-row" key={ask.action_id}>
+                  <p className="bubble">{text}</p>
+                  {status ? <p className="bubble-status">{status.line}{status.note ? ` ${status.note}` : ""}</p> : null}
                   {status?.retry && onSubmit ? (
                     <button
                       type="button"
@@ -135,7 +136,7 @@ export function AskBox({
         )}
         {error ? <p className="os-error">{error}</p> : null}
       </div> : error ? <p className="os-error">{error}</p> : null}
-      <form className="ask-compose" onSubmit={file}>
+      <form className={variant === "sheet" ? "ask-compose is-stack" : "ask-compose"} onSubmit={file}>
         <button type="button" className="who-chip" aria-expanded={whoOpen} onClick={() => setWhoOpen(true)}>
           {who}
         </button>
@@ -147,8 +148,10 @@ export function AskBox({
           maxLength={2000}
           onChange={(event) => setText(event.target.value)}
         />
-        <button type="submit" className="btn primary" disabled={!text.trim()}>
-          Ask
+        <button type="submit" className="icon-btn send" aria-label="Send" disabled={!text.trim()}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
         </button>
       </form>
       {whoOpen ? (

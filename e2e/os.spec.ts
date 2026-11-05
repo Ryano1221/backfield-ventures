@@ -17,7 +17,7 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   test.setTimeout(120_000);
   const bag = (page as Page & { bag: Bag }).bag;
   const width = page.viewportSize()?.width ?? 0;
-  const dir = `/opt/cursor/artifacts/os-redesign-pass2/${width}`;
+  const dir = `/opt/cursor/artifacts/os-redesign-pass3/${width}`;
   mkdirSync(dir, { recursive: true });
 
   const pages: { path: string; name: string; text: RegExp }[] = [
@@ -42,6 +42,21 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   }
 
   await visit(page, "/os");
+  const cream = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(cream).toBe("rgb(240, 237, 232)");
+  await expect(page.locator(".greet")).toHaveText(chicagoToday());
+  const cards = page.locator(".inbox-card");
+  const cardCount = await cards.count();
+  for (let index = 0; index < cardCount; index += 1) {
+    await expect(cards.nth(index).locator(".inbox-type")).toBeVisible();
+    await expect(cards.nth(index).locator(".logo.fb")).toBeVisible();
+  }
+  const preview = cards.first().locator(".inbox-line");
+  await expect(preview).toHaveCSS("-webkit-line-clamp", "2");
+  await cards.first().getByRole("button", { name: "Read" }).click();
+  await expect(cards.first()).toHaveClass(/is-open/);
+  await expect(preview).toHaveCSS("-webkit-line-clamp", "none");
+
   const before = await page.locator(".inbox-card").count();
   expect(before).toBeGreaterThan(0);
   const card = page.locator(".swipe").first();
@@ -64,6 +79,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
 
   await page.locator(".inbox-card").first().getByRole("button", { name: "Approve", exact: true }).evaluate((el: HTMLButtonElement) => el.click());
   await expect(page.getByRole("status")).toContainText("Approved");
+  await expect(page.locator(".toast")).toHaveCount(1);
+  const toastBox = await page.locator(".toast").boundingBox();
+  expect(toastBox && toastBox.y).toBeGreaterThan(width < 700 ? 400 : 200);
   await page.getByRole("button", { name: "Undo" }).click();
 
   await page.getByRole("button", { name: "Search" }).click();
@@ -73,6 +91,16 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   await expect(page.locator("body")).toContainText("Northwind");
 
   await visit(page, "/os/deals");
+  const filters = page.getByRole("group", { name: "Filter pitches" });
+  const filterStyle = await filters.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { wrap: style.flexWrap, overflow: style.overflowX };
+  });
+  expect(filterStyle.wrap).toBe("nowrap");
+  expect(filterStyle.overflow).toBe("auto");
+  const cedar = page.locator(".deal-card", { hasText: "Cedar" });
+  await expect(cedar.getByRole("link", { name: "Deck" })).toHaveCount(0);
+  await expect(cedar.locator(".deck-state")).toHaveCount(0);
   await page.locator(".deal-card").first().getByRole("button", { name: "great" }).click();
   await expect(page.getByRole("status")).toContainText(/Rated/);
 
@@ -83,11 +111,24 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   await page.getByRole("dialog", { name: "Ask the firm" }).getByRole("button", { name: "The office" }).click();
   await page.getByRole("dialog", { name: "Which bot" }).getByRole("button", { name: "FIXTURE Executive" }).click();
   const ask = page.getByRole("dialog", { name: "Ask the firm" });
-  await ask.getByLabel("Ask the firm").fill("What is the example status?");
-  await ask.locator(".ask-compose").getByRole("button", { name: "Ask" }).click();
-  await expect(page.getByText("What is the example status?").first()).toBeVisible();
+  const field = ask.getByLabel("Ask the firm");
+  const chip = ask.getByRole("button", { name: "FIXTURE Executive" });
+  const chipBox = await chip.boundingBox();
+  const fieldBox = await field.boundingBox();
+  expect(chipBox && fieldBox && chipBox.y).toBeLessThan(fieldBox.y);
+  await field.fill("What is the example status?");
+  await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
+  await field.fill("What is the example status?");
+  await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
+  await expect(ask.locator(".bubble", { hasText: "What is the example status?" })).toHaveCount(1);
+  await expect(ask.locator(".bubble-status").first()).toContainText("Not picked up");
   await shot(page, `${dir}/ask.png`);
   await page.locator(".sheet-close").click();
+
+  await visit(page, "/os/crm");
+  const peopleText = await page.locator("main").innerText();
+  expect(peopleText.indexOf("FIXTURE Ada North")).toBeGreaterThan(0);
+  expect(peopleText.indexOf("FIXTURE Ada North")).toBeLessThan(peopleText.indexOf("Stages"));
 
   await visit(page, "/os/crm/fix-ada");
   await page.getByRole("button", { name: /Stage/ }).click();
@@ -100,6 +141,13 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   await expect(page.getByRole("status").last()).toBeVisible();
 
   await visit(page, "/os/bots");
+  if (width < 700) {
+    await expect(page.locator(".ofc-stage")).toHaveCount(0);
+    await page.getByRole("button", { name: "Map" }).click();
+    await expect(page.locator(".ofc-stage")).toBeVisible();
+    await page.getByRole("button", { name: "List" }).click();
+    await expect(page.locator(".ofc-stage")).toHaveCount(0);
+  }
   await page.locator(".bots-sum").getByRole("button", { name: /Needs you/ }).click();
   const needs = page.locator(".bots-need").first();
   await needs.getByRole("button", { name: "Pause" }).click();
@@ -165,6 +213,17 @@ async function clean(page: Page, bag: Bag) {
   await expect(page.locator("body")).not.toContainText("This page could not be found");
   await expect(page.locator("body")).not.toContainText("Application error");
   await expect(page.locator("body")).not.toContainText("ERR_CONNECTION");
+}
+
+function chicagoToday(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("weekday")}, ${get("month")} ${get("day")}`;
 }
 
 async function shot(page: Page, path: string) {

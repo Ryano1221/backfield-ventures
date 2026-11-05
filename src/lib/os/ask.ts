@@ -73,3 +73,16 @@ export function latestAction(actions: OsAction[], type: OsAction["type"], target
 export function askActions(actions: OsAction[]): OsAction[] {
   return actions.filter((action) => action.type === "free_text" || action.type === "bot_request").reverse();
 }
+
+/** One bubble per note. A repeated filing of the same words keeps the latest. */
+export function dedupedAsks(actions: OsAction[]): OsAction[] {
+  const best = new Map<string, OsAction>();
+  for (const action of actions) {
+    if (action.type !== "free_text" && action.type !== "bot_request") continue;
+    const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
+    const key = `${action.target_id}\n${text}`;
+    const prev = best.get(key);
+    if (!prev || action.created_at >= prev.created_at) best.set(key, action);
+  }
+  return [...best.values()].sort((a, b) => a.created_at.localeCompare(b.created_at));
+}

@@ -332,6 +332,11 @@ export function formatCtStamp(value: string | null | undefined, kind: "quote" | 
   return `${get("weekday")} ${get("month")} ${get("day")}, ${time} CT`;
 }
 
+/** Calendar day in Chicago for the clock, not the snapshot stamp. */
+export function todayLine(now = Date.now()): string {
+  return weekdayCt(new Date(now).toISOString()) || "Today";
+}
+
 export function weekdayCt(value: string | null | undefined): string | null {
   const raw = blankToNull(value);
   if (!raw) return null;
@@ -389,7 +394,7 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
   if (!snapshot) {
     return {
       hasSnapshot: false,
-      weekday: null,
+      weekday: todayLine(now),
       headline: "Waiting on the first ingest.",
       headlineDim: null,
       lede: null,
@@ -450,7 +455,7 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
   ];
   return {
     hasSnapshot: true,
-    weekday: weekdayCt(snapshot.generated_at),
+    weekday: todayLine(now),
     headline: lines.lead,
     headlineDim: lines.dim,
     lede: daySentence({ replies: ready.length, holds: hold.length, deals: reviewing.length, waitingBots: waiting.length }),
