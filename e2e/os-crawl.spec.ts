@@ -14,7 +14,11 @@ const TOKEN_METHOD = new Map<string, "GET" | "POST">([
   ["/api/os/decisions/ack", "POST"],
   ["/api/os/actions/pending", "GET"],
   ["/api/os/actions/ack", "POST"],
+  ["/api/ingest", "POST"],
 ]);
+
+// The proxy and every route answer a denied call with one of these exact bodies.
+const DENY_BODIES = new Set(['{"error":"Unauthorized"}', '{"ok":false,"error":"Unauthorized"}', ""]);
 
 const LIVE_KEYS = [
   "RESEND_API_KEY",
@@ -205,8 +209,72 @@ async function crawlRoute(
   if (/\/os\/(deals|crm|d)\/[^/]+$/.test(route)) await checkBack(page, route, ".eyebrow a", ctx.note);
   if (route.startsWith("/os/email")) await checkBack(page, route, ".crumb a", ctx.note);
   if (route === "/os/bots") await openBotSheets(page, route, ctx);
+  if (/^\/os\/d\//.test(route)) await checkNoClip(page, route, ctx.note);
+  if (ctx.desktop) await checkHoverContrast(page, route, ctx.note);
   await tapControls(page, route, ctx.note);
   await page.keyboard.press("Escape").catch(() => undefined);
+}
+
+const SOLID_HOVERS = [
+  ".btn.primary",
+  ".tabs button.on",
+  ".tabs a.on",
+  ".os-btn-solid",
+  ".os-login button",
+  ".ofc-bar button.on",
+  ".ask-compose .send",
+  ".email .primary-btn",
+];
+
+// Every visible box inside the decision page stays inside the viewport.
+async function checkNoClip(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
+  const width = page.viewportSize()?.width ?? 0;
+  const clipped = await page.evaluate((vw) => {
+    const out: string[] = [];
+    for (const el of Array.from(document.querySelectorAll("main *"))) {
+      const box = el.getBoundingClientRect();
+      if (!box.width || !box.height) continue;
+      const style = getComputedStyle(el);
+      if (style.visibility === "hidden" || style.position === "fixed") continue;
+      if (el.closest("[data-scroll-x], .segment.scroll, pre")) continue;
+      if (box.left < -1 || box.right > vw + 1) {
+        out.push(`${el.tagName.toLowerCase()}.${(el.className || "").toString().split(" ")[0]} ${Math.round(box.left)}..${Math.round(box.right)}`);
+        if (out.length > 4) break;
+      }
+    }
+    return out;
+  }, width);
+  for (const item of clipped) await note(route, "clip", item);
+}
+
+function luminance(rgb: string): number | null {
+  const m = rgb.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
+  if (!m || (m[4] !== undefined && Number(m[4]) < 0.5)) return null;
+  const [r, g, b] = [m[1], m[2], m[3]].map((v) => {
+    const c = Number(v) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Hovering a solid control never drops its text below 4.5:1.
+async function checkHoverContrast(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
+  for (const selector of SOLID_HOVERS) {
+    const target = page.locator(selector).first();
+    if (!(await target.count()) || !(await target.isVisible().catch(() => false)) || (await target.isDisabled().catch(() => false))) continue;
+    await target.hover({ timeout: 2_000 }).catch(() => undefined);
+    const colors = await target.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { fg: s.color, bg: s.backgroundColor };
+    }).catch(() => null);
+    await page.mouse.move(0, 0).catch(() => undefined);
+    if (!colors) continue;
+    const fg = luminance(colors.fg);
+    const bg = luminance(colors.bg);
+    if (fg === null || bg === null) continue;
+    const ratio = (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+    if (ratio < 4.5) await note(route, "hover-contrast", `${selector} ${colors.fg} on ${colors.bg} = ${ratio.toFixed(2)}:1`);
+  }
 }
 
 async function checkBack(page: Page, route: string, selector: string, note: (route: string, check: string, detail: string) => Promise<void>) {
@@ -570,8 +638,9 @@ async function expectDenied(
 ) {
   const response = method === "GET" ? await request.get(route, { headers }) : await request.post(route, { data: {}, headers });
   expect(response.status(), `${method} ${route}`).toBe(status);
-  const body = await response.text();
-  expect(body, `${method} ${route}`).not.toMatch(/"pitches"|"people"|"decisions"/);
+  const body = (await response.text()).trim();
+  if (status === 401) expect(DENY_BODIES.has(body), `${method} ${route} body: ${body.slice(0, 120)}`).toBe(true);
+  else expect(body, `${method} ${route}`).not.toMatch(/"pitches"|"people"|"decisions"|"email"|"token"/);
 }
 
 function refuseLiveKeys() {
@@ -601,6 +670,8 @@ function osSurface() {
     const rel = path.relative(path.join(root, "api/os"), file).replace(/\\/g, "/");
     apis.push(`/api/os/${rel.replace(/\/route\.ts$/, "")}`);
   });
+  // /api/ingest is a proxy alias for /api/os/ingest and has no route file of its own.
+  apis.push("/api/ingest");
   return {
     pages: [...new Set(pages)].sort(),
     apis: [...new Set(apis)].sort(),

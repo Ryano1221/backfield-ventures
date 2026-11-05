@@ -8,7 +8,21 @@ on:
 permissions:
   contents: read
 
+# Lint runs as its own job so a lint failure never skips the type, test,
+# build, end-to-end, or crawler results.
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -19,7 +33,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - name: Fixture and test files stay on example data
@@ -27,8 +40,10 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chrome
       - name: End-to-end
+        id: e2e
         run: npm run e2e
       - name: OS crawler
+        if: success() || steps.e2e.conclusion == 'failure'
         run: npm run test:crawl
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()

@@ -646,7 +646,7 @@ img { display: block; }
 .rail .brand img { height: 26px; width: auto; }
 .rail .sub { color: var(--e-side3); margin: 10px 0 34px; }
 .rail nav { display: flex; flex-direction: column; gap: 2px; }
-.rail nav a { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 36px; padding: 9px 12px; border-bottom: 0; color: var(--e-side2); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.rail nav a { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 44px; padding: 9px 12px; border-bottom: 0; color: var(--e-side2); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .rail nav a.on { background: #fff; color: #000; }
 .rail nav a .c { color: var(--e-side3); font-size: 12px; background: transparent; padding: 0; font-weight: 400; }
 .rail nav a.on .c { color: var(--e-ink3); }
@@ -1320,29 +1320,32 @@ body.os { font-variant-numeric: tabular-nums; }
 .eyebrow, .who, .phead, .phead > div, .who > div { min-width: 0; max-width: 100%; }
 .pane h1.d-l, .who > div, .phead .d-l, .deal-open .n, .eyebrow { overflow-wrap: break-word; min-width: 12ch; }
 
+/* Generic hovers sit at zero specificity through :where(), so any component
+   rule that paints its own background or color always wins. Solid controls get
+   explicit hovers below that keep white text on a dark fill. */
 @media (hover: hover) and (pointer: fine) {
-  body.os a:hover,
-  body.os button:not(.primary):not([aria-pressed="true"]):not(.sheet-scrim):hover,
-  body.os summary:hover,
-  body.os [role="button"]:not([aria-pressed="true"]):hover {
+  :where(body.os) :where(a, button:not(.primary):not([aria-pressed="true"]):not(.sheet-scrim), summary, [role="button"]:not([aria-pressed="true"])):hover {
     text-decoration-line: underline;
     text-underline-offset: 3px;
   }
-  body.os button:not(.primary):not([aria-pressed="true"]):not(.sheet-scrim):hover,
-  body.os summary:hover,
-  body.os [role="button"]:not([aria-pressed="true"]):hover {
+  :where(body.os) :where(button:not(.primary):not([aria-pressed="true"]):not(.sheet-scrim), summary, [role="button"]:not([aria-pressed="true"])):hover {
     background-color: rgba(18, 61, 34, 0.08);
   }
-  body.os .btn.primary:hover {
+  :where(body.os) :where(input, textarea, select):hover {
+    border-color: #000;
+    text-decoration: none;
+  }
+  body.os .btn.primary:hover,
+  body.os .tabs button.on:hover,
+  body.os .tabs a.on:hover,
+  body.os .os-btn-solid:hover,
+  body.os .os-login button:hover,
+  body.os .ofc-bar button.on:hover,
+  body.os .ask-compose .send:hover,
+  body.os .email .primary-btn:hover {
     background: #000;
     border-color: #000;
     color: #fff;
-    text-decoration: none;
-  }
-  body.os input:hover,
-  body.os textarea:hover,
-  body.os select:hover {
-    border-color: #000;
     text-decoration: none;
   }
 }

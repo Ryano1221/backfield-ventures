@@ -12,7 +12,7 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
-const TO = process.env.PITCH_NOTIFY_TO?.trim() || "ryan@backfieldventures.com";
+const TO = "ryan@backfieldventures.com";
 const FROM = process.env.RESEND_FROM ?? "Backfield Ventures <onboarding@resend.dev>";
 
 function row(label: string, value: string | undefined | null) {

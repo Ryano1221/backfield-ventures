@@ -10,7 +10,7 @@
   --e-side2: rgba(255, 255, 255, 0.62);
   --e-side3: rgba(255, 255, 255, 0.45);
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   min-height: 100vh;
   background: var(--e-cream);
   color: var(--e-ink);
@@ -459,7 +459,8 @@ body:has(.email) {
 .email .msg .hd span,
 .email .lede,
 .email h1 {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .email .note {
