@@ -15,6 +15,8 @@ const DOT: Record<DeskBot["status"], string> = {
   Working: "is-work",
   Idle: "is-idle",
   Paused: "is-pause",
+  Degraded: "is-degraded",
+  Failed: "is-failed",
 };
 
 
@@ -169,6 +171,7 @@ export function OfficeSwitch({
                         <Status bot={bot} />
                       </button>
                       <When relative={bot.relative} ct={bot.ct} />
+                      {bot.nextRun ? <p className="bots-next">Next {bot.nextRun}</p> : null}
                       {bot.result ? (
                         <button
                           type="button"
@@ -274,7 +277,7 @@ function Summary({
 
 function Status({ bot }: { bot: DeskBot }) {
   return (
-    <span className="bots-status">
+    <span className={`bots-status is-${bot.status.toLowerCase().replace(/\s+/g, "-")}`}>
       <i className={`bots-dot ${DOT[bot.status]}`} aria-hidden />
       {bot.statusLabel}
     </span>

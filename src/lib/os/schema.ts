@@ -25,6 +25,8 @@ import {
   type DirectorKey,
   type Interaction,
   type InteractionKind,
+  type OsPost,
+  type OsScheduleItem,
   type OutreachTrack,
   type Pitch,
   type PitchRating,
@@ -67,6 +69,8 @@ export function validateSnapshot(input: unknown): SchemaResult {
   const interactions =
     input.interactions === undefined ? [] : validateInteractions(input.interactions, issues);
   const crm = input.crm === undefined ? { people: [] } : validateCrm(input.crm, issues);
+  const posts = optionalPosts(input.posts);
+  const schedule = optionalSchedule(input.schedule);
 
   if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || !interactions || !crm || issues.length) {
     return { ok: false, issues: issues.slice(0, 30) };
@@ -83,8 +87,62 @@ export function validateSnapshot(input: unknown): SchemaResult {
       activity,
       interactions,
       crm,
+      ...(posts ? { posts } : {}),
+      ...(schedule ? { schedule } : {}),
     },
   };
+}
+
+function optionalPosts(value: unknown): OsPost[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 200).flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const post: OsPost = {};
+    const id = clipLoose(item.id, 80);
+    const platform = clipLoose(item.platform, 40);
+    const status = clipLoose(item.status, 80);
+    if (id) post.id = id;
+    if (platform) post.platform = platform;
+    if (status) post.status = status;
+    if (item.gate === null) post.gate = null;
+    else {
+      const gate = clipLoose(item.gate, 240);
+      if (gate) post.gate = gate;
+    }
+    return Object.keys(post).length ? [post] : [];
+  });
+}
+
+function optionalSchedule(value: unknown): OsScheduleItem[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 100).flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const row: OsScheduleItem = {};
+    const platform = clipLoose(item.platform, 40);
+    const date = clipLoose(item.date, 40);
+    const label = clipLoose(item.item, 200);
+    const status = clipLoose(item.status, 40);
+    const note = clipLoose(item.note, 500);
+    if (platform) row.platform = platform;
+    if (date) row.date = date;
+    if (item.time_ct === null) row.time_ct = null;
+    else {
+      const time = clipLoose(item.time_ct, 40);
+      if (time) row.time_ct = time;
+    }
+    if (label) row.item = label;
+    if (status) row.status = status;
+    if (note) row.note = note;
+    return Object.keys(row).length ? [row] : [];
+  });
+}
+
+function clipLoose(value: unknown, max: number): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const text = value.trim().slice(0, max);
+  return text || undefined;
 }
 
 function validatePitches(value: unknown, issues: string[]): Pitch[] | null {
@@ -233,12 +291,14 @@ function validateBot(value: unknown, path: string, issues: string[]): BotRecord 
   const scope = optStr(value.scope, `${path}.scope`, 1000, issues);
   const registry = optStr(value.registry_status, `${path}.registry_status`, 40, issues);
   const last = optStr(value.last, `${path}.last`, 120, issues);
+  const nextRun = optStr(value.next_run, `${path}.next_run`, 80, issues);
   const source = optStr(value.source, `${path}.source`, 500, issues);
   if (slug) bot.slug = slug;
   if (role) bot.role = role;
   if (scope) bot.scope = scope;
   if (registry) bot.registry_status = registry;
   if (last) bot.last = last;
+  if (nextRun) bot.next_run = nextRun;
   if (source) bot.source = source;
   if (typeof value.result === "string" && value.result.trim()) {
     bot.result = clip(value.result.trim(), 2000);

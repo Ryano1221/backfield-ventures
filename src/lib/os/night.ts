@@ -242,7 +242,7 @@ export type OfficeBot = {
   name: string;
   team: string;
   role: string;
-  status: "Working" | "Needs Ryan" | "Idle" | "Paused";
+  status: "Working" | "Needs Ryan" | "Idle" | "Paused" | "Degraded" | "Failed";
   statusLabel: string;
   last: string;
   result: string;
@@ -1163,6 +1163,8 @@ function officeStatus(status: string): OfficeBot["status"] {
   if (!value || value === "unknown") return "Idle";
   if (value.includes("need")) return "Needs Ryan";
   if (value.includes("pause")) return "Paused";
+  if (value.includes("degrad")) return "Degraded";
+  if (value.includes("fail")) return "Failed";
   if (value.includes("work") || value === "active") return "Working";
   return "Idle";
 }

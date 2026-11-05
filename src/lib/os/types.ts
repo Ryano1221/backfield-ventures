@@ -59,6 +59,8 @@ export type BotRecord = {
   result?: string;
   usage_share?: number | null;
   director?: DirectorKey;
+  /** Already in Chicago, for example "Nov 9 9:00am CT". */
+  next_run?: string;
 };
 
 export type RoutineRecord = {
@@ -313,6 +315,24 @@ export type Interaction = {
   status: string | null;
 };
 
+/** Optional social draft. Only the fields the builder sends are required. */
+export type OsPost = {
+  id?: string;
+  platform?: string;
+  status?: string;
+  /** The rest of the status line, under the status itself. */
+  gate?: string | null;
+};
+
+export type OsScheduleItem = {
+  platform?: string;
+  date?: string;
+  time_ct?: string | null;
+  item?: string;
+  status?: string;
+  note?: string;
+};
+
 export type Snapshot = {
   generated_at: string;
   pitches: Pitch[];
@@ -322,6 +342,8 @@ export type Snapshot = {
   activity: ActivityItem[];
   interactions: Interaction[];
   crm: CrmBook;
+  posts?: OsPost[];
+  schedule?: OsScheduleItem[];
 };
 
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;

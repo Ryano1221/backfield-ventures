@@ -22,7 +22,7 @@ const KIND: Record<Interaction["kind"], string> = {
   message: "Message",
 };
 
-export type BotStatus = "Working" | "Needs Ryan" | "Idle" | "Paused";
+export type BotStatus = "Working" | "Needs Ryan" | "Idle" | "Paused" | "Degraded" | "Failed";
 
 export type DeskFilter = "needs" | "working" | "idle" | "paused" | "done" | "stale";
 
@@ -34,6 +34,8 @@ export type SummaryCounts = {
   doneToday: number;
   stale: number;
   failedRoutines: number;
+  degraded: number;
+  failed: number;
 };
 
 export type RoutineView = {
@@ -87,6 +89,7 @@ export type DeskBot = {
   lastIso: string | null;
   relative: string | null;
   ct: string | null;
+  nextRun: string | null;
   doneToday: boolean;
   stale: boolean;
   isLead: boolean;
@@ -174,11 +177,13 @@ export function isOverdueRoutine(routine: Pick<RoutineRecord, "status" | "next">
 }
 
 export function summaryCounts(bots: Pick<DeskBot, "status" | "doneToday" | "stale">[], routines: Pick<RoutineView, "failed">[]): SummaryCounts {
-  const counts: SummaryCounts = { needs: 0, working: 0, idle: 0, paused: 0, doneToday: 0, stale: 0, failedRoutines: 0 };
+  const counts: SummaryCounts = { needs: 0, working: 0, idle: 0, paused: 0, doneToday: 0, stale: 0, failedRoutines: 0, degraded: 0, failed: 0 };
   for (const bot of bots) {
     if (bot.status === "Needs Ryan") counts.needs += 1;
     else if (bot.status === "Working") counts.working += 1;
     else if (bot.status === "Paused") counts.paused += 1;
+    else if (bot.status === "Degraded") counts.degraded += 1;
+    else if (bot.status === "Failed") counts.failed += 1;
     else counts.idle += 1;
     if (bot.doneToday) counts.doneToday += 1;
     if (bot.stale) counts.stale += 1;
@@ -241,7 +246,7 @@ export function buildBotDesk(snapshot: Snapshot | null, actions: OsAction[] = []
 }
 
 function emptySummary(): SummaryCounts {
-  return { needs: 0, working: 0, idle: 0, paused: 0, doneToday: 0, stale: 0, failedRoutines: 0 };
+  return { needs: 0, working: 0, idle: 0, paused: 0, doneToday: 0, stale: 0, failedRoutines: 0, degraded: 0, failed: 0 };
 }
 
 function presentBot(bot: BotRecord, index: number, actions: OsAction[], leads: Map<string, string>, now: number): DeskBot {
@@ -274,6 +279,7 @@ function presentBot(bot: BotRecord, index: number, actions: OsAction[], leads: M
     lastIso,
     relative: relativeTime(lastIso, now),
     ct: formatCt(lastIso, true) || (blankToNull(bot.last) && !looksLikeSlug(bot.last || "") ? blankToNull(bot.last) : null),
+    nextRun: blankToNull(bot.next_run),
     doneToday: isDoneToday(lastIso, now),
     stale: false,
     isLead,
@@ -451,6 +457,8 @@ function drawnStatus(status: string, paused: boolean): BotStatus {
   if (!value || value === "unknown") return "Idle";
   if (value.includes("need")) return "Needs Ryan";
   if (value.includes("pause")) return "Paused";
+  if (value.includes("degrad")) return "Degraded";
+  if (value.includes("fail")) return "Failed";
   if (value.includes("work") || value === "active") return "Working";
   return "Idle";
 }

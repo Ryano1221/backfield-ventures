@@ -6,9 +6,10 @@ import { type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/ni
 import { snoozeUntil } from "@/lib/os/snooze";
 import { osHrefs } from "@/lib/os/nav";
 import { monogram } from "@/lib/os/logo-mark";
+import type { OsPost, OsScheduleItem } from "@/lib/os/types";
 import { useNightActions } from "./NightFrame";
 
-export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
+export function TodayDesk({ model, onOs, posts = [], schedule = [] }: { model: TodayModel; onOs: boolean; posts?: OsPost[]; schedule?: OsScheduleItem[] }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
   const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
@@ -143,6 +144,30 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         </section>
       ) : null}
 
+      {posts.length ? (
+        <section className="stack" aria-label="Posts">
+          <h2>Posts</h2>
+          {posts.map((post, index) => (
+            <div className="stack-row" key={post.id || `${post.platform ?? "post"}-${index}`}>
+              <b>{[post.platform, post.status || "Draft"].filter(Boolean).join(" · ")}</b>
+              {post.gate ? <span className="post-gate">{post.gate}</span> : null}
+            </div>
+          ))}
+        </section>
+      ) : null}
+      {schedule.length ? (
+        <section className="stack" aria-label="Schedule">
+          <h2>Schedule</h2>
+          {schedule.map((row, index) => (
+            <div className="stack-row" key={`${row.item ?? "item"}-${index}`}>
+              <b>{row.item || row.platform || "Scheduled item"}</b>
+              <span>{[row.date, row.time_ct, row.status].filter(Boolean).join(" · ")}</span>
+              {row.note ? <ScheduleNote note={row.note} /> : null}
+            </div>
+          ))}
+        </section>
+      ) : null}
+
       <section className="stack" aria-label="Firm status">
         <h2>Firm</h2>
         <Link className="stack-row" href={hrefs.email} prefetch>
@@ -273,5 +298,17 @@ function InboxCard({
         </div>
       </article>
     </li>
+  );
+}
+
+function ScheduleNote({ note }: { note: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="schedule-note">
+      <span className={open ? "is-open" : ""}>{note}</span>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        {open ? "Show less" : "Read note"}
+      </button>
+    </span>
   );
 }

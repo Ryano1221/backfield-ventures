@@ -21,7 +21,7 @@ export default async function OsPage() {
   const model = buildToday(page.snapshot, page.actions);
   return (
     <NightFrame onOs={isOsHost(host)} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <TodayDesk model={model} onOs={isOsHost(host)} />
+      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} />
     </NightFrame>
   );
 }
