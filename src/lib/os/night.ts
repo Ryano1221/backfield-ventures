@@ -1197,11 +1197,20 @@ function personIsImIn(person: CrmPerson): boolean {
   return person.im_in === true;
 }
 
-/** Snapshot total when the builder sent one. Otherwise people who still carry the flag. */
+/** Flagged people. crm.counts.im_in is only a cross-check against that list. */
 function imInTotal(crm: Snapshot["crm"], people: CrmPerson[]): number {
+  const flagged = people.filter((person) => person.im_in === true).length;
   const given = crm.counts?.im_in;
-  if (typeof given === "number" && Number.isFinite(given)) return Math.max(0, Math.round(given));
-  return people.filter((person) => person.im_in === true).length;
+  if (typeof given === "number" && Number.isFinite(given) && Math.round(given) !== flagged) {
+    console.warn(`I'm in snapshot count is ${Math.round(given)}, but ${flagged} people are flagged.`);
+  }
+  return flagged;
+}
+
+export function rowsForStage(rows: PeopleRow[], stage: string): PeopleRow[] {
+  if (stage === "all") return rows;
+  if (stage === "im_in") return rows.filter((row) => row.imIn);
+  return rows.filter((row) => row.stage === stage);
 }
 
 function personIsWarm(person: CrmPerson, useFlag: boolean): boolean {

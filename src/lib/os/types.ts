@@ -283,7 +283,7 @@ export type OsAction = {
 
 export type CrmBook = {
   people: CrmPerson[];
-  /** Optional builder total. I'm-in badges use this instead of counting stages. */
+  /** Optional builder total, checked against flagged people. The tile still counts the flags. */
   counts?: { im_in?: number };
 };
 

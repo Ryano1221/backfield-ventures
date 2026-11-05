@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { PeopleRow, StageCount } from "@/lib/os/night";
+import { rowsForStage, type PeopleRow, type StageCount } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { Logo } from "./Logo";
 
@@ -32,13 +32,10 @@ export function PeopleDesk({
   const [shown, setShown] = useState(PAGE);
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return rows.filter((row) => {
+    return rowsForStage(rows, stage).filter((row) => {
       if (track === "lp") {
         if (!row.lp) return false;
       } else if (track !== "all" && row.track !== track) return false;
-      if (stage === "im_in") {
-        if (!row.imIn) return false;
-      } else if (stage !== "all" && row.stage !== stage) return false;
       if (!q) return true;
       return `${row.name} ${row.firm || ""}`.toLowerCase().includes(q);
     });

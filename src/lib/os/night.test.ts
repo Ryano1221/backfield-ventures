@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeDecidePayload } from "./actions";
 import { validateSnapshot } from "./schema";
-import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, stageLabel, todayLine } from "./night";
+import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, rowsForStage, stageLabel, todayLine } from "./night";
 import type { CrmPerson, Snapshot } from "./types";
 
 const NOW = Date.parse("2026-11-03T22:09:00.000Z");
@@ -331,12 +331,31 @@ test("I'm in counts the flag after someone moves to a later stage", () => {
   assert.equal(people.rows.find((row) => row.id === "4")?.imIn, false);
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.stageCount, 1);
-  const published = buildPeople(peopleSnapshot([
+  const warnings: unknown[][] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+  let published: ReturnType<typeof buildPeople>;
+  try {
+    published = buildPeople(peopleSnapshot([
+      crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
+      crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "im_in", im_in: false }),
+    ], 8));
+  } finally {
+    console.warn = original;
+  }
+  const tile = published.counts.find((item) => item.stage === "im_in")?.count;
+  const listed = rowsForStage(published.rows, "im_in");
+  assert.equal(tile, listed.length);
+  assert.equal(tile, 1);
+  assert.equal(warnings.length, 1);
+  const matched = buildPeople(peopleSnapshot([
     crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
-    crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "im_in", im_in: false }),
-  ], 8));
-  assert.equal(published.counts.find((item) => item.stage === "im_in")?.count, 8);
-  assert.equal(published.counts.find((item) => item.stage === "im_in")?.stageCount, 1);
+    crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "call_booked", im_in: true }),
+  ], 2));
+  assert.equal(matched.counts.find((item) => item.stage === "im_in")?.count, rowsForStage(matched.rows, "im_in").length);
+  assert.equal(matched.counts.find((item) => item.stage === "im_in")?.count, 2);
   const base = sample();
   const kept = validateSnapshot({ ...base, crm: { ...base.crm, counts: { im_in: 8 } } });
   assert.equal(kept.ok, true);
