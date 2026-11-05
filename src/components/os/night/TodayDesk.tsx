@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
+import { postStatusLabel, type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
 import { snoozeUntil } from "@/lib/os/snooze";
 import { osHrefs } from "@/lib/os/nav";
-import { monogram } from "@/lib/os/logo-mark";
 import type { OsPost, OsScheduleItem } from "@/lib/os/types";
 import { useNightActions } from "./NightFrame";
 
@@ -124,49 +123,29 @@ export function TodayDesk({ model, onOs, posts = [], schedule = [] }: { model: T
           {model.waiting.map((bot) => {
             const decision = items.find((row) => (row.requestedBy || "").toLowerCase() === bot.name.toLowerCase());
             return (
-              <div className="stack-row has-action" key={bot.slug}>
-                <div>
-                  <b>{bot.name}</b>
-                  <span>{bot.ask}</span>
-                </div>
+              <article className="bot-wait" key={bot.slug}>
+                <b>{bot.name}</b>
+                <p className="bot-wait-sum">{bot.ask}</p>
+                <p className="bot-wait-meta">
+                  {bot.when ? <span>{bot.when}</span> : null}
+                  <span className="chip">{bot.status}</span>
+                </p>
                 {decision ? (
                   <button type="button" className="btn primary" disabled={Boolean(inflight[decision.id])} onClick={() => approve(decision)}>
                     Approve
                   </button>
-                ) : (
-                  <Link className="btn" href={hrefs.bots} prefetch>
-                    Open
-                  </Link>
-                )}
-              </div>
+                ) : null}
+                <details>
+                  <summary className="btn quiet">Open</summary>
+                  <p className="bot-wait-detail">{bot.detail}</p>
+                </details>
+              </article>
             );
           })}
         </section>
       ) : null}
 
-      {posts.length ? (
-        <section className="stack" aria-label="Posts">
-          <h2>Posts</h2>
-          {posts.map((post, index) => (
-            <div className="stack-row" key={post.id || `${post.platform ?? "post"}-${index}`}>
-              <b>{[post.platform, post.status || "Draft"].filter(Boolean).join(" · ")}</b>
-              {post.gate ? <span className="post-gate">{post.gate}</span> : null}
-            </div>
-          ))}
-        </section>
-      ) : null}
-      {schedule.length ? (
-        <section className="stack" aria-label="Schedule">
-          <h2>Schedule</h2>
-          {schedule.map((row, index) => (
-            <div className="stack-row" key={`${row.item ?? "item"}-${index}`}>
-              <b>{row.item || row.platform || "Scheduled item"}</b>
-              <span>{[row.date, row.time_ct, row.status].filter(Boolean).join(" · ")}</span>
-              {row.note ? <ScheduleNote note={row.note} /> : null}
-            </div>
-          ))}
-        </section>
-      ) : null}
+      <PostsAndSchedule posts={posts} schedule={schedule} />
 
       <section className="stack" aria-label="Firm status">
         <h2>Firm</h2>
@@ -271,7 +250,7 @@ function InboxCard({
       <span className="swipe-no">Not now</span>
       <article className={`inbox-card${open ? " is-open" : ""}`} onClick={onFocus}>
         <div className="inbox-who">
-          <span className="logo fb" aria-hidden="true">{monogram(item.name)}</span>
+          {item.logoUrl ? <CardLogo url={item.logoUrl} /> : null}
           <div>
             <h2>
               <Link href={href} prefetch>{item.name}</Link>
@@ -285,19 +264,65 @@ function InboxCard({
           <button type="button" className="btn primary" disabled={busy} onClick={onApprove}>
             Approve
           </button>
-          <button type="button" className="btn" disabled={busy} onClick={onDismiss}>
+          <button type="button" className="btn quiet" disabled={busy} onClick={onDismiss}>
             Not now
           </button>
           {line ? (
-            <button type="button" className="btn" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+            <button type="button" className="btn quiet" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
               {open ? "Show less" : "Read"}
             </button>
           ) : (
-            <Link href={href} prefetch>Read</Link>
+            <Link className="btn quiet" href={href} prefetch>Read</Link>
           )}
         </div>
       </article>
     </li>
+  );
+}
+
+function CardLogo({ url }: { url: string }) {
+  const [shown, setShown] = useState(true);
+  if (!shown) return null;
+  return <img className="logo" alt="" src={`/api/os/logo?url=${encodeURIComponent(url)}`} onError={() => setShown(false)} />;
+}
+
+const POST_CAP = 3;
+
+function PostsAndSchedule({ posts, schedule }: { posts: OsPost[]; schedule: OsScheduleItem[] }) {
+  const [open, setOpen] = useState(false);
+  const rows = [
+    ...posts.map((post, index) => ({
+      key: post.id || `post-${index}`,
+      title: [post.platform, postStatusLabel(post.status)].filter(Boolean).join(" · "),
+      meta: post.gate || null,
+      note: null as string | null,
+    })),
+    ...schedule.map((row, index) => ({
+      key: `schedule-${index}`,
+      title: row.item || row.platform || "Scheduled item",
+      meta: [row.date, row.time_ct, postStatusLabel(row.status)].filter(Boolean).join(" · "),
+      note: row.note || null,
+    })),
+  ];
+  if (!rows.length) return null;
+  const visible = open ? rows : rows.slice(0, POST_CAP);
+  const hidden = rows.length - visible.length;
+  return (
+    <section className="stack" aria-label="Posts and schedule">
+      <h2>Posts and schedule</h2>
+      {visible.map((row) => (
+        <div className="stack-row" key={row.key}>
+          <b>{row.title}</b>
+          {row.meta ? <span>{row.meta}</span> : null}
+          {row.note ? <ScheduleNote note={row.note} /> : null}
+        </div>
+      ))}
+      {hidden > 0 ? (
+        <button type="button" className="btn quiet" onClick={() => setOpen(true)}>
+          See all
+        </button>
+      ) : null}
+    </section>
   );
 }
 

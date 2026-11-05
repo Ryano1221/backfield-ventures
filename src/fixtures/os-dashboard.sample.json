@@ -150,7 +150,7 @@
         "last": "Fixture",
         "last_iso": "2026-11-03T18:00:00.000Z",
         "source": "fixture",
-        "result": "Fake specialist result. Not a real firm event.",
+        "result": "SENT 6:53pm CT, SENT 6:54pm CT, SENT 6:55pm CT, SENT 6:56pm CT, SENT 6:57pm CT. Fixture drive-home list.",
         "usage_share": null,
         "director": "investment"
       },

@@ -25,9 +25,8 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   test.setTimeout(120_000);
   const bag = (page as Page & { bag: Bag }).bag;
   const width = page.viewportSize()?.width ?? 0;
-  const dir = test.info().project.name === "phone-light"
-    ? "/opt/cursor/artifacts/os-redesign-pass4/390-light"
-    : `/opt/cursor/artifacts/os-redesign-pass4/${width}`;
+  const folder = test.info().project.name === "phone-light" ? "390-light" : String(width);
+  const dir = test.info().outputPath("screens", folder);
   mkdirSync(dir, { recursive: true });
 
   const pages: { path: string; name: string; text: RegExp }[] = [
@@ -49,7 +48,7 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
     await expect(page.locator("select")).toHaveCount(0);
     await shot(page, `${dir}/${item.name}.png`);
     if (item.name === "today") {
-      const posts = page.getByRole("region", { name: "Posts" });
+      const posts = page.getByRole("region", { name: "Posts and schedule" });
       if (await posts.count()) await posts.screenshot({ path: `${dir}/posts.png` });
     }
     await clean(page, bag);
@@ -188,6 +187,26 @@ test("signed-out dashboard stays at the gate", async ({ request }) => {
   expect(home.status()).toBe(303);
   const api = await request.get("/api/os/snapshot");
   expect(api.status()).toBe(401);
+});
+
+test("a long decision stays on the phone", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) !== 390, "phone width only");
+  await page.goto("/os/login");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Enter" }).click();
+  await page.goto("/os/d/fix-dec-long");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(390);
+});
+
+test("an unknown OS path uses the OS missing page", async ({ page }) => {
+  await page.goto("/os/login");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Enter" }).click();
+  await page.goto("/os/not-a-real-page");
+  await expect(page.locator("body")).toContainText("Missing page");
+  await expect(page.locator("body")).not.toContainText("This page could not be found");
 });
 
 type Bag = { errors: string[]; bad: string[] };

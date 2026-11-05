@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BotDesk, DeskBot, DeskFilter, RoutineView } from "@/lib/os/bot-desk";
 import { botMatches, groupTeams } from "@/lib/os/bot-desk";
-import type { OfficeData } from "@/lib/os/night";
+import { summarizeBotResult, type OfficeData } from "@/lib/os/night";
 import type { Interaction } from "@/lib/os/types";
 import { officeStatus, whoLabel } from "@/lib/os/ask";
 import { FlowView } from "./FlowView";
@@ -108,7 +108,7 @@ export function OfficeSwitch({
                   <button type="button" className="bots-need-open" onClick={() => setSelected(bot.id)}>
                     <span className="bots-need-name">{bot.name}</span>
                     <Status bot={bot} />
-                    {bot.result ? <span className="bots-need-result">{bot.result}</span> : null}
+                    {bot.result ? <span className="bots-need-result">{summarizeBotResult(bot.result)}</span> : null}
                   </button>
                   <When relative={bot.relative} ct={bot.ct} />
                   {bot.decision ? (
@@ -179,7 +179,7 @@ export function OfficeSwitch({
                           aria-expanded={Boolean(expanded[bot.id])}
                           onClick={() => setExpanded((current) => ({ ...current, [bot.id]: !current[bot.id] }))}
                         >
-                          {bot.result}
+                          {expanded[bot.id] ? bot.result : summarizeBotResult(bot.result)}
                         </button>
                       ) : null}
                       {bot.usage != null ? <Usage value={bot.usage} /> : null}
@@ -268,7 +268,7 @@ function Summary({
       </div>
       {counts.failedRoutines > 0 ? (
         <button type="button" className="bots-failed" onClick={onRoutines}>
-          {counts.failedRoutines.toLocaleString("en-US")} routines failed
+          {counts.failedRoutines.toLocaleString("en-US")} {counts.failedRoutines === 1 ? "routine" : "routines"} failed
         </button>
       ) : null}
     </div>

@@ -333,18 +333,23 @@ export function NightFrame({
   return (
     <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday, askContext, setAskContext }}>
       <header className={`appbar${compact ? " is-compact" : ""}`}>
-        <button type="button" className="icon-btn" aria-label="Menu" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
-          <span className="avatar" aria-hidden>R</span>
-        </button>
+        <Link href={hrefs.today} className="wordmark" prefetch>
+          <img src="/logo-text.png" alt="Backfield Ventures" />
+        </Link>
         <p className="appbar-title">{pageLabel}</p>
-        <button type="button" className="icon-btn" aria-label="Search" onClick={() => setOpen(true)}>
-          <SearchIcon />
-        </button>
+        <span className="appbar-tools">
+          <button type="button" className="icon-btn" aria-label="Menu" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
+            <MenuIcon />
+          </button>
+          <button type="button" className="icon-btn" aria-label="Search" onClick={() => setOpen(true)}>
+            <SearchIcon />
+          </button>
+        </span>
       </header>
       <div className="shell">
         <aside className="rail">
-          <a className="brand" href={hrefs.today}>
-            <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
+          <a className="brand wordmark" href={hrefs.today}>
+            <img src="/logo-text.png" alt="Backfield Ventures" />
           </a>
           <div className="sub lbl">OS · {pageLabel}</div>
           <nav>
@@ -370,8 +375,11 @@ export function NightFrame({
         </aside>
         <div className="os-col">
           <header className="crumb lbl">
+            <Link href={hrefs.today} className="wordmark" prefetch>
+              <img src="/logo-text.png" alt="Backfield Ventures" />
+            </Link>
             <span>
-              Backfield OS <span className="sep">/</span> {pageLabel}
+              <span className="sep">/</span> {pageLabel}
             </span>
             <span className="r">
               <AskBox actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
@@ -403,7 +411,7 @@ export function NightFrame({
       {menu ? (
         <div className="mpanel" id="os-menu" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="mpanel-bar">
-            <img src="/brand/logo-cream.png" alt="" />
+            <img src="/logo-text.png" alt="" />
             <button type="button" className="icon-btn" aria-label="Close menu" onClick={() => setMenu(false)}>
               <span aria-hidden="true">×</span>
             </button>
@@ -536,6 +544,14 @@ function TabIcon({ id, on }: { id: string; on: boolean }) {
   if (id === "bots") return <svg {...common}><rect x="6" y="7" width="12" height="10" rx="2" /><path d="M12 7V4M9 12h.01M15 12h.01" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
   if (id === "ask") return <svg {...common}><path d="M5 6h14v9H8l-3 3V6z" /></svg>;
   return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
+}
+
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+      <path d="M2 4h12M2 8h12M2 12h12" />
+    </svg>
+  );
 }
 
 function SearchIcon() {

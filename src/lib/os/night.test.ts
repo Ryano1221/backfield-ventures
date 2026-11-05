@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeDecidePayload } from "./actions";
 import { validateSnapshot } from "./schema";
-import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, rowsForStage, stageLabel, todayLine } from "./night";
+import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, imInChipCount, postStatusLabel, rowsForStage, stageButtonLabel, stageLabel, summarizeBotResult, todayLine } from "./night";
 import type { CrmPerson, Snapshot } from "./types";
 
 const NOW = Date.parse("2026-11-03T22:09:00.000Z");
@@ -388,4 +388,19 @@ test("a lasting yes flag counts I'm in, and LP stays on the real track", () => {
   assert.equal(people.rows.find((row) => row.id === "7")?.lp, false);
   assert.equal(people.counted, 7);
   assert.equal(people.total, 7);
+  assert.equal(imInChipCount(people.rows, "all"), 3);
+  assert.equal(imInChipCount(people.rows, "founder"), 1);
+  assert.equal(imInChipCount(people.rows, "investor"), 1);
+});
+
+test("a stage button uses the label, not the raw token", () => {
+  assert.equal(stageButtonLabel("CALL_HELD"), "Call held");
+  assert.equal(stageButtonLabel("not_a_stage"), "Not a stage");
+});
+
+test("post statuses and send logs stay human", () => {
+  assert.equal(postStatusLabel("brand_pass"), "Brand passed");
+  assert.equal(postStatusLabel("needs_review"), "Needs review");
+  assert.equal(postStatusLabel("brand_pass").includes("_"), false);
+  assert.equal(summarizeBotResult("SENT 6:53pm CT, SENT 6:54pm CT, SENT 6:55pm CT, SENT 6:56pm CT, SENT 6:57pm CT. Drive-home list."), "5 replies sent");
 });

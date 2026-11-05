@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { rowsForStage, type PeopleRow, type StageCount } from "@/lib/os/night";
+import { imInChipCount, rowsForStage, type PeopleRow, type StageCount } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { Logo } from "./Logo";
 
@@ -41,6 +41,7 @@ export function PeopleDesk({
     });
   }, [query, rows, stage, track]);
   const visible = filtered.slice(0, shown);
+  const imInShown = imInChipCount(rows, track);
   const flag = counts.find((item) => item.stage === "im_in") ?? null;
   const splitFlag = Boolean(flag && flag.count !== flag.stageCount);
 
@@ -67,6 +68,7 @@ export function PeopleDesk({
         shown={shown}
         filtered={filtered}
         visible={visible}
+        imInShown={imInShown}
         splitFlag={splitFlag}
         counted={counted}
         setTrack={setTrack}
@@ -89,6 +91,7 @@ function PeopleList({
   shown,
   filtered,
   visible,
+  imInShown,
   splitFlag,
   counted,
   setTrack,
@@ -106,6 +109,7 @@ function PeopleList({
   shown: number;
   filtered: PeopleRow[];
   visible: PeopleRow[];
+  imInShown: number;
   splitFlag: boolean;
   counted: number;
   setTrack: (value: string) => void;
@@ -135,7 +139,7 @@ function PeopleList({
             <span className="num">{total.toLocaleString("en-US")}</span>
           </button>
           {counts.map((item) => {
-            const value = item.stage === "im_in" ? item.count : item.stageCount || item.count;
+            const value = item.stage === "im_in" ? imInShown : item.stageCount || item.count;
             return (
               <button key={item.stage} type="button" aria-pressed={stage === item.stage} onClick={() => { setStage(item.stage); setShown(PAGE); }}>
                 <span>{item.label}</span>

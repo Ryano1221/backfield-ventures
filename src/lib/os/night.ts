@@ -183,7 +183,7 @@ export type DeskDeal = {
   sources: DealSource[];
 };
 
-export type WaitingBot = { name: string; ask: string; slug: string };
+export type WaitingBot = { name: string; ask: string; detail: string; when: string | null; status: string; slug: string };
 
 export type Kpi = { label: string; value: string; small: string | null; sub: string | null };
 
@@ -886,9 +886,17 @@ function waitingBots(snapshot: Snapshot, actions: OsAction[]): WaitingBot[] {
   return snapshot.bots.bots.flatMap((bot, index) => {
     if (botPaused(bot.name, actions)) return [];
     if (officeStatus(bot.status) !== "Needs Ryan") return [];
-    const ask = askText(bot.result);
+    const detail = sentenceOrNull(blankToNull(bot.result));
+    const ask = summarizeBotResult(detail);
     if (!ask) return [];
-    return [{ name: bot.name, ask: clip(ask, 180), slug: slugOf(bot, index) }];
+    return [{
+      name: bot.name,
+      ask,
+      detail: detail || ask,
+      when: formatCt(bot.last_iso, true),
+      status: "Needs you",
+      slug: slugOf(bot, index),
+    }];
   });
 }
 
@@ -1225,6 +1233,50 @@ export function rowsForStage(rows: PeopleRow[], stage: string): PeopleRow[] {
   if (stage === "all") return rows;
   if (stage === "im_in") return rows.filter((row) => row.imIn);
   return rows.filter((row) => row.stage === stage);
+}
+
+export function imInChipCount(rows: Pick<PeopleRow, "imIn" | "track" | "lp">[], track: string): number {
+  return rows.filter((row) => {
+    if (!row.imIn) return false;
+    if (track === "all") return true;
+    if (track === "lp") return row.lp;
+    return row.track === track;
+  }).length;
+}
+
+export function stageButtonLabel(stage: string | null | undefined): string {
+  const key = (stage || "").trim().toLowerCase();
+  const known = stageChoices().find((option) => option.value === key)?.label;
+  return known || stageLabel(stage) || "Unknown";
+}
+
+const POST_STATUS: Record<string, string> = {
+  brand_pass: "Brand passed",
+  brand_fail: "Brand failed",
+  draft: "Draft",
+  scheduled: "Scheduled",
+  sent: "Sent",
+  approved: "Approved",
+  queued: "Queued",
+  failed: "Failed",
+  pending: "Pending",
+};
+
+export function postStatusLabel(status: string | null | undefined): string {
+  const key = (status || "").trim().toLowerCase();
+  if (!key) return "Draft";
+  return POST_STATUS[key] || cap(key.replace(/_+/g, " "));
+}
+
+export function summarizeBotResult(raw: string | null | undefined): string {
+  const text = (raw || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const sent = text.match(/\bSENT\b/gi);
+  if (sent && sent.length > 0 && /\d{1,2}:\d{2}\s*(?:am|pm)/i.test(text)) {
+    return `${sent.length} ${sent.length === 1 ? "reply" : "replies"} sent`;
+  }
+  const first = text.split(/(?<=[.;])\s/)[0]?.trim() || text;
+  return first.length > 160 ? `${first.slice(0, 157).trimEnd()}…` : first;
 }
 
 function personIsWarm(person: CrmPerson, useFlag: boolean): boolean {

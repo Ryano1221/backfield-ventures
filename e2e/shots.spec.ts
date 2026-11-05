@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import path from "node:path";
 
 const PASSWORD = "e2e-session-only";
 
 test("pass 4 screens", async ({ page }) => {
   test.setTimeout(90_000);
   const width = page.viewportSize()?.width ?? 0;
-  const dir = test.info().project.name === "phone-light"
-    ? "/opt/cursor/artifacts/os-redesign-pass4/390-light"
-    : `/opt/cursor/artifacts/os-redesign-pass4/${width}`;
+  const folder = test.info().project.name === "phone-light" ? "390-light" : String(width);
+  const dir = test.info().outputPath("screens", folder);
   mkdirSync(dir, { recursive: true });
 
   await page.goto("/os/login");
@@ -29,12 +29,13 @@ test("pass 4 screens", async ({ page }) => {
     await page.goto(item.path);
     await page.getByRole("heading", { level: 1 }).waitFor();
     await expect(page.locator("body")).toContainText(item.text);
-    await page.screenshot({ path: `${dir}/${item.name}.png` });
+    await page.screenshot({ path: path.join(dir, `${item.name}.png`) });
   }
 
   await page.goto("/os");
-  const posts = page.getByRole("region", { name: "Posts" });
-  await expect(posts).toContainText("Brand check pending");
+  const posts = page.getByRole("region", { name: "Posts and schedule" });
+  await expect(posts).toContainText("Brand passed");
+  await expect(posts).not.toContainText("brand_pass");
   await posts.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: `${dir}/posts.png` });
+  await page.screenshot({ path: path.join(dir, "posts.png") });
 });
