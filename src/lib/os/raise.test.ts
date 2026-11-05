@@ -102,3 +102,11 @@ test("the LP funnel is cumulative and counts ledger commitments", async () => {
     [5, 4, 3, 3, 3, 2],
   );
 });
+
+test("chase skips do-not-contact, bounced, passed and held LPs", () => {
+  const snapshot: Snapshot = JSON.parse(readFileSync(path.join(process.cwd(), "src/fixtures/os-dashboard.sample.json"), "utf8"));
+  const base = snapshot.crm.people[0]!;
+  const people = ["do_not_contact", "bounced", "passed", "hold", "replied"].map((stage, index) => ({ ...base, id: `lp-${index}`, name: `Example LP ${index}`, lp: true, stage }));
+  const model = buildCommand({ ...snapshot, crm: { ...snapshot.crm, people } }, EMPTY_LEDGER, null, NOW);
+  assert.deepEqual(model.chase.map((row) => row.id), ["lp-4"]);
+});

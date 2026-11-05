@@ -415,6 +415,9 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       continue;
     }
     const clicked = await el.click({ noWaitAfter: true, timeout: 2_000 }).then(() => true).catch(async (error: Error) => {
+      // A background refresh can re-render the page and drop the crawl mark.
+      // A control that is simply gone is not a broken control.
+      if (!(await el.count().catch(() => 0))) return false;
       await note(route, "tap", `${item.name || item.href}: ${error.message}`);
       return false;
     });

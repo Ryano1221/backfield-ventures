@@ -27,6 +27,10 @@ export type CommandModel = {
 
 const DAY = 86_400_000;
 
+// Never suggest chasing someone who asked not to be contacted, bounced,
+// passed, is on hold, or is already committed.
+const NO_CHASE = new Set(["do_not_contact", "dnc", "bounced", "passed", "lost", "hold", "committed", "closed"]);
+
 export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, desk: BotDesk | null, now = Date.now()): CommandModel {
   const raise = summarizeRaise(ledger, now);
   if (!snapshot) {
@@ -38,7 +42,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
 
   const chase = people
     .filter((person) => person.lp && !inLedger.has(person.id) && !inLedger.has(person.name.trim().toLowerCase()))
-    .filter((person) => !/^(dnc|passed|lost|closed)/i.test(person.stage || ""))
+    .filter((person) => !NO_CHASE.has((person.stage || "").toLowerCase()))
     .map((person) => {
       const due = person.next_step_due ? person.next_step_due.slice(0, 10) : null;
       const overdue = Boolean(due && due <= today);
