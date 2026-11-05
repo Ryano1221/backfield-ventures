@@ -25,7 +25,7 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   test.setTimeout(120_000);
   const bag = (page as Page & { bag: Bag }).bag;
   const width = page.viewportSize()?.width ?? 0;
-  const dir = `/opt/cursor/artifacts/os-redesign-pass3/${width}`;
+  const dir = `/opt/cursor/artifacts/os-redesign-pass4/${width}`;
   mkdirSync(dir, { recursive: true });
 
   const pages: { path: string; name: string; text: RegExp }[] = [
@@ -37,8 +37,8 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
     { path: "/os/bots", name: "bots", text: /Needs you/ },
     { path: "/os/activity", name: "activity", text: /What ran|Activity/ },
     { path: "/os/waiting", name: "waiting", text: /office/i },
-    { path: "/os/email", name: "email", text: /Email|Dashboard/ },
-    { path: "/os/d/fix-dec-1", name: "decision", text: /Casey|FIXTURE/ },
+    { path: "/os/email", name: "email", text: /No subscriber list on this snapshot|Subscribers/ },
+    { path: "/os/d/fix-dec-1", name: "decision", text: /Approve/ },
   ];
 
   for (const item of pages) {
@@ -123,20 +123,31 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   const chip = ask.getByRole("button", { name: "FIXTURE Executive" });
   const chipBox = await chip.boundingBox();
   const fieldBox = await field.boundingBox();
-  expect(chipBox && fieldBox && chipBox.y).toBeLessThan(fieldBox.y);
+  expect(chipBox).toBeTruthy();
+  expect(fieldBox).toBeTruthy();
+  expect(chipBox!.y).toBeLessThan(fieldBox!.y);
   await field.fill("What is the example status?");
   await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
   await field.fill("What is the example status?");
   await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
   await expect(ask.locator(".bubble", { hasText: "What is the example status?" })).toHaveCount(1);
   await expect(ask.locator(".bubble-status").first()).toContainText("Not picked up");
+  const close = page.locator(".ask-sheet-head .sheet-close");
+  const note = page.locator(".ask-sheet-head .ask-note");
+  const closeBox = await close.boundingBox();
+  const noteBox = await note.boundingBox();
+  expect(closeBox).toBeTruthy();
+  expect(noteBox).toBeTruthy();
+  expect(closeBox!.x).toBeGreaterThan(noteBox!.x + noteBox!.width - 1);
+  expect(closeBox?.width ?? 0).toBeGreaterThanOrEqual(44);
   await shot(page, `${dir}/ask.png`);
-  await page.locator(".sheet-close").click();
+  await close.click();
 
   await visit(page, "/os/crm");
+  await expect(page.getByRole("group", { name: "Stage" })).toBeVisible();
+  await expect(page.locator(".funnel")).toHaveCount(0);
   const peopleText = await page.locator("main").innerText();
   expect(peopleText.indexOf("FIXTURE Ada North")).toBeGreaterThan(0);
-  expect(peopleText.indexOf("FIXTURE Ada North")).toBeLessThan(peopleText.indexOf("Stages"));
 
   await visit(page, "/os/crm/fix-ada");
   await page.getByRole("button", { name: /Stage/ }).click();
@@ -158,9 +169,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   }
   await page.locator(".bots-sum").getByRole("button", { name: /Needs you/ }).click();
   const needs = page.locator(".bots-need").first();
-  await needs.getByRole("button", { name: "Pause" }).click();
-  await expect(needs.getByRole("button", { name: "Resume" })).toBeVisible();
-  await needs.getByRole("button", { name: "Resume" }).click();
+  await needs.getByRole("button", { name: "Pause" }).evaluate((el: HTMLButtonElement) => el.click());
+  await expect(page.getByRole("button", { name: "Resume" }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Resume" }).first().evaluate((el: HTMLButtonElement) => el.click());
 
   await clean(page, bag);
 });

@@ -7,8 +7,6 @@ import { osHrefs } from "@/lib/os/nav";
 import { Logo } from "./Logo";
 
 const PAGE = 24;
-const TAIL = new Set(["hold", "bounced", "do_not_contact", "passed", "unknown"]);
-const WARM_STAGE = new Set(["replied", "im_in", "call_asked", "call_booked"]);
 
 export function PeopleDesk({
   rows,
@@ -32,7 +30,6 @@ export function PeopleDesk({
   const [stage, setStage] = useState("all");
   const [query, setQuery] = useState("");
   const [shown, setShown] = useState(PAGE);
-  const [stageOpen, setStageOpen] = useState(false);
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((row) => {
@@ -49,15 +46,6 @@ export function PeopleDesk({
   const visible = filtered.slice(0, shown);
   const flag = counts.find((item) => item.stage === "im_in") ?? null;
   const splitFlag = Boolean(flag && flag.count !== flag.stageCount);
-  const flagNames = splitFlag ? rows.filter((row) => row.imIn).map((row) => row.name) : [];
-  const tiles = counts.filter((item) => {
-    if (TAIL.has(item.stage)) return false;
-    if (item.stage === "im_in" && splitFlag) return item.stageCount > 0;
-    return item.count > 0 || item.stageCount > 0;
-  });
-  const rest = counts.filter((item) => TAIL.has(item.stage) && item.stageCount > 0);
-  const other = rest.reduce((sum, item) => sum + item.stageCount, 0);
-  const covered = counted === total;
 
   return (
     <>
@@ -80,62 +68,15 @@ export function PeopleDesk({
         stage={stage}
         query={query}
         shown={shown}
-        stageOpen={stageOpen}
         filtered={filtered}
         visible={visible}
+        splitFlag={splitFlag}
+        counted={counted}
         setTrack={setTrack}
         setStage={setStage}
         setQuery={setQuery}
         setShown={setShown}
-        setStageOpen={setStageOpen}
       />
-      {splitFlag && flag ? (
-        <div className="kpi flag">
-          <div>
-            <div className="lbl">I&apos;m in · flag</div>
-            <div className="v">{flag.count.toLocaleString("en-US")}</div>
-          </div>
-          <div>
-            {flagNames.length ? <div className="names">{flagNames.slice(0, 4).join(", ")}{flagNames.length > 4 ? ` and ${(flagNames.length - 4).toLocaleString("en-US")} more` : ""}</div> : null}
-            <div className="d">Said I&apos;m in. Counted by flag across stages, not added to the stage total.</div>
-          </div>
-        </div>
-      ) : null}
-      {counts.length ? (
-        <>
-          <div className="lbl stage-note">Stages · each person counted once</div>
-          <div className="funnel">
-            {tiles.map((item) => {
-              const value = item.stage === "im_in" && splitFlag ? item.stageCount : item.count;
-              const label = item.stage === "im_in" && splitFlag ? "I'm in (stage)" : item.label;
-              const detail = item.stage === "im_in" && splitFlag ? "Stage only. Flag count is above." : item.detail;
-              return (
-                <div key={item.stage} className={WARM_STAGE.has(item.stage) ? "warmc" : ""}>
-                  <div className="lbl">{label}</div>
-                  <div className="v">{value.toLocaleString("en-US")}</div>
-                  {detail ? <div className="sub">{detail}</div> : null}
-                </div>
-              );
-            })}
-            {rest.length ? (
-              <div className="span">
-                <div className="lbl">Other</div>
-                <div className="v">{other.toLocaleString("en-US")}</div>
-                <ul className="bits">
-                  {rest.map((item) => (
-                    <li key={item.stage}>
-                      {item.label} <b>{item.stageCount.toLocaleString("en-US")}</b>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-          <p className={`lbl funnel-check${covered ? "" : " is-off"}`}>
-            Stage tiles sum to <b>{counted.toLocaleString("en-US")} of {total.toLocaleString("en-US")}</b>
-          </p>
-        </>
-      ) : null}
     </>
   );
 }
@@ -149,14 +90,14 @@ function PeopleList({
   stage,
   query,
   shown,
-  stageOpen,
   filtered,
   visible,
+  splitFlag,
+  counted,
   setTrack,
   setStage,
   setQuery,
   setShown,
-  setStageOpen,
 }: {
   hrefs: ReturnType<typeof osHrefs>;
   counts: StageCount[];
@@ -166,14 +107,14 @@ function PeopleList({
   stage: string;
   query: string;
   shown: number;
-  stageOpen: boolean;
   filtered: PeopleRow[];
   visible: PeopleRow[];
+  splitFlag: boolean;
+  counted: number;
   setTrack: (value: string) => void;
   setStage: (value: string) => void;
   setQuery: (value: string) => void;
   setShown: (value: number | ((count: number) => number)) => void;
-  setStageOpen: (value: boolean) => void;
 }) {
   return (
     <>
@@ -191,25 +132,23 @@ function PeopleList({
       <div className="card">
       <div className="filterbar">
         <input className="pill" value={query} onChange={(event) => { setQuery(event.target.value); setShown(PAGE); }} placeholder="Search people" aria-label="Search people" />
-        <button type="button" className="who-chip" aria-expanded={stageOpen} onClick={() => setStageOpen(true)}>
-          {stage === "all" ? "Any stage" : counts.find((item) => item.stage === stage)?.label || stage}
-        </button>
-        {stageOpen ? (
-          <div className="who-sheet" role="dialog" aria-label="Stage">
-            <button type="button" className="sheet-scrim" aria-label="Close" onClick={() => setStageOpen(false)} />
-            <div className="who-card">
-              <div className="sheet-handle" aria-hidden />
-              <button type="button" aria-pressed={stage === "all"} onClick={() => { setStage("all"); setShown(PAGE); setStageOpen(false); }}>
-                Any stage
+        <div className="segment scroll" role="group" aria-label="Stage">
+          <button type="button" aria-pressed={stage === "all"} onClick={() => { setStage("all"); setShown(PAGE); }}>
+            <span>All</span>
+            <span className="num">{total.toLocaleString("en-US")}</span>
+          </button>
+          {counts.map((item) => {
+            const value = item.stage === "im_in" && splitFlag ? item.count : item.stageCount || item.count;
+            return (
+              <button key={item.stage} type="button" aria-pressed={stage === item.stage} onClick={() => { setStage(item.stage); setShown(PAGE); }}>
+                <span>{item.label}</span>
+                <span className="num">{value.toLocaleString("en-US")}</span>
               </button>
-              {counts.map((item) => (
-                <button key={item.stage} type="button" aria-pressed={stage === item.stage} onClick={() => { setStage(item.stage); setShown(PAGE); setStageOpen(false); }}>
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
+            );
+          })}
+        </div>
+        {stage === "im_in" && splitFlag ? <p className="note">I&apos;m in is a flag across stages, not added to the stage total.</p> : null}
+        {counted !== total ? <p className="note">Stage counts cover {counted.toLocaleString("en-US")} of {total.toLocaleString("en-US")}.</p> : null}
       </div>
       {visible.length ? (
         <div className="tbl-scroll">

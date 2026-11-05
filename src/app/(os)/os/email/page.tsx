@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { SubscriberList } from "@/components/email/SubscriberList";
-import { PageHead, SampleTag } from "@/components/email/ui";
+import { PageHead } from "@/components/email/ui";
 import { formatJoined } from "@/lib/email/format";
 import { emailHrefs } from "@/lib/email/nav";
-import { REAL_STRIP, SAMPLE_STATS, SAMPLE_WEEKS } from "@/lib/email/sample";
 import { loadSends, loadSubscribers } from "@/lib/email/store";
 import { isOsHost } from "@/lib/os/host";
+import { readSnapshot } from "@/lib/os/store";
 
 export const dynamic = "force-dynamic";
 
@@ -19,31 +19,18 @@ export default async function EmailDashboardPage() {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const hrefs = emailHrefs(isOsHost(host));
-  const [people, sends] = await Promise.all([loadSubscribers(), loadSends()]);
-  const stats = people.sample
-    ? SAMPLE_STATS
-    : {
-        subscribers: people.rows.length,
-        newThisMonth: people.rows.filter((row) => row.joined.startsWith(new Date().toISOString().slice(0, 7))).length,
-        unsubscribed: null as number | null,
-        listSignups: null as number | null,
-      };
-  const cards = [
-    { label: "Subscribers", value: stats.subscribers, detail: "On The Handoff" },
-    { label: "New this month", value: stats.newThisMonth, detail: "From the site and list pages" },
-    stats.unsubscribed == null ? null : { label: "Unsubscribed", value: stats.unsubscribed, detail: "This month" },
-    stats.listSignups == null ? null : { label: "List signups", value: stats.listSignups, detail: "From lead magnet pages" },
-  ].filter((card) => card != null);
+  const [people, sends, snapshot] = await Promise.all([loadSubscribers(), loadSends(), readSnapshot()]);
+  const subscribers = people.sample ? [] : people.rows;
+  const sent = sends.sample ? [] : sends.rows;
+  const outreach = snapshot?.outreach ?? [];
+  const month = new Date().toISOString().slice(0, 7);
+  const newThisMonth = subscribers.filter((row) => row.joined.startsWith(month)).length;
 
   return (
     <>
       <PageHead
         title="Dashboard"
-        lede={
-          <>
-            All lists, last 30 days. {people.sample ? <SampleTag /> : null}
-          </>
-        }
+        lede="What this snapshot actually has. Empty lines are missing, not zero."
         primary={
           <a className="primary-btn" href={hrefs.compose}>
             Open draft
@@ -51,21 +38,40 @@ export default async function EmailDashboardPage() {
         }
       />
       <div className="kpis">
-        {cards.map((card) => (
-          <div className="kpi" key={card.label}>
-            <div className="lbl">
-              {card.label} {people.sample ? <SampleTag /> : null}
-            </div>
-            <div className="v">{card.value}</div>
-            <div className="d">{card.detail}</div>
-          </div>
-        ))}
+        <div className="kpi">
+          <div className="lbl">Subscribers</div>
+          <div className="v">{people.sample ? "—" : subscribers.length.toLocaleString("en-US")}</div>
+          <div className="d">{people.sample ? "No subscriber list on this snapshot." : "On The Handoff"}</div>
+        </div>
+        <div className="kpi">
+          <div className="lbl">New this month</div>
+          <div className="v">{people.sample ? "—" : newThisMonth.toLocaleString("en-US")}</div>
+          <div className="d">{people.sample ? "Needs a joined date on each subscriber." : "Joined this month"}</div>
+        </div>
+        <div className="kpi">
+          <div className="lbl">Outreach today</div>
+          <div className="v">{outreach.length ? outreach.reduce((sum, row) => sum + row.sent, 0).toLocaleString("en-US") : "—"}</div>
+          <div className="d">{outreach.length ? "Sent across the tracks on this snapshot." : "No outreach counts on this snapshot."}</div>
+        </div>
       </div>
+      {outreach.length ? (
+        <section className="card">
+          <div className="h"><span className="lbl">Outreach</span></div>
+          <ul>
+            {outreach.map((row) => (
+              <li key={row.track}>
+                <b>{row.label || row.track}</b> {row.sent.toLocaleString("en-US")}
+                {row.floor ? ` of ${row.floor.toLocaleString("en-US")}` : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <div className="grid2">
         <SubscriberList
-          sample={people.sample}
-          exportHref={hrefs.exportSubscribers}
-          rows={people.rows.map((row) => ({
+          sample={false}
+          exportHref={people.sample ? undefined : hrefs.exportSubscribers}
+          rows={subscribers.map((row) => ({
             name: row.name,
             email: row.email,
             source: row.source,
@@ -76,10 +82,9 @@ export default async function EmailDashboardPage() {
         <div className="col">
           <section className="card">
             <div className="h">
-              <span className="lbl">
-                Recent sends {sends.sample ? <SampleTag /> : null}
-              </span>
+              <span className="lbl">Recent sends</span>
             </div>
+            {sent.length ? <>
             <div className="desk-only">
               <table>
                 <thead>
@@ -91,7 +96,7 @@ export default async function EmailDashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sends.rows.map((row) => (
+                  {sent.map((row) => (
                     <tr key={row.name}>
                       <td>
                         <div className="n">{row.name}</div>
@@ -107,7 +112,7 @@ export default async function EmailDashboardPage() {
               </table>
             </div>
             <div className="mob-only">
-              {sends.rows.map((row) => (
+              {sent.map((row) => (
                 <div className="row" key={row.name}>
                   <div className="n">{row.name}</div>
                   <div className="m">
@@ -118,41 +123,15 @@ export default async function EmailDashboardPage() {
                 </div>
               ))}
             </div>
+            </> : <p className="note">No sends on this snapshot.</p>}
           </section>
           <section className="card">
-            <div className="h">
-              <span className="lbl">
-                Signups by week <SampleTag />
-              </span>
-            </div>
-            <div className="bars" aria-hidden="true">
-              {SAMPLE_WEEKS.map((height, index) => (
-                <i key={index} className={index === SAMPLE_WEEKS.length - 1 ? "hl" : ""} style={{ height: `${height}%` }} />
-              ))}
-            </div>
-            <div className="axis lbl">
-              <span>12 weeks ago</span>
-              <span>This week</span>
-            </div>
+            <div className="h"><span className="lbl">Signups by week</span></div>
+            <p className="note">No weekly signup series on this snapshot.</p>
           </section>
         </div>
       </div>
-      <div className="real">
-        <span className="lbl">{REAL_STRIP.label}</span>
-        <ul>
-          <li>
-            <b>{REAL_STRIP.subscribers}</b> subscribers
-          </li>
-          <li>
-            <b>1</b> draft, Issue 01
-          </li>
-          <li>
-            <b>{REAL_STRIP.sends}</b> sends
-          </li>
-          <li>{REAL_STRIP.welcome}</li>
-        </ul>
-      </div>
-      <p className="note">Nothing goes to a list without a test send and my yes. Open and click tracking is off.</p>
+      <p className="note">Nothing goes to a list without a test send and your yes. Open and click tracking is off. Unsubscribes, list signups, and weekly signup counts are not on this snapshot.</p>
     </>
   );
 }

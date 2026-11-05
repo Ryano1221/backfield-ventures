@@ -435,10 +435,13 @@ export function NightFrame({
         <div className="ask-sheet" role="dialog" aria-modal="true" aria-label="Ask the firm">
           <button type="button" className="sheet-scrim" aria-label="Close ask" onClick={() => setAskOpen(false)} />
           <div className="ask-sheet-card">
-            <div className="sheet-handle" aria-hidden />
-            <button type="button" className="icon-btn sheet-close" aria-label="Close" onClick={() => setAskOpen(false)}>
-              <span aria-hidden="true">×</span>
-            </button>
+            <div className="ask-sheet-head">
+              <div className="sheet-handle" aria-hidden />
+              <p className="ask-note">This files a request. Nothing sends until you approve the exact text.</p>
+              <button type="button" className="icon-btn sheet-close" aria-label="Close" onClick={() => setAskOpen(false)}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
             <AskBox variant="sheet" actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
           </div>
         </div>

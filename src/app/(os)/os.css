@@ -1200,7 +1200,15 @@ body.os { font-variant-numeric: tabular-nums; }
   align-items: flex-end;
 }
 .sheet-scrim { position: absolute; inset: 0; border: 0; background: rgba(0, 0, 0, 0.28); }
-.sheet-close { position: absolute; top: 8px; right: 8px; z-index: 2; }
+.ask-sheet-head { display: grid; grid-template-columns: minmax(0, 1fr) 44px; grid-template-areas: "handle handle" "note close"; align-items: center; gap: 4px 8px; }
+.ask-sheet-head .sheet-handle { grid-area: handle; }
+.ask-sheet-head .ask-note { grid-area: note; margin: 0; }
+.ask-sheet-head .sheet-close { grid-area: close; position: static; width: 44px; height: 44px; }
+.crumb { height: auto; min-height: 44px; padding-top: 8px; padding-bottom: 8px; }
+.crumb .ask { flex: 1; min-width: 240px; max-width: 420px; }
+.pane h1, .who h1 { overflow-wrap: anywhere; }
+.pane .inbox-actions { margin: 12px 0 16px; }
+.pane .who { align-items: start; }
 .ask-sheet-card, .who-card {
   position: relative;
   width: 100%;
