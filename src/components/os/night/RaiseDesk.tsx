@@ -200,7 +200,7 @@ function Funnel({ steps }: { steps: FunnelStep[] }) {
                 <i style={{ width: `${Math.max(2, (step.count / top) * 100)}%` }} />
               </span>
               <b className="fb-n">{step.count.toLocaleString("en-US")}</b>
-              <span className="fb-rate">{rate != null ? `${rate}% of ${steps[index - 1]!.label.toLowerCase()}` : "LPs"}</span>
+              <span className="fb-rate">{index === 0 ? "LPs" : rate != null ? `${rate}% of ${steps[index - 1]!.label.toLowerCase()}` : ""}</span>
             </li>
           );
         })}
