@@ -115,7 +115,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   const chip = ask.getByRole("button", { name: "FIXTURE Executive" });
   const chipBox = await chip.boundingBox();
   const fieldBox = await field.boundingBox();
-  expect(chipBox && fieldBox && chipBox.y).toBeLessThan(fieldBox.y);
+  expect(chipBox).not.toBeNull();
+  expect(fieldBox).not.toBeNull();
+  expect(chipBox!.y).toBeLessThan(fieldBox!.y);
   await field.fill("What is the example status?");
   await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
   await field.fill("What is the example status?");
