@@ -160,7 +160,7 @@ body:has(.email) {
 
 .email .main {
   padding: 30px 40px 48px;
-  max-width: none;
+  max-width: 920px;
   min-width: 0;
 }
 
@@ -917,5 +917,33 @@ body:has(.email) {
   .email .opt input {
     width: 44px;
     height: 44px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .email .grid2,
+  .email .split { grid-template-columns: 1fr; }
+  .email th:first-child,
+  .email td:first-child,
+  .email td .n {
+    min-width: 160px;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+  .email h1,
+  .email .lede,
+  .email .real li,
+  .email .pair span,
+  .email .msg .hd span {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .email .chip,
+  .email .state,
+  .email .sample {
+    max-width: 100%;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 }

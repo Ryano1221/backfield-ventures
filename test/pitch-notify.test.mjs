@@ -11,6 +11,7 @@ if (!mode) {
     for (const child of ["nokey", "send"]) {
       const env = { ...process.env, PITCH_NOTIFY_TEST_MODE: child };
       delete env.RESEND_FROM;
+      delete env.PITCH_NOTIFY_TO;
       env.RESEND_API_KEY = child === "nokey" ? "" : "re_test_key";
       const result = spawnSync(
         process.execPath,
