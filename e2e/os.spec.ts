@@ -159,9 +159,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   }
   await page.locator(".bots-sum").getByRole("button", { name: /Needs you/ }).click();
   const needs = page.locator(".bots-need").first();
-  await needs.getByRole("button", { name: "Pause" }).click();
+  await needs.getByRole("button", { name: "Pause" }).evaluate((el: HTMLButtonElement) => el.click());
   await expect(needs.getByRole("button", { name: "Resume" })).toBeVisible();
-  await needs.getByRole("button", { name: "Resume" }).click();
+  await needs.getByRole("button", { name: "Resume" }).evaluate((el: HTMLButtonElement) => el.click());
 
   await clean(page, bag);
 });

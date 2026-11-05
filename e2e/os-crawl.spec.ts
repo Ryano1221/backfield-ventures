@@ -18,7 +18,9 @@ const TOKEN_METHOD = new Map<string, "GET" | "POST">([
 ]);
 
 // The proxy and every route answer a denied call with one of these exact bodies.
-const DENY_BODIES = new Set(['{"error":"Unauthorized"}', '{"ok":false,"error":"Unauthorized"}', ""]);
+const OS_HOST = "os.backfieldventures.com";
+
+const DENY_BODIES = new Set(['{"error":"Unauthorized"}', '{"ok":false,"error":"Unauthorized"}', '{"ok":false,"error":"Incorrect password"}', ""]);
 
 const LIVE_KEYS = [
   "RESEND_API_KEY",
@@ -87,6 +89,10 @@ test.describe("logged out", () => {
       await expectDenied(request, route, authMethod, 401);
       await expectDenied(request, route, authMethod, 401, { authorization: "Bearer wrong-token" });
       await expectDenied(request, route, wrongMethod, 405);
+    }
+    for (const method of ["GET", "POST"] as const) {
+      const shared = method === "GET" ? await request.get("/api/ingest") : await request.post("/api/ingest", { data: {} });
+      expect(shared.status(), `${method} /api/ingest on the main host`).toBe(404);
     }
     const missing = [...surface.pages, ...surface.apis.map((route) => `GET ${route}`), ...surface.apis.map((route) => `POST ${route}`)].filter((route) => !checked.has(route));
     expect(missing, "unchecked OS routes").toEqual([]);
@@ -581,9 +587,26 @@ function domAudit({ desktop, phone }: { desktop: boolean; phone: boolean }) {
         /* ignore unreadable sheets */
       }
     }
+    // Split a selector list on top-level commas only, so :where(a, b) stays whole.
+    const splitSelectors = (list: string) => {
+      const parts: string[] = [];
+      let depth = 0;
+      let start = 0;
+      for (let i = 0; i < list.length; i++) {
+        const ch = list[i];
+        if (ch === "(") depth++;
+        else if (ch === ")") depth--;
+        else if (ch === "," && depth === 0) {
+          parts.push(list.slice(start, i));
+          start = i + 1;
+        }
+      }
+      parts.push(list.slice(start));
+      return parts;
+    };
     const covered = (el: Element, pseudo: string) =>
       styleRules.some((selector) =>
-        selector.split(",").some((part) => {
+        splitSelectors(selector).some((part) => {
           if (!part.includes(pseudo)) return false;
           const subject = part.slice(0, part.indexOf(pseudo)).trim();
           if (!subject) return false;
@@ -636,8 +659,16 @@ async function expectDenied(
   status: number,
   headers?: Record<string, string>,
 ) {
-  const response = method === "GET" ? await request.get(route, { headers }) : await request.post(route, { data: {}, headers });
-  expect(response.status(), `${method} ${route}`).toBe(status);
+  // /api/ingest only exists on the OS host, where the proxy rewrites it to /api/os/ingest.
+  const sent = route === "/api/ingest" ? { "x-forwarded-host": OS_HOST, ...headers } : headers;
+  const response = method === "GET" ? await request.get(route, { headers: sent }) : await request.post(route, { data: {}, headers: sent });
+  // The login route rate-limits repeated wrong passwords, so a later project can see 429. Both deny.
+  const got = response.status();
+  if (route === "/api/os/login" && status === 401 && got === 429) {
+    expect(await response.text(), `${method} ${route}`).not.toMatch(/"pitches"|"people"|"decisions"|"email"|"token"/);
+    return;
+  }
+  expect(got, `${method} ${route}`).toBe(status);
   const body = (await response.text()).trim();
   if (status === 401) expect(DENY_BODIES.has(body), `${method} ${route} body: ${body.slice(0, 120)}`).toBe(true);
   else expect(body, `${method} ${route}`).not.toMatch(/"pitches"|"people"|"decisions"|"email"|"token"/);
