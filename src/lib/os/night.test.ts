@@ -277,7 +277,7 @@ test("people stages stay in funnel order and the tiles cover every person", () =
   );
   assert.deepEqual(
     people.counts.map((item) => item.stage),
-    ["ready", "queued", "call_asked", "call_booked", "im_in", "hold", "unknown"],
+    ["im_in", "ready", "queued", "call_asked", "call_booked", "hold", "unknown"],
   );
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 0);
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.label, "I'm in");
@@ -287,7 +287,7 @@ test("people stages stay in funnel order and the tiles cover every person", () =
   assert.equal(people.warm, 3);
 });
 
-test("pipeline stages after a booked call are labeled, and an unknown stage is title cased", () => {
+test("pipeline stages after a booked call are labeled, and an unknown stage is sentence case", () => {
   assert.equal(stageLabel("call_held"), "Call held");
   assert.equal(stageLabel("one_pager_sent"), "One-pager sent");
   assert.equal(stageLabel("data_room"), "Data room");
@@ -296,7 +296,7 @@ test("pipeline stages after a booked call are labeled, and an unknown stage is t
   assert.equal(stageLabel("committed"), "Committed");
   assert.equal(stageLabel("closed"), "Closed");
   assert.equal(stageLabel("CALL_HELD"), "Call held");
-  assert.equal(stageLabel("not_a_stage"), "Not A Stage");
+  assert.equal(stageLabel("not_a_stage"), "Not a stage");
   const people = buildPeople(
     peopleSnapshot([
       crmPerson({ id: "1", name: "Booked", track: "founder", stage: "call_booked" }),
@@ -313,9 +313,10 @@ test("pipeline stages after a booked call are labeled, and an unknown stage is t
   );
   assert.deepEqual(
     people.counts.map((item) => item.stage),
-    ["call_booked", "call_held", "one_pager_sent", "data_room", "soft_circle", "docs", "committed", "closed", "im_in", "not_a_stage"],
+    ["im_in", "call_booked", "call_held", "one_pager_sent", "data_room", "soft_circle", "docs", "committed", "closed", "not_a_stage"],
   );
-  assert.equal(people.counts.find((item) => item.stage === "not_a_stage")?.label, "Not A Stage");
+  assert.equal(people.counts.find((item) => item.stage === "not_a_stage")?.label, "Not a stage");
+  assert.equal(people.rows.find((row) => row.stage === "call_held")?.warm, true);
 });
 
 test("I'm in counts the flag after someone moves to a later stage", () => {

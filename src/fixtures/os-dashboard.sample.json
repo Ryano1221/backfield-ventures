@@ -2438,6 +2438,21 @@
         "lp": true
       },
       {
+        "id": "fix-hal",
+        "name": "FIXTURE Hal Held",
+        "firm": "FIXTURE Harbor",
+        "track": "investor",
+        "stage": "call_held",
+        "owner": null,
+        "last_touch_at": "2026-11-04T18:00:00.000Z",
+        "last_touch_channel": "call",
+        "next_step": "Send the sample one-pager",
+        "next_step_due": "2026-11-07",
+        "email": null,
+        "linkedin": null,
+        "notes": "Fake held call. The stage tag should be filled."
+      },
+      {
         "id": "fix-holly",
         "name": "FIXTURE Holly Hold",
         "firm": null,
@@ -2453,5 +2468,23 @@
         "notes": "Fake hold."
       }
     ]
-  }
+  },
+  "posts": [
+    {
+      "id": "post_sample",
+      "platform": "x",
+      "status": "brand_pass",
+      "gate": "Brand check pending"
+    }
+  ],
+  "schedule": [
+    {
+      "platform": "linkedin",
+      "date": "2026-11-06",
+      "time_ct": "9:00am",
+      "item": "FIXTURE sample post",
+      "status": "scheduled",
+      "note": "FIXTURE note for the sample post. It stays collapsed until you open it."
+    }
+  ]
 }

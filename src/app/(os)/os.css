@@ -1068,9 +1068,14 @@ body.os { font-variant-numeric: tabular-nums; }
 }
 
 @media (min-width: 900px) {
-  .main { max-width: 920px; }
+  .shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+  .rail { display: flex; width: auto; }
+  .main { max-width: none; }
   .rail nav a.on { background: transparent; color: #fff; box-shadow: inset 3px 0 0 #123D22; }
   .rail nav a.on .c { color: #fff; }
+}
+@media (min-width: 1200px) {
+  .main { max-width: 1180px; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1377,6 +1382,7 @@ body.os [role="button"]:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .btn:active, .tabbar a:active, .tabbar button:active, .segment button:active { transform: none; }
 }
+.stage-tags { display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .bots-status {
   display: inline-flex;
   align-items: center;

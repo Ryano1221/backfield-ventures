@@ -7,6 +7,8 @@ export const STATUS_COLOR: Record<OfficeBot["status"], string> = {
   "Needs Ryan": "#000000",
   Idle: "rgba(0,0,0,.3)",
   Paused: "#ffffff",
+  Degraded: "#000000",
+  Failed: "#000000",
 };
 
 export type StatusCounts = { working: number; needs: number; idle: number; paused: number };

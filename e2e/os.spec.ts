@@ -25,7 +25,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   test.setTimeout(120_000);
   const bag = (page as Page & { bag: Bag }).bag;
   const width = page.viewportSize()?.width ?? 0;
-  const dir = `/opt/cursor/artifacts/os-redesign-pass4/${width}`;
+  const dir = test.info().project.name === "phone-light"
+    ? "/opt/cursor/artifacts/os-redesign-pass4/390-light"
+    : `/opt/cursor/artifacts/os-redesign-pass4/${width}`;
   mkdirSync(dir, { recursive: true });
 
   const pages: { path: string; name: string; text: RegExp }[] = [
@@ -46,6 +48,10 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
     await expect(page.locator("body")).toContainText(item.text);
     await expect(page.locator("select")).toHaveCount(0);
     await shot(page, `${dir}/${item.name}.png`);
+    if (item.name === "today") {
+      const posts = page.getByRole("region", { name: "Posts" });
+      if (await posts.count()) await posts.screenshot({ path: `${dir}/posts.png` });
+    }
     await clean(page, bag);
   }
 

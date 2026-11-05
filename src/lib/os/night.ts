@@ -64,7 +64,19 @@ const STAGE_ORDER = [
   "passed",
   "unknown",
 ];
-const WARM = new Set(["replied", "im_in", "call_asked", "call_booked"]);
+const WARM = new Set([
+  "replied",
+  "im_in",
+  "call_asked",
+  "call_booked",
+  "call_held",
+  "one_pager_sent",
+  "data_room",
+  "soft_circle",
+  "docs",
+  "committed",
+  "closed",
+]);
 const ROOM_NAME: Record<string, string> = {
   executive: "Executive",
   network: "Network",
@@ -404,7 +416,7 @@ export function stageLabel(stage: string | null | undefined): string | null {
   const key = trimmed.toLowerCase();
   if (key === "unknown") return "Unknown";
   if (!blankToNull(trimmed)) return null;
-  return STAGE_LABEL[key] || titleCase(key.replace(/_+/g, " "));
+  return STAGE_LABEL[key] || cap(key.replace(/_+/g, " "));
 }
 
 export function trackLabel(track: string | null | undefined): string | null {
@@ -534,7 +546,7 @@ export function buildPeople(snapshot: Snapshot | null): { rows: PeopleRow[]; cou
   if (imInCount > 0) stageCounts.set("im_in", stageCounts.get("im_in") || 0);
   const queuedLine = queuedDetail(people);
   const counts = [...stageCounts.entries()]
-    .sort((a, b) => stageIndex(a[0]) - stageIndex(b[0]) || a[0].localeCompare(b[0]))
+    .sort((a, b) => chipOrder(a[0]) - chipOrder(b[0]) || a[0].localeCompare(b[0]))
     .map(([stage, stageCount]) => ({
       stage,
       label: stageLabel(stage) || stage,
@@ -1216,9 +1228,14 @@ export function rowsForStage(rows: PeopleRow[], stage: string): PeopleRow[] {
 }
 
 function personIsWarm(person: CrmPerson, useFlag: boolean): boolean {
-  if (person.stage === "replied" || person.stage === "call_asked" || person.stage === "call_booked") return true;
-  if (useFlag) return person.im_in === true;
-  return person.stage === "im_in";
+  const stage = (person.stage || "").trim().toLowerCase();
+  if (stage && WARM.has(stage)) return true;
+  return useFlag && person.im_in === true;
+}
+
+function chipOrder(stage: string): number {
+  if (stage === "im_in") return -1;
+  return stageIndex(stage);
 }
 
 function personIsLp(person: CrmPerson, useFlag: boolean): boolean {
@@ -1287,12 +1304,4 @@ function mentions(value: string, name: string): boolean {
 
 function cap(value: string): string {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
-}
-
-function titleCase(value: string): string {
-  return value
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
 }

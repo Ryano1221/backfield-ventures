@@ -173,8 +173,10 @@ function PeopleList({
                   </td>
                   <td data-label="Track">{row.trackLabel}</td>
                   <td data-label="Stage">
-                    {row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}
-                    {row.imIn && row.stage !== "im_in" ? <span className="tag warm">I&apos;m in</span> : null}
+                    <span className="stage-tags">
+                      {row.stageLabel ? <span className={`tag${row.warm ? " warm" : ""}`}>{row.stageLabel}</span> : null}
+                      {row.imIn && row.stage !== "im_in" ? <span className="tag warm">I&apos;m in</span> : null}
+                    </span>
                   </td>
                   <td className="hm" data-label="Last touch">{row.lastAge || row.last || ""}</td>
                   <td className="nx" data-label="Next step">{row.next || ""}</td>
