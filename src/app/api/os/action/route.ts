@@ -1,5 +1,7 @@
 import { decisionKey } from "@/lib/os/decision-id";
 import { isActionType, normalizeDecidePayload, recordAction, sanitizePayload } from "@/lib/os/actions";
+import { botQuestionId } from "@/lib/os/drive";
+import { normalizeBriefApprove, normalizeDriveApprove, normalizeDriveEdit, normalizeDriveSkip } from "@/lib/os/drive-actions";
 import { sameOriginRequest } from "@/lib/os/answers";
 import { isOsAuthed } from "@/lib/os/current";
 import { normalizeAskPayload } from "@/lib/os/ask";
@@ -49,6 +51,25 @@ export async function POST(req: Request) {
     if (!normalized.ok) return osJson({ error: normalized.error }, 400);
     storedPayload = normalized.payload;
   }
+  if (type === "drive_approve" || type === "drive_edit" || type === "drive_skip") {
+    if (type === "drive_skip") {
+      const normalized = normalizeDriveSkip(body.payload, target);
+      if (!normalized.ok) return osJson({ error: normalized.error }, 400);
+      storedPayload = normalized.payload;
+    } else {
+      const decision = snapshot?.decisions.find((item) => decisionKey(item) === target);
+      const brief = snapshot?.drive?.find((item) => item.id === target);
+      if (!decision && !(type === "drive_approve" && brief)) return osJson({ error: "Decision not found" }, 404);
+      const normalized = decision
+        ? type === "drive_approve"
+          ? normalizeDriveApprove(decision, body.payload)
+          : normalizeDriveEdit(decision, body.payload)
+        : normalizeBriefApprove(brief!, body.payload);
+      if (!normalized.ok) return osJson({ error: normalized.error }, 400);
+      if (JSON.stringify(normalized.payload).length > 24000) return osJson({ error: "Payload is too large" }, 400);
+      storedPayload = normalized.payload;
+    }
+  }
 
   try {
     const result = await recordAction({ type, target_id: target, payload: storedPayload, idempotency_key: key });
@@ -79,5 +100,17 @@ function targetAllowed(type: ActionType, target: string, snapshot: Snapshot | nu
     return snapshot.crm.people.some((person) => person.id === target);
   }
   if (type.startsWith("bot_")) return snapshot.bots.bots.some((bot) => bot.name === target);
+  if (type === "drive_approve" || type === "drive_edit") {
+    if (snapshot.decisions.some((item) => decisionKey(item) === target)) return true;
+    if (type === "drive_approve" && snapshot.drive?.some((item) => item.id === target)) return true;
+    return false;
+  }
+  if (type === "drive_skip") {
+    if (snapshot.decisions.some((item) => decisionKey(item) === target)) return true;
+    if (snapshot.pitches.some((pitch) => pitchTarget(pitch) === target)) return true;
+    if (snapshot.bots.bots.some((bot, index) => botQuestionId(bot.name, index) === target)) return true;
+    if (snapshot.drive?.some((item) => item.id === target)) return true;
+    return false;
+  }
   return false;
 }

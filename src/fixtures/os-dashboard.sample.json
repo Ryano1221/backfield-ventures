@@ -937,7 +937,36 @@
           "label": "Not now"
         }
       ],
-      "exact_message": "FIXTURE: this is the exact sample message. Not a real note."
+      "exact_message": "FIXTURE: this is the exact sample message. Not a real note.",
+      "versions": [
+        {
+          "version": 1,
+          "subject": "Re: sample note",
+          "body": "Hey Casey,\n\nFair question. This is fixture copy for the local dashboard, not a real note.\n\nBest,",
+          "at": "2026-11-03T17:12:00.000Z",
+          "by": "Bot, first draft"
+        },
+        {
+          "version": 2,
+          "subject": "Re: sample note",
+          "body": "Hey Casey,\n\nFair question. This is fixture copy for the local dashboard, not a real note.\n\nIf that sounds fine, reply \"I'm in\".\n\nBest,",
+          "at": "2026-11-03T18:41:00.000Z",
+          "by": "Bot, from your note",
+          "note": "warmer, less formal"
+        }
+      ]
+    },
+    {
+      "title": "Renew the sample lease for 12 months at the same rate?",
+      "since": "2026-11-03T18:10:00.000Z",
+      "link": null,
+      "id": "fix-dec-yesno",
+      "why_ryan": "FIXTURE landlord needs an answer by Friday. Nothing is signed from here.",
+      "requested_by": "FIXTURE Executive",
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" }
+      ]
     },
     {
       "title": "ON HOLD. FIXTURE BEST3 OCTOBER 2026 PARTNER PACK (PACKET PKT_SAMPLE, OWNER INVESTMENT). APPROVE THE SAMPLE CARD.",

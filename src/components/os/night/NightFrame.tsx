@@ -49,7 +49,7 @@ export function useNightActions(): NightApi {
 
 const SINGLETON = new Set<ActionType>(["decide", "pitch_status", "crm_stage", "crm_hold", "crm_dnc", "bot_pause", "bot_resume", "snooze"]);
 
-type Section = "today" | "deals" | "people" | "bots" | "activity" | "email" | "waiting";
+type Section = "today" | "deals" | "people" | "bots" | "activity" | "email" | "waiting" | "drive";
 
 export function NightFrame({
   active,
@@ -61,6 +61,7 @@ export function NightFrame({
   finder,
   askAbout = null,
   askOwner = null,
+  driveCount = null,
   children,
 }: {
   active: Section;
@@ -72,6 +73,7 @@ export function NightFrame({
   finder: FinderItem[];
   askAbout?: string | null;
   askOwner?: string | null;
+  driveCount?: number | null;
   children: ReactNode;
 }) {
   const [actions, setActions] = useState(initialActions);
@@ -313,7 +315,7 @@ export function NightFrame({
     { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
     { id: "email", label: "Email", href: hrefs.email, count: null },
   ];
-  const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
+  const pageLabel = active === "drive" ? "Drive" : links.find((link) => link.id === active)?.label ?? "Activity";
 
   useEffect(() => {
     document.body.classList.toggle("os-cover", menu || open || askOpen);
@@ -349,10 +351,18 @@ export function NightFrame({
           <div className="sub lbl">OS · {pageLabel}</div>
           <nav>
             {links.map((link) => (
-              <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
-                {link.label}
-                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
-              </Link>
+              <span key={link.id} className="rail-slot">
+                <Link href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+                  {link.label}
+                  {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+                </Link>
+                {link.id === "today" ? (
+                  <Link href={hrefs.drive} prefetch className={active === "drive" ? "on drive-link" : "drive-link"}>
+                    Drive
+                    {driveCount != null ? <span className="c">{driveCount.toLocaleString("en-US")}</span> : null}
+                  </Link>
+                ) : null}
+              </span>
             ))}
             <Link href={hrefs.activity} prefetch className={active === "activity" ? "on" : ""}>
               Activity
@@ -482,8 +492,8 @@ export function NightFrame({
         {links
           .filter((link) => link.id === "today" || link.id === "deals" || link.id === "people" || link.id === "bots")
           .map((link) => (
-            <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
-              <TabIcon id={link.id} on={active === link.id} />
+            <Link key={link.id} href={link.href} prefetch className={(active === "drive" ? "today" : active) === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+              <TabIcon id={link.id} on={(active === "drive" ? "today" : active) === link.id} />
               <span>{link.label}</span>
               {link.id === "today" && link.count ? <span className="tab-badge">{link.count > 99 ? "99+" : link.count}</span> : null}
             </Link>

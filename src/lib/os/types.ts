@@ -179,6 +179,28 @@ export type DecisionEvent = {
   approx?: boolean;
 };
 
+export type DecisionVersion = {
+  version: number;
+  body: string;
+  subject?: string;
+  at?: string;
+  by?: string;
+  note?: string;
+  sent_at?: string;
+  sent_via?: string;
+};
+
+/** Optional end-of-day briefing rows. Absent until the snapshot builder emits them. */
+export type DriveBrief = {
+  id: string;
+  kind: "yesno" | "question" | "note";
+  title: string;
+  body?: string;
+  why?: string;
+  from?: string;
+  options?: DecisionOption[];
+};
+
 export type Decision = {
   title: string;
   since: string;
@@ -202,6 +224,12 @@ export type Decision = {
   their_words?: DecisionWords;
   timeline?: DecisionEvent[];
   why_ryan?: string;
+  /** queue_decisions vs draft_decisions, when the builder sends them apart from decisions. */
+  lane?: "queue" | "draft";
+  versions?: DecisionVersion[];
+  /** Set when the owning bot has sent the latest approved text. */
+  sent_at?: string;
+  sent_via?: string;
   body_formatted?: string;
   context_raw?: string;
   checks?: string[];
@@ -260,6 +288,9 @@ export const ACTION_TYPES = [
   "snooze",
   "free_text",
   "rate",
+  "drive_approve",
+  "drive_edit",
+  "drive_skip",
 ] as const;
 
 export type ActionType = (typeof ACTION_TYPES)[number];
@@ -320,6 +351,8 @@ export type Snapshot = {
   activity: ActivityItem[];
   interactions: Interaction[];
   crm: CrmBook;
+  /** Present only when the builder sends ops/drive-briefings. */
+  drive?: DriveBrief[];
 };
 
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;

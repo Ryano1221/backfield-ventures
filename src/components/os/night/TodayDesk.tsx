@@ -8,7 +8,7 @@ import { osHrefs } from "@/lib/os/nav";
 import { monogram } from "@/lib/os/logo-mark";
 import { useNightActions } from "./NightFrame";
 
-export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
+export function TodayDesk({ model, onOs, driveCount = 0 }: { model: TodayModel; onOs: boolean; driveCount?: number }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
   const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
@@ -89,6 +89,12 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
 
   return (
     <div className="inbox-page">
+      {driveCount > 0 ? (
+        <Link className="drive-start" href={hrefs.drive} prefetch>
+          <span>Start Drive</span>
+          <b className="num">{driveCount.toLocaleString("en-US")}</b>
+        </Link>
+      ) : null}
       <p className="greet">{view.weekday || "Today"}</p>
       <h1 className="d-xl">{waiting ? `${waiting} waiting on you` : "You're clear"}</h1>
       <p className="lede">
