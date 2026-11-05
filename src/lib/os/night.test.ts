@@ -276,7 +276,7 @@ test("people stages stay in funnel order and the tiles cover every person", () =
   );
   assert.deepEqual(
     people.counts.map((item) => item.stage),
-    ["ready", "queued", "im_in", "call_asked", "call_booked", "hold", "unknown"],
+    ["ready", "queued", "call_asked", "call_booked", "im_in", "hold", "unknown"],
   );
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.label, "I'm in");
@@ -284,6 +284,37 @@ test("people stages stay in funnel order and the tiles cover every person", () =
   assert.equal(people.counts.find((item) => item.stage === "queued")?.detail, null);
   assert.equal(people.counted, people.total);
   assert.equal(people.warm, 3);
+});
+
+test("pipeline stages after a booked call are labeled, and an unknown stage is title cased", () => {
+  assert.equal(stageLabel("call_held"), "Call held");
+  assert.equal(stageLabel("one_pager_sent"), "One-pager sent");
+  assert.equal(stageLabel("data_room"), "Data room");
+  assert.equal(stageLabel("soft_circle"), "Soft circle");
+  assert.equal(stageLabel("docs"), "Docs");
+  assert.equal(stageLabel("committed"), "Committed");
+  assert.equal(stageLabel("closed"), "Closed");
+  assert.equal(stageLabel("CALL_HELD"), "Call held");
+  assert.equal(stageLabel("not_a_stage"), "Not A Stage");
+  const people = buildPeople(
+    peopleSnapshot([
+      crmPerson({ id: "1", name: "Booked", track: "founder", stage: "call_booked" }),
+      crmPerson({ id: "2", name: "Held", track: "founder", stage: "call_held" }),
+      crmPerson({ id: "3", name: "Pager", track: "founder", stage: "one_pager_sent" }),
+      crmPerson({ id: "4", name: "Room", track: "founder", stage: "data_room" }),
+      crmPerson({ id: "5", name: "Circle", track: "founder", stage: "soft_circle" }),
+      crmPerson({ id: "6", name: "Papers", track: "founder", stage: "docs" }),
+      crmPerson({ id: "7", name: "Commit", track: "founder", stage: "committed" }),
+      crmPerson({ id: "8", name: "Done", track: "founder", stage: "closed" }),
+      crmPerson({ id: "9", name: "In", track: "investor", stage: "im_in" }),
+      crmPerson({ id: "10", name: "Other", track: "other", stage: "not_a_stage" }),
+    ]),
+  );
+  assert.deepEqual(
+    people.counts.map((item) => item.stage),
+    ["call_booked", "call_held", "one_pager_sent", "data_room", "soft_circle", "docs", "committed", "closed", "im_in", "not_a_stage"],
+  );
+  assert.equal(people.counts.find((item) => item.stage === "not_a_stage")?.label, "Not A Stage");
 });
 
 test("a lasting yes flag counts I'm in, and LP stays on the real track", () => {

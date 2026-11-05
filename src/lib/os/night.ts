@@ -17,6 +17,13 @@ const STAGE_LABEL: Record<string, string> = {
   im_in: "I'm in",
   call_asked: "Call asked",
   call_booked: "Call booked",
+  call_held: "Call held",
+  one_pager_sent: "One-pager sent",
+  data_room: "Data room",
+  soft_circle: "Soft circle",
+  docs: "Docs",
+  committed: "Committed",
+  closed: "Closed",
   hold: "On hold",
   bounced: "Bounced",
   do_not_contact: "Do not contact",
@@ -35,7 +42,28 @@ const TRACK_LABEL: Record<string, string> = {
   founder: "Founder",
 };
 
-const STAGE_ORDER = ["ready", "queued", "contacted", "nudged", "replied", "im_in", "call_asked", "call_booked", "hold", "bounced", "do_not_contact", "passed", "unknown"];
+const STAGE_ORDER = [
+  "ready",
+  "queued",
+  "contacted",
+  "nudged",
+  "replied",
+  "call_asked",
+  "call_booked",
+  "call_held",
+  "one_pager_sent",
+  "data_room",
+  "soft_circle",
+  "docs",
+  "committed",
+  "closed",
+  "im_in",
+  "hold",
+  "bounced",
+  "do_not_contact",
+  "passed",
+  "unknown",
+];
 const WARM = new Set(["replied", "im_in", "call_asked", "call_booked"]);
 const YES_STAGES = new Set(["im_in", "call_asked", "call_booked"]);
 const ROOM_NAME: Record<string, string> = {
@@ -374,10 +402,10 @@ export function stageLabel(stage: string | null | undefined): string | null {
   if (stage == null) return null;
   const trimmed = stage.trim();
   if (!trimmed) return null;
-  if (trimmed.toLowerCase() === "unknown") return "Unknown";
-  const raw = blankToNull(trimmed);
-  if (!raw) return null;
-  return STAGE_LABEL[raw] || cap(raw.replace(/_/g, " "));
+  const key = trimmed.toLowerCase();
+  if (key === "unknown") return "Unknown";
+  if (!blankToNull(trimmed)) return null;
+  return STAGE_LABEL[key] || titleCase(key.replace(/_+/g, " "));
 }
 
 export function trackLabel(track: string | null | undefined): string | null {
@@ -1161,8 +1189,8 @@ function stageIndex(stage: string): number {
 }
 
 function stageKey(person: CrmPerson): string {
-  const raw = person.stage?.trim();
-  if (!raw || raw.toLowerCase() === "unknown") return "unknown";
+  const raw = person.stage?.trim().toLowerCase();
+  if (!raw || raw === "unknown") return "unknown";
   return raw;
 }
 
@@ -1243,4 +1271,12 @@ function mentions(value: string, name: string): boolean {
 
 function cap(value: string): string {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+}
+
+function titleCase(value: string): string {
+  return value
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
