@@ -1848,3 +1848,13 @@ body.os .deal-pipeline button[aria-pressed="true"] { background: #123D22; color:
 body.os .deal-pipeline button[aria-pressed="true"] span { color: rgba(255, 255, 255, 0.82); }
 body.os .deal-meta .chip.st-advanced { background: #123D22; border-color: #123D22; color: #fff; }
 body.os .deal-meta .chip.st-passed { color: rgba(0, 0, 0, 0.62); border-style: dashed; }
+body.os .stale-banner { margin: 0; padding: 12px 16px; border-radius: 14px; background: #000; color: #fff; font-size: 14px; line-height: 1.45; }
+body.os .stale-banner b { font-weight: 700; }
+@media (min-width: 900px) { body.os .inbox-page .stale-banner { grid-column: 1 / -1; } }
+@media (min-width: 900px) {
+  /* Header lines take rows 1-5 (the stale banner is the optional fifth). */
+  body.os .inbox-page .command { grid-row: 6; }
+  body.os .inbox-page .approve-all { grid-row: 7; }
+  body.os .inbox-page .inbox, body.os .inbox-page .empty-clear { grid-row: 8; }
+  body.os .inbox-side { grid-row: 7 / span 4; }
+}

@@ -21,6 +21,7 @@ export function TodayDesk({
   briefs = [],
   answered = [],
   command = null,
+  stale = false,
 }: {
   model: TodayModel;
   onOs: boolean;
@@ -30,6 +31,7 @@ export function TodayDesk({
   briefs?: OsTodayNote[];
   answered?: AnsweredDecision[];
   command?: CommandModel | null;
+  stale?: boolean;
 }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
@@ -121,6 +123,11 @@ export function TodayDesk({
   return (
     <div className="inbox-page">
       <p className="greet">{view.weekday || "Today"}</p>
+      {stale ? (
+        <p className="stale-banner">
+          <b>The office has not reported in a while.</b> Last update {model.stamp || "unknown"}. Counts below are from then; check the bots if this lasts.
+        </p>
+      ) : null}
       <h1 className="d-xl">{waiting ? `${waiting} waiting on you` : "You're clear"}</h1>
       <p className="lede">
         {waiting

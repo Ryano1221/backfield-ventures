@@ -26,7 +26,7 @@ export default async function OsPage() {
   const command = buildCommand(page.snapshot, await readRaise(), page.snapshot ? buildBotDesk(page.snapshot, page.actions, now) : null, now);
   return (
     <NightFrame onOs={isOsHost(host)} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} />
+      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} stale={page.model.stale} />
     </NightFrame>
   );
 }
