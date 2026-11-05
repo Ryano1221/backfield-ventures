@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { DeskDecision } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { DecisionPane } from "./DecisionPane";
@@ -22,7 +23,7 @@ export function DecisionDesk({
   return (
     <>
       <div className="lbl eyebrow">
-        <a href={hrefs.today}>Today</a> / Needs you / {index + 1} of {total}
+        <Link href={hrefs.today} prefetch>Today</Link> / Needs you / {index + 1} of {total}
       </div>
       <div className="dgrid">
         <DecisionPane
@@ -79,13 +80,13 @@ export function DecisionDesk({
             <div className="card">
               <div className="h lbl">Linked records</div>
               {item.linked.map((link) => (
-                <a className="linked" key={`${link.kind}:${link.id}`} href={link.kind === "person" ? hrefs.person(link.id) : hrefs.deal(link.id)}>
+                <Link className="linked" key={`${link.kind}:${link.id}`} href={link.kind === "person" ? hrefs.person(link.id) : hrefs.deal(link.id)} prefetch>
                   <Logo name={link.name} domain={link.domain} logoUrl={link.logoUrl} />
                   <div>
                     <div className="n">{link.name}</div>
                     {link.detail ? <p className="clamp2">{link.detail}</p> : null}
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           ) : null}

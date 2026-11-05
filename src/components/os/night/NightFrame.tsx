@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { FinderItem } from "@/lib/os/finder";
@@ -79,6 +80,7 @@ export function NightFrame({
   const [open, setOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [compact, setCompact] = useState(false);
   const pathname = usePathname() || "/os";
   const [askContext, setAskContext] = useState<AskContext>({ page: pathname, about: askAbout, requestedBy: askOwner, botName: null });
   const [inflight, setInflight] = useState<Record<string, boolean>>({});
@@ -201,6 +203,8 @@ export function NightFrame({
           delete copy[id];
           return copy;
         });
+        setToasts((current) => [...current, { id: key, label: saved.label, undo: false }]);
+        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 2400);
         router.refresh();
         return;
       }
@@ -242,16 +246,29 @@ export function NightFrame({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const typing = Boolean(target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable));
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setOpen((value) => !value);
+      } else if (!typing && event.key === "/") {
+        event.preventDefault();
+        setOpen(true);
       } else if (event.key === "Escape") {
         setOpen(false);
         setMenu(false);
+        setAskOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 28);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -310,19 +327,16 @@ export function NightFrame({
 
   return (
     <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday, askContext, setAskContext }}>
-      <header className="mbar">
-        <a href={hrefs.today}>
-          <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
-        </a>
-        <div className="mbar-actions">
-          <button type="button" className="search-icon" aria-label="Ask" onClick={() => setAskOpen(true)}>
-            <SearchIcon />
-          </button>
-          <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
-            <i />
-            Menu
-          </button>
-        </div>
+      <header className={`appbar${compact ? " is-compact" : ""}`}>
+        <p className="appbar-kicker">Backfield</p>
+        <p className="appbar-title">{pageLabel}</p>
+        <button type="button" className="app-search" onClick={() => setOpen(true)}>
+          <SearchIcon />
+          <span>Search</span>
+        </button>
+        <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
+          More
+        </button>
       </header>
       <div className="shell">
         <aside className="rail">
@@ -332,12 +346,18 @@ export function NightFrame({
           <div className="sub lbl">OS · {pageLabel}</div>
           <nav>
             {links.map((link) => (
-              <a key={link.id} href={link.href} className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+              <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
                 {link.label}
                 {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
-              </a>
+              </Link>
             ))}
+            <Link href={hrefs.activity} prefetch className={active === "activity" ? "on" : ""}>
+              Activity
+            </Link>
           </nav>
+          <button type="button" className="rail-ask" onClick={() => setAskOpen(true)}>
+            Ask
+          </button>
           <div className="rail-foot lbl">
             <button type="button" onClick={signOut}>
               Sign out
@@ -351,7 +371,7 @@ export function NightFrame({
               Backfield OS <span className="sep">/</span> {pageLabel}
             </span>
             <span className="r">
-              <AskBox actions={actions} context={askContext} onSubmit={submit} />
+              <AskBox actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
                 <span>Search</span>
@@ -388,11 +408,14 @@ export function NightFrame({
           <div className="lbl mpanel-kicker">OS</div>
           <nav>
             {links.map((link) => (
-              <a key={link.id} href={link.href} className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenu(false)}>
+              <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenu(false)}>
                 {link.label}
                 {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
-              </a>
+              </Link>
             ))}
+            <Link href={hrefs.activity} prefetch onClick={() => setMenu(false)}>
+              Activity
+            </Link>
           </nav>
           <button type="button" className="mpanel-row" onClick={() => { setMenu(false); setOpen(true); }}>
             Search
@@ -410,7 +433,9 @@ export function NightFrame({
           <button type="button" className="palette-close" onClick={() => setAskOpen(false)}>
             Close
           </button>
-          <AskBox actions={actions} context={askContext} onSubmit={submit} />
+          <h2 className="ask-title">Ask</h2>
+          <p className="ask-note">This files a request. Nothing sends until you approve the exact text.</p>
+          <AskBox actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
         </div>
       ) : null}
       {open ? (
@@ -437,10 +462,10 @@ export function NightFrame({
             <ul>
               {matches.map((item) => (
                 <li key={`${item.kind}-${item.id}`}>
-                  <a href={finderHref(item, hrefs)} onClick={() => setOpen(false)}>
+                  <Link href={finderHref(item, hrefs)} prefetch onClick={() => setOpen(false)}>
                     <span>{item.title}</span>
                     <span className="muted">{item.hint || item.kind}</span>
-                  </a>
+                  </Link>
                 </li>
               ))}
               {matches.length === 0 ? <li className="muted" style={{ padding: 16 }}>No matches.</li> : null}
@@ -448,6 +473,21 @@ export function NightFrame({
           </div>
         </div>
       ) : null}
+      <nav className="tabbar" aria-label="Sections">
+        {links
+          .filter((link) => link.id === "today" || link.id === "deals" || link.id === "people" || link.id === "bots")
+          .map((link) => (
+            <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+              <TabIcon id={link.id} />
+              <span>{link.label}</span>
+              {link.id === "today" && link.count ? <span className="tab-badge">{link.count > 99 ? "99+" : link.count}</span> : null}
+            </Link>
+          ))}
+        <button type="button" className={askOpen ? "on" : ""} onClick={() => setAskOpen(true)}>
+          <TabIcon id="ask" />
+          <span>Ask</span>
+        </button>
+      </nav>
       <div className="toasts" aria-live="polite">
         {toasts.map((toast) => (
           <div className="toast" key={toast.id} role="status">
@@ -479,6 +519,15 @@ function finderHref(item: FinderItem, hrefs: ReturnType<typeof osHrefs>): string
   if (item.kind === "decision") return hrefs.decision(item.id);
   if (item.kind === "company") return hrefs.deal(item.id);
   return hrefs.bots;
+}
+
+function TabIcon({ id }: { id: string }) {
+  const common = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, "aria-hidden": true as const };
+  if (id === "deals") return <svg {...common}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 9h8M8 13h5" /></svg>;
+  if (id === "people") return <svg {...common}><circle cx="12" cy="8" r="3" /><path d="M5 19c1.4-3 3.8-4.5 7-4.5S17.6 16 19 19" /></svg>;
+  if (id === "bots") return <svg {...common}><rect x="6" y="7" width="12" height="10" rx="2" /><path d="M12 7V4M9 12h.01M15 12h.01" /></svg>;
+  if (id === "ask") return <svg {...common}><path d="M5 6h14v9H8l-3 3V6z" /></svg>;
+  return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" /></svg>;
 }
 
 function SearchIcon() {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { PersonModel } from "@/lib/os/night";
 import { Logo } from "./Logo";
 import { PersonActions } from "./PersonActions";
@@ -6,7 +7,7 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
   return (
     <>
       <div className="lbl eyebrow">
-        <a href={peopleHref}>People</a>
+        <Link href={peopleHref} prefetch>People</Link>
         {person.trackLabel ? ` / ${person.trackLabel}` : ""} / {person.name}
       </div>
       <div className="phead">

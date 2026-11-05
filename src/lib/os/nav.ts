@@ -2,11 +2,11 @@ export type OsSection = "today" | "crm" | "pipeline" | "bots" | "activity" | "em
 
 export function osChromeCounts(
   snapshot: { bots?: { bots?: readonly unknown[] } } | null,
-  model: { ready: readonly unknown[]; hold: readonly unknown[]; open: readonly unknown[]; reviewingCount: number; peopleCount: number },
+  model: { ready: readonly unknown[]; hold: readonly unknown[]; open: readonly unknown[]; reviewingCount: number; peopleCount: number; waiting?: readonly unknown[] },
 ) {
   if (!snapshot) return { today: null, deals: null, people: null, bots: null };
   return {
-    today: model.ready.length + model.hold.length + model.open.length,
+    today: model.ready.length + model.hold.length + model.open.length + (model.waiting?.length ?? 0),
     deals: model.reviewingCount,
     people: model.peopleCount,
     bots: snapshot.bots?.bots?.length ?? null,

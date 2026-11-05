@@ -1,24 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { type DeskDeal, type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
+import { snoozeUntil } from "@/lib/os/snooze";
 import { osHrefs } from "@/lib/os/nav";
-import { DecisionPane, DecisionRow } from "./DecisionPane";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
 
 export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
   const hrefs = osHrefs(onOs);
-  const { submit, inflight, reportToday, actions, setAskContext } = useNightActions();
+  const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
   const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
   const items = useMemo(() => [...view.ready, ...view.hold, ...view.open], [view]);
   const [current, setCurrent] = useState(0);
   const item = items[current] ?? null;
+  const waiting = items.length + model.waiting.length;
+  const outreach = view.kpis.find((kpi) => kpi.label === "Outreach today") ?? null;
 
   useEffect(() => {
-    reportToday(items.length);
-    return () => reportToday(null);
-  }, [items.length, reportToday]);
+    reportToday(waiting);
+  }, [reportToday, waiting]);
+
   useEffect(() => {
     setAskContext({
       page: hrefs.today,
@@ -27,7 +30,10 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       botName: null,
     });
   }, [hrefs.today, item?.id, item?.requestedBy, setAskContext]);
-  const next = item && items[current + 1] ? items[current + 1] : items.length > 1 ? items[0] : null;
+
+  useEffect(() => {
+    if (current > items.length - 1) setCurrent(Math.max(0, items.length - 1));
+  }, [current, items.length]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -40,215 +46,202 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       } else if (event.key === "k" || event.key === "ArrowUp") {
         event.preventDefault();
         setCurrent((index) => Math.max(0, index - 1));
-      } else if (event.key === "Enter" && item && !inflight[item.id] && !item.outcome) {
+      } else if ((event.key === "e" || event.key === "Enter") && item && !inflight[item.id] && !item.outcome) {
         event.preventDefault();
-        submit({
-          type: "decide",
-          target_id: item.id,
-          payload: { choice: item.approveChoice },
-          label: `Approved ${item.name}.`,
-        });
+        approve(item);
       }
+    }
+    function approve(decision: DeskDecision) {
+      enqueue({
+        type: "decide",
+        target_id: decision.id,
+        payload: { choice: decision.approveChoice },
+        label: `${decision.approveLabel}.`,
+      });
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [inflight, item, items.length, submit]);
+  }, [enqueue, inflight, item, items.length]);
+
+  function approve(decision: DeskDecision) {
+    enqueue({
+      type: "decide",
+      target_id: decision.id,
+      payload: { choice: decision.approveChoice },
+      label: `${decision.approveLabel}.`,
+    });
+  }
+
+  function dismiss(decision: DeskDecision) {
+    if (decision.notNow.kind === "decide") {
+      enqueue({
+        type: "decide",
+        target_id: decision.id,
+        payload: { choice: decision.notNow.choice },
+        label: `Not now for ${decision.name}.`,
+      });
+      return;
+    }
+    enqueue({
+      type: "snooze",
+      target_id: decision.id,
+        payload: { until: snoozeUntil("tomorrow") },
+      label: `Not now for ${decision.name}.`,
+    });
+  }
 
   return (
-    <div className="today-board">
-      <div className="hero">
-        <div>
-          {view.weekday ? (
-            <div className="lbl eyebrow">{view.weekday}</div>
-          ) : null}
-          <h1 className="d-xl">
-            {view.headline}
-            {view.headlineDim ? (
-              <>
-                <br />
-                <span className="dim">{view.headlineDim}</span>
-              </>
-            ) : null}
-          </h1>
-          {view.lede ? <p className="lede">{view.lede}</p> : null}
-          {view.instruction ? <p className="t-body">{view.instruction}</p> : null}
-        </div>
-        {view.kpis.length ? (
-          <div className="kpis">
-            {view.kpis.map((kpi) => (
-              <div className="kpi" key={kpi.label}>
-                <div className="lbl">{kpi.label}</div>
-                <div className="v">
-                  {kpi.value}
-                  {kpi.small ? <small>{kpi.small}</small> : null}
-                </div>
-                {kpi.sub ? <div className="s">{kpi.sub}</div> : null}
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </div>
+    <div className="inbox-page">
+      <p className="lbl eyebrow">{view.weekday || "Today"}</p>
+      <h1 className="d-xl">{waiting ? `${waiting} waiting on you` : "Clear"}</h1>
+      <p className="lede">{waiting ? "One action each. Undo is at the bottom of the screen." : "Nothing needs you right now."}</p>
+      <p className="pointer-keys keys">J and K move. E approves. / searches.</p>
+
+      {items.length ? (
+        <ol className="inbox">
+          {items.map((decision, index) => (
+            <InboxCard
+              key={decision.id}
+              item={decision}
+              selected={index === current}
+              href={hrefs.decision(decision.id)}
+              busy={Boolean(inflight[decision.id])}
+              onApprove={() => approve(decision)}
+              onDismiss={() => dismiss(decision)}
+              onFocus={() => setCurrent(index)}
+            />
+          ))}
+        </ol>
+      ) : (
+        <p className="empty-clear">Inbox clear.</p>
+      )}
+
+      {model.waiting.length ? (
+        <section className="stack" aria-label="Bots waiting on you">
+          <h2>Bots waiting</h2>
+          {model.waiting.map((bot) => (
+            <Link className="stack-row" href={hrefs.bots} prefetch key={bot.slug}>
+              <b>{bot.name}</b>
+              <span>{bot.ask}</span>
+            </Link>
+          ))}
+        </section>
+      ) : null}
+
+      <section className="stack" aria-label="Firm status">
+        <h2>Firm</h2>
+        {outreach ? (
+          <p className="stack-stat">
+            <b className="num">{outreach.value}{outreach.small || ""}</b>
+            <span>Outreach today{outreach.sub ? ` · ${outreach.sub}` : ""}</span>
+          </p>
+        ) : (
+          <p className="stack-stat"><span>Outreach is not in this snapshot.</span></p>
+        )}
+        <Link className="stack-row" href={hrefs.email} prefetch>
+          <b>Email</b>
+          <span>Lists and drafts. Sends stay a request.</span>
+        </Link>
+        <Link className="stack-row" href={hrefs.deals} prefetch>
+          <b>Deals</b>
+          <span>{model.reviewingCount.toLocaleString("en-US")} in review</span>
+        </Link>
+      </section>
 
       {view.settled.length ? (
-        <section className="card" aria-label="Answered">
-          <div className="h">
-            <span className="lbl">Answered</span>
-          </div>
+        <section className="stack" aria-label="Answered">
+          <h2>Answered</h2>
           <ul className="settled">
             {view.settled.map((row) => (
               <li key={row.id}>
                 <b>{row.label}</b>
                 <span>{row.name}</span>
-                {row.at ? <span className="lbl">{row.at}</span> : null}
               </li>
             ))}
           </ul>
         </section>
       ) : null}
-
-      <section className="card decisions">
-        <div className="h">
-          <span className="lbl">Needs you · Decisions</span>
-          {items.length ? <span className="lbl pointer-keys">J / K to move · Enter to approve</span> : null}
-        </div>
-        {item ? (
-          <div className="mfirst">
-            <DecisionPane key={item.id} item={item} index={current} total={items.length} />
-          </div>
-        ) : (
-          <p className="t-body muted" style={{ padding: "16px 18px" }}>No decisions in this snapshot.</p>
-        )}
-        {items.length ? (
-          <div className="split">
-            <div className="list">
-              <Group label="Ready to send" items={view.ready} all={items} current={current} onSelect={setCurrent} />
-              <Group label="On hold" items={view.hold} all={items} current={current} onSelect={setCurrent} />
-              <Group label="Open" items={view.open} all={items} current={current} onSelect={setCurrent} />
-            </div>
-            {item ? (
-              <DecisionPane
-                key={item.id}
-                className="desk"
-                item={item}
-                index={current}
-                total={items.length}
-                next={next && next.id !== item.id ? { href: hrefs.decision(next.id), label: next.name } : null}
-              />
-            ) : null}
-          </div>
-        ) : null}
-      </section>
-
-      {model.waiting.length ? (
-        <section className="card">
-          <div className="h">
-            <span className="lbl">Bots waiting on you · {model.waiting.length}</span>
-            <a className="lnk" href={hrefs.bots}>
-              Office
-            </a>
-          </div>
-          <div className="wait">
-            {model.waiting.map((bot) => (
-              <a className="br" href={hrefs.bots} key={bot.slug}>
-                <div className="n">{bot.name}</div>
-                <div className="s">{bot.ask}</div>
-              </a>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="card">
-        <div className="h">
-          <span className="lbl">Deal desk · Deals in review</span>
-          {model.pitchCount ? (
-            <a className="lnk" href={hrefs.deals}>
-              All {model.pitchCount.toLocaleString("en-US")} pitches
-            </a>
-          ) : null}
-        </div>
-        {model.deals.length ? <DealTable deals={model.deals} hrefFor={(deal) => hrefs.deal(deal.id)} /> : <p className="t-body muted" style={{ padding: "16px 18px" }}>No deals are in review.</p>}
-      </section>
     </div>
   );
 }
 
-function Group({
-  label,
-  items,
-  all,
-  current,
-  onSelect,
+function InboxCard({
+  item,
+  selected,
+  href,
+  busy,
+  onApprove,
+  onDismiss,
+  onFocus,
 }: {
-  label: string;
-  items: DeskDecision[];
-  all: DeskDecision[];
-  current: number;
-  onSelect: (index: number) => void;
+  item: DeskDecision;
+  selected: boolean;
+  href: string;
+  busy: boolean;
+  onApprove: () => void;
+  onDismiss: () => void;
+  onFocus: () => void;
 }) {
-  if (!items.length) return null;
-  return (
-    <>
-      <div className="grp lbl">
-        <span>{label}</span>
-        <span>{items.length}</span>
-      </div>
-      {items.map((item) => (
-        <DecisionRow key={item.id} item={item} selected={all[current]?.id === item.id} onSelect={() => onSelect(all.findIndex((row) => row.id === item.id))} />
-      ))}
-    </>
-  );
-}
+  const start = useRef<{ x: number; y: number; drag: boolean } | null>(null);
+  const [dx, setDx] = useState(0);
 
-export function DealTable({ deals, hrefFor }: { deals: DeskDeal[]; hrefFor?: (deal: DeskDeal) => string }) {
-  return (
-    <div className="tbl-scroll">
-      <table className="tbl">
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th className="hm">Sector</th>
-            <th>Stage</th>
-            <th>Score</th>
-            <th>In review</th>
-          </tr>
-        </thead>
-        <tbody>
-          {deals.map((deal) => (
-            <tr key={deal.id} id={deal.id}>
-              <td>
-                <div className="co">
-                  <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} />
-                  <div>
-                    {hrefFor ? (
-                      <a className="n" href={hrefFor(deal)}>
-                        {deal.company}
-                      </a>
-                    ) : (
-                      <div className="n">{deal.company}</div>
-                    )}
-                    {deal.summary ? <div className="d clamp2">{deal.summary}</div> : null}
-                  </div>
-                </div>
-              </td>
-              <td className="hm" data-label="Sector">{deal.sector || ""}</td>
-              <td data-label="Stage">{deal.stage ? <span className="tag">{deal.stage}</span> : null}</td>
-              <td data-label="Score">{deal.pips == null ? <span className="lbl">Not scored</span> : <Pips n={deal.pips} />}</td>
-              <td className="nw" data-label="In review">{deal.waiting || ""}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+  function onTouchStart(event: React.TouchEvent) {
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    start.current = { x: touch.clientX, y: touch.clientY, drag: false };
+  }
 
-function Pips({ n }: { n: number }) {
+  function onTouchMove(event: React.TouchEvent) {
+    const origin = start.current;
+    const touch = event.changedTouches[0];
+    if (!origin || !touch) return;
+    const x = touch.clientX - origin.x;
+    const y = touch.clientY - origin.y;
+    if (!origin.drag) {
+      if (Math.abs(y) > Math.abs(x) + 6) {
+        start.current = null;
+        return;
+      }
+      if (Math.abs(x) > 10) origin.drag = true;
+    }
+    if (origin.drag) setDx(Math.max(-140, Math.min(140, x)));
+  }
+
+  function onTouchEnd() {
+    if (dx > 80) onApprove();
+    else if (dx < -80) onDismiss();
+    setDx(0);
+    start.current = null;
+  }
+
+  const line = item.message || item.summary || item.happened;
+
   return (
-    <span className="pips" aria-label={`${n} of 5`}>
-      {Array.from({ length: 5 }, (_, index) => (
-        <i key={index} className={index < n ? "on" : ""} />
-      ))}
-    </span>
+    <li className={`swipe${selected ? " is-sel" : ""}`} style={{ ["--dx" as string]: `${dx}px` }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <span className="swipe-yes">Approve</span>
+      <span className="swipe-no">Not now</span>
+      <article className="inbox-card" onClick={onFocus}>
+        <div className="inbox-who">
+          <Logo name={item.name} domain={item.domain} logoUrl={item.logoUrl} />
+          <div>
+            <h2>{item.name}</h2>
+            {item.org ? <p>{item.org}</p> : null}
+          </div>
+          {item.channel ? <span className="chip">{item.channel}</span> : null}
+        </div>
+        {line ? <p className="inbox-line">{line}</p> : null}
+        <div className="inbox-actions">
+          <button type="button" className="btn primary" disabled={busy} onClick={onApprove}>
+            {item.approveLabel}
+          </button>
+          <button type="button" className="btn" disabled={busy} onClick={onDismiss}>
+            Not now
+          </button>
+          <Link href={href} prefetch>
+            Read
+          </Link>
+        </div>
+      </article>
+    </li>
   );
 }

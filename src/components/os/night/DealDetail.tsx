@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { DeskDeal } from "@/lib/os/night";
 import { Logo } from "./Logo";
 import { DealLinks } from "./DealsDesk";
@@ -8,7 +9,7 @@ export function DealDetail({ deal, dealsHref }: { deal: DeskDeal; dealsHref: str
   return (
     <>
       <div className="lbl eyebrow">
-        <a href={dealsHref}>Deals</a>
+        <Link href={dealsHref} prefetch>Deals</Link>
         {` / ${deal.company}`}
       </div>
       <div className="phead">
