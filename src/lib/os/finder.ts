@@ -6,15 +6,25 @@ import { blankToNull } from "./present";
 import type { Snapshot } from "./types";
 
 export type FinderItem = {
-  kind: "person" | "company" | "bot" | "decision";
+  kind: "person" | "company" | "bot" | "decision" | "page";
   id: string;
   title: string;
   hint: string;
 };
 
+// Pages come first so "fund", "raise" or "deals" jumps straight there.
+export const PAGE_ITEMS: FinderItem[] = [
+  { kind: "page", id: "today", title: "Today", hint: "Page" },
+  { kind: "page", id: "raise", title: "Fund I raise", hint: "Page · commitments, LP funnel" },
+  { kind: "page", id: "deals", title: "Deals", hint: "Page · pipeline" },
+  { kind: "page", id: "people", title: "People", hint: "Page · CRM" },
+  { kind: "page", id: "bots", title: "Bots", hint: "Page · the office" },
+  { kind: "page", id: "email", title: "Email", hint: "Page" },
+];
+
 export function buildFinder(snapshot: Snapshot | null): FinderItem[] {
-  if (!snapshot) return [];
-  const items: FinderItem[] = [];
+  if (!snapshot) return [...PAGE_ITEMS];
+  const items: FinderItem[] = [...PAGE_ITEMS];
   for (const person of snapshot.crm.people) {
     items.push({
       kind: "person",

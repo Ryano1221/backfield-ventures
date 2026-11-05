@@ -395,7 +395,7 @@ export function NightFrame({
 
   const q = query.trim().toLowerCase();
   const matches = finder
-    .filter((item) => !q || `${item.title} ${item.hint}`.toLowerCase().includes(q))
+    .filter((item) => (q ? `${item.title} ${item.hint}`.toLowerCase().includes(q) : item.kind !== "page" || item.id !== "today"))
     .slice(0, 12);
 
   async function signOut() {
@@ -599,6 +599,7 @@ function actionKey(draft: Draft): string {
 }
 
 function finderHref(item: FinderItem, hrefs: ReturnType<typeof osHrefs>): string {
+  if (item.kind === "page") return (hrefs as unknown as Record<string, string>)[item.id] ?? hrefs.today;
   if (item.kind === "person") return hrefs.person(item.id);
   if (item.kind === "decision") return hrefs.decision(item.id);
   if (item.kind === "company") return hrefs.deal(item.id);

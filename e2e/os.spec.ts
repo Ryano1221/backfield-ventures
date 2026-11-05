@@ -307,6 +307,19 @@ test("Fund I tracks the raise and Today shows it", async ({ page }) => {
   await expect(page.locator(".cmd-raise")).toContainText("$10M");
 });
 
+test("a stale snapshot shows a clear banner on Today", async ({ page }) => {
+  const { readFileSync, writeFileSync } = await import("node:fs");
+  const fixture = JSON.parse(readFileSync("src/fixtures/os-dashboard.sample.json", "utf8"));
+  fixture.generated_at = new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString();
+  writeFileSync("/tmp/os-e2e-none.json", JSON.stringify({ snapshot: fixture, stored_at: new Date().toISOString() }));
+  try {
+    await signIn(page);
+    await expect(page.locator(".stale-banner")).toContainText("has not reported");
+  } finally {
+    unlinkSync("/tmp/os-e2e-none.json");
+  }
+});
+
 test("an unknown OS path uses the OS missing page", async ({ page }) => {
   await page.goto("/os/login");
   await page.getByLabel("Password").fill(PASSWORD);
