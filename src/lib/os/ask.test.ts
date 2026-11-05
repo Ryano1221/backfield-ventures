@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { askActions, normalizeAskPayload, officeStatus, routeAsk, whoLabel } from "./ask";
+import { askActions, dedupedAsks, normalizeAskPayload, officeStatus, routeAsk, whoLabel } from "./ask";
 import type { OsAction } from "./types";
 
 test("a typed ask stays text and routes to the owner", () => {
@@ -44,6 +44,9 @@ test("status moves from not picked up to picked up or did not land", () => {
   });
   const rows = [row("free_text", "executive"), row("decide", "dec-1"), row("bot_request", "Investment")];
   assert.deepEqual(askActions(rows).map((item) => item.type), ["bot_request", "free_text"]);
+  const repeat = [row("free_text", "executive"), { ...row("free_text", "executive"), action_id: "later", created_at: "2026-11-04T19:00:00.000Z" }];
+  assert.equal(dedupedAsks(repeat).length, 1);
+  assert.equal(dedupedAsks(repeat)[0]?.action_id, "later");
 });
 
 function row(type: OsAction["type"], target: string): OsAction {

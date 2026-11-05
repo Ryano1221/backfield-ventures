@@ -71,6 +71,24 @@ export function PeopleDesk({
           </>
         ) : null}
       </h1>
+      <PeopleList
+        hrefs={hrefs}
+        counts={counts}
+        tracks={tracks}
+        total={total}
+        track={track}
+        stage={stage}
+        query={query}
+        shown={shown}
+        stageOpen={stageOpen}
+        filtered={filtered}
+        visible={visible}
+        setTrack={setTrack}
+        setStage={setStage}
+        setQuery={setQuery}
+        setShown={setShown}
+        setStageOpen={setStageOpen}
+      />
       {splitFlag && flag ? (
         <div className="kpi flag">
           <div>
@@ -118,6 +136,47 @@ export function PeopleDesk({
           </p>
         </>
       ) : null}
+    </>
+  );
+}
+
+function PeopleList({
+  hrefs,
+  counts,
+  tracks,
+  total,
+  track,
+  stage,
+  query,
+  shown,
+  stageOpen,
+  filtered,
+  visible,
+  setTrack,
+  setStage,
+  setQuery,
+  setShown,
+  setStageOpen,
+}: {
+  hrefs: ReturnType<typeof osHrefs>;
+  counts: StageCount[];
+  tracks: { track: string; label: string; count: number }[];
+  total: number;
+  track: string;
+  stage: string;
+  query: string;
+  shown: number;
+  stageOpen: boolean;
+  filtered: PeopleRow[];
+  visible: PeopleRow[];
+  setTrack: (value: string) => void;
+  setStage: (value: string) => void;
+  setQuery: (value: string) => void;
+  setShown: (value: number | ((count: number) => number)) => void;
+  setStageOpen: (value: boolean) => void;
+}) {
+  return (
+    <>
       <div className="tabs">
         <button type="button" className={track === "all" ? "on" : ""} onClick={() => { setTrack("all"); setShown(PAGE); }}>
           All {total.toLocaleString("en-US")}

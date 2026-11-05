@@ -41,10 +41,11 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
             </button>
           ))}
         </div>
-        <div className="segment" role="group" aria-label="Filter pitches">
+        <div className="segment scroll" role="group" aria-label="Filter pitches">
           {RATING_FILTERS.map((item) => (
             <button key={item.id} type="button" aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>
-              {item.label} <span className="num">{counts[item.id]}</span>
+              <span>{item.label}</span>
+              <span className="num">{counts[item.id]}</span>
             </button>
           ))}
         </div>
@@ -80,7 +81,7 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
 }
 
 export function DealLinks({ deal }: { deal: DeskDeal }) {
-  if (!deal.website && !deal.deckUrl && !deal.deckNote) return null;
+  if (!deal.website && !deal.deckUrl) return null;
   return (
     <div className="deal-links">
       {deal.website ? (

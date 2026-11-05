@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeDecidePayload } from "./actions";
-import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, stageLabel } from "./night";
+import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, stageLabel, todayLine } from "./night";
 import type { CrmPerson, Snapshot } from "./types";
 
 const NOW = Date.parse("2026-11-03T22:09:00.000Z");
@@ -44,6 +44,12 @@ test("today headline and lede come from counts, and missing fields stay off the 
   assert.equal(model.ready[0]?.toEmail, null);
   assert.deepEqual(model.ready[0]?.checks, []);
   assert.deepEqual(model.ready[0]?.timeline, []);
+});
+
+test("the greeting is Chicago today, not the snapshot day", () => {
+  assert.equal(todayLine(Date.parse("2026-11-05T18:00:00.000Z")), "Thursday, Nov 5");
+  const model = buildToday(sample(), [], Date.parse("2026-11-05T18:00:00.000Z"));
+  assert.equal(model.weekday, "Thursday, Nov 5");
 });
 
 test("decision times render in CT and a formatted body keeps its blank lines", () => {

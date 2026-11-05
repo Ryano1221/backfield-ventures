@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { type DeskDecision, type TodayModel, withLiveAnswers } from "@/lib/os/night";
 import { snoozeUntil } from "@/lib/os/snooze";
 import { osHrefs } from "@/lib/os/nav";
-import { Logo } from "./Logo";
+import { monogram } from "@/lib/os/logo-mark";
 import { useNightActions } from "./NightFrame";
 
 export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean }) {
@@ -145,17 +145,13 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
 
       <section className="stack" aria-label="Firm status">
         <h2>Firm</h2>
-        {outreach ? (
-          <p className="stack-stat">
-            <b className="num">{outreach.value}{outreach.small || ""}</b>
-            <span>Outreach today{outreach.sub ? ` · ${outreach.sub}` : ""}</span>
-          </p>
-        ) : (
-          <p className="stack-stat"><span>Outreach is not in this snapshot.</span></p>
-        )}
         <Link className="stack-row" href={hrefs.email} prefetch>
           <b>Email</b>
-          <span>Lists and drafts. Sends stay a request.</span>
+          <span>
+            {outreach
+              ? `Outreach today ${outreach.value}${outreach.small || ""}${outreach.sub ? ` · ${outreach.sub}` : ""}`
+              : "No send counts in this snapshot."}
+          </span>
         </Link>
         <Link className="stack-row" href={hrefs.deals} prefetch>
           <b>Deals</b>
@@ -241,19 +237,23 @@ function InboxCard({
   }
 
   const line = item.message || item.summary || item.happened;
+  const [open, setOpen] = useState(false);
+  const kind = item.channel || (item.hold ? "Hold" : "Decision");
 
   return (
     <li className={`swipe${selected ? " is-sel" : ""}`} style={{ ["--dx" as string]: `${dx}px` }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <span className="swipe-yes">Approve</span>
       <span className="swipe-no">Not now</span>
-      <article className="inbox-card" onClick={onFocus}>
+      <article className={`inbox-card${open ? " is-open" : ""}`} onClick={onFocus}>
         <div className="inbox-who">
-          <Logo name={item.name} domain={item.domain} logoUrl={item.logoUrl} />
+          <span className="logo fb" aria-hidden="true">{monogram(item.name)}</span>
           <div>
-            <h2>{item.name}</h2>
+            <h2>
+              <Link href={href} prefetch>{item.name}</Link>
+            </h2>
             {item.org ? <p>{item.org}</p> : null}
           </div>
-          {item.channel ? <span className="chip">{item.channel}</span> : null}
+          <span className="chip inbox-type">{kind}</span>
         </div>
         {line ? <p className="inbox-line">{line}</p> : null}
         <div className="inbox-actions">
@@ -263,9 +263,13 @@ function InboxCard({
           <button type="button" className="btn" disabled={busy} onClick={onDismiss}>
             Not now
           </button>
-          <Link href={href} prefetch>
-            Read
-          </Link>
+          {line ? (
+            <button type="button" className="btn" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+              {open ? "Show less" : "Read"}
+            </button>
+          ) : (
+            <Link href={href} prefetch>Read</Link>
+          )}
         </div>
       </article>
     </li>
