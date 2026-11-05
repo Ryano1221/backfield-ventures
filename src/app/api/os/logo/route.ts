@@ -12,14 +12,24 @@ export async function GET(req: Request) {
   const logo = normalizeLogoUrl(url.searchParams.get("url"));
   const domain = normalizeDomain(url.searchParams.get("domain"));
   const target = logo || (domain ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128` : "");
-  if (!target) return new Response(null, { status: 404, headers: PRIVATE_HEADERS });
+  if (!target) return miss();
   const hit = cache.get(target);
   if (hit && hit.exp > Date.now()) return image(hit.body, hit.type);
   const fetched = await fetchImage(target);
-  if (!fetched) return new Response(null, { status: 404, headers: PRIVATE_HEADERS });
-  if (!logo && fetched.body.byteLength < 800) return new Response(null, { status: 404, headers: PRIVATE_HEADERS });
+  if (!fetched) return miss();
+  if (!logo && fetched.body.byteLength < 800) return miss();
   cache.set(target, { body: fetched.body, type: fetched.type, exp: Date.now() + 86_400_000 });
   return image(fetched.body, fetched.type);
+}
+
+const MISS_GIF = Uint8Array.from([
+  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x21, 0xf9, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b,
+]);
+
+function miss(): Response {
+  return new Response(Buffer.from(MISS_GIF), {
+    headers: { ...PRIVATE_HEADERS, "Content-Type": "image/gif", "X-Logo-Miss": "1", "Cache-Control": "private, max-age=3600" },
+  });
 }
 
 function image(body: Uint8Array, type: string): Response {

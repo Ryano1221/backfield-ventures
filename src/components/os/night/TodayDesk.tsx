@@ -14,7 +14,8 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
   const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
   const items = useMemo(() => [...view.ready, ...view.hold, ...view.open], [view]);
   const [current, setCurrent] = useState(0);
-  const item = items[current] ?? null;
+  const selected = Math.min(current, Math.max(0, items.length - 1));
+  const item = items[selected] ?? null;
   const waiting = items.length + model.waiting.length;
   const outreach = view.kpis.find((kpi) => kpi.label === "Outreach today") ?? null;
 
@@ -30,10 +31,6 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       botName: null,
     });
   }, [hrefs.today, item?.id, item?.requestedBy, setAskContext]);
-
-  useEffect(() => {
-    if (current > items.length - 1) setCurrent(Math.max(0, items.length - 1));
-  }, [current, items.length]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -56,7 +53,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
         type: "decide",
         target_id: decision.id,
         payload: { choice: decision.approveChoice },
-        label: `${decision.approveLabel}.`,
+        label: "Approved.",
       });
     }
     window.addEventListener("keydown", onKey);
@@ -68,7 +65,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       type: "decide",
       target_id: decision.id,
       payload: { choice: decision.approveChoice },
-      label: `${decision.approveLabel}.`,
+      label: "Approved.",
     });
   }
 
@@ -92,9 +89,13 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
 
   return (
     <div className="inbox-page">
-      <p className="lbl eyebrow">{view.weekday || "Today"}</p>
-      <h1 className="d-xl">{waiting ? `${waiting} waiting on you` : "Clear"}</h1>
-      <p className="lede">{waiting ? "One action each. Undo is at the bottom of the screen." : "Nothing needs you right now."}</p>
+      <p className="greet">{view.weekday || "Today"}</p>
+      <h1 className="d-xl">{waiting ? `${waiting} waiting on you` : "You're clear"}</h1>
+      <p className="lede">
+        {waiting
+          ? `${items.length.toLocaleString("en-US")} ${items.length === 1 ? "decision" : "decisions"}, ${model.waiting.length.toLocaleString("en-US")} ${model.waiting.length === 1 ? "bot" : "bots"}.`
+          : "Nothing needs you right now."}
+      </p>
       <p className="pointer-keys keys">J and K move. E approves. / searches.</p>
 
       {items.length ? (
@@ -103,7 +104,7 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
             <InboxCard
               key={decision.id}
               item={decision}
-              selected={index === current}
+              selected={index === selected}
               href={hrefs.decision(decision.id)}
               busy={Boolean(inflight[decision.id])}
               onApprove={() => approve(decision)}
@@ -119,12 +120,26 @@ export function TodayDesk({ model, onOs }: { model: TodayModel; onOs: boolean })
       {model.waiting.length ? (
         <section className="stack" aria-label="Bots waiting on you">
           <h2>Bots waiting</h2>
-          {model.waiting.map((bot) => (
-            <Link className="stack-row" href={hrefs.bots} prefetch key={bot.slug}>
-              <b>{bot.name}</b>
-              <span>{bot.ask}</span>
-            </Link>
-          ))}
+          {model.waiting.map((bot) => {
+            const decision = items.find((row) => (row.requestedBy || "").toLowerCase() === bot.name.toLowerCase());
+            return (
+              <div className="stack-row has-action" key={bot.slug}>
+                <div>
+                  <b>{bot.name}</b>
+                  <span>{bot.ask}</span>
+                </div>
+                {decision ? (
+                  <button type="button" className="btn primary" disabled={Boolean(inflight[decision.id])} onClick={() => approve(decision)}>
+                    Approve
+                  </button>
+                ) : (
+                  <Link className="btn" href={hrefs.bots} prefetch>
+                    Open
+                  </Link>
+                )}
+              </div>
+            );
+          })}
         </section>
       ) : null}
 
@@ -183,20 +198,28 @@ function InboxCard({
   onFocus: () => void;
 }) {
   const start = useRef<{ x: number; y: number; drag: boolean } | null>(null);
+  const dxRef = useRef(0);
   const [dx, setDx] = useState(0);
-
-  function onTouchStart(event: React.TouchEvent) {
-    const touch = event.changedTouches[0];
-    if (!touch) return;
-    start.current = { x: touch.clientX, y: touch.clientY, drag: false };
+  function move(next: number) {
+    dxRef.current = next;
+    setDx(next);
   }
 
-  function onTouchMove(event: React.TouchEvent) {
+  function onPointerDown(event: React.PointerEvent) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    start.current = { x: event.clientX, y: event.clientY, drag: false };
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      /* Synthetic events cannot capture the pointer. */
+    }
+  }
+
+  function onPointerMove(event: React.PointerEvent) {
     const origin = start.current;
-    const touch = event.changedTouches[0];
-    if (!origin || !touch) return;
-    const x = touch.clientX - origin.x;
-    const y = touch.clientY - origin.y;
+    if (!origin) return;
+    const x = event.clientX - origin.x;
+    const y = event.clientY - origin.y;
     if (!origin.drag) {
       if (Math.abs(y) > Math.abs(x) + 6) {
         start.current = null;
@@ -204,20 +227,21 @@ function InboxCard({
       }
       if (Math.abs(x) > 10) origin.drag = true;
     }
-    if (origin.drag) setDx(Math.max(-140, Math.min(140, x)));
+    if (origin.drag) move(Math.max(-140, Math.min(140, x)));
   }
 
-  function onTouchEnd() {
-    if (dx > 80) onApprove();
-    else if (dx < -80) onDismiss();
-    setDx(0);
+  function onPointerUp() {
+    const dragged = dxRef.current;
+    if (dragged > 80) onApprove();
+    else if (dragged < -80) onDismiss();
+    move(0);
     start.current = null;
   }
 
   const line = item.message || item.summary || item.happened;
 
   return (
-    <li className={`swipe${selected ? " is-sel" : ""}`} style={{ ["--dx" as string]: `${dx}px` }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <li className={`swipe${selected ? " is-sel" : ""}`} style={{ ["--dx" as string]: `${dx}px` }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <span className="swipe-yes">Approve</span>
       <span className="swipe-no">Not now</span>
       <article className="inbox-card" onClick={onFocus}>
@@ -232,7 +256,7 @@ function InboxCard({
         {line ? <p className="inbox-line">{line}</p> : null}
         <div className="inbox-actions">
           <button type="button" className="btn primary" disabled={busy} onClick={onApprove}>
-            {item.approveLabel}
+            Approve
           </button>
           <button type="button" className="btn" disabled={busy} onClick={onDismiss}>
             Not now

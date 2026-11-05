@@ -32,29 +32,23 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
       <p className="lede">
         {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
       </p>
-      <section className="card">
-        <div className="h">
-          <span className="lbl">Pitches</span>
-        </div>
-        <div className="filterbar">
-          <input className="search" value={query} placeholder="Search company, sector, source" aria-label="Search pitches" onChange={(event) => setQuery(event.target.value)} />
-          <label className="lbl">
-            Sort
-            <select className="stage-select" aria-label="Sort pitches" value={sort} onChange={(event) => setSort(event.target.value as DealSort)}>
-              <option value="rating">Rating</option>
-              <option value="score">Score</option>
-              <option value="newest">Newest</option>
-              <option value="name">Name</option>
-            </select>
-          </label>
-        </div>
-        <div className="deal-filters">
-          {RATING_FILTERS.map((item) => (
-            <button key={item.id} type="button" className="deal-chip" aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>
-              {item.label} <span>{counts[item.id]}</span>
+      <div className="deals-tools">
+        <input className="pill" value={query} placeholder="Search pitches" aria-label="Search pitches" onChange={(event) => setQuery(event.target.value)} />
+        <div className="segment" role="group" aria-label="Sort pitches">
+          {(["rating", "score", "newest", "name"] as DealSort[]).map((id) => (
+            <button key={id} type="button" aria-pressed={sort === id} onClick={() => setSort(id)}>
+              {id === "rating" ? "Rating" : id === "score" ? "Score" : id === "newest" ? "Newest" : "Name"}
             </button>
           ))}
         </div>
+        <div className="segment" role="group" aria-label="Filter pitches">
+          {RATING_FILTERS.map((item) => (
+            <button key={item.id} type="button" aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>
+              {item.label} <span className="num">{counts[item.id]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
         {rows.length ? (
           <div className="deal-list">
             {rows.map((deal) => (
@@ -81,7 +75,6 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
             {deals.length ? "No pitches match." : "No pitches in this snapshot."}
           </p>
         )}
-      </section>
     </>
   );
 }
@@ -99,8 +92,11 @@ export function DealLinks({ deal }: { deal: DeskDeal }) {
         <a className="btn" href={deal.deckUrl} target="_blank" rel="noopener noreferrer">
           Deck
         </a>
+      ) : deal.deckNote ? (
+        <span className="deck-state" title={deal.deckNote} aria-label={deal.deckNote}>
+          Deck
+        </span>
       ) : null}
-      {deal.deckNote ? <p className="deal-note">{deal.deckNote}</p> : null}
     </div>
   );
 }

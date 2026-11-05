@@ -75,6 +75,11 @@ export function NightFrame({
   children: ReactNode;
 }) {
   const [actions, setActions] = useState(initialActions);
+  const [actionSource, setActionSource] = useState(initialActions);
+  if (actionSource !== initialActions) {
+    setActionSource(initialActions);
+    setActions(initialActions);
+  }
   const [queued, setQueued] = useState<Queued[]>([]);
   const [toasts, setToasts] = useState<{ id: string; label: string; undo: boolean }[]>([]);
   const [open, setOpen] = useState(false);
@@ -83,6 +88,12 @@ export function NightFrame({
   const [compact, setCompact] = useState(false);
   const pathname = usePathname() || "/os";
   const [askContext, setAskContext] = useState<AskContext>({ page: pathname, about: askAbout, requestedBy: askOwner, botName: null });
+  const askKey = `${pathname}|${askAbout ?? ""}|${askOwner ?? ""}`;
+  const [seenAskKey, setSeenAskKey] = useState(askKey);
+  if (seenAskKey !== askKey) {
+    setSeenAskKey(askKey);
+    setAskContext((current) => ({ ...current, page: pathname, about: askAbout ?? current.about, requestedBy: askOwner ?? current.requestedBy }));
+  }
   const [inflight, setInflight] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [liveToday, setLiveToday] = useState<number | null>(null);
@@ -93,12 +104,6 @@ export function NightFrame({
   const queuedRef = useRef<Queued[]>([]);
   const timers = useRef(new Map<string, number>());
   const chain = useRef(Promise.resolve());
-
-  useEffect(() => setActions(initialActions), [initialActions]);
-
-  useEffect(() => {
-    setAskContext((current) => ({ ...current, page: pathname, about: askAbout ?? current.about, requestedBy: askOwner ?? current.requestedBy }));
-  }, [pathname, askAbout, askOwner]);
 
   useEffect(() => {
     let stop = false;
@@ -328,14 +333,12 @@ export function NightFrame({
   return (
     <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday, askContext, setAskContext }}>
       <header className={`appbar${compact ? " is-compact" : ""}`}>
-        <p className="appbar-kicker">Backfield</p>
-        <p className="appbar-title">{pageLabel}</p>
-        <button type="button" className="app-search" onClick={() => setOpen(true)}>
-          <SearchIcon />
-          <span>Search</span>
+        <button type="button" className="icon-btn" aria-label="Menu" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
+          <span className="avatar" aria-hidden>R</span>
         </button>
-        <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
-          More
+        <p className="appbar-title">{pageLabel}</p>
+        <button type="button" className="icon-btn" aria-label="Search" onClick={() => setOpen(true)}>
+          <SearchIcon />
         </button>
       </header>
       <div className="shell">
@@ -401,8 +404,8 @@ export function NightFrame({
         <div className="mpanel" id="os-menu" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="mpanel-bar">
             <img src="/brand/logo-cream.png" alt="" />
-            <button type="button" className="menu-btn" onClick={() => setMenu(false)}>
-              <span aria-hidden="true">×</span> Close
+            <button type="button" className="icon-btn" aria-label="Close menu" onClick={() => setMenu(false)}>
+              <span aria-hidden="true">×</span>
             </button>
           </div>
           <div className="lbl mpanel-kicker">OS</div>
@@ -429,13 +432,15 @@ export function NightFrame({
         </div>
       ) : null}
       {askOpen ? (
-        <div className="ask-panel" role="dialog" aria-modal="true" aria-label="Ask the firm">
-          <button type="button" className="palette-close" onClick={() => setAskOpen(false)}>
-            Close
-          </button>
-          <h2 className="ask-title">Ask</h2>
-          <p className="ask-note">This files a request. Nothing sends until you approve the exact text.</p>
-          <AskBox actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
+        <div className="ask-sheet" role="dialog" aria-modal="true" aria-label="Ask the firm">
+          <button type="button" className="sheet-scrim" aria-label="Close ask" onClick={() => setAskOpen(false)} />
+          <div className="ask-sheet-card">
+            <div className="sheet-handle" aria-hidden />
+            <button type="button" className="icon-btn sheet-close" aria-label="Close" onClick={() => setAskOpen(false)}>
+              <span aria-hidden="true">×</span>
+            </button>
+            <AskBox variant="sheet" actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
+          </div>
         </div>
       ) : null}
       {open ? (
@@ -449,8 +454,8 @@ export function NightFrame({
           }}
         >
           <div className="palette-card">
-            <button type="button" className="palette-close" onClick={() => setOpen(false)}>
-              Close
+            <button type="button" className="icon-btn" aria-label="Close search" onClick={() => setOpen(false)}>
+              <span aria-hidden="true">×</span>
             </button>
             <input
               autoFocus

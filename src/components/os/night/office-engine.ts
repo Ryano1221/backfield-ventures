@@ -54,13 +54,12 @@ for(const k in ROOMS){
     b.hx=b.sx*T+26;b.hy=(b.sy+1)*T+1;b.x=b.hx;b.y=b.hy;b.dir=1;b.walk=null;b.queue=[];b.stack=0;b.pulse=0;b.lead=(b.role==='Director'||b.role==='Executive');});
   R.aisle=portrait?R.doorX:(R.x0+2)*T;R.door=portrait?R.laneY:(R.top?(11*T):(15*T));
 }
-const INBOX={x:40*T+8,y:12*T+2};
 const LANE_R=11*T+10, LANE_L=12*T+12;
 
 /* ---------- canvas ---------- */
 root.classList.add('ofc'); if(LIGHT) root.classList.add('light');
 const coarse=window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 700px)").matches;
-root.innerHTML=`<div class="ofc-stage"><div class="ofc-hud"><select class="ofc-win-select" aria-label="Time window"><option value="today">Today</option><option value="week">7 days</option><option value="all">All</option></select><div class="ofc-win" role="group" aria-label="Time window"><button type="button" data-w="today">Today</button><button type="button" data-w="week">7d</button><button type="button" data-w="all">All</button></div><div class="ofc-play" role="group" aria-label="Replay"><button type="button" class="pp">${reduce?'Play':'Pause'}</button><button type="button" class="sp on" data-s="1">1x</button><button type="button" class="sp" data-s="4">4x</button><button type="button" class="sp" data-s="16">16x</button><button type="button" class="sp-cycle">1x</button></div><label class="ofc-scrub"><span class="ct">Replay</span><input type="range" min="0" max="1" step="0.01" value="0" aria-label="Replay time" /></label></div><div class="ofc-view"><canvas></canvas><div class="ofc-layer"></div></div><p class="ofc-ticker" hidden></p></div>
+root.innerHTML=`<div class="ofc-stage"><div class="ofc-hud"><div class="ofc-win" role="group" aria-label="Time window"><button type="button" data-w="today">Today</button><button type="button" data-w="week">7d</button><button type="button" data-w="all">All</button></div><div class="ofc-play" role="group" aria-label="Replay"><button type="button" class="pp">${reduce?'Play':'Pause'}</button><button type="button" class="sp on" data-s="1">1x</button><button type="button" class="sp" data-s="4">4x</button><button type="button" class="sp" data-s="16">16x</button><button type="button" class="sp-cycle">1x</button></div><label class="ofc-scrub"><span class="ct">Replay</span><input type="range" min="0" max="1" step="0.01" value="0" aria-label="Replay time" /></label></div><div class="ofc-view"><canvas></canvas><div class="ofc-layer"></div></div><p class="ofc-ticker" hidden></p></div>
 <div class="legend"><span><i style="background:#7DBB91"></i>Working</span><span><i style="background:#c8b89a"></i>Needs you</span><span><i style="background:#8C8C8C"></i>Idle</span><span><i style="background:#A6A6A6"></i>Paused</span><span>${coarse?"Pinch to zoom. Double-tap a room.":"Scroll to zoom. Click a room to focus."}</span></div>`;
 const stage=root.querySelector('.ofc-view'),cv=root.querySelector('canvas'),ctx=cv.getContext('2d'),layer=root.querySelector('.ofc-layer');
 const bg=document.createElement('canvas');bg.width=W;bg.height=H;const g=bg.getContext('2d');
@@ -243,7 +242,7 @@ function route(from,to){
     if(!dest){const b=bySlug[to],f=frontOf(b);return[start,{x:R.aisle,y:a.hy},{x:R.aisle,y:f.y},{x:f.x,y:f.y}];}
     return[start,{x:R.doorX,y:a.hy},{x:R.doorX,y:R.laneY},{x:spine,y:R.laneY},{x:spine,y:dest.laneY},{x:dest.doorX,y:dest.laneY},{x:dest.doorX,y:dest.y},{x:dest.x,y:dest.y}];
   }
-  let p=exitPts(a);
+  const p=exitPts(a);
   if(to==='ryan'){const lane=LANE_R;p.push({x:R.aisle,y:lane},{x:RYAN.x,y:lane},{x:RYAN.x,y:RYAN.y});return p;}
   const b=bySlug[to],R2=ROOMS[b.room],f=frontOf(b);
   if(R2===R){p.push({x:R.aisle,y:f.y},{x:f.x,y:f.y});return p;}
@@ -387,7 +386,7 @@ function attachBubble(f){
 function launchCourier(e, hold){
   if(!bySlug[e.f]) return;
   if(e.t!=='ryan' && !bySlug[e.t]) return;
-  let path; try{ path=route(e.f, e.t); }catch(_err){ return; }
+  let path; try{ path=route(e.f, e.t); }catch{ return; }
   if(!path||!path.length) return;
   const f={path,i:reduce&&!hold?path.length:0,x:path[0].x,y:path[0].y,kind:e.kind,title:e.title||'',hold:!!hold,wait:false,from:e.f,to:e.t,href:e.href||null,slug:e.slug||e.f,slot:hold?flyers.filter(x=>x.hold).length:0};
   if(reduce && hold){f.wait=true;f.x=RYAN.x+((f.slot%4)*16)-18;f.y=RYAN.y+Math.floor(f.slot/4)*10;}
@@ -395,7 +394,7 @@ function launchCourier(e, hold){
   const sender=bySlug[e.f]; if(sender) sender.pulse=performance.now();
   flyers.push(f);
   const moving=flyers.filter(x=>!x.hold);
-  if(moving.length>12){const old=flyers.find(x=>!x.hold&&!x.wait); if(old){old.bubble&&old.bubble.remove(); flyers.splice(flyers.indexOf(old),1);}}
+  if(moving.length>12){const old=flyers.find(x=>!x.hold&&!x.wait); if(old){ if(old.bubble) old.bubble.remove(); flyers.splice(flyers.indexOf(old),1);}}
 }
 function arriveCourier(f){
   if(f.hold){
@@ -424,7 +423,7 @@ function setWindow(name){
   windowName=name;
   current=eventList();
   playIndex=0; fired=0;
-  for(let i=flyers.length-1;i>=0;i--){ if(flyers[i].hold) continue; flyers[i].bubble&&flyers[i].bubble.remove(); flyers.splice(i,1); }
+  for(let i=flyers.length-1;i>=0;i--){ if(flyers[i].hold) continue; if(flyers[i].bubble) flyers[i].bubble.remove(); flyers.splice(i,1); }
   range.max=String(Math.max(0,current.length-1));
   range.value='0';
   root.querySelectorAll('.ofc-win button').forEach(b=>b.classList.toggle('on', b.dataset.w===name));
@@ -498,7 +497,7 @@ function onTap(ev){
 }
 let pinch=null;
 stage.addEventListener('pointerdown',ev=>{
-  try{stage.setPointerCapture(ev.pointerId);}catch(_err){}
+  try{stage.setPointerCapture(ev.pointerId);}catch{ /* pointer already released */ }
   pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
   if(pointers.size===2){const [a,b]=[...pointers.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:cam.z}; dragging=true; pointers.forEach(p=>{p.moved=true;}); return;}
   pinch=null;

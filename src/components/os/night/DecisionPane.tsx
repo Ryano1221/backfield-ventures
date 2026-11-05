@@ -117,7 +117,7 @@ export function DecisionPane({
       <div className="who">
         <Logo name={item.name} domain={item.domain} logoUrl={item.logoUrl} large />
         <div>
-          <h2 className="d-l">{item.name}</h2>
+          <h1 className="d-l">{item.name}</h1>
           {item.org ? <div className="sub">{item.org}</div> : null}
         </div>
       </div>

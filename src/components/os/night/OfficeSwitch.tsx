@@ -17,12 +17,6 @@ const DOT: Record<DeskBot["status"], string> = {
   Paused: "is-pause",
 };
 
-const CHIP_NOTE: Partial<Record<DeskFilter, string>> = {
-  needs: "Waiting on you",
-  working: "Running now",
-  idle: "Done for now",
-  paused: "Off until you resume",
-};
 
 export function OfficeSwitch({
   desk,
@@ -44,7 +38,7 @@ export function OfficeSwitch({
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const [feedAll, setFeedAll] = useState(false);
-  const view = choice ?? (desk.summary.needs > 0 ? "list" : "map");
+  const view = choice ?? "list";
   const visible = useMemo(() => desk.bots.filter((bot) => botMatches(bot, filter, query)), [desk.bots, filter, query]);
   const needs = visible.filter((bot) => bot.status === "Needs Ryan");
   const teams = groupTeams(visible);
@@ -254,31 +248,26 @@ function Summary({
   onRoutines: () => void;
 }) {
   const counts = desk.summary;
-  const chips: { id: DeskFilter; label: string; count: number }[] = [
+  const row: { id: DeskFilter; label: string; count: number }[] = [
     { id: "needs", label: "Needs you", count: counts.needs },
     { id: "working", label: "Working", count: counts.working },
-    { id: "idle", label: "Idle", count: counts.idle },
-    { id: "paused", label: "Paused", count: counts.paused },
     { id: "done", label: "Done today", count: counts.doneToday },
-    { id: "stale", label: "Stale", count: counts.stale },
   ];
-  const usage = [desk.usage?.weekly, desk.usage?.onDemand ? `${desk.usage.onDemand} on demand` : null, desk.usage?.reset ? `resets ${desk.usage.reset}` : null].filter(Boolean);
   return (
     <div className="bots-summary">
-      <div className="bots-chips" role="group" aria-label="Filter bots">
-        {chips.map((chip) => (
-          <button key={chip.id} type="button" className="bots-chip" aria-pressed={filter === chip.id} onClick={() => onFilter(chip.id)}>
-            <span className="lbl">{chip.label}</span>
-            <span className="v">{chip.count.toLocaleString("en-US")}</span>
-            {CHIP_NOTE[chip.id] ? <span className="d">{CHIP_NOTE[chip.id]}</span> : null}
+      <div className="segment bots-sum" role="group" aria-label="Filter bots">
+        {row.map((chip) => (
+          <button key={chip.id} type="button" aria-pressed={filter === chip.id} onClick={() => onFilter(chip.id)}>
+            <span>{chip.label}</span>
+            <b className="num">{chip.count.toLocaleString("en-US")}</b>
           </button>
         ))}
-        <button type="button" className={counts.failedRoutines > 0 ? "bots-chip is-alert" : "bots-chip"} onClick={onRoutines}>
-          <span className="lbl">Failed</span>
-          <span className="v">{counts.failedRoutines.toLocaleString("en-US")}</span>
-        </button>
       </div>
-      {usage.length ? <p className="bots-firm">{usage.join(" · ")}</p> : null}
+      {counts.failedRoutines > 0 ? (
+        <button type="button" className="bots-failed" onClick={onRoutines}>
+          {counts.failedRoutines.toLocaleString("en-US")} routines failed
+        </button>
+      ) : null}
     </div>
   );
 }
