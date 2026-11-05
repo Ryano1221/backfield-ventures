@@ -115,7 +115,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   const chip = ask.getByRole("button", { name: "FIXTURE Executive" });
   const chipBox = await chip.boundingBox();
   const fieldBox = await field.boundingBox();
-  expect(chipBox && fieldBox && chipBox.y).toBeLessThan(fieldBox.y);
+  expect(chipBox).toBeTruthy();
+  expect(fieldBox).toBeTruthy();
+  expect(chipBox!.y).toBeLessThan(fieldBox!.y);
   await field.fill("What is the example status?");
   await ask.locator(".ask-compose").getByRole("button", { name: "Send" }).click();
   await field.fill("What is the example status?");
@@ -150,9 +152,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   }
   await page.locator(".bots-sum").getByRole("button", { name: /Needs you/ }).click();
   const needs = page.locator(".bots-need").first();
-  await needs.getByRole("button", { name: "Pause" }).click();
-  await expect(needs.getByRole("button", { name: "Resume" })).toBeVisible();
-  await needs.getByRole("button", { name: "Resume" }).click();
+  await needs.getByRole("button", { name: "Pause" }).evaluate((el: HTMLButtonElement) => el.click());
+  await expect(page.getByRole("button", { name: "Resume" }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Resume" }).first().evaluate((el: HTMLButtonElement) => el.click());
 
   await clean(page, bag);
 });

@@ -12,6 +12,8 @@ import {
   type CrmPerson,
   type CrmTrack,
   type Decision,
+  type DecisionVersion,
+  type DriveBrief,
   type DecisionBlockCheck,
   type DecisionChannel,
   type DecisionCompany,
@@ -63,12 +65,15 @@ export function validateSnapshot(input: unknown): SchemaResult {
   const bots = validateBots(input.bots, issues);
   const outreach = validateOutreach(input.outreach, issues);
   const decisions = validateDecisions(input.decisions, issues);
+  const queued = input.queue_decisions === undefined ? [] : validateDecisions(input.queue_decisions, issues, "queue_decisions");
+  const drafted = input.draft_decisions === undefined ? [] : validateDecisions(input.draft_decisions, issues, "draft_decisions");
+  const drive = input.drive === undefined ? undefined : validateDrive(input.drive, issues);
   const activity = validateActivity(input.activity, issues);
   const interactions =
     input.interactions === undefined ? [] : validateInteractions(input.interactions, issues);
   const crm = input.crm === undefined ? { people: [] } : validateCrm(input.crm, issues);
 
-  if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || !interactions || !crm || issues.length) {
+  if (!generated_at || !pitches || !bots || !outreach || !decisions || !queued || !drafted || !activity || !interactions || !crm || (input.drive !== undefined && !drive) || issues.length) {
     return { ok: false, issues: issues.slice(0, 30) };
   }
 
@@ -79,12 +84,31 @@ export function validateSnapshot(input: unknown): SchemaResult {
       pitches,
       bots,
       outreach,
-      decisions,
+      decisions: mergeDecisionLanes(decisions, queued, drafted),
       activity,
       interactions,
       crm,
+      ...(drive && drive.length ? { drive } : {}),
     },
   };
+}
+
+function mergeDecisionLanes(decisions: Decision[], queued: Decision[], drafted: Decision[]): Decision[] {
+  const seen = new Set(decisions.map((row) => row.id).filter((id): id is string => Boolean(id)));
+  const rows = [...decisions];
+  for (const row of queued) {
+    const next = { ...row, lane: "queue" as const };
+    if (next.id && seen.has(next.id)) continue;
+    rows.push(next);
+    if (next.id) seen.add(next.id);
+  }
+  for (const row of drafted) {
+    const next = { ...row, lane: "draft" as const };
+    if (next.id && seen.has(next.id)) continue;
+    rows.push(next);
+    if (next.id) seen.add(next.id);
+  }
+  return rows;
 }
 
 function validatePitches(value: unknown, issues: string[]): Pitch[] | null {
@@ -304,18 +328,18 @@ function validateTrack(value: unknown, path: string, issues: string[]): Outreach
   return row;
 }
 
-function validateDecisions(value: unknown, issues: string[]): Decision[] | null {
+function validateDecisions(value: unknown, issues: string[], path = "decisions"): Decision[] | null {
   if (!Array.isArray(value)) {
-    issues.push("decisions must be an array");
+    issues.push(`${path} must be an array`);
     return null;
   }
   if (value.length > LIMITS.decisions) {
-    issues.push(`decisions is limited to ${LIMITS.decisions} rows`);
+    issues.push(`${path} is limited to ${LIMITS.decisions} rows`);
     return null;
   }
   const rows: Decision[] = [];
   for (let i = 0; i < value.length; i++) {
-    const row = validateDecision(value[i], `decisions[${i}]`, issues);
+    const row = validateDecision(value[i], `${path}[${i}]`, issues);
     if (row) rows.push(row);
   }
   return rows;
@@ -385,7 +409,97 @@ function validateDecision(value: unknown, path: string, issues: string[]): Decis
     const detail = validateDecisionDetail(value.detail, `${path}.detail`, issues);
     if (detail) decision.detail = detail;
   }
+  const sent = optStr(value.sent_at, `${path}.sent_at`, 80, issues);
+  const sentVia = optStr(value.sent_via, `${path}.sent_via`, 80, issues);
+  if (sent) {
+    if (!isDate(sent)) issues.push(`${path}.sent_at must be a date`);
+    else decision.sent_at = sent;
+  }
+  if (sentVia) decision.sent_via = sentVia;
+  if (value.versions !== undefined) {
+    const versions = validateVersions(value.versions, `${path}.versions`, issues);
+    if (versions) decision.versions = versions;
+  }
   return decision;
+}
+
+function validateVersions(value: unknown, path: string, issues: string[]): DecisionVersion[] | undefined {
+  if (!Array.isArray(value)) {
+    issues.push(`${path} must be an array`);
+    return undefined;
+  }
+  const rows: DecisionVersion[] = [];
+  for (let i = 0; i < value.length && i < 20; i++) {
+    const row = value[i];
+    if (!isRecord(row)) {
+      issues.push(`${path}[${i}] must be an object`);
+      continue;
+    }
+    const version = typeof row.version === "number" && Number.isInteger(row.version) && row.version > 0 ? row.version : 0;
+    const body = softText(row.body, 8000);
+    if (!version || !body) {
+      issues.push(`${path}[${i}] needs a version and a body`);
+      continue;
+    }
+    const next: DecisionVersion = { version, body };
+    const subject = softText(row.subject, 300);
+    const at = optStr(row.at, `${path}[${i}].at`, 80, issues);
+    const by = optStr(row.by, `${path}[${i}].by`, 160, issues);
+    const note = softText(row.note, 2000);
+    const sent = optStr(row.sent_at, `${path}[${i}].sent_at`, 80, issues);
+    const via = optStr(row.sent_via, `${path}[${i}].sent_via`, 80, issues);
+    if (subject) next.subject = subject;
+    if (at) {
+      if (!isDate(at)) issues.push(`${path}[${i}].at must be a date`);
+      else next.at = at;
+    }
+    if (by) next.by = by;
+    if (note) next.note = note;
+    if (sent) {
+      if (!isDate(sent)) issues.push(`${path}[${i}].sent_at must be a date`);
+      else next.sent_at = sent;
+    }
+    if (via) next.sent_via = via;
+    rows.push(next);
+  }
+  return rows;
+}
+
+function validateDrive(value: unknown, issues: string[]): DriveBrief[] | null {
+  if (!Array.isArray(value)) {
+    issues.push("drive must be an array");
+    return null;
+  }
+  if (value.length > 100) {
+    issues.push("drive is limited to 100 rows");
+    return null;
+  }
+  const rows: DriveBrief[] = [];
+  for (let i = 0; i < value.length; i++) {
+    const row = value[i];
+    if (!isRecord(row)) {
+      issues.push(`drive[${i}] must be an object`);
+      continue;
+    }
+    const id = optStr(row.id, `drive[${i}].id`, 80, issues);
+    const title = requiredClip(row.title, `drive[${i}].title`, 400, issues);
+    const kind = row.kind === "yesno" || row.kind === "question" || row.kind === "note" ? row.kind : null;
+    if (!kind) issues.push(`drive[${i}].kind must be yesno, question, or note`);
+    if (!id || !title || !kind) continue;
+    const next: DriveBrief = { id, kind, title };
+    const body = softText(row.body, 4000);
+    const why = softText(row.why, 2000);
+    const from = optStr(row.from, `drive[${i}].from`, 160, issues);
+    if (body) next.body = body;
+    if (why) next.why = why;
+    if (from) next.from = from;
+    if (row.options !== undefined) {
+      const options = validateOptions(row.options, `drive[${i}].options`, issues);
+      if (options) next.options = options;
+    }
+    rows.push(next);
+  }
+  return rows;
 }
 
 function decisionChannel(value: unknown, path: string, issues: string[]): DecisionChannel | undefined {
