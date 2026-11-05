@@ -370,7 +370,7 @@ function drawScene(
     if (item.actor.carry) drawPacket(ctx, item.at.x + 10, item.at.y - 16);
     spots.push({ name: item.actor.bot.name, x: item.at.x, y: item.at.y });
     ctx.fillStyle = CREAM;
-    ctx.font = "10px 'Space Mono', monospace";
+    ctx.font = "10px Switzer, sans-serif";
     ctx.textAlign = "center";
     const tag = item.actor.bot.name.length > 18 ? `${item.actor.bot.name.slice(0, 16)}...` : item.actor.bot.name;
     if (focus != null || actors.length < 24) ctx.fillText(tag, item.at.x, item.at.y + 18);
@@ -391,7 +391,7 @@ function drawFloor(ctx: CanvasRenderingContext2D, index: number, origin: { x: nu
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.fillStyle = CREAM;
-  ctx.font = "11px 'Space Mono', monospace";
+  ctx.font = "14px Switzer, sans-serif";
   ctx.textAlign = "left";
   ctx.fillText(FLOORS[index].label, corners[0].x + 8, corners[0].y + 16);
   const shaft = project(10.2, 2.4, z, origin, scale);

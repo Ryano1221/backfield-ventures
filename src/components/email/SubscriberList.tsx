@@ -78,7 +78,7 @@ export function SubscriberList({
             ))}
           </tbody>
         </table>
-        {shown.length === 0 ? <p className="block">No one matches that search.</p> : null}
+        {shown.length === 0 ? <p className="block">{rows.length ? "No one matches that search." : "No subscribers on this snapshot."}</p> : null}
       </div>
       <div className="mob-only">
         {shown.map((row) => (
@@ -98,7 +98,7 @@ export function SubscriberList({
             </div>
           </div>
         ))}
-        {shown.length === 0 ? <p className="block">No one matches that search.</p> : null}
+        {shown.length === 0 ? <p className="block">{rows.length ? "No one matches that search." : "No subscribers on this snapshot."}</p> : null}
       </div>
     </section>
   );

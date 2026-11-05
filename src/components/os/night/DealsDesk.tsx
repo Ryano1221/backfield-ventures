@@ -63,6 +63,7 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
                       {deal.sector ? <span className="chip">{deal.sector}</span> : null}
                       {deal.stage ? <span className="chip">{deal.stage}</span> : null}
                       <span className="num chip">{deal.score == null ? "No score" : `Score ${deal.score}`}</span>
+                      {deal.waiting ? <span className="chip">{deal.waiting}</span> : null}
                     </div>
                   </div>
                 </Link>

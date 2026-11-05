@@ -23,7 +23,7 @@ export function DecisionPane({
   next?: { href: string; label: string } | null;
   className?: string;
 }) {
-  const { submit, retry, inflight, errors, actions } = useNightActions();
+  const { enqueue, submit, retry, inflight, errors, actions } = useNightActions();
   const pickup = decisionNeedsPickup(actions, item.id);
   const savedAction = [...actions].reverse().find((action) => action.type === "decide" && action.target_id === item.id) ?? null;
   const pickupStatus = savedAction ? officeStatus(savedAction, whoLabel(item.requestedBy || "the office")) : null;
@@ -31,9 +31,7 @@ export function DecisionPane({
   const error = errors[item.id] || "";
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.message || "");
-  const [note, setNote] = useState("");
   const [reply, setReply] = useState("");
-  const listed = item.options.filter((option) => option.value !== "reply" && option.value !== "swap");
   const crumbs = [
     total ? `${index + 1} of ${total}` : null,
     item.channelCrumb || (item.hold ? "On hold" : null),
@@ -51,10 +49,10 @@ export function DecisionPane({
   }
 
   function choose(choice: string, label: string) {
-    submit({
+    enqueue({
       type: "decide",
       target_id: item.id,
-      payload: answerPayload(choice, note),
+      payload: answerPayload(choice, ""),
       label,
     });
   }
@@ -68,7 +66,7 @@ export function DecisionPane({
       choose(item.notNow.choice, `Not now for ${item.name}.`);
       return;
     }
-    submit({
+    enqueue({
       type: "snooze",
       target_id: item.id,
       payload: { until: snoozeUntil("tomorrow") },
@@ -99,7 +97,7 @@ export function DecisionPane({
   function saveEdit() {
     const text = draft.trim();
     if (!text || text === saved) return;
-    submit({
+    enqueue({
       type: "decide",
       target_id: item.id,
       payload: { choice: "edit", edited_message: text },
@@ -114,13 +112,47 @@ export function DecisionPane({
         <span>{crumbs.join(" · ")}</span>
         {meta.length ? <span>{meta.join(" · ")}</span> : null}
       </div>
-      <div className="who">
-        <Logo name={item.name} domain={item.domain} logoUrl={item.logoUrl} large />
+      <div className="who inbox-who">
         <div>
           <h1 className="d-l">{item.name}</h1>
           {item.org ? <div className="sub">{item.org}</div> : null}
         </div>
+        <span className="chip inbox-type">{item.channel || (item.hold ? "Hold" : "Decision")}</span>
       </div>
+      {item.message && !item.detail?.preview ? (
+        <div className="block">
+          <div className="lbl">{editing ? "Edit the reply" : "Draft"}</div>
+          {editing ? (
+            <>
+              <div className="msg flat">
+                <MessageHead item={item} />
+              </div>
+              <FitTextarea value={draft} onChange={setDraft} />
+              <p className="hint">Edit the reply the way it goes out. Blank lines and line breaks are kept when you queue the edit. The box grows with the text.</p>
+            </>
+          ) : (
+            <div className="msg">
+              <MessageHead item={item} />
+              <div className="bd">{item.message}</div>
+            </div>
+          )}
+        </div>
+      ) : null}
+      {!item.outcome && !editing ? (
+        <div className="inbox-actions">
+          <button type="button" className="btn primary" onClick={approve} disabled={pending}>
+            {pending ? "Pending" : "Approve"}
+          </button>
+          <button type="button" className="btn" onClick={notNow} disabled={pending}>
+            Not now
+          </button>
+          {item.message && !item.detail?.preview ? (
+            <button type="button" className="btn" onClick={() => setEditing(true)} disabled={pending}>
+              Edit
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {item.why ? (
         <div className="why">
           <span className="lbl">Why this is in front of you</span>
@@ -157,25 +189,6 @@ export function DecisionPane({
         </div>
       ) : null}
       {item.detail ? <DecisionDetailView detail={item.detail} pending={pending} onSwap={sendSwap} /> : null}
-      {item.message && !item.detail?.preview ? (
-        <div className="block">
-          <div className="lbl">{editing ? "Edit the reply" : "If you approve, this goes out"}</div>
-          {editing ? (
-            <>
-              <div className="msg flat">
-                <MessageHead item={item} />
-              </div>
-              <FitTextarea value={draft} onChange={setDraft} />
-              <p className="hint">Edit the reply the way it goes out. Blank lines and line breaks are kept when you queue the edit. The box grows with the text.</p>
-            </>
-          ) : (
-            <div className="msg">
-              <MessageHead item={item} />
-              <div className="bd">{item.message}</div>
-            </div>
-          )}
-        </div>
-      ) : null}
       <div className="actions">
         {item.outcome && !pending ? (
           <>
@@ -219,52 +232,7 @@ export function DecisionPane({
           </>
         ) : (
           <>
-            <label className="note-field">
-              <span className="lbl">Note</span>
-              <textarea
-                value={note}
-                maxLength={2000}
-                aria-label="Note with your answer"
-                placeholder="Optional. Goes with your answer. Nothing sends."
-                onChange={(event) => setNote(event.target.value)}
-              />
-            </label>
-            {listed.length ? (
-              listed.map((option) => {
-                const primary = option.value === item.approveChoice;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={primary ? "btn primary" : "btn"}
-                    onClick={() => choose(option.value, `${option.label} for ${item.name}.`)}
-                    disabled={pending}
-                  >
-                    {pending && primary ? "Pending" : primary ? `${option.label} · ${item.name}` : option.label} {primary && !pending ? <span>→</span> : null}
-                  </button>
-                );
-              })
-            ) : (
-              <button type="button" className="btn primary" onClick={approve} disabled={pending}>
-                {pending ? "Pending" : `${item.approveLabel} · ${item.name}`} {!pending ? <span>→</span> : null}
-              </button>
-            )}
-            {!listed.length && item.message ? (
-              <button type="button" className="btn" onClick={() => setEditing(true)} disabled={pending}>
-                Edit
-              </button>
-            ) : null}
-            {!listed.length ? (
-              <button type="button" className="btn" onClick={notNow} disabled={pending}>
-                Not now
-              </button>
-            ) : null}
-            {listed.length && item.message && !item.detail?.preview ? (
-              <button type="button" className="btn" onClick={() => setEditing(true)} disabled={pending}>
-                Edit
-              </button>
-            ) : null}
-            <span className="note">{next ? <a href={next.href}>Next: {next.label} →</a> : "Nothing sends until you approve."}</span>
+            <span className="note">{next ? <a href={next.href}>Next: {next.label}</a> : "Nothing sends until you approve."}</span>
             <label className="replybox">
               <span className="lbl">Reply</span>
               <textarea

@@ -213,7 +213,10 @@ async function crawlRoute(
   for (const bad of ctx.bag.bad.slice(badAt)) await ctx.note(route, "network", bad.slice(0, 500));
 
   if (/\/os\/(deals|crm|d)\/[^/]+$/.test(route)) await checkBack(page, route, ".eyebrow a", ctx.note);
-  if (route.startsWith("/os/email")) await checkBack(page, route, ".crumb a", ctx.note);
+  if (route.startsWith("/os/email")) {
+    if ((await page.locator(".email .side, .email .mbar").count()) > 0) await ctx.note(route, "email-rail", "email renders a second rail inside the OS frame");
+    if (!(await page.locator(".email-tabs a.on").count())) await ctx.note(route, "email-tabs", "no active email section tab");
+  }
   if (route === "/os/bots") await openBotSheets(page, route, ctx);
   if (/^\/os\/d\//.test(route)) await checkNoClip(page, route, ctx.note);
   if (ctx.desktop) await checkHoverContrast(page, route, ctx.note);
@@ -317,6 +320,9 @@ async function openBotSheets(
   route: string,
   ctx: { note: (route: string, check: string, detail: string) => Promise<void>; bag: Bag },
 ) {
+  // The building is the default view; the sheet sweep runs from the list.
+  const listToggle = page.getByRole("button", { name: "List", exact: true });
+  if (await listToggle.count()) await listToggle.click().catch(() => undefined);
   const buttons = page.locator(".bots-person-open");
   const count = await buttons.count();
   if (count < 40) await ctx.note(route, "bots", `expected 40 or more bots, found ${count}`);
@@ -460,7 +466,11 @@ async function signature(page: Page): Promise<string> {
     const pressed = [...document.querySelectorAll("[aria-pressed='true']")].map((el) => (el.textContent || "").trim().slice(0, 24)).join(",");
     const open = document.querySelectorAll("details[open]").length;
     const active = document.activeElement?.getAttribute("aria-label") || document.activeElement?.tagName || "";
-    return JSON.stringify({ path: location.pathname, text, dialogs, pressed, open, scroll: window.scrollY, active });
+    // The tapped control's own text, so a change far down a long page (Copy -> Copied) still counts.
+    const activeText = (document.activeElement?.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    // Every live region, so feedback anywhere on a long page (Copy -> Copied) counts.
+    const live = [...document.querySelectorAll("[aria-live], [role='status']")].map((el) => (el.textContent || "").trim().slice(0, 40)).join("|");
+    return JSON.stringify({ path: location.pathname, text, dialogs, pressed, open, scroll: window.scrollY, active, activeText, live });
   }).catch(() => "");
 }
 
@@ -492,10 +502,22 @@ function domAudit({ desktop, phone }: { desktop: boolean; phone: boolean }) {
     const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
     return w > 8 && h > 8;
   };
+  // A chip row that scrolls sideways inside the viewport is fine; its hidden chips are reachable by swipe.
+  const inScroller = (el: Element) => {
+    for (let node = el.parentElement; node; node = node.parentElement) {
+      const overflow = getComputedStyle(node).overflowX;
+      if (overflow === "auto" || overflow === "scroll") {
+        const box = node.getBoundingClientRect();
+        return box.left >= -1 && box.right <= window.innerWidth + 1;
+      }
+    }
+    return false;
+  };
   const wide = [...document.querySelectorAll("a, button, input, h1, .segment")].find((el) => {
     if (!visible(el)) return false;
     const rect = el.getBoundingClientRect();
-    return rect.right > window.innerWidth + 1 || rect.left < -1;
+    if (!(rect.right > window.innerWidth + 1 || rect.left < -1)) return false;
+    return !inScroller(el);
   });
   if (wide) issues.push({ check: "overflow", detail: `${labelOf(wide)} extends past the viewport` });
   const topBars = bars.filter((bar) => bar.getBoundingClientRect().top < 80);

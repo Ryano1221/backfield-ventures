@@ -36,11 +36,10 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [
-    { name: "phone", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: "dark" } },
+    { name: "phone", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: "light" } },
     {
       name: "tablet",
-      testMatch: /os-crawl\.spec\.ts/,
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 768 }, hasTouch: false, isMobile: false },
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 768 }, hasTouch: true, isMobile: false },
     },
     { name: "desk", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, hasTouch: false, isMobile: false } },
   ],

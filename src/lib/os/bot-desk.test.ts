@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildBotDesk, isDoneToday, isOverdueRoutine, isStaleBot, relativeTime, STALE_AFTER_MS, summaryCounts } from "./bot-desk";
+import { validateSnapshot } from "./schema";
 import type { DeskBot } from "./bot-desk";
 import type { Snapshot } from "./types";
 
@@ -54,7 +55,7 @@ test("summaryCounts adds the buckets it is given", () => {
     ],
     [{ failed: true }, { failed: false }],
   );
-  assert.deepEqual(counts, { needs: 1, working: 1, idle: 1, paused: 1, doneToday: 2, stale: 1, failedRoutines: 1 });
+  assert.deepEqual(counts, { needs: 1, working: 1, idle: 1, paused: 1, doneToday: 2, stale: 1, failedRoutines: 1, degraded: 0, failed: 0 });
 });
 
 function stub(status: DeskBot["status"], doneToday: boolean, stale: boolean): Pick<DeskBot, "status" | "doneToday" | "stale"> {
@@ -148,3 +149,40 @@ function sample(): Snapshot {
     },
   };
 }
+
+test("degraded and failed bots keep a text pill, and optional post and schedule fields survive", () => {
+  const base = sample();
+  const note = "F".repeat(500);
+  const desk = buildBotDesk({
+    ...base,
+    bots: {
+      ...base.bots,
+      bots: [
+        { ...base.bots.bots[0]!, name: "Fixture Degraded", status: "Degraded", next_run: "Nov 9 9:00am CT" },
+        { ...base.bots.bots[0]!, name: "Fixture Failed", status: "Failed" },
+      ],
+    },
+  }, [], NOW);
+  const degraded = desk.bots.find((bot) => bot.name === "Fixture Degraded");
+  assert.equal(degraded?.status, "Degraded");
+  assert.equal(degraded?.statusLabel, "Degraded");
+  assert.equal(degraded?.nextRun, "Nov 9 9:00am CT");
+  assert.equal(desk.bots.find((bot) => bot.name === "Fixture Failed")?.statusLabel, "Failed");
+  assert.equal(desk.summary.degraded, 1);
+  assert.equal(desk.summary.failed, 1);
+  const parsed = validateSnapshot({
+    ...base,
+    posts: [{ id: "post_sample", platform: "x", status: "brand_pass", gate: "Brand check pending" }],
+    schedule: [{ platform: "linkedin", item: "FIXTURE sample post", note: `${note}EXTRA` }],
+  });
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+  assert.equal(parsed.snapshot.posts?.[0]?.gate, "Brand check pending");
+  assert.equal(parsed.snapshot.schedule?.[0]?.note?.length, 500);
+  const absent = validateSnapshot(base);
+  assert.equal(absent.ok, true);
+  if (absent.ok) {
+    assert.equal(absent.snapshot.posts, undefined);
+    assert.equal(absent.snapshot.schedule, undefined);
+  }
+});

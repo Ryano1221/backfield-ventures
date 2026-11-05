@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { officeStatus } from "@/lib/os/ask";
-import { stageChoices } from "@/lib/os/night";
+import { stageButtonLabel, stageChoices } from "@/lib/os/night";
 import type { PersonModel } from "@/lib/os/night";
 import { useNightActions } from "./NightFrame";
 
@@ -37,7 +37,7 @@ export function PersonActions({ person }: { person: PersonModel }) {
         </div>
       ) : null}
       <button type="button" className="who-chip" aria-expanded={stageOpen} onClick={() => setStageOpen(true)}>
-        Stage · {stageChoices().find((option) => option.value === stage)?.label || stage}
+        Stage · {stageButtonLabel(stage)}
       </button>
       {stageOpen ? (
         <div className="who-sheet" role="dialog" aria-label={`Stage for ${person.name}`}>
@@ -48,7 +48,7 @@ export function PersonActions({ person }: { person: PersonModel }) {
               <button
                 key={option.value}
                 type="button"
-                aria-pressed={stage === option.value}
+                aria-pressed={stage.trim().toLowerCase() === option.value}
                 onClick={() => {
                   setStage(option.value);
                   setStageOpen(false);

@@ -17,6 +17,8 @@ type Queued = {
   target_id: string;
   payload: ActionPayload;
   created_at: string;
+  /** Set once the hold ends and the POST is in flight. */
+  sending?: boolean;
 };
 
 type Draft = {
@@ -146,25 +148,67 @@ export function NightFrame({
     [actions, queued],
   );
 
+  // The card stays dismissed (shown as pending) while the POST runs, and only
+  // leaves the queue once the server answers. A failed save brings the card
+  // back with an error toast instead of silently dropping the approval.
   const commitBatch = useCallback((batch: string) => {
     const timer = timers.current.get(batch);
     if (timer) window.clearTimeout(timer);
     timers.current.delete(batch);
-    const items = queuedRef.current.filter((item) => item.batch === batch);
-    queuedRef.current = queuedRef.current.filter((item) => item.batch !== batch);
+    const items = queuedRef.current.filter((item) => item.batch === batch && !item.sending);
+    if (!items.length) return;
+    queuedRef.current = queuedRef.current.map((item) => (item.batch === batch ? { ...item, sending: true } : item));
     setQueued(queuedRef.current);
     setToasts((current) => current.filter((toast) => toast.id !== batch));
-    if (!items.length) return;
     chain.current = chain.current.then(async () => {
       for (const item of items) {
         const ok = await postAction(item);
+        queuedRef.current = queuedRef.current.filter((queuedItem) => queuedItem.idempotency_key !== item.idempotency_key);
+        setQueued(queuedRef.current);
         if (ok.action) setActions((current) => (current.some((action) => action.action_id === ok.action?.action_id) ? current : [...current, ok.action!]));
-        else if (ok.error) setToasts([{ id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
+        else setToasts((current) => [...current.filter((toast) => toast.undo), { id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
       }
     });
   }, []);
 
+  // Leaving the page or hiding the tab ends every hold early. Each queued item
+  // is still on screen as pending, so the user already saw it go through.
+  // keepalive lets the POST outlive the page.
+  const flushAll = useCallback(() => {
+    const pending = queuedRef.current.filter((item) => !item.sending);
+    if (!pending.length) return;
+    for (const timer of timers.current.values()) window.clearTimeout(timer);
+    timers.current.clear();
+    queuedRef.current = queuedRef.current.map((item) => ({ ...item, sending: true }));
+    setToasts((current) => current.filter((toast) => !toast.undo));
+    for (const item of pending) {
+      void postAction(item, { keepalive: true }).then((ok) => {
+        queuedRef.current = queuedRef.current.filter((queuedItem) => queuedItem.idempotency_key !== item.idempotency_key);
+        setQueued(queuedRef.current);
+        if (ok.action) setActions((current) => (current.some((action) => action.action_id === ok.action?.action_id) ? current : [...current, ok.action!]));
+        else setToasts((current) => [...current, { id: item.idempotency_key, label: ok.error || "Could not save that.", undo: false }]);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const timerMap = timers.current;
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flushAll();
+    };
+    window.addEventListener("pagehide", flushAll);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.removeEventListener("pagehide", flushAll);
+      document.removeEventListener("visibilitychange", onHide);
+      flushAll();
+      for (const timer of timerMap.values()) window.clearTimeout(timer);
+      timerMap.clear();
+    };
+  }, [flushAll]);
+
   const undo = useCallback((batch: string) => {
+    if (queuedRef.current.some((item) => item.batch === batch && item.sending)) return;
     const timer = timers.current.get(batch);
     if (timer) window.clearTimeout(timer);
     timers.current.delete(batch);
@@ -208,8 +252,8 @@ export function NightFrame({
           delete copy[id];
           return copy;
         });
-        setToasts([{ id: key, label: saved.label, undo: false }]);
-        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 4_000);
+        setToasts((current) => [...current.filter((toast) => toast.undo), { id: key, label: saved.label, undo: false }]);
+        window.setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== key)), 10_000);
         router.refresh();
         return;
       }
@@ -229,6 +273,34 @@ export function NightFrame({
     setLiveToday(count);
   }, []);
 
+  const HOLD_MS = 10_000;
+  const ends = useRef(new Map<string, number>());
+  const arm = useCallback(
+    (batch: string, ms: number) => {
+      const timer = timers.current.get(batch);
+      if (timer) window.clearTimeout(timer);
+      ends.current.set(batch, Date.now() + ms);
+      timers.current.set(batch, window.setTimeout(() => commitBatch(batch), ms));
+    },
+    [commitBatch],
+  );
+  const pauseBatch = useCallback((batch: string) => {
+    const end = ends.current.get(batch);
+    const timer = timers.current.get(batch);
+    if (timer) window.clearTimeout(timer);
+    timers.current.delete(batch);
+    if (end) ends.current.set(batch, Math.max(1000, end - Date.now()));
+  }, []);
+  const resumeBatch = useCallback(
+    (batch: string) => {
+      if (timers.current.has(batch)) return;
+      if (!queuedRef.current.some((item) => item.batch === batch)) return;
+      const left = ends.current.get(batch) ?? HOLD_MS;
+      arm(batch, left > 60_000 ? HOLD_MS : left);
+    },
+    [arm],
+  );
+
   const enqueue = useCallback(
     (draft: Draft) => {
       if (SINGLETON.has(draft.type) && queuedRef.current.some((item) => item.type === draft.type && item.target_id === draft.target_id)) return;
@@ -243,10 +315,10 @@ export function NightFrame({
       };
       queuedRef.current = [...queuedRef.current, item];
       setQueued(queuedRef.current);
-      setToasts([{ id: batch, label: draft.label, undo: true }]);
-      timers.current.set(batch, window.setTimeout(() => commitBatch(batch), 4_000));
+      setToasts((current) => [...current.filter((toast) => toast.undo && toast.id !== batch), { id: batch, label: draft.label, undo: true }]);
+      arm(batch, HOLD_MS);
     },
-    [commitBatch],
+    [arm],
   );
 
   useEffect(() => {
@@ -304,7 +376,7 @@ export function NightFrame({
   }, []);
 
   const hrefs = osHrefs(onOs);
-  const waitingCount = waitingActions(actions).length;
+  const waitingCount = waitingActions(actions.filter((action) => !action.action_id.startsWith("local:"))).length;
   const links: { id: Section; label: string; href: string; count: number | null }[] = [
     { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
     { id: "waiting", label: "Waiting", href: hrefs.waiting, count: waitingCount },
@@ -333,20 +405,24 @@ export function NightFrame({
   return (
     <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday, askContext, setAskContext }}>
       <header className={`appbar${compact ? " is-compact" : ""}`}>
-        <button type="button" className="icon-btn" aria-label="Menu" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
-          <span className="avatar" aria-hidden>R</span>
-        </button>
+        <Link href={hrefs.today} className="wordmark" prefetch>
+          <img src="/logo-text.png" alt="Backfield Ventures" />
+        </Link>
         <p className="appbar-title">{pageLabel}</p>
-        <button type="button" className="icon-btn" aria-label="Search" onClick={() => setOpen(true)}>
-          <SearchIcon />
-        </button>
+        <span className="appbar-tools">
+          <button type="button" className="icon-btn" aria-label="Menu" aria-expanded={menu} aria-controls="os-menu" onClick={() => setMenu(true)}>
+            <MenuIcon />
+          </button>
+          <button type="button" className="icon-btn" aria-label="Search" onClick={() => setOpen(true)}>
+            <SearchIcon />
+          </button>
+        </span>
       </header>
       <div className="shell">
         <aside className="rail">
-          <a className="brand" href={hrefs.today}>
-            <img src="/brand/logo-cream.png" alt="Backfield Ventures" />
+          <a className="brand wordmark" href={hrefs.today}>
+            <img src="/logo-text.png" alt="Backfield Ventures" />
           </a>
-          <div className="sub lbl">OS · {pageLabel}</div>
           <nav>
             {links.map((link) => (
               <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
@@ -365,30 +441,21 @@ export function NightFrame({
             <button type="button" onClick={signOut}>
               Sign out
             </button>
-            <span>Private to Ryan</span>
           </div>
         </aside>
         <div className="os-col">
           <header className="crumb lbl">
-            <span>
-              Backfield OS <span className="sep">/</span> {pageLabel}
-            </span>
+            <span>{pageLabel}</span>
             <span className="r">
-              <AskBox actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
               <button type="button" className="search" onClick={() => setOpen(true)}>
                 <SearchIcon />
                 <span>Search</span>
                 <kbd className="pointer-keys">⌘K</kbd>
               </button>
-              {stamp ? (
-                <span className="stamp">
-                  <i className={`dot${stale ? " wait" : ""}`} />
-                  Updated {stamp.replace(/,\s*\d{4}/, "")}
-                </span>
-              ) : (
-                <span className="stamp">Waiting on the first ingest</span>
-              )}
-              <span className="private">Private to Ryan</span>
+              <span className={stale ? "quiet-line is-stale" : "quiet-line"}>
+                {stamp ? `Updated ${stamp.replace(/,\s*\d{4}/, "")}` : "Waiting on the first ingest"}
+                {" · Private to Ryan"}
+              </span>
             </span>
           </header>
           <main className="main">
@@ -403,7 +470,7 @@ export function NightFrame({
       {menu ? (
         <div className="mpanel" id="os-menu" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="mpanel-bar">
-            <img src="/brand/logo-cream.png" alt="" />
+            <img src="/logo-text.png" alt="Backfield Ventures" />
             <button type="button" className="icon-btn" aria-label="Close menu" onClick={() => setMenu(false)}>
               <span aria-hidden="true">×</span>
             </button>
@@ -435,10 +502,13 @@ export function NightFrame({
         <div className="ask-sheet" role="dialog" aria-modal="true" aria-label="Ask the firm">
           <button type="button" className="sheet-scrim" aria-label="Close ask" onClick={() => setAskOpen(false)} />
           <div className="ask-sheet-card">
-            <div className="sheet-handle" aria-hidden />
-            <button type="button" className="icon-btn sheet-close" aria-label="Close" onClick={() => setAskOpen(false)}>
-              <span aria-hidden="true">×</span>
-            </button>
+            <div className="ask-sheet-head">
+              <div className="sheet-handle" aria-hidden />
+              <p className="ask-note">This files a request. Nothing sends until you approve the exact text.</p>
+              <button type="button" className="icon-btn sheet-close" aria-label="Close" onClick={() => setAskOpen(false)}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
             <AskBox variant="sheet" actions={actions} context={askContext} onSubmit={submit} bots={finder.filter((item) => item.kind === "bot").map((item) => item.title)} />
           </div>
         </div>
@@ -495,7 +565,15 @@ export function NightFrame({
       </nav>
       <div className="toasts" aria-live="polite">
         {toasts.map((toast) => (
-          <div className="toast" key={toast.id} role="status">
+          <div
+            className="toast"
+            key={toast.id}
+            role="status"
+            onMouseEnter={() => toast.undo && pauseBatch(toast.id)}
+            onMouseLeave={() => toast.undo && resumeBatch(toast.id)}
+            onFocus={() => toast.undo && pauseBatch(toast.id)}
+            onBlur={() => toast.undo && resumeBatch(toast.id)}
+          >
             <span>{toast.label}</span>
             {toast.undo ? (
               <button type="button" onClick={() => undo(toast.id)}>
@@ -535,6 +613,14 @@ function TabIcon({ id, on }: { id: string; on: boolean }) {
   return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
 }
 
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+      <path d="M2 4h12M2 8h12M2 12h12" />
+    </svg>
+  );
+}
+
 function SearchIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
@@ -544,10 +630,11 @@ function SearchIcon() {
   );
 }
 
-async function postAction(item: Queued): Promise<{ action?: OsAction; error?: string }> {
+async function postAction(item: Queued, init: { keepalive?: boolean } = {}): Promise<{ action?: OsAction; error?: string }> {
   try {
     const res = await fetch("/api/os/action", {
       method: "POST",
+      keepalive: init.keepalive === true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: item.type,

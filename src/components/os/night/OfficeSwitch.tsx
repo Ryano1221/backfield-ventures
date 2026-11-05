@@ -3,11 +3,11 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BotDesk, DeskBot, DeskFilter, RoutineView } from "@/lib/os/bot-desk";
 import { botMatches, groupTeams } from "@/lib/os/bot-desk";
-import type { OfficeData } from "@/lib/os/night";
+import { summarizeBotResult, type OfficeData } from "@/lib/os/night";
 import type { Interaction } from "@/lib/os/types";
 import { officeStatus, whoLabel } from "@/lib/os/ask";
 import { FlowView } from "./FlowView";
-import { PixelOffice } from "./PixelOffice";
+import { OfficeTower } from "./OfficeTower";
 import { useNightActions } from "./NightFrame";
 
 const DOT: Record<DeskBot["status"], string> = {
@@ -15,6 +15,8 @@ const DOT: Record<DeskBot["status"], string> = {
   Working: "is-work",
   Idle: "is-idle",
   Paused: "is-pause",
+  Degraded: "is-degraded",
+  Failed: "is-failed",
 };
 
 
@@ -38,7 +40,7 @@ export function OfficeSwitch({
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const [feedAll, setFeedAll] = useState(false);
-  const view = choice ?? "list";
+  const view = choice ?? "map";
   const visible = useMemo(() => desk.bots.filter((bot) => botMatches(bot, filter, query)), [desk.bots, filter, query]);
   const needs = visible.filter((bot) => bot.status === "Needs Ryan");
   const teams = groupTeams(visible);
@@ -84,7 +86,7 @@ export function OfficeSwitch({
       />
       <div className="bots-toggle" role="group" aria-label="Office view">
         <button type="button" data-for="map" aria-pressed={view === "map"} onClick={() => setChoice("map")}>
-          Map
+          Office
         </button>
         <button type="button" data-for="flow" aria-pressed={view === "flow"} onClick={() => setChoice("flow")}>
           Flow
@@ -106,7 +108,7 @@ export function OfficeSwitch({
                   <button type="button" className="bots-need-open" onClick={() => setSelected(bot.id)}>
                     <span className="bots-need-name">{bot.name}</span>
                     <Status bot={bot} />
-                    {bot.result ? <span className="bots-need-result">{bot.result}</span> : null}
+                    {bot.result ? <span className="bots-need-result">{summarizeBotResult(bot.result)}</span> : null}
                   </button>
                   <When relative={bot.relative} ct={bot.ct} />
                   {bot.decision ? (
@@ -169,6 +171,7 @@ export function OfficeSwitch({
                         <Status bot={bot} />
                       </button>
                       <When relative={bot.relative} ct={bot.ct} />
+                      {bot.nextRun ? <p className="bots-next">Next {bot.nextRun}</p> : null}
                       {bot.result ? (
                         <button
                           type="button"
@@ -176,7 +179,7 @@ export function OfficeSwitch({
                           aria-expanded={Boolean(expanded[bot.id])}
                           onClick={() => setExpanded((current) => ({ ...current, [bot.id]: !current[bot.id] }))}
                         >
-                          {bot.result}
+                          {expanded[bot.id] ? bot.result : summarizeBotResult(bot.result)}
                         </button>
                       ) : null}
                       {bot.usage != null ? <Usage value={bot.usage} /> : null}
@@ -215,18 +218,8 @@ export function OfficeSwitch({
         ) : null}
       </div>
       <div className="bots-map">
-        {view === "map" && office.bots.length ? (
-          <PixelOffice
-            data={office}
-            now={now}
-            active={view === "map"}
-            needs={desk.bots.filter((bot) => bot.status === "Needs Ryan").map((bot) => ({
-              slug: bot.id,
-              name: bot.name,
-              href: bot.decision ? `${decisionRoot}/${encodeURIComponent(bot.decision.id)}` : null,
-            }))}
-            onOpenBot={setSelected}
-          />
+        {desk.bots.length ? (
+          <OfficeTower bots={desk.bots} interactions={interactions} now={now} onOpenBot={setSelected} />
         ) : (
           <p className="t-body muted">No bots in this snapshot.</p>
         )}
@@ -265,7 +258,7 @@ function Summary({
       </div>
       {counts.failedRoutines > 0 ? (
         <button type="button" className="bots-failed" onClick={onRoutines}>
-          {counts.failedRoutines === 1 ? "1 routine failed" : `${counts.failedRoutines.toLocaleString("en-US")} routines failed`}
+          {counts.failedRoutines.toLocaleString("en-US")} {counts.failedRoutines === 1 ? "routine" : "routines"} failed
         </button>
       ) : null}
     </div>
@@ -274,7 +267,7 @@ function Summary({
 
 function Status({ bot }: { bot: DeskBot }) {
   return (
-    <span className="bots-status">
+    <span className={`bots-status is-${bot.status.toLowerCase().replace(/\s+/g, "-")}`}>
       <i className={`bots-dot ${DOT[bot.status]}`} aria-hidden />
       {bot.statusLabel}
     </span>
@@ -355,6 +348,14 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
         </p>
         <When relative={bot.relative} ct={bot.ct} />
         {bot.result ? <p className="bots-sheet-result">{bot.result}</p> : null}
+        <div className="bots-sheet-actions">
+          {bot.decision ? (
+            <a className="btn primary" href={`${decisionRoot}/${encodeURIComponent(bot.decision.id)}`}>
+              Open the decision
+            </a>
+          ) : null}
+          <BotQuick name={bot.name} />
+        </div>
         <BotAsk name={bot.name} />
         <dl className="bots-sheet-facts">
           {bot.scope ? <Fact label="Scope" value={bot.scope} /> : null}
@@ -363,11 +364,6 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
           {bot.source ? <Fact label="Source" value={bot.source} /> : null}
           {bot.usage != null ? <Fact label="Usage" value={`${bot.usage}% of bot usage`} /> : null}
         </dl>
-        {bot.decision ? (
-          <a className="bots-decision" href={`${decisionRoot}/${encodeURIComponent(bot.decision.id)}`}>
-            {bot.decision.label}
-          </a>
-        ) : null}
         {bot.routines.length ? (
           <>
             <h3 className="bots-h">Routines</h3>
@@ -442,15 +438,7 @@ function BotAsk({ name }: { name: string }) {
           Ask
         </button>
       </form>
-      <div className="rate-row">
-        <button type="button" className="btn" onClick={() => submit({ type: "bot_pause", target_id: name, payload: {}, label: `Pause ${name}.` })}>
-          Pause
-        </button>
-        <button type="button" className="btn" onClick={() => submit({ type: "bot_resume", target_id: name, payload: {}, label: `Resume ${name}.` })}>
-          Resume
-        </button>
-      </div>
-      <p className="hint">Pause and resume file a request. The office routes pause to the registry owner. This page does not change the bot.</p>
+      <p className="hint">Pause and resume file a request. The office routes it to the bot&apos;s owner. This page does not change the bot directly.</p>
       {status ? (
         <p className="pickup">
           {status.line}
