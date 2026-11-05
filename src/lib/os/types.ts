@@ -59,6 +59,8 @@ export type BotRecord = {
   result?: string;
   usage_share?: number | null;
   director?: DirectorKey;
+  /** Already in Chicago, for example "Nov 9 9:00am CT". */
+  next_run?: string;
 };
 
 export type RoutineRecord = {
@@ -93,6 +95,11 @@ export type OutreachTrack = {
   sent: number;
   floor: number;
   label?: string;
+  /** Date (YYYY-MM-DD, CT) the sent count is for. A count not from today is stale. */
+  as_of?: string;
+  last_send_date?: string;
+  base_floor?: number;
+  floor_source?: string;
 };
 
 export type DecisionOption = {
@@ -245,6 +252,9 @@ export type CrmPerson = {
   channel?: string | null;
 };
 
+/** Choices a decision accepts when the bot sent no options of its own. */
+export const DEFAULT_DECIDE_CHOICES = ["approve", "skip", "yes", "no"] as const;
+
 export const ACTION_TYPES = [
   "decide",
   "pitch_status",
@@ -283,6 +293,8 @@ export type OsAction = {
 
 export type CrmBook = {
   people: CrmPerson[];
+  /** Optional builder total, checked against flagged people. The tile still counts the flags. */
+  counts?: { im_in?: number };
 };
 
 export type DecisionAnswer = {
@@ -311,6 +323,39 @@ export type Interaction = {
   status: string | null;
 };
 
+/** Optional social draft. Only the fields the builder sends are required. */
+export type OsPost = {
+  id?: string;
+  platform?: string;
+  status?: string;
+  /** The rest of the status line, under the status itself. */
+  gate?: string | null;
+};
+
+export type OsScheduleItem = {
+  platform?: string;
+  date?: string;
+  time_ct?: string | null;
+  item?: string;
+  status?: string;
+  note?: string;
+};
+
+/** A short Today item the office prepared: a warmup target or a pre-call brief. */
+export type OsTodayNote = {
+  name: string;
+  when_ct?: string;
+  note?: string;
+  status?: string;
+};
+
+export type AnsweredDecision = {
+  id: string;
+  name?: string;
+  send_state?: "sent" | "approved_waiting";
+  send_at_ct?: string;
+};
+
 export type Snapshot = {
   generated_at: string;
   pitches: Pitch[];
@@ -320,6 +365,11 @@ export type Snapshot = {
   activity: ActivityItem[];
   interactions: Interaction[];
   crm: CrmBook;
+  posts?: OsPost[];
+  schedule?: OsScheduleItem[];
+  warmups?: OsTodayNote[];
+  briefs?: OsTodayNote[];
+  answered_decisions?: AnsweredDecision[];
 };
 
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;

@@ -25,6 +25,10 @@ import {
   type DirectorKey,
   type Interaction,
   type InteractionKind,
+  type OsPost,
+  type OsScheduleItem,
+  type AnsweredDecision,
+  type OsTodayNote,
   type OutreachTrack,
   type Pitch,
   type PitchRating,
@@ -67,6 +71,11 @@ export function validateSnapshot(input: unknown): SchemaResult {
   const interactions =
     input.interactions === undefined ? [] : validateInteractions(input.interactions, issues);
   const crm = input.crm === undefined ? { people: [] } : validateCrm(input.crm, issues);
+  const posts = optionalPosts(input.posts);
+  const schedule = optionalSchedule(input.schedule);
+  const warmups = optionalNotes(input.warmups);
+  const briefs = optionalNotes(input.briefs);
+  const answered = optionalAnswered(input.answered_decisions);
 
   if (!generated_at || !pitches || !bots || !outreach || !decisions || !activity || !interactions || !crm || issues.length) {
     return { ok: false, issues: issues.slice(0, 30) };
@@ -83,8 +92,101 @@ export function validateSnapshot(input: unknown): SchemaResult {
       activity,
       interactions,
       crm,
+      ...(posts ? { posts } : {}),
+      ...(schedule ? { schedule } : {}),
+      ...(warmups ? { warmups } : {}),
+      ...(briefs ? { briefs } : {}),
+      ...(answered ? { answered_decisions: answered } : {}),
     },
   };
+}
+
+// Loose on purpose: the office can add fields without breaking ingest.
+function optionalNotes(value: unknown): OsTodayNote[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 50).flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const name = clipLoose(item.name, 120) || clipLoose(item.who, 120) || clipLoose(item.title, 120) || clipLoose(item.target, 120);
+    if (!name) return [];
+    const row: OsTodayNote = { name };
+    const when = clipLoose(item.when_ct, 60) || clipLoose(item.time_ct, 60) || clipLoose(item.when, 60) || clipLoose(item.date, 40);
+    const note = clipLoose(item.note, 500) || clipLoose(item.summary, 500) || clipLoose(item.brief, 500) || clipLoose(item.why, 500);
+    const status = clipLoose(item.status, 60);
+    if (when) row.when_ct = when;
+    if (note) row.note = note;
+    if (status) row.status = status;
+    return [row];
+  });
+}
+
+function optionalAnswered(value: unknown): AnsweredDecision[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 300).flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const id = clipLoose(item.id, 200) || clipLoose(item.decision_id, 200);
+    if (!id) return [];
+    const row: AnsweredDecision = { id };
+    const name = clipLoose(item.name, 200);
+    if (name) row.name = name;
+    if (item.send_state === "sent" || item.send_state === "approved_waiting") row.send_state = item.send_state;
+    const at = clipLoose(item.send_at_ct, 60);
+    if (at) row.send_at_ct = at;
+    return [row];
+  });
+}
+
+function optionalPosts(value: unknown): OsPost[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 200).flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const post: OsPost = {};
+    const id = clipLoose(item.id, 80);
+    const platform = clipLoose(item.platform, 40);
+    const status = clipLoose(item.status, 80);
+    if (id) post.id = id;
+    if (platform) post.platform = platform;
+    if (status) post.status = status;
+    if (item.gate === null) post.gate = null;
+    else {
+      const gate = clipLoose(item.gate, 240);
+      if (gate) post.gate = gate;
+    }
+    return Object.keys(post).length ? [post] : [];
+  });
+}
+
+function optionalSchedule(value: unknown): OsScheduleItem[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 100).flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const row: OsScheduleItem = {};
+    const platform = clipLoose(item.platform, 40);
+    const date = clipLoose(item.date, 40);
+    const label = clipLoose(item.item, 200);
+    const status = clipLoose(item.status, 40);
+    const note = clipLoose(item.note, 500);
+    if (platform) row.platform = platform;
+    if (date) row.date = date;
+    if (item.time_ct === null) row.time_ct = null;
+    else {
+      const time = clipLoose(item.time_ct, 40);
+      if (time) row.time_ct = time;
+    }
+    if (label) row.item = label;
+    if (status) row.status = status;
+    if (note) row.note = note;
+    return Object.keys(row).length ? [row] : [];
+  });
+}
+
+function clipLoose(value: unknown, max: number): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const text = value.trim().slice(0, max);
+  return text || undefined;
 }
 
 function validatePitches(value: unknown, issues: string[]): Pitch[] | null {
@@ -233,12 +335,14 @@ function validateBot(value: unknown, path: string, issues: string[]): BotRecord 
   const scope = optStr(value.scope, `${path}.scope`, 1000, issues);
   const registry = optStr(value.registry_status, `${path}.registry_status`, 40, issues);
   const last = optStr(value.last, `${path}.last`, 120, issues);
+  const nextRun = optStr(value.next_run, `${path}.next_run`, 80, issues);
   const source = optStr(value.source, `${path}.source`, 500, issues);
   if (slug) bot.slug = slug;
   if (role) bot.role = role;
   if (scope) bot.scope = scope;
   if (registry) bot.registry_status = registry;
   if (last) bot.last = last;
+  if (nextRun) bot.next_run = nextRun;
   if (source) bot.source = source;
   if (typeof value.result === "string" && value.result.trim()) {
     bot.result = clip(value.result.trim(), 2000);
@@ -301,6 +405,13 @@ function validateTrack(value: unknown, path: string, issues: string[]): Outreach
   if (!track || sent === undefined || floor === undefined) return null;
   const row: OutreachTrack = { track, sent, floor };
   if (label) row.label = label;
+  const asOf = clipLoose(value.as_of, 40);
+  const lastSend = clipLoose(value.last_send_date, 40);
+  const floorSource = clipLoose(value.floor_source, 80);
+  if (asOf) row.as_of = asOf;
+  if (lastSend) row.last_send_date = lastSend;
+  if (typeof value.base_floor === "number" && Number.isFinite(value.base_floor) && value.base_floor >= 0) row.base_floor = Math.round(value.base_floor);
+  if (floorSource) row.floor_source = floorSource;
   return row;
 }
 
@@ -730,7 +841,17 @@ function validateCrm(value: unknown, issues: string[]): CrmBook | null {
     const person = validatePerson(value.people[i], `crm.people[${i}]`, issues);
     if (person) people.push(person);
   }
-  return { people };
+  const book: CrmBook = { people };
+  const counts = crmCounts(value.counts);
+  if (counts) book.counts = counts;
+  return book;
+}
+
+function crmCounts(value: unknown): { im_in: number } | undefined {
+  if (!isRecord(value) || !("im_in" in value)) return undefined;
+  const count = value.im_in;
+  if (typeof count !== "number" || !Number.isFinite(count)) return undefined;
+  return { im_in: Math.max(0, Math.round(count)) };
 }
 
 function validatePerson(value: unknown, path: string, issues: string[]): CrmPerson | null {

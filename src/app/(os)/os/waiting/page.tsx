@@ -5,7 +5,7 @@ import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts } from "@/lib/os/nav";
 import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
-import { waitingActions, waitingTitle } from "@/lib/os/waiting";
+import { waitingActions, waitingTitle, waitingWho } from "@/lib/os/waiting";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export default async function WaitingPage() {
           {rows.map((row) => (
             <li key={row.action_id}>
               <b>{waitingTitle(row)}</b>
-              <span>{row.target_id}</span>
+              {waitingWho(row, page.snapshot) ? <span>{waitingWho(row, page.snapshot)}</span> : null}
               <span className="lbl">Not picked up</span>
             </li>
           ))}

@@ -150,7 +150,7 @@
         "last": "Fixture",
         "last_iso": "2026-11-03T18:00:00.000Z",
         "source": "fixture",
-        "result": "Fake specialist result. Not a real firm event.",
+        "result": "SENT 6:53pm CT, SENT 6:54pm CT, SENT 6:55pm CT, SENT 6:56pm CT, SENT 6:57pm CT. Fixture drive-home list.",
         "usage_share": null,
         "director": "investment"
       },
@@ -721,7 +721,8 @@
       "track": "fo_hnwi",
       "sent": 4,
       "floor": 10,
-      "label": "FO / HNWI (fixture)"
+      "label": "FO / HNWI (fixture)",
+      "as_of": "2020-01-01"
     },
     {
       "track": "creator",
@@ -2438,6 +2439,21 @@
         "lp": true
       },
       {
+        "id": "fix-hal",
+        "name": "FIXTURE Hal Held",
+        "firm": "FIXTURE Harbor",
+        "track": "investor",
+        "stage": "call_held",
+        "owner": null,
+        "last_touch_at": "2026-11-04T18:00:00.000Z",
+        "last_touch_channel": "call",
+        "next_step": "Send the sample one-pager",
+        "next_step_due": "2026-11-07",
+        "email": null,
+        "linkedin": null,
+        "notes": "Fake held call. The stage tag should be filled."
+      },
+      {
         "id": "fix-holly",
         "name": "FIXTURE Holly Hold",
         "firm": null,
@@ -2453,5 +2469,50 @@
         "notes": "Fake hold."
       }
     ]
-  }
+  },
+  "posts": [
+    {
+      "id": "post_sample",
+      "platform": "x",
+      "status": "brand_pass",
+      "gate": "Brand check pending"
+    }
+  ],
+  "schedule": [
+    {
+      "platform": "linkedin",
+      "date": "2026-11-06",
+      "time_ct": "9:00am",
+      "item": "FIXTURE sample post",
+      "status": "scheduled",
+      "note": "FIXTURE note for the sample post. It stays collapsed until you open it."
+    }
+  ],
+  "warmups": [
+    {
+      "name": "FIXTURE Warm Target",
+      "when_ct": "before noon",
+      "note": "Like two recent posts, then reply to one. Sample copy."
+    }
+  ],
+  "briefs": [
+    {
+      "name": "FIXTURE Call With Example Co",
+      "when_ct": "2:00pm CT",
+      "note": "Example brief. Three facts about the sample company and one ask."
+    }
+  ],
+  "answered_decisions": [
+    {
+      "id": "fix-answered-1",
+      "name": "FIXTURE Sample reply",
+      "send_state": "approved_waiting",
+      "send_at_ct": "4:30pm CT"
+    },
+    {
+      "id": "fix-answered-2",
+      "name": "FIXTURE Sent reply",
+      "send_state": "sent"
+    }
+  ]
 }

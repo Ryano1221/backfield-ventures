@@ -100,7 +100,6 @@ export function AskBox({
   return (
     <div className={variant === "sheet" ? "ask is-sheet" : "ask"}>
       {variant === "sheet" ? <div className="ask-thread">
-        <p className="ask-note">This files a request. Nothing sends until you approve the exact text.</p>
         {asks.length ? (
           <ul className="ask-list">
             {asks.map((ask) => {
@@ -136,7 +135,7 @@ export function AskBox({
         )}
         {error ? <p className="os-error">{error}</p> : null}
       </div> : error ? <p className="os-error">{error}</p> : null}
-      <form className={variant === "sheet" ? "ask-compose is-stack" : "ask-compose"} onSubmit={file}>
+      <form className="ask-compose is-stack" onSubmit={file}>
         <button type="button" className="who-chip" aria-expanded={whoOpen} onClick={() => setWhoOpen(true)}>
           {who}
         </button>

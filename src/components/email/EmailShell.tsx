@@ -25,7 +25,7 @@ function NavLinks({
   );
 }
 
-export function EmailShell({ onOs, children }: { onOs: boolean; children: ReactNode }) {
+export function EmailShell({ onOs, embedded = false, children }: { onOs: boolean; embedded?: boolean; children: ReactNode }) {
   const pathname = usePathname() || "/os/email";
   const [menuPath, setMenuPath] = useState<string | null>(null);
   const open = menuPath === pathname;
@@ -46,6 +46,21 @@ export function EmailShell({ onOs, children }: { onOs: boolean; children: ReactN
       window.removeEventListener("keydown", onKey);
     };
   }, [open]);
+
+  // Inside the OS frame the OS rail is the only rail. Email gets one row of
+  // section tabs instead of its own sidebar, menu bar, and drawer.
+  if (embedded) {
+    return (
+      <div className="email is-embedded">
+        <nav className="email-tabs" aria-label="Email sections">
+          {GROUPS.map((group) => (
+            <NavLinks key={group} items={nav.filter((item) => item.group === group)} active={active} />
+          ))}
+        </nav>
+        <div className="email-body">{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="email">

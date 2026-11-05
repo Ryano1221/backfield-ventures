@@ -1,12 +1,30 @@
 export type OsSection = "today" | "crm" | "pipeline" | "bots" | "activity" | "email" | "waiting";
 
+type WaitingModel = {
+  ready: readonly { requestedBy?: string | null }[];
+  hold: readonly { requestedBy?: string | null }[];
+  open: readonly { requestedBy?: string | null }[];
+  waiting?: readonly { name: string }[];
+};
+
+/**
+ * The one "waiting on you" count. A bot that already has a decision card is
+ * counted once, through its card, so the rail and Today always agree.
+ */
+export function waitingOnYou(model: WaitingModel): { cards: number; bots: number; total: number } {
+  const items = [...model.ready, ...model.hold, ...model.open];
+  const asked = new Set(items.map((row) => (row.requestedBy || "").trim().toLowerCase()).filter(Boolean));
+  const bots = (model.waiting ?? []).filter((bot) => !asked.has(bot.name.trim().toLowerCase())).length;
+  return { cards: items.length, bots, total: items.length + bots };
+}
+
 export function osChromeCounts(
   snapshot: { bots?: { bots?: readonly unknown[] } } | null,
-  model: { ready: readonly unknown[]; hold: readonly unknown[]; open: readonly unknown[]; reviewingCount: number; peopleCount: number; waiting?: readonly unknown[] },
+  model: WaitingModel & { reviewingCount: number; peopleCount: number },
 ) {
   if (!snapshot) return { today: null, deals: null, people: null, bots: null };
   return {
-    today: model.ready.length + model.hold.length + model.open.length + (model.waiting?.length ?? 0),
+    today: waitingOnYou(model).total,
     deals: model.reviewingCount,
     people: model.peopleCount,
     bots: snapshot.bots?.bots?.length ?? null,

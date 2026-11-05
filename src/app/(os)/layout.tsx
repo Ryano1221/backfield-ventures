@@ -1,20 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue, Space_Mono } from "next/font/google";
 import "./os.css";
-
-const bebas = Bebas_Neue({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-bebas",
-  display: "swap",
-});
-
-const mono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Backfield OS",
@@ -40,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function OsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${bebas.variable} ${mono.variable}`}>
+    <html lang="en">
       <body className="os theme-a">{children}</body>
     </html>
   );

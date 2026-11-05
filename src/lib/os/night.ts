@@ -4,6 +4,7 @@ import { displayParty } from "./interactions";
 import { botPaused, isSnoozed } from "./overlays";
 import { blankToNull, shortTitle } from "./present";
 import { pitchTarget } from "./pitch-rate";
+import { DEFAULT_DECIDE_CHOICES } from "./types";
 import type { BotRecord, CrmPerson, Decision, DecisionDetail, DecisionEvent, Interaction, OsAction, Pitch, PitchRating, Snapshot } from "./types";
 
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
@@ -17,6 +18,13 @@ const STAGE_LABEL: Record<string, string> = {
   im_in: "I'm in",
   call_asked: "Call asked",
   call_booked: "Call booked",
+  call_held: "Call held",
+  one_pager_sent: "One-pager sent",
+  data_room: "Data room",
+  soft_circle: "Soft circle",
+  docs: "Docs",
+  committed: "Committed",
+  closed: "Closed",
   hold: "On hold",
   bounced: "Bounced",
   do_not_contact: "Do not contact",
@@ -35,9 +43,41 @@ const TRACK_LABEL: Record<string, string> = {
   founder: "Founder",
 };
 
-const STAGE_ORDER = ["ready", "queued", "contacted", "nudged", "replied", "im_in", "call_asked", "call_booked", "hold", "bounced", "do_not_contact", "passed", "unknown"];
-const WARM = new Set(["replied", "im_in", "call_asked", "call_booked"]);
-const YES_STAGES = new Set(["im_in", "call_asked", "call_booked"]);
+const STAGE_ORDER = [
+  "ready",
+  "queued",
+  "contacted",
+  "nudged",
+  "replied",
+  "call_asked",
+  "call_booked",
+  "call_held",
+  "one_pager_sent",
+  "data_room",
+  "soft_circle",
+  "docs",
+  "committed",
+  "closed",
+  "im_in",
+  "hold",
+  "bounced",
+  "do_not_contact",
+  "passed",
+  "unknown",
+];
+const WARM = new Set([
+  "replied",
+  "im_in",
+  "call_asked",
+  "call_booked",
+  "call_held",
+  "one_pager_sent",
+  "data_room",
+  "soft_circle",
+  "docs",
+  "committed",
+  "closed",
+]);
 const ROOM_NAME: Record<string, string> = {
   executive: "Executive",
   network: "Network",
@@ -144,9 +184,9 @@ export type DeskDeal = {
   sources: DealSource[];
 };
 
-export type WaitingBot = { name: string; ask: string; slug: string };
+export type WaitingBot = { name: string; ask: string; detail: string; when: string | null; status: string; slug: string };
 
-export type Kpi = { label: string; value: string; small: string | null; sub: string | null };
+export type Kpi = { label: string; value: string; small: string | null; sub: string | null; stale?: boolean };
 
 export type TodayModel = {
   hasSnapshot: boolean;
@@ -215,7 +255,7 @@ export type OfficeBot = {
   name: string;
   team: string;
   role: string;
-  status: "Working" | "Needs Ryan" | "Idle" | "Paused";
+  status: "Working" | "Needs Ryan" | "Idle" | "Paused" | "Degraded" | "Failed";
   statusLabel: string;
   last: string;
   result: string;
@@ -374,10 +414,10 @@ export function stageLabel(stage: string | null | undefined): string | null {
   if (stage == null) return null;
   const trimmed = stage.trim();
   if (!trimmed) return null;
-  if (trimmed.toLowerCase() === "unknown") return "Unknown";
-  const raw = blankToNull(trimmed);
-  if (!raw) return null;
-  return STAGE_LABEL[raw] || cap(raw.replace(/_/g, " "));
+  const key = trimmed.toLowerCase();
+  if (key === "unknown") return "Unknown";
+  if (!blankToNull(trimmed)) return null;
+  return STAGE_LABEL[key] || cap(key.replace(/_+/g, " "));
 }
 
 export function trackLabel(track: string | null | undefined): string | null {
@@ -431,7 +471,7 @@ export function buildToday(snapshot: Snapshot | null, actions: OsAction[] = [], 
   const waiting = waitingBots(snapshot, actions);
   const lines = headlineLines(ready.length, hold.length, open.length);
   const oldest = oldestReceived(reviewing);
-  const outreach = outreachKpi(snapshot);
+  const outreach = outreachKpi(snapshot, now);
   const kpis: Kpi[] = [
     {
       label: "Needs you",
@@ -503,11 +543,11 @@ export function buildPeople(snapshot: Snapshot | null): { rows: PeopleRow[]; cou
     stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1);
     if (person.track !== "lp") trackCounts.set(person.track, (trackCounts.get(person.track) || 0) + 1);
   }
-  const imInCount = people.filter((person) => personIsImIn(person, useImIn)).length;
+  const imInCount = imInTotal(snapshot.crm, people);
   if (imInCount > 0) stageCounts.set("im_in", stageCounts.get("im_in") || 0);
   const queuedLine = queuedDetail(people);
   const counts = [...stageCounts.entries()]
-    .sort((a, b) => stageIndex(a[0]) - stageIndex(b[0]) || a[0].localeCompare(b[0]))
+    .sort((a, b) => chipOrder(a[0]) - chipOrder(b[0]) || a[0].localeCompare(b[0]))
     .map(([stage, stageCount]) => ({
       stage,
       label: stageLabel(stage) || stage,
@@ -762,7 +802,7 @@ function presentPersonRow(person: CrmPerson, generatedAt: string, useImIn: boole
     stage,
     stageLabel: stageLabel(stage),
     warm: personIsWarm(person, useImIn),
-    imIn: personIsImIn(person, useImIn),
+    imIn: personIsImIn(person),
     lp: personIsLp(person, useLp),
     last: formatCt(person.last_touch_at, false),
     lastAge: waitingLabel(person.last_touch_at, generatedAt),
@@ -847,9 +887,17 @@ function waitingBots(snapshot: Snapshot, actions: OsAction[]): WaitingBot[] {
   return snapshot.bots.bots.flatMap((bot, index) => {
     if (botPaused(bot.name, actions)) return [];
     if (officeStatus(bot.status) !== "Needs Ryan") return [];
-    const ask = askText(bot.result);
+    const detail = sentenceOrNull(blankToNull(plainBotText(bot.result)));
+    const ask = summarizeBotResult(detail);
     if (!ask) return [];
-    return [{ name: bot.name, ask: clip(ask, 180), slug: slugOf(bot, index) }];
+    return [{
+      name: bot.name,
+      ask,
+      detail: detail || ask,
+      when: formatCt(bot.last_iso, true),
+      status: "Needs you",
+      slug: slugOf(bot, index),
+    }];
   });
 }
 
@@ -1057,17 +1105,26 @@ function approveChoice(decision: Decision): { choice: string; label: string } {
   return { choice: "approve", label: "Approve and send" };
 }
 
+// Only send a choice the server will accept: the bot's own options, or the
+// default set when it sent none. Otherwise fall back to a local snooze.
 function notNowChoice(decision: Decision): DeskDecision["notNow"] {
-  const values = decision.options?.map((option) => option.value) ?? [];
+  const values: string[] = decision.options?.length ? decision.options.map((option) => option.value) : [...DEFAULT_DECIDE_CHOICES];
   for (const choice of ["not_now", "skip", "later", "hold", "no"]) {
-    if (!values.length || values.includes(choice)) return { kind: "decide", choice };
+    if (values.includes(choice)) return { kind: "decide", choice };
   }
   return { kind: "snooze" };
 }
 
-function outreachKpi(snapshot: Snapshot): Kpi | null {
+/** Today's date in Chicago as YYYY-MM-DD. */
+export function ctDate(now = Date.now()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
+}
+
+function outreachKpi(snapshot: Snapshot, now = Date.now()): Kpi | null {
   const rows = snapshot.outreach;
   if (!rows.length) return null;
+  const today = ctDate(now);
+  const staleRows = rows.filter((row) => row.as_of && row.as_of.slice(0, 10) !== today);
   const sent = rows.reduce((sum, row) => sum + row.sent, 0);
   const floor = rows.reduce((sum, row) => sum + row.floor, 0);
   const behind = [...rows].sort((a, b) => a.sent / Math.max(1, a.floor) - b.sent / Math.max(1, b.floor))[0];
@@ -1076,7 +1133,8 @@ function outreachKpi(snapshot: Snapshot): Kpi | null {
     label: "Outreach today",
     value: floor ? String(sent) : String(sent),
     small: floor ? ` / ${floor}` : null,
-    sub,
+    sub: staleRows.length ? `${staleRows.length === rows.length ? "Not updated today" : `${staleRows.length} of ${rows.length} tracks not updated today`}` : sub,
+    stale: staleRows.length > 0,
   };
 }
 
@@ -1137,6 +1195,8 @@ function officeStatus(status: string): OfficeBot["status"] {
   if (!value || value === "unknown") return "Idle";
   if (value.includes("need")) return "Needs Ryan";
   if (value.includes("pause")) return "Paused";
+  if (value.includes("degrad")) return "Degraded";
+  if (value.includes("fail")) return "Failed";
   if (value.includes("work") || value === "active") return "Working";
   return "Idle";
 }
@@ -1162,20 +1222,110 @@ function stageIndex(stage: string): number {
 }
 
 function stageKey(person: CrmPerson): string {
-  const raw = person.stage?.trim();
-  if (!raw || raw.toLowerCase() === "unknown") return "unknown";
+  const raw = person.stage?.trim().toLowerCase();
+  if (!raw || raw === "unknown") return "unknown";
   return raw;
 }
 
-function personIsImIn(person: CrmPerson, useFlag: boolean): boolean {
-  if (useFlag) return person.im_in === true;
-  return Boolean(person.stage && YES_STAGES.has(person.stage));
+function personIsImIn(person: CrmPerson): boolean {
+  return person.im_in === true;
+}
+
+/** Flagged people. crm.counts.im_in is only a cross-check against that list. */
+function imInTotal(crm: Snapshot["crm"], people: CrmPerson[]): number {
+  const flagged = people.filter((person) => person.im_in === true).length;
+  const given = crm.counts?.im_in;
+  if (typeof given === "number" && Number.isFinite(given) && Math.round(given) !== flagged) {
+    console.warn(`I'm in snapshot count is ${Math.round(given)}, but ${flagged} people are flagged.`);
+  }
+  return flagged;
+}
+
+export function rowsForStage(rows: PeopleRow[], stage: string): PeopleRow[] {
+  if (stage === "all") return rows;
+  if (stage === "im_in") return rows.filter((row) => row.imIn);
+  return rows.filter((row) => row.stage === stage);
+}
+
+function inTrack(row: Pick<PeopleRow, "track" | "lp">, track: string): boolean {
+  if (track === "all") return true;
+  if (track === "lp") return row.lp;
+  return row.track === track;
+}
+
+/** Count for one stage chip under the current track filter, LP included. */
+export function stageChipCount(rows: Pick<PeopleRow, "imIn" | "track" | "lp" | "stage">[], track: string, stage: string): number {
+  return rows.filter((row) => inTrack(row, track) && (stage === "all" || (stage === "im_in" ? row.imIn : row.stage === stage))).length;
+}
+
+export function imInChipCount(rows: Pick<PeopleRow, "imIn" | "track" | "lp">[], track: string): number {
+  return rows.filter((row) => row.imIn && inTrack(row, track)).length;
+}
+
+export function stageButtonLabel(stage: string | null | undefined): string {
+  const key = (stage || "").trim().toLowerCase();
+  const known = stageChoices().find((option) => option.value === key)?.label;
+  return known || stageLabel(stage) || "Unknown";
+}
+
+const POST_STATUS: Record<string, string> = {
+  brand_pass: "Brand passed",
+  brand_fail: "Brand failed",
+  draft: "Draft",
+  scheduled: "Scheduled",
+  sent: "Sent",
+  approved: "Approved",
+  queued: "Queued",
+  failed: "Failed",
+  pending: "Pending",
+};
+
+export function postStatusLabel(status: string | null | undefined): string {
+  const key = (status || "").trim().toLowerCase();
+  if (!key) return "Draft";
+  return POST_STATUS[key] || cap(key.replace(/_+/g, " "));
+}
+
+/**
+ * Strip bot bookkeeping (packet ids, file names, "per X" citations) so a bot
+ * ask reads like a sentence a person wrote.
+ */
+export function plainBotText(raw: string | null | undefined): string {
+  return (raw || "")
+    .replace(/\(\s*(?:per\s+)?(?:[A-Z0-9_-]+\.md\s*)?(?:pkt_[a-z0-9]+)?[^()]*?\)/gi, (match) => (/pkt_|\.md\b/i.test(match) ? "" : match))
+    .replace(/\bper\s+(?:pkt_[a-z0-9]+|[A-Z0-9_-]+\.md)\b/gi, "")
+    .replace(/\bpkt_[a-z0-9]+\b/gi, "")
+    .replace(/\b[A-Z0-9_-]+\.md\b/g, "")
+    .replace(/\s+([,.;:])/g, "$1")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+export function summarizeBotResult(raw: string | null | undefined): string {
+  const text = plainBotText(raw).replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const sent = text.match(/\bSENT\b/gi);
+  if (sent && sent.length > 0 && /\d{1,2}:\d{2}\s*(?:am|pm)/i.test(text)) {
+    return `${sent.length} ${sent.length === 1 ? "reply" : "replies"} sent`;
+  }
+  const first = text.split(/(?<=[.;])\s/)[0]?.trim() || text;
+  if (first.length <= 160) return first;
+  const cut = first.slice(0, 159);
+  const space = cut.lastIndexOf(" ");
+  const head = (space > 100 ? cut.slice(0, space) : cut).replace(/[\s.,;:!?…-]+$/, "");
+  return `${head}…`;
 }
 
 function personIsWarm(person: CrmPerson, useFlag: boolean): boolean {
-  if (person.stage === "replied" || person.stage === "call_asked" || person.stage === "call_booked") return true;
-  if (useFlag) return person.im_in === true;
-  return person.stage === "im_in";
+  const stage = (person.stage || "").trim().toLowerCase();
+  if (stage && WARM.has(stage)) return true;
+  return useFlag && person.im_in === true;
+}
+
+function chipOrder(stage: string): number {
+  if (stage === "im_in") return -1;
+  return stageIndex(stage);
 }
 
 function personIsLp(person: CrmPerson, useFlag: boolean): boolean {

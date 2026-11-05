@@ -154,6 +154,7 @@ function bot(id: string, team: string, status: DeskBot["status"]): DeskBot {
     doneToday: false,
     stale: false,
     isLead: false,
+    nextRun: null,
     aliases: [id],
     decision: null,
     routines: [],

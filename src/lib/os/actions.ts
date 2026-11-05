@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { appendDecisionLog } from "./decision-log";
-import { ACTION_TYPES, type ActionPayload, type ActionType, type Decision, type DecisionAnswer, type DecisionSwap, type OsAction } from "./types";
+import { ACTION_TYPES, DEFAULT_DECIDE_CHOICES, type ActionPayload, type ActionType, type Decision, type DecisionAnswer, type DecisionSwap, type OsAction } from "./types";
 import { defaultSnapshotFile, SnapshotStoreError, storeKind } from "./store";
 
 export const ACTIONS_BLOB_PATH = "os-dashboard/actions.json";
@@ -76,7 +76,7 @@ export function normalizeDecidePayload(
   }
   const allowed = decision.options?.length
     ? decision.options.map((option) => option.value)
-    : ["approve", "skip", "yes", "no"];
+    : [...DEFAULT_DECIDE_CHOICES];
   if (!choice || !allowed.includes(choice)) return { ok: false, error: "That choice is not offered" };
   return { ok: true, payload: withHash(decision, payload, { choice, note: note || null }) };
 }

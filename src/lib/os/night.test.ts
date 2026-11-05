@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { normalizeDecidePayload } from "./actions";
-import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, stageLabel, todayLine } from "./night";
+import { validateSnapshot } from "./schema";
+import { buildOffice, buildPeople, buildToday, daySentence, formatCt, formatCtStamp, headlineLines, imInChipCount, postStatusLabel, rowsForStage, stageButtonLabel, stageLabel, summarizeBotResult, todayLine } from "./night";
 import type { CrmPerson, Snapshot } from "./types";
 
 const NOW = Date.parse("2026-11-03T22:09:00.000Z");
@@ -283,8 +284,8 @@ function crmPerson(partial: Pick<CrmPerson, "id" | "name" | "track"> & Partial<C
   };
 }
 
-function peopleSnapshot(people: CrmPerson[]): Snapshot {
-  return { ...sample(), crm: { people } };
+function peopleSnapshot(people: CrmPerson[], imIn?: number): Snapshot {
+  return { ...sample(), crm: { people, ...(imIn === undefined ? {} : { counts: { im_in: imIn } }) } };
 }
 
 test("people stages stay in funnel order and the tiles cover every person", () => {
@@ -304,14 +305,93 @@ test("people stages stay in funnel order and the tiles cover every person", () =
   );
   assert.deepEqual(
     people.counts.map((item) => item.stage),
-    ["ready", "queued", "im_in", "call_asked", "call_booked", "hold", "unknown"],
+    ["im_in", "ready", "queued", "call_asked", "call_booked", "hold", "unknown"],
   );
-  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 0);
   assert.equal(people.counts.find((item) => item.stage === "im_in")?.label, "I'm in");
   assert.equal(people.counts.find((item) => item.stage === "unknown")?.count, 1);
   assert.equal(people.counts.find((item) => item.stage === "queued")?.detail, null);
   assert.equal(people.counted, people.total);
   assert.equal(people.warm, 3);
+});
+
+test("pipeline stages after a booked call are labeled, and an unknown stage is sentence case", () => {
+  assert.equal(stageLabel("call_held"), "Call held");
+  assert.equal(stageLabel("one_pager_sent"), "One-pager sent");
+  assert.equal(stageLabel("data_room"), "Data room");
+  assert.equal(stageLabel("soft_circle"), "Soft circle");
+  assert.equal(stageLabel("docs"), "Docs");
+  assert.equal(stageLabel("committed"), "Committed");
+  assert.equal(stageLabel("closed"), "Closed");
+  assert.equal(stageLabel("CALL_HELD"), "Call held");
+  assert.equal(stageLabel("not_a_stage"), "Not a stage");
+  const people = buildPeople(
+    peopleSnapshot([
+      crmPerson({ id: "1", name: "Booked", track: "founder", stage: "call_booked" }),
+      crmPerson({ id: "2", name: "Held", track: "founder", stage: "call_held" }),
+      crmPerson({ id: "3", name: "Pager", track: "founder", stage: "one_pager_sent" }),
+      crmPerson({ id: "4", name: "Room", track: "founder", stage: "data_room" }),
+      crmPerson({ id: "5", name: "Circle", track: "founder", stage: "soft_circle" }),
+      crmPerson({ id: "6", name: "Papers", track: "founder", stage: "docs" }),
+      crmPerson({ id: "7", name: "Commit", track: "founder", stage: "committed" }),
+      crmPerson({ id: "8", name: "Done", track: "founder", stage: "closed" }),
+      crmPerson({ id: "9", name: "In", track: "investor", stage: "im_in" }),
+      crmPerson({ id: "10", name: "Other", track: "other", stage: "not_a_stage" }),
+    ]),
+  );
+  assert.deepEqual(
+    people.counts.map((item) => item.stage),
+    ["im_in", "call_booked", "call_held", "one_pager_sent", "data_room", "soft_circle", "docs", "committed", "closed", "not_a_stage"],
+  );
+  assert.equal(people.counts.find((item) => item.stage === "not_a_stage")?.label, "Not a stage");
+  assert.equal(people.rows.find((row) => row.stage === "call_held")?.warm, true);
+});
+
+test("I'm in counts the flag after someone moves to a later stage", () => {
+  const people = buildPeople(
+    peopleSnapshot([
+      crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
+      crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "call_booked", im_in: true }),
+      crmPerson({ id: "3", name: "East Sample", track: "athlete", stage: "call_asked", im_in: true }),
+      crmPerson({ id: "4", name: "South Sample", track: "creator", stage: "im_in", im_in: false }),
+    ]),
+  );
+  assert.equal(people.rows.find((row) => row.id === "1")?.imIn, true);
+  assert.equal(people.rows.find((row) => row.id === "4")?.imIn, false);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.count, 3);
+  assert.equal(people.counts.find((item) => item.stage === "im_in")?.stageCount, 1);
+  const warnings: unknown[][] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+  let published: ReturnType<typeof buildPeople>;
+  try {
+    published = buildPeople(peopleSnapshot([
+      crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
+      crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "im_in", im_in: false }),
+    ], 8));
+  } finally {
+    console.warn = original;
+  }
+  const tile = published.counts.find((item) => item.stage === "im_in")?.count;
+  const listed = rowsForStage(published.rows, "im_in");
+  assert.equal(tile, listed.length);
+  assert.equal(tile, 1);
+  assert.equal(warnings.length, 1);
+  const matched = buildPeople(peopleSnapshot([
+    crmPerson({ id: "1", name: "North Sample", track: "founder", stage: "call_held", im_in: true }),
+    crmPerson({ id: "2", name: "West Sample", track: "investor", stage: "call_booked", im_in: true }),
+  ], 2));
+  assert.equal(matched.counts.find((item) => item.stage === "im_in")?.count, rowsForStage(matched.rows, "im_in").length);
+  assert.equal(matched.counts.find((item) => item.stage === "im_in")?.count, 2);
+  const base = sample();
+  const kept = validateSnapshot({ ...base, crm: { ...base.crm, counts: { im_in: 8 } } });
+  assert.equal(kept.ok, true);
+  if (kept.ok) assert.equal(kept.snapshot.crm.counts?.im_in, 8);
+  const absent = validateSnapshot({ ...base, crm: { people: base.crm.people } });
+  assert.equal(absent.ok, true);
+  if (absent.ok) assert.equal(absent.snapshot.crm.counts, undefined);
 });
 
 test("a lasting yes flag counts I'm in, and LP stays on the real track", () => {
@@ -336,4 +416,19 @@ test("a lasting yes flag counts I'm in, and LP stays on the real track", () => {
   assert.equal(people.rows.find((row) => row.id === "7")?.lp, false);
   assert.equal(people.counted, 7);
   assert.equal(people.total, 7);
+  assert.equal(imInChipCount(people.rows, "all"), 3);
+  assert.equal(imInChipCount(people.rows, "founder"), 1);
+  assert.equal(imInChipCount(people.rows, "investor"), 1);
+});
+
+test("a stage button uses the label, not the raw token", () => {
+  assert.equal(stageButtonLabel("CALL_HELD"), "Call held");
+  assert.equal(stageButtonLabel("not_a_stage"), "Not a stage");
+});
+
+test("post statuses and send logs stay human", () => {
+  assert.equal(postStatusLabel("brand_pass"), "Brand passed");
+  assert.equal(postStatusLabel("needs_review"), "Needs review");
+  assert.equal(postStatusLabel("brand_pass").includes("_"), false);
+  assert.equal(summarizeBotResult("SENT 6:53pm CT, SENT 6:54pm CT, SENT 6:55pm CT, SENT 6:56pm CT, SENT 6:57pm CT. Drive-home list."), "5 replies sent");
 });

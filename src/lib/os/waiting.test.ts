@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildFinder } from "./finder";
-import { decisionNeedsPickup, PICKUP_LINE, ratingNeedsPickup, waitingActions } from "./waiting";
+import { decisionNeedsPickup, PICKUP_LINE, ratingNeedsPickup, waitingActions, waitingTitle, waitingWho } from "./waiting";
 import type { OsAction, Snapshot } from "./types";
 
 test("search uses the people stage words", () => {
@@ -33,6 +33,21 @@ test("yes, no, reply, swap, and a rating say they are waiting on the office", ()
   assert.equal(decisionNeedsPickup(actions, "dec-4"), false);
   assert.equal(ratingNeedsPickup(actions, "pitch_example"), true);
   assert.equal(waitingActions(actions).some((row) => row.target_id === "dec-4"), false);
+  const local = { ...action("decide", "dec-1", { choice: "approve" }), action_id: "local:abc" };
+  assert.equal(waitingActions([local]).length, 0);
+  assert.equal(waitingTitle(action("crm_stage", "fix-ada", { stage: "call_held" })), "Stage");
+  assert.equal(waitingTitle(action("crm_stage", "fix-ada", { stage: "call_held" })).includes("fix-ada"), false);
+  const named = waitingWho(action("crm_stage", "p1", { stage: "call_held" }), {
+    generated_at: "2026-11-04T18:00:00.000Z",
+    pitches: [],
+    bots: { bots: [] },
+    outreach: [],
+    decisions: [],
+    activity: [],
+    interactions: [],
+    crm: { people: [{ id: "p1", name: "Ada Sample", firm: null, track: "investor", stage: "call_held", owner: null, last_touch_at: null, last_touch_channel: null, next_step: null, next_step_due: null, email: null, linkedin: null, notes: null }] },
+  });
+  assert.equal(named, "Ada Sample");
   assert.equal(PICKUP_LINE, "Saved. The office has not picked this up yet.");
 });
 
