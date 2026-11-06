@@ -4,12 +4,15 @@ import type { Portfolio } from "@/lib/os/portfolio";
 import { usd } from "@/lib/os/raise-model";
 
 /** The companies Backfield is in or has decided to back, above the pitch list. */
-export function PortfolioCard({ portfolio, spvHref, dealHref }: { portfolio: Portfolio; spvHref: (id: string) => string; dealHref: (id: string) => string }) {
-  if (!portfolio.rows.length) return null;
+export function PortfolioCard({ portfolio, spvHref, dealHref, portfolioHref }: { portfolio: Portfolio; spvHref: (id: string) => string; dealHref: (id: string) => string; portfolioHref: string }) {
+  if (!portfolio.rows.length) return <p className="port-link-empty"><Link href={portfolioHref} prefetch>Open the portfolio</Link> to record holdings, marks and returns.</p>;
   const { invested, deployed, decided } = portfolio;
   return (
     <section className="sx-card inv-hist port" aria-label="Portfolio">
-      <h2 className="sx-h2">Portfolio</h2>
+      <div className="port-card-head">
+        <h2 className="sx-h2">Portfolio</h2>
+        <Link href={portfolioHref} prefetch>Holdings, marks and returns</Link>
+      </div>
       <p className="inv-total">
         {invested ? (
           <>

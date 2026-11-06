@@ -166,3 +166,42 @@ test("the companies API needs a session", async ({ request }) => {
   const res = await request.post("/api/os/companies", { data: { op: "add", name: "x" } });
   expect(res.status()).toBe(401);
 });
+
+test("a holding goes on the books, gets marked at a new round, and shows its multiple", async ({ page }, testInfo) => {
+  const name = `FIXTURE Holding ${testInfo.project.name} ${Date.now()}`;
+  await signIn(page);
+  await page.goto("/os/portfolio");
+  const form = page.getByRole("form", { name: "Add a holding" });
+  await expect(async () => {
+    const add = page.getByRole("button", { name: "Add a holding" });
+    if (!(await form.isVisible()) && (await add.isVisible())) await add.click();
+    await expect(form).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 20000 });
+  await form.getByRole("combobox", { name: "Company" }).fill(name);
+  await form.getByLabel("Check size").fill("$100K");
+  await form.getByLabel("Date invested").fill("2025-01-15");
+  await form.getByLabel("Valuation or cap (optional)").fill("$10M");
+  await form.getByRole("button", { name: "Add holding" }).click();
+  await expect(page.getByRole("status")).toContainText(`${name} is on the books`);
+
+  const card = page.locator(".port-card", { hasText: name });
+  await expect(card).toContainText("1.00x");
+  await expect(card).toContainText("1.0%");
+  await card.getByText(`Update ${name}`).click();
+  const mark = card.getByRole("form", { name: `Mark ${name}` });
+  await mark.getByLabel("Post-money").fill("$40M");
+  await mark.getByRole("button", { name: "Save mark" }).click();
+  await expect(card).toContainText("4.00x");
+  await expect(page.getByRole("region", { name: "Fund metrics" })).toContainText("TVPI");
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await card.getByRole("button", { name: "Remove holding" }).click();
+  await expect(page.locator(".port-card", { hasText: name })).toHaveCount(0);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  expect(overflow).toBe(false);
+});
+
+test("the holdings API needs a session", async ({ request }) => {
+  const res = await request.post("/api/os/holdings", { data: { op: "create", company: "x", invested_usd: 1 } });
+  expect(res.status()).toBe(401);
+});

@@ -19,6 +19,7 @@ export const PAGE_ITEMS: FinderItem[] = [
   { kind: "page", id: "raise", title: "Fundraising", hint: "Fund I · commitments, LP funnel" },
   { kind: "page", id: "spv", title: "SPVs", hint: "Fundraising · deal-by-deal vehicles" },
   { kind: "page", id: "deals", title: "Investments", hint: "Deals · pipeline" },
+  { kind: "page", id: "portfolio", title: "Portfolio", hint: "Investments · holdings, marks, TVPI, IRR" },
   { kind: "page", id: "people", title: "Relationships", hint: "People · CRM" },
   { kind: "page", id: "bots", title: "Bots", hint: "Operations · the office" },
   { kind: "page", id: "studio", title: "Content studio", hint: "Audience Growth · ideas, drafts, approvals" },
