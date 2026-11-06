@@ -7,6 +7,7 @@ import { osChromeCounts } from "@/lib/os/nav";
 import { buildBotDesk } from "@/lib/os/bot-desk";
 import { buildOffice, buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
+import { asOfWord } from "@/lib/os/as-of";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function BotsPage() {
             .join(" · ")}
         </p>
       ) : null}
-      <OfficeSwitch desk={desk} office={office} interactions={page.snapshot?.interactions ?? []} now={now} decisionRoot={onOs ? "/d" : "/os/d"} />
+      <OfficeSwitch desk={desk} office={office} interactions={page.snapshot?.interactions ?? []} now={now} decisionRoot={onOs ? "/d" : "/os/d"} asOf={asOfWord(page.model.stale, model.stamp)} />
     </NightFrame>
   );
 }

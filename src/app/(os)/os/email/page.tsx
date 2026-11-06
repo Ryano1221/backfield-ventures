@@ -8,6 +8,9 @@ import { loadSends, loadSubscribers } from "@/lib/email/store";
 import { isOsHost } from "@/lib/os/host";
 import { loadOutreachWeeks, readSnapshotOnce } from "@/lib/os/page-data";
 import { OutreachWeek } from "@/components/os/night/OutreachWeek";
+import { asOfWord } from "@/lib/os/as-of";
+import { formatCt } from "@/lib/os/night";
+import { STALE_AFTER_MS } from "@/lib/os/types";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +29,9 @@ export default async function EmailDashboardPage() {
   const outreach = snapshot?.outreach ?? [];
   const now = readClock();
   const weeks = await loadOutreachWeeks(snapshot, now);
+  const generatedMs = snapshot ? Date.parse(snapshot.generated_at) : NaN;
+  const stale = Number.isFinite(generatedMs) && now - generatedMs > STALE_AFTER_MS;
+  const asOf = asOfWord(stale, snapshot ? formatCt(snapshot.generated_at, true) : null);
   const month = new Date(now).toISOString().slice(0, 7);
   const newThisMonth = subscribers.filter((row) => row.joined.startsWith(month)).length;
 
@@ -52,7 +58,7 @@ export default async function EmailDashboardPage() {
           <div className="d">{people.sample ? "Needs a joined date on each subscriber." : "Joined this month"}</div>
         </div>
         <div className="kpi">
-          <div className="lbl">Outreach today</div>
+          <div className="lbl">Outreach {asOf}</div>
           <div className="v">{outreach.length ? outreach.reduce((sum, row) => sum + row.sent, 0).toLocaleString("en-US") : "—"}</div>
           <div className="d">{outreach.length ? "Sent across the tracks on this snapshot." : "No outreach counts on this snapshot."}</div>
         </div>

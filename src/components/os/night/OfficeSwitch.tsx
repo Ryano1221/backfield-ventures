@@ -26,12 +26,15 @@ export function OfficeSwitch({
   interactions,
   now,
   decisionRoot,
+  asOf = "today",
 }: {
   desk: BotDesk;
   office: OfficeData;
   interactions: Interaction[];
   now: number;
   decisionRoot: string;
+  /** "today", or "on Nov 3" when the snapshot is stale. */
+  asOf?: string;
 }) {
   const [choice, setChoice] = useState<"flow" | "list" | "map" | null>(null);
   const [filter, setFilter] = useState<DeskFilter | null>(null);
@@ -77,6 +80,7 @@ export function OfficeSwitch({
     <div className={openBot ? "bots-page is-open" : "bots-page"} data-view={view}>
       <Summary
         desk={desk}
+        asOf={asOf}
         filter={filter}
         onFilter={toggleFilter}
         onRoutines={() => {
@@ -231,11 +235,13 @@ export function OfficeSwitch({
 
 function Summary({
   desk,
+  asOf,
   filter,
   onFilter,
   onRoutines,
 }: {
   desk: BotDesk;
+  asOf: string;
   filter: DeskFilter | null;
   onFilter: (filter: DeskFilter) => void;
   onRoutines: () => void;
@@ -244,7 +250,7 @@ function Summary({
   const row: { id: DeskFilter; label: string; count: number }[] = [
     { id: "needs", label: "Needs you", count: counts.needs },
     { id: "working", label: "Working", count: counts.working },
-    { id: "done", label: "Done today", count: counts.doneToday },
+    { id: "done", label: `Done ${asOf}`, count: counts.doneToday },
   ];
   return (
     <div className="bots-summary">
