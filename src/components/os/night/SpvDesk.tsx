@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { usd } from "@/lib/os/raise-model";
+import { Ring, StepDots } from "./Charts";
 import { applySpvOp, spvNext, summarizeSpv, SPV_STATUS_LABEL, SPV_STEPS, type Spv, type SpvBook } from "@/lib/os/spv";
 
 /** Every SPV at a glance: progress to target, days left, and what each needs next. */
@@ -105,6 +106,8 @@ export function SpvDesk({ initial, root, now, prefill }: { initial: SpvBook; roo
 
 function SpvCard({ spv, href, now }: { spv: Spv; href: string; now: number }) {
   const s = summarizeSpv(spv, now);
+  const target = spv.target_usd ?? 0;
+  const pct = target ? Math.round(((s.hard) / target) * 100) : null;
   return (
     <li>
       <Link className="spv-card" href={href}>
@@ -112,20 +115,37 @@ function SpvCard({ spv, href, now }: { spv: Spv; href: string; now: number }) {
           <b>{spv.name}</b>
           <span className={`sx-chip spv-status is-${spv.status}`}>{SPV_STATUS_LABEL[spv.status]}</span>
         </span>
-        <span className="spv-money">
-          <b>{usd(s.hard)}</b>
-          {spv.target_usd ? ` of ${usd(spv.target_usd)}` : " committed, no target yet"}
-          {s.soft ? ` · ${usd(s.soft)} soft` : ""}
-          {s.daysLeft != null && spv.status !== "closed" ? ` · ${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"} left` : ""}
-        </span>
-        {spv.target_usd ? (
-          <span className="raise-bar spv-bar" aria-hidden="true">
-            <i className="hard" style={{ width: `${s.pctHard ?? 0}%` }} />
-            <i className="soft" style={{ width: `${Math.max(0, (s.pctSoft ?? 0) - (s.pctHard ?? 0))}%` }} />
+        <span className="spv-card-body">
+          <Ring
+            size={76}
+            stroke={9}
+            total={target}
+            label={target ? `${pct}% of target committed or wired` : "No target yet"}
+            parts={[
+              { key: "wired", label: `Wired ${usd(s.wired)}`, value: s.wired, tone: "hard" },
+              { key: "committed", label: `Committed ${usd(s.committed)}`, value: s.committed, tone: "mid" },
+              { key: "soft", label: `Soft ${usd(s.soft)}`, value: s.soft, tone: "hatch" },
+            ]}
+          >
+            <b>{pct != null ? `${Math.min(pct, 999)}%` : "?"}</b>
+          </Ring>
+          <span className="spv-card-nums">
+            <span className="spv-money">
+              <b>{usd(s.hard)}</b>
+              {spv.target_usd ? ` of ${usd(spv.target_usd)}` : " committed, no target yet"}
+            </span>
+            <span className="spv-meta">
+              {s.soft ? `${usd(s.soft)} soft · ` : ""}
+              {s.investors} {s.investors === 1 ? "investor" : "investors"}
+              {s.daysLeft != null && spv.status !== "closed" ? ` · ${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"} left` : ""}
+            </span>
+            <span className="spv-steps">
+              <StepDots steps={SPV_STEPS} done={spv.steps} label={`${s.stepsDone} of ${SPV_STEPS.length} steps done`} />
+              <span>
+                {s.stepsDone} of {SPV_STEPS.length} steps
+              </span>
+            </span>
           </span>
-        ) : null}
-        <span className="spv-meta">
-          {s.investors} {s.investors === 1 ? "investor" : "investors"} · {s.stepsDone} of {SPV_STEPS.length} steps
         </span>
         <span className="sx-next">{spvNext(spv, now)}</span>
       </Link>

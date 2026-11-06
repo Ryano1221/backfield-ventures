@@ -1,5 +1,6 @@
 "use client";
 
+import { Ring } from "./Charts";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { FunnelStep } from "@/lib/os/command";
@@ -86,7 +87,23 @@ export function RaiseDesk({
       </header>
 
       {summary.target ? (
-        <section className="raise-bar-wrap" aria-label="Progress to target">
+        <section className="raise-bar-wrap has-ring" aria-label="Progress to target">
+          <Ring
+            dark
+            size={132}
+            stroke={13}
+            total={summary.target}
+            label={`${Math.round(hardPct)}% committed, ${Math.round(softPct)}% more soft circled`}
+            parts={[
+              { key: "wired", label: `Wired ${usd(summary.wired)}`, value: summary.wired, tone: "hard" },
+              { key: "committed", label: `Committed ${usd(summary.hard - summary.wired)}`, value: Math.max(0, summary.hard - summary.wired), tone: "mid" },
+              { key: "soft", label: `Soft circled ${usd(summary.soft)}`, value: summary.soft, tone: "hatch" },
+            ]}
+          >
+            <b>{Math.round(hardPct)}%</b>
+            <span>committed</span>
+          </Ring>
+          <div className="raise-bar-main">
           <div className="raise-bar" role="img" aria-label={`${Math.round(hardPct)}% committed, ${Math.round(softPct)}% more soft circled`}>
             <i className="hard" style={{ width: `${hardPct}%` }} />
             <i className="soft" style={{ width: `${softPct}%` }} />
@@ -109,6 +126,7 @@ export function RaiseDesk({
               <dd>{summary.perWeekNeeded != null && summary.daysLeft != null ? `${usd(summary.perWeekNeeded)} a week` : "Set a close date"}</dd>
             </div>
           </dl>
+          </div>
         </section>
       ) : (
         <p className="raise-empty">Set a target and close date to see progress and the weekly pace you need.</p>
