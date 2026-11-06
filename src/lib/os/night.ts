@@ -1,3 +1,4 @@
+import { trackedCompanies } from "./companies";
 import { storedDecisionAnswer, type AnswerLabel } from "./decision-merge";
 import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
@@ -528,7 +529,14 @@ export function buildDeals(snapshot: Snapshot | null): DeskDeal[] {
 export function buildDeal(snapshot: Snapshot | null, id: string): DeskDeal | null {
   if (!snapshot) return null;
   const pitch = snapshot.pitches.find((item) => pitchTarget(item) === id);
-  return pitch ? presentDeal(pitch, snapshot.generated_at) : null;
+  if (pitch) return presentDeal(pitch, snapshot.generated_at);
+  return id.startsWith("co_") ? (buildAllDeals(snapshot).find((deal) => deal.id === id) ?? null) : null;
+}
+
+/** Pitches first, then every other company Backfield is tracking (Handoff, Best 3, founders). */
+export function buildAllDeals(snapshot: Snapshot | null): DeskDeal[] {
+  const pitches = buildDeals(snapshot);
+  return [...pitches, ...trackedCompanies(snapshot, pitches)];
 }
 
 export type StageCount = { stage: string; label: string; count: number; stageCount: number; detail: string | null };
