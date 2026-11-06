@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildFinder } from "./finder";
-import { decisionNeedsPickup, PICKUP_LINE, ratingNeedsPickup, waitingActions, waitingTitle, waitingWho } from "./waiting";
+import { decisionNeedsPickup, PICKUP_LINE, ratingNeedsPickup, waitingActions, waitingNewestFirst, waitingTitle, waitingWho } from "./waiting";
 import type { OsAction, Snapshot } from "./types";
 
 test("search uses the people stage words", () => {
@@ -48,6 +48,13 @@ test("yes, no, reply, swap, and a rating say they are waiting on the office", ()
     crm: { people: [{ id: "p1", name: "Ada Sample", firm: null, track: "investor", stage: "call_held", owner: null, last_touch_at: null, last_touch_channel: null, next_step: null, next_step_due: null, email: null, linkedin: null, notes: null }] },
   });
   assert.equal(named, "Ada Sample");
+  const bots = { generated_at: "2026-11-04T18:00:00.000Z", pitches: [], bots: { bots: [{ name: "Growth Director", slug: "growth-director", team: "Growth", status: "Working" }] }, outreach: [], decisions: [], activity: [], interactions: [], crm: { people: [] } } as unknown as Snapshot;
+  assert.equal(waitingWho(action("bot_pause", "growth-director", {}), bots), "Growth Director");
+  assert.equal(waitingWho(action("bot_resume", "Some Bot", {}), null), "Some Bot");
+  assert.equal(waitingWho(action("free_text", "executive", { text: "hi" }), bots), "The office");
+  const older = { ...action("bot_pause", "a", {}), action_id: "old", created_at: "2026-11-04T10:00:00.000Z" };
+  const newer = { ...action("bot_resume", "a", {}), action_id: "new", created_at: "2026-11-04T12:00:00.000Z" };
+  assert.deepEqual(waitingNewestFirst([older, newer]).map((row) => row.action_id), ["new", "old"]);
   assert.equal(PICKUP_LINE, "Saved. The office has not picked this up yet.");
 });
 
