@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Ring } from "./Charts";
 import { useState } from "react";
 import { usd } from "@/lib/os/raise-model";
 import {
@@ -101,30 +102,45 @@ export function SpvDetail({ initial, id, backHref, dealHref, lps, now }: { initi
       ) : null}
 
       <section className="sx-card spv-progress" aria-label="Progress">
-        <div className="spv-stats">
-          <div>
-            <b>{usd(s.hard)}</b>
-            <span>committed and wired{spv.target_usd ? ` of ${usd(spv.target_usd)}` : ""}</span>
-          </div>
-          <div>
-            <b>{usd(s.wired)}</b>
-            <span>wired</span>
-          </div>
-          <div>
-            <b>{usd(s.soft)}</b>
-            <span>soft circled</span>
-          </div>
-          <div>
-            <b>{s.daysLeft != null ? s.daysLeft : "None"}</b>
-            <span>{s.daysLeft != null ? "days to close" : "no close date"}</span>
+        <div className="spv-progress-row">
+          <Ring
+            size={148}
+            stroke={14}
+            total={spv.target_usd ?? 0}
+            label={spv.target_usd ? `${Math.round(s.pctHard ?? 0)}% of the target committed or wired` : "No target set"}
+            parts={[
+              { key: "wired", label: `Wired ${usd(s.wired)}`, value: s.wired, tone: "hard" },
+              { key: "committed", label: `Committed ${usd(s.committed)}`, value: s.committed, tone: "mid" },
+              { key: "soft", label: `Soft circled ${usd(s.soft)}`, value: s.soft, tone: "hatch" },
+            ]}
+          >
+            <b>{spv.target_usd ? `${Math.round(s.pctHard ?? 0)}%` : usd(s.hard)}</b>
+            <span>{spv.target_usd ? `of ${usd(spv.target_usd)}` : "no target"}</span>
+          </Ring>
+          <div className="spv-stats">
+            <div>
+              <b>{usd(s.hard)}</b>
+              <span>committed and wired</span>
+            </div>
+            <div>
+              <b>{usd(s.wired)}</b>
+              <span>wired</span>
+            </div>
+            <div>
+              <b>{usd(s.soft)}</b>
+              <span>soft circled</span>
+            </div>
+            <div>
+              <b>{s.daysLeft != null ? s.daysLeft : "None"}</b>
+              <span>{s.daysLeft != null ? "days to close" : "no close date"}</span>
+            </div>
           </div>
         </div>
-        {spv.target_usd ? (
-          <span className="raise-bar spv-bar" role="img" aria-label={`${Math.round(s.pctHard ?? 0)}% committed, ${Math.round(Math.max(0, (s.pctSoft ?? 0) - (s.pctHard ?? 0)))}% more soft circled`}>
-            <i className="hard" style={{ width: `${s.pctHard ?? 0}%` }} />
-            <i className="soft" style={{ width: `${Math.max(0, (s.pctSoft ?? 0) - (s.pctHard ?? 0))}%` }} />
-          </span>
-        ) : null}
+        <ul className="os-legend" aria-hidden="true">
+          <li><i className="os-swatch is-hard" />Wired</li>
+          <li><i className="os-swatch is-mid" />Committed</li>
+          <li><i className="os-swatch is-hatch" />Soft circled</li>
+        </ul>
         {s.belowMin.length ? <p className="sx-hint">Below the minimum check: {s.belowMin.join(", ")}.</p> : null}
       </section>
 

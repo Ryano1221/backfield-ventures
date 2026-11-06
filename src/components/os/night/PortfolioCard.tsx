@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StackBar } from "./Charts";
 import type { Portfolio } from "@/lib/os/portfolio";
 import { usd } from "@/lib/os/raise-model";
 
@@ -19,6 +20,16 @@ export function PortfolioCard({ portfolio, spvHref, dealHref }: { portfolio: Por
         )}
         {decided ? <> · {decided} more on the way</> : null}
       </p>
+      {portfolio.rows.some((row) => row.amount) ? (
+        <StackBar
+          label="Money by company"
+          format={usd}
+          parts={portfolio.rows
+            .filter((row) => row.amount)
+            .slice(0, 4)
+            .map((row, i) => ({ key: row.key, label: row.company, value: row.amount ?? 0, tone: (["hard", "mid", "soft", "pale"] as const)[i] }))}
+        />
+      ) : null}
       <ul className="inv-rows">
         {portfolio.rows.map((row) => (
           <li key={row.key}>
