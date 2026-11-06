@@ -11,7 +11,8 @@ import { buildPeople, buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
 import { readRaise } from "@/lib/os/raise";
 import { weeklyReview } from "@/lib/os/review";
-import { parseSpvs } from "@/lib/os/spv";
+import { parseSpvs, spvBackers } from "@/lib/os/spv";
+import { askCandidates, parseLeads } from "@/lib/os/warm-leads";
 import { contentWaiting, parseStudio } from "@/lib/os/studio";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +30,12 @@ export default async function ReviewPage() {
   const hrefs = osHrefs(onOs);
   const model = buildToday(page.snapshot, page.actions);
   const now = readClock();
-  const [spvs, holdings, studio, ledger] = await Promise.all([
+  const [spvs, holdings, studio, ledger, leads] = await Promise.all([
     readDoc("spvs").catch(() => null).then(parseSpvs),
     readDoc("holdings").catch(() => null).then(parseHoldings),
     readDoc("content-studio").catch(() => null).then(parseStudio),
     readRaise(),
+    readDoc("warm-leads").catch(() => null).then(parseLeads),
   ]);
   const command = buildCommand(page.snapshot, ledger, null, now);
   const people = buildPeople(page.snapshot).rows;
@@ -46,6 +48,11 @@ export default async function ReviewPage() {
     unratedPitches: command.deals.unrated,
     decisionsWaiting: model.ready.length + model.open.length,
     contentWaiting: contentWaiting(studio).length,
+    introAsks: askCandidates(leads, [
+      ...ledger.commitments.filter((row) => row.status !== "soft").map((row) => ({ name: row.name, person_id: row.person_id, why: "" })),
+      ...spvBackers(spvs).map((row) => ({ name: row.name, person_id: row.personId, why: "" })),
+    ]).map((row) => row.name),
+    staleLeads: leads.leads.filter((lead) => lead.status === "to_reach" && now - Date.parse(lead.created_at) > 7 * 86_400_000).map((lead) => lead.name),
     now,
   });
   const monday = new Date(now - ((new Date(now).getUTCDay() + 6) % 7) * 86_400_000);

@@ -14,7 +14,10 @@ import { readDoc } from "@/lib/os/doc-store";
 import { diagnoseFunnel, parseFunnelHistory, weekDeltas } from "@/lib/os/funnel-history";
 import { LpPipeline } from "@/components/os/night/LpPipeline";
 import { FundTabs } from "@/components/os/night/FundTabs";
-import { parseSpvs } from "@/lib/os/spv";
+import { parseSpvs, spvBackers } from "@/lib/os/spv";
+import { parseLeads } from "@/lib/os/warm-leads";
+import { usd } from "@/lib/os/raise-model";
+import { WarmLeads } from "@/components/os/night/WarmLeads";
 import { parsePipeline } from "@/lib/os/lp-pipeline";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +43,18 @@ export default async function RaisePage() {
   const lpPeople = (page.snapshot?.crm.people ?? []).filter((person) => person.lp);
   const lps = lpPeople.map((person) => ({ id: person.id, name: person.name, firm: person.firm }));
   const pipeline = parsePipeline(await readDoc("lp-pipeline").catch(() => null));
-  const spvOpen = parseSpvs(await readDoc("spvs").catch(() => null)).spvs.filter((spv) => spv.status !== "closed" && spv.status !== "cancelled").length;
+  const spvBook = parseSpvs(await readDoc("spvs").catch(() => null));
+  const spvOpen = spvBook.spvs.filter((spv) => spv.status !== "closed" && spv.status !== "cancelled").length;
+  const leads = parseLeads(await readDoc("warm-leads").catch(() => null));
+  const backers = spvBackers(spvBook);
+  // Who to ask for two names: committed money first, then good calls.
+  const candidates = [
+    ...ledger.commitments.filter((row) => row.status !== "soft").map((row) => ({ name: row.name, person_id: row.person_id, why: `Committed ${usd(row.amount_usd)} to Fund I` })),
+    ...backers.map((row) => ({ name: row.name, person_id: row.personId, why: `Backed ${row.spvs} ${row.spvs === 1 ? "SPV" : "SPVs"}` })),
+    ...(page.snapshot?.crm.people ?? [])
+      .filter((person) => person.im_in || ["im_in", "call_held"].includes((person.stage || "").toLowerCase()))
+      .map((person) => ({ name: person.name, person_id: person.id, why: person.im_in || person.stage === "im_in" ? "Said I'm in" : "Good call" })),
+  ];
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
   return (
     <NightFrame onOs={onOs} active="raise" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
@@ -53,6 +67,7 @@ export default async function RaisePage() {
         today={today}
         personRoot={onOs ? "/crm" : "/os/crm"}
       />
+      <WarmLeads initial={leads} candidates={candidates} backers={backers} fundNames={ledger.commitments.map((row) => row.name)} personRoot={onOs ? "/crm" : "/os/crm"} />
     </NightFrame>
   );
 }
