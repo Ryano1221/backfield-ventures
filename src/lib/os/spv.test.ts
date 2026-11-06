@@ -74,3 +74,12 @@ test("Today shows open SPVs closing within two weeks, soonest first", async () =
   assert.deepEqual(rows.map((r) => r.id), [a]);
   assert.equal(rows[0].urgent, true);
 });
+
+test("once the money is promised, the next step is collecting wires", () => {
+  let book = make();
+  const id = book.spvs[0].id;
+  book = step(book, { op: "update", id, target_usd: 100000 });
+  book = step(book, { op: "allocate", id, name: "Ada", amount_usd: 60000, status: "committed" });
+  book = step(book, { op: "allocate", id, name: "Bea", amount_usd: 40000, status: "wired" });
+  assert.equal(spvNext(book.spvs[0], NOW_MS), "Collect $60K in wires from 1 investor.");
+});

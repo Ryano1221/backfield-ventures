@@ -114,7 +114,7 @@ export function SpvDetail({ initial, id, backHref, dealHref, lps, now }: { initi
             <span>soft circled</span>
           </div>
           <div>
-            <b>{s.daysLeft != null ? s.daysLeft : "—"}</b>
+            <b>{s.daysLeft != null ? s.daysLeft : "None"}</b>
             <span>{s.daysLeft != null ? "days to close" : "no close date"}</span>
           </div>
         </div>
