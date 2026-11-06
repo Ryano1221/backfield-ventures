@@ -305,3 +305,19 @@ body.os .today-more { justify-self: start; min-height: 44px; }
 /* The page-level row numbers are for the column itself, not the cards inside it. */
 body.os .inbox-page .today-main > .inbox,
 body.os .inbox-page .today-main > .empty-clear { grid-row: auto; grid-column: auto; }
+
+/* Person page: one investor's money across Fund I and SPVs. */
+body.os .inv-hist { margin-top: 24px; display: grid; gap: 10px; }
+body.os .inv-total { margin: 0; font-size: 15px; color: rgba(0, 0, 0, 0.7); }
+body.os .inv-total b { font-size: 24px; color: #000; }
+body.os .inv-rows { list-style: none; margin: 0; padding: 0; display: grid; }
+body.os .inv-rows li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+body.os .inv-rows li:first-child { border-top: 0; }
+body.os .inv-rows a { display: grid; gap: 2px; min-height: 44px; align-content: center; color: #000; text-decoration: none; min-width: 0; }
+body.os .inv-rows a b { overflow-wrap: anywhere; }
+body.os .inv-rows a span { font-size: 13px; color: rgba(0, 0, 0, 0.6); }
+body.os .inv-rows a:hover b, body.os .inv-rows a:focus-visible b { text-decoration: underline; }
+body.os .inv-amt { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Portfolio card on Investments */
+body.os .port { margin: 20px 0 8px; }
