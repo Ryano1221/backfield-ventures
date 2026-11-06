@@ -30,3 +30,24 @@ body.os .bots-usage-line b { color: #000; font-weight: 600; }
 /* Person page: the next step sits under the name, where Ryan looks first. */
 body.os .person-next { margin-top: 24px; max-width: 640px; }
 body.os .person-next .t { margin: 6px 0 0; font-size: 18px; line-height: 26px; }
+
+/* LP and follow-up rows: an overdue line ("Due: send the deck") can be long.
+   It gets its own line under the name instead of squeezing the name to
+   nothing and running over it. */
+body.os .bot-list .note-row .bot-wait-when.is-due { grid-column: 1 / -1; white-space: normal; align-self: start; margin-top: 2px; }
+
+/* People: stage filters wrap onto a second line instead of hiding off the
+   right edge. */
+body.os .segment.scroll[aria-label="Stage"] { flex-wrap: wrap; overflow: visible; padding-right: 4px; -webkit-mask-image: none; mask-image: none; }
+
+/* Email: section tabs wrap instead of clipping at the right edge. */
+body.os .email .email-tabs { flex-wrap: wrap; overflow: visible; }
+
+/* Deals: where each field came from sits in a closed section at the bottom. */
+body.os .deal-sources { margin-top: 24px; font-size: 13px; color: var(--e-ink2, #555); }
+body.os .deal-sources summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; color: #000; }
+body.os .deal-sources dl { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; margin: 8px 0 0; }
+body.os .deal-sources dt, body.os .deal-sources dd { margin: 0; overflow-wrap: anywhere; }
+
+/* Email previews render the real HTML in a frame, not a blank panel. */
+body.os .email-preview { width: 100%; min-height: 520px; border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 12px; background: #fff; }

@@ -133,6 +133,12 @@ function PeopleList({
           </button>
         ))}
       </div>
+      {tracks.reduce((sum, item) => sum + item.count, 0) > total ? (
+        // LP is a flag on top of a person's track, so the groups overlap.
+        <p className="note">
+          Groups overlap: LP is a flag on top of each person&apos;s track, so these add up to {tracks.reduce((sum, item) => sum + item.count, 0).toLocaleString("en-US")}, not {total.toLocaleString("en-US")}.
+        </p>
+      ) : null}
       <div className="card">
       <div className="filterbar">
         <input className="pill" value={query} onChange={(event) => { setQuery(event.target.value); setShown(PAGE); }} placeholder="Search people" aria-label="Search people" />

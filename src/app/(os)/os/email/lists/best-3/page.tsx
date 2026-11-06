@@ -30,6 +30,15 @@ export default function Best3ListPage() {
           </div>
         </div>
       </section>
+      <section className="card">
+        <div className="h">
+          <span className="lbl">Preview</span>
+        </div>
+        <div className="block">
+          {/* The template as it renders in the inbox. Sandboxed: no scripts, no forms. */}
+          <iframe className="email-preview" title="Best 3 email preview" sandbox="" srcDoc={BEST3_HTML} />
+        </div>
+      </section>
     </>
   );
 }
