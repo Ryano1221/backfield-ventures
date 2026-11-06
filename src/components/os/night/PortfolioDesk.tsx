@@ -22,6 +22,7 @@ import {
 } from "@/lib/os/holdings";
 import { usd } from "@/lib/os/raise-model";
 import { StackBar } from "./Charts";
+import { Logo } from "./Logo";
 import { CompanyPicker } from "./CompanyPicker";
 
 /** A closed SPV that is not on the books yet, ready to record in one tap. */
@@ -164,7 +165,7 @@ export function PortfolioDesk({ book: initial, today, deals, suggestions, dealBa
       {sorted.length ? (
         <ul className="port-list" aria-label="Holdings">
           {sorted.map((h) => (
-            <HoldingCard key={h.id} h={h} busy={busy} run={run} today={today} dealHref={h.deal_id ? `${dealBase}/${encodeURIComponent(h.deal_id)}` : null} spvHref={h.spv_id ? `${spvBase}/${encodeURIComponent(h.spv_id)}` : null} />
+            <HoldingCard key={h.id} h={h} pick={deals.find((d) => d.id === h.deal_id) ?? deals.find((d) => d.company.toLowerCase() === h.company.toLowerCase())} busy={busy} run={run} today={today} dealHref={h.deal_id ? `${dealBase}/${encodeURIComponent(h.deal_id)}` : null} spvHref={h.spv_id ? `${spvBase}/${encodeURIComponent(h.spv_id)}` : null} />
           ))}
         </ul>
       ) : !adding ? (
@@ -256,7 +257,7 @@ function AddHolding({ deals, today, busy, onAdd }: { deals: DealPick[]; today: s
   );
 }
 
-function HoldingCard({ h, busy, run, today, dealHref, spvHref }: { h: Holding; busy: boolean; run: Run; today: string; dealHref: string | null; spvHref: string | null }) {
+function HoldingCard({ h, pick, busy, run, today, dealHref, spvHref }: { h: Holding; pick?: DealPick; busy: boolean; run: Run; today: string; dealHref: string | null; spvHref: string | null }) {
   const v = viewHolding(h);
   const [markBy, setMarkBy] = useState<"round" | "value">("round");
   const [markAmount, setMarkAmount] = useState("");
@@ -268,7 +269,8 @@ function HoldingCard({ h, busy, run, today, dealHref, spvHref }: { h: Holding; b
   return (
     <li className="sx-card port-card">
       <div className="port-card-top">
-        <div>
+        <Logo name={h.company} domain={pick?.domain} logoUrl={pick?.logoUrl} />
+        <div className="port-card-id">
           <b className="port-co">{h.company}</b>
           <span className="port-sub">
             {VEHICLE_LABEL[h.vehicle]} · {INSTRUMENT_LABEL[h.instrument]} · {h.date}

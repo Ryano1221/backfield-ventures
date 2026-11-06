@@ -382,14 +382,14 @@ body.os .cmd-raise .os-ring-c b { font-size: 13px; }
 body.os .spv-update { display: block; padding: 6px 20px; }
 body.os .spv-update[open] { padding-bottom: 20px; }
 body.os .spv-update[open] > * + * { margin-top: 12px; }
-body.os .os-cols { margin: 0; display: grid; gap: 6px; }
-body.os .os-cols-plot { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; align-items: end; height: 72px; padding-top: 16px; box-sizing: content-box; }
-body.os .os-col { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; }
-body.os .os-col i { position: relative; display: block; border-radius: 4px 4px 0 0; background: #123D22; }
-body.os .os-col i.is-zero { background: rgba(0, 0, 0, 0.1); border-radius: 2px; }
-body.os .os-col:hover i { background: #3E7A52; }
-body.os .os-col em { position: absolute; left: 0; right: 0; bottom: 100%; padding-bottom: 2px; font-style: normal; font-size: 11px; font-weight: 600; text-align: center; color: #000; }
-body.os .os-cols-axis { display: flex; justify-content: space-between; font-size: 11px; color: rgba(0, 0, 0, 0.55); }
+body.os .os-chartcols { margin: 0; display: grid; gap: 6px; }
+body.os .os-chartcols-plot { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; align-items: end; height: 72px; padding-top: 16px; box-sizing: content-box; }
+body.os .os-chartcol { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; }
+body.os .os-chartcol i { position: relative; display: block; border-radius: 4px 4px 0 0; background: #123D22; }
+body.os .os-chartcol i.is-zero { background: rgba(0, 0, 0, 0.1); border-radius: 2px; }
+body.os .os-chartcol:hover i { background: #3E7A52; }
+body.os .os-chartcol em { position: absolute; left: 0; right: 0; bottom: 100%; padding-bottom: 2px; font-style: normal; font-size: 11px; font-weight: 600; text-align: center; color: #000; }
+body.os .os-chartcols-axis { display: flex; justify-content: space-between; font-size: 11px; color: rgba(0, 0, 0, 0.55); }
 body.os .deal-flow { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; align-items: end; margin: 20px 0 8px; }
 body.os .deal-flow-k b { display: block; font-size: 32px; letter-spacing: -0.02em; line-height: 1.1; }
 body.os .deal-flow-k span { font-size: 13px; color: rgba(0, 0, 0, 0.6); }
@@ -673,7 +673,7 @@ body.os .bots-needs > article:nth-child(n + 5), body.os .bots-people > article:n
 body.os .os-ring-seg { animation: os-ring-draw 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) both; }
 body.os .os-ring-c { animation: os-fade 0.5s ease 0.35s both; }
 body.os .os-stack-bar i { transform-origin: left center; animation: os-grow 0.75s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
-body.os .os-col i { transform-origin: bottom center; animation: os-col-rise 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
+body.os .os-chartcol i { transform-origin: bottom center; animation: os-col-rise 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
 body.os .cmd-spark i { transform-origin: bottom center; animation: os-col-rise 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
 body.os .raise-bar .hard, body.os .raise-bar .soft, body.os .spv-bar i { transform-origin: left center; animation: os-grow 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) 0.15s both; }
 body.os .heat i.on { transform-origin: bottom center; animation: os-col-rise 0.5s ease both; }
@@ -699,6 +699,12 @@ body.os .review-area li.is-open .review-mark { animation: os-pop 0.4s ease both;
 @keyframes os-pop { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes os-next { 0%, 100% { box-shadow: inset 0 0 0 2px #123D22; } 50% { box-shadow: inset 0 0 0 2px #123D22, 0 0 0 4px rgba(18, 61, 34, 0.15); } }
 @media (prefers-reduced-motion: reduce) {
-  body.os .os-ring-seg, body.os .os-ring-c, body.os .os-stack-bar i, body.os .os-col i, body.os .cmd-spark i, body.os .raise-bar .hard, body.os .raise-bar .soft, body.os .spv-bar i, body.os .heat i.on, body.os .os-dots i, body.os .command .cmd, body.os .port-kpi, body.os .review-area, body.os .spv-list > li, body.os .port-card, body.os .wl-card, body.os .deal-flow, body.os .inv-hist, body.os .review-mark { animation: none !important; }
+  body.os .os-ring-seg, body.os .os-ring-c, body.os .os-stack-bar i, body.os .os-chartcol i, body.os .cmd-spark i, body.os .raise-bar .hard, body.os .raise-bar .soft, body.os .spv-bar i, body.os .heat i.on, body.os .os-dots i, body.os .command .cmd, body.os .port-kpi, body.os .review-area, body.os .spv-list > li, body.os .port-card, body.os .wl-card, body.os .deal-flow, body.os .inv-hist, body.os .review-mark { animation: none !important; }
   body.os .command .cmd:hover, body.os .spv-card:hover, body.os .port-kpi:hover { transform: none; }
 }
+
+/* Company logos on SPV and holding cards */
+body.os .spv-card-name { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+body.os .spv-card-name .logo, body.os .port-card-top .logo { flex: none; }
+body.os .port-card-top { justify-content: flex-start; }
+body.os .port-card-id { flex: 1; min-width: 0; }
