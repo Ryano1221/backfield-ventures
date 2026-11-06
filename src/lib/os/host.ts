@@ -96,9 +96,10 @@ const OS_PAGE_REWRITES: Record<string, string> = {
   "/email": "/os/email",
   "/waiting": "/os/waiting",
   "/raise": "/os/raise",
+  "/studio": "/os/studio",
 };
 
-const NESTED_PREFIXES = ["/d/", "/crm/", "/deals/", "/email/"] as const;
+const NESTED_PREFIXES = ["/d/", "/crm/", "/deals/", "/email/", "/studio/"] as const;
 
 function nestedOsPage(path: string): string | null {
   for (const prefix of NESTED_PREFIXES) {
