@@ -261,3 +261,18 @@ test("search can start work: typing 'add a holding' opens the form", async ({ pa
   await page.goto("/os/spv?new=1");
   await expect(page.getByRole("combobox", { name: "Company" })).toBeVisible();
 });
+
+test("the weekly review catches an unwired SPV commitment and links to fix it", async ({ page }) => {
+  await signIn(page);
+  await page.evaluate(async () => {
+    const post = (body: unknown) => fetch("/api/os/spvs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((res) => res.json() as Promise<{ id: string }>);
+    const { id } = await post({ op: "create", company: "FIXTURE Owed Co" });
+    await post({ op: "allocate", id, name: "FIXTURE Slow Wire", amount_usd: 40000, status: "committed" });
+  });
+  await page.goto("/os/review");
+  const money = page.getByRole("region", { name: "Money" });
+  await expect(money).toContainText("$40K committed but not wired on FIXTURE Owed Co.");
+  await expect(page.getByRole("region", { name: "Portfolio" })).toContainText("Every closed SPV is a holding.");
+  await money.getByRole("link", { name: "Open" }).first().click();
+  await expect(page).toHaveURL(/\/os\/spv$/);
+});

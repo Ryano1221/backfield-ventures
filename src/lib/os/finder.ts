@@ -16,6 +16,7 @@ export type FinderItem = {
 // Pages come first so "fund", "raise" or "deals" jumps straight there.
 export const PAGE_ITEMS: FinderItem[] = [
   { kind: "page", id: "today", title: "Today", hint: "Page" },
+  { kind: "page", id: "review", title: "Weekly review", hint: "One checklist across the firm" },
   { kind: "page", id: "raise", title: "Fundraising", hint: "Fund I · commitments, LP funnel" },
   { kind: "page", id: "spv", title: "SPVs", hint: "Fundraising · deal-by-deal vehicles" },
   { kind: "page", id: "deals", title: "Investments", hint: "Deals · pipeline" },

@@ -99,6 +99,7 @@ const OS_PAGE_REWRITES: Record<string, string> = {
   "/studio": "/os/studio",
   "/spv": "/os/spv",
   "/portfolio": "/os/portfolio",
+  "/review": "/os/review",
 };
 
 const NESTED_PREFIXES = ["/d/", "/crm/", "/deals/", "/email/", "/studio/", "/spv/"] as const;

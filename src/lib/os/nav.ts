@@ -47,6 +47,7 @@ export function osHrefs(onOs: boolean) {
     studio: `${root}/studio`,
     spv: `${root}/spv`,
     portfolio: `${root}/portfolio`,
+    review: `${root}/review`,
     addCompany: `${root}/deals?add=1`,
     newSpv: `${root}/spv?new=1`,
     addHolding: `${root}/portfolio?add=1`,

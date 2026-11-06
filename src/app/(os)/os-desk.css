@@ -536,3 +536,17 @@ body.os .deal-sources-card { margin: 12px 0; }
 body.os .deal-sources-card summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
 body.os .deal-sources-card[open] summary { margin-bottom: 8px; }
 body.os .deal-sources-card .port-table { min-width: 520px; }
+
+/* Weekly review */
+body.os .review { display: grid; gap: 16px; }
+body.os .review-area ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; }
+body.os .review-area li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+body.os .review-area li:first-child { border-top: 0; }
+body.os .review-mark { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+body.os .review-area li.is-open .review-mark { background: #123D22; color: #fff; }
+body.os .review-area li.is-clear .review-mark { background: rgba(18, 61, 34, 0.1); color: #123D22; }
+body.os .review-text { display: grid; gap: 2px; min-width: 0; }
+body.os .review-text span { font-size: 14px; color: rgba(0, 0, 0, 0.65); }
+body.os .review-area li.is-clear .review-text b { color: rgba(0, 0, 0, 0.6); font-weight: 600; }
+body.os .review-clear { font-size: 13px; color: rgba(0, 0, 0, 0.45); }
+body.os .review .btn.sm { min-height: 44px; }
