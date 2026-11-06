@@ -660,7 +660,7 @@ function domAudit({ desktop, phone }: { desktop: boolean; phone: boolean }) {
     if (/\b(pinch|double-tap)\b/i.test(text) && !/\b(click|scroll)\b/i.test(text)) {
       issues.push({ check: "touch-only", detail: "instructions only describe touch gestures" });
     }
-    const nav = document.querySelector(".email") ? ["Dashboard", "Subscribers", "Compose"] : ["Today", "Deals", "People", "Bots", "Ask"];
+    const nav = document.querySelector(".email") ? ["Dashboard", "Subscribers", "Compose"] : ["Today", "Fundraising", "Investments", "Relationships", "Audience Growth", "Bots", "Ask"];
     const missing = nav.filter((name) => ![...document.querySelectorAll("a, button")].some((el) => visible(el) && (el.textContent || "").trim().startsWith(name)));
     if (missing.length) issues.push({ check: "touch-only", detail: `not reachable with a pointer: ${missing.join(", ")}` });
   }

@@ -1,4 +1,4 @@
-export type OsSection = "today" | "crm" | "pipeline" | "bots" | "activity" | "email" | "waiting";
+export type OsSection = "today" | "crm" | "pipeline" | "bots" | "activity" | "email" | "waiting" | "studio";
 
 type WaitingModel = {
   ready: readonly { requestedBy?: string | null }[];
@@ -44,6 +44,8 @@ export function osHrefs(onOs: boolean) {
     email: onOs ? "/email" : "/os/email",
     waiting: `${root}/waiting`,
     raise: `${root}/raise`,
+    studio: `${root}/studio`,
+    studioItem: (id: string) => `${root}/studio/${encodeURIComponent(id)}`,
     login: onOs ? "/login" : "/os/login",
     decision: (id: string) => `${root}/d/${encodeURIComponent(id)}`,
     deal: (id: string) => `${root}/deals/${encodeURIComponent(id)}`,

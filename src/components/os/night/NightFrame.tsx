@@ -52,6 +52,7 @@ export function useNightActions(): NightApi {
 const SINGLETON = new Set<ActionType>(["decide", "pitch_status", "crm_stage", "crm_hold", "crm_dnc", "bot_pause", "bot_resume", "snooze"]);
 
 type Section = "today" | "raise" | "deals" | "people" | "bots" | "activity" | "email" | "waiting";
+type NavLink = { id: Section; label: string; short: string; href: string; count: number | null };
 
 export function NightFrame({
   active,
@@ -377,16 +378,21 @@ export function NightFrame({
 
   const hrefs = osHrefs(onOs);
   const waitingCount = waitingActions(actions.filter((action) => !action.action_id.startsWith("local:"))).length;
-  const links: { id: Section; label: string; href: string; count: number | null }[] = [
-    { id: "today", label: "Today", href: hrefs.today, count: liveToday ?? counts.today },
-    { id: "raise", label: "Fund I", href: hrefs.raise, count: null },
-    { id: "waiting", label: "Waiting", href: hrefs.waiting, count: waitingCount },
-    { id: "deals", label: "Deals", href: hrefs.deals, count: counts.deals },
-    { id: "people", label: "People", href: hrefs.people, count: counts.people },
-    { id: "bots", label: "Bots", href: hrefs.bots, count: counts.bots ?? null },
-    { id: "email", label: "Email", href: hrefs.email, count: null },
+  // How Ryan runs the firm: five working areas, then the machinery under
+  // Operations. `short` is the phone tab label for the same section.
+  const links: NavLink[] = [
+    { id: "today", label: "Today", short: "Today", href: hrefs.today, count: liveToday ?? counts.today },
+    { id: "raise", label: "Fundraising", short: "Raise", href: hrefs.raise, count: null },
+    { id: "deals", label: "Investments", short: "Deals", href: hrefs.deals, count: counts.deals },
+    { id: "people", label: "Relationships", short: "People", href: hrefs.people, count: counts.people },
+    { id: "email", label: "Audience Growth", short: "Growth", href: hrefs.studio, count: null },
   ];
-  const pageLabel = links.find((link) => link.id === active)?.label ?? "Activity";
+  const ops: NavLink[] = [
+    { id: "bots", label: "Bots", short: "Bots", href: hrefs.bots, count: counts.bots ?? null },
+    { id: "activity", label: "Activity", short: "Activity", href: hrefs.activity, count: null },
+    { id: "waiting", label: "Waiting", short: "Waiting", href: hrefs.waiting, count: waitingCount },
+  ];
+  const pageLabel = [...links, ...ops].find((link) => link.id === active)?.label ?? "Activity";
 
   useEffect(() => {
     document.body.classList.toggle("os-cover", menu || open || askOpen);
@@ -431,9 +437,13 @@ export function NightFrame({
                 {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
               </Link>
             ))}
-            <Link href={hrefs.activity} prefetch className={active === "activity" ? "on" : ""}>
-              Activity
-            </Link>
+            <span className="rail-group" aria-hidden="true">Operations</span>
+            {ops.map((link) => (
+              <Link key={link.id} href={link.href} prefetch className={`rail-sub${active === link.id ? " on" : ""}`} aria-current={active === link.id ? "page" : undefined}>
+                {link.label}
+                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+              </Link>
+            ))}
           </nav>
           <button type="button" className="rail-ask" onClick={() => setAskOpen(true)}>
             Ask
@@ -484,9 +494,13 @@ export function NightFrame({
                 {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
               </Link>
             ))}
-            <Link href={hrefs.activity} prefetch onClick={() => setMenu(false)}>
-              Activity
-            </Link>
+            <span className="lbl mpanel-group">Operations</span>
+            {ops.map((link) => (
+              <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenu(false)}>
+                {link.label}
+                {link.count != null ? <span className="c">{link.count.toLocaleString("en-US")}</span> : null}
+              </Link>
+            ))}
           </nav>
           <button type="button" className="mpanel-row" onClick={() => { setMenu(false); setOpen(true); }}>
             Search
@@ -551,11 +565,10 @@ export function NightFrame({
       ) : null}
       <nav className="tabbar" aria-label="Sections">
         {links
-          .filter((link) => link.id === "today" || link.id === "raise" || link.id === "deals" || link.id === "people" || link.id === "bots")
           .map((link) => (
-            <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
+            <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined} aria-label={link.label}>
               <TabIcon id={link.id} on={active === link.id} />
-              <span>{link.label}</span>
+              <span>{link.short}</span>
               {link.id === "today" && link.count ? <span className="tab-badge">{link.count > 99 ? "99+" : link.count}</span> : null}
             </Link>
           ))}
@@ -612,6 +625,7 @@ function TabIcon({ id, on }: { id: string; on: boolean }) {
   if (id === "people") return <svg {...common}><circle cx="12" cy="8" r="3" /><path d="M5 19c1.4-3 3.8-4.5 7-4.5S17.6 16 19 19" /></svg>;
   if (id === "bots") return <svg {...common}><rect x="6" y="7" width="12" height="10" rx="2" /><path d="M12 7V4M9 12h.01M15 12h.01" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
   if (id === "ask") return <svg {...common}><path d="M5 6h14v9H8l-3 3V6z" /></svg>;
+  if (id === "email") return <svg {...common} fill="none"><path d="M4 7h16v10H4z" /><path d="M4 7l8 6 8-6" /></svg>;
   if (id === "raise") return <svg {...common} fill="none"><path d="M4 19h16" /><path d="M7 16v-4M12 16V9M17 16V5" strokeWidth={on ? 2.6 : 1.7} strokeLinecap="round" /></svg>;
   return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
 }
