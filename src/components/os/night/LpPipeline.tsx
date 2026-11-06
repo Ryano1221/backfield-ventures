@@ -1,5 +1,6 @@
 "use client";
 
+import { StackBar } from "./Charts";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -70,6 +71,17 @@ export function LpPipeline({ people, initial, ledger, today, personRoot }: { peo
           <span>if every expected check closes.</span>
         </div>
       </div>
+      <StackBar
+        label="Expected money by stage"
+        total={target ?? undefined}
+        format={usd}
+        parts={[
+          { key: "in", label: "Committed or wired", value: sumBy(built.rows, ["committed", "wired"]), tone: "hard" },
+          { key: "soft", label: "Soft circled", value: sumBy(built.rows, ["soft"]), tone: "mid" },
+          { key: "talks", label: "In talks", value: sumBy(built.rows, ["interested", "call_booked"]), tone: "soft" },
+          { key: "early", label: "Early", value: sumBy(built.rows, ["reached", "replied"]), tone: "pale" },
+        ]}
+      />
       <p className="lp-stages">
         {stages
           .filter((stage) => built.counts[stage])
@@ -186,4 +198,8 @@ function Editor({ row, entry, onSave }: { row: PipeRow; entry: Pipeline["entries
       </div>
     </div>
   );
+}
+
+function sumBy(rows: { stage: string; expected: number | null }[], stages: string[]): number {
+  return rows.filter((row) => stages.includes(row.stage)).reduce((sum, row) => sum + (row.expected ?? 0), 0);
 }

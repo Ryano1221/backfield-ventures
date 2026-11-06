@@ -84,6 +84,12 @@ test("an SPV starts from a deal, takes terms and allocations, and tracks its che
   await page.getByRole("region", { name: "Checklist" }).getByRole("checkbox", { name: "Entity formed" }).click();
   await expect(page.getByRole("region", { name: "Checklist" })).toContainText("1 of 9");
 
+  // A pasteable update for investors, with no names in it.
+  await page.getByText("Update for investors", { exact: true }).click();
+  const update = page.getByRole("textbox", { name: "Update for investors" });
+  await expect(update).toHaveValue(/Committed so far: \$125K of \$500K\./);
+  await expect(update).not.toHaveValue(/Rhea/);
+
   // Closing puts the company in the portfolio on Investments.
   await page.getByRole("group", { name: "SPV status" }).getByRole("button", { name: "Closing", exact: true }).click();
   await expect(page.getByRole("status")).toHaveText("Marked closing.");

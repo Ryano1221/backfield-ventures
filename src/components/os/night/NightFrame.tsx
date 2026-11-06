@@ -8,6 +8,7 @@ import { osHrefs } from "@/lib/os/nav";
 import { isPitchRating, rateKey } from "@/lib/os/pitch-rate";
 import type { ActionPayload, ActionType, OsAction } from "@/lib/os/types";
 import { waitingActions } from "@/lib/os/waiting";
+import { ChartDefs } from "./Charts";
 import { AskBox, type AskContext } from "./AskBox";
 
 type Queued = {
@@ -470,6 +471,7 @@ export function NightFrame({
             </span>
           </header>
           <main className="main">
+            <ChartDefs />
             {children}
             <div className="foot lbl">
               <span>Backfield OS · private to Ryan</span>

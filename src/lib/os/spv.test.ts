@@ -83,3 +83,18 @@ test("once the money is promised, the next step is collecting wires", () => {
   book = step(book, { op: "allocate", id, name: "Bea", amount_usd: 40000, status: "wired" });
   assert.equal(spvNext(book.spvs[0], NOW_MS), "Collect $60K in wires from 1 investor.");
 });
+
+test("the investor update uses only what the record holds", async () => {
+  const { spvUpdateText } = await import("./spv");
+  let book = make();
+  const id = book.spvs[0].id;
+  book = step(book, { op: "update", id, target_usd: "$500K", min_check_usd: "$10K", carry_pct: 20, close_date: "2026-11-20", steps: ["Terms confirmed with the company"] });
+  book = step(book, { op: "allocate", id, name: "Ada", amount_usd: "$100K", status: "committed" });
+  const text = spvUpdateText(book.spvs[0], NOW_MS);
+  assert.match(text, /^Backfield Northwind SPV: update/);
+  assert.match(text, /Committed so far: \$100K of \$500K\./);
+  assert.match(text, /Target close: November 20, 2026 \(15 days out\)\./);
+  assert.match(text, /Terms: minimum check \$10K, 20% carry\./);
+  assert.match(text, /1 of 9 steps done\. Next up: allocation confirmed\./);
+  assert.doesNotMatch(text, /Ada/);
+});

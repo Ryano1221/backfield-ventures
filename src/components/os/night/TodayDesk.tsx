@@ -1,5 +1,6 @@
 "use client";
 
+import { Ring } from "./Charts";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -404,10 +405,19 @@ function CommandStrip({ command, hrefs, briefs, asOf }: { command: CommandModel;
           {raise.target ? <small> of {usd(raise.target)}</small> : null}
         </b>
         {raise.target ? (
-          <span className="cmd-bar" aria-hidden="true">
-            <i className="hard" style={{ width: `${hard}%` }} />
-            <i className="soft" style={{ width: `${soft}%` }} />
-          </span>
+          <Ring
+            dark
+            size={58}
+            stroke={7}
+            total={100}
+            label={`${Math.round(hard)}% committed, ${Math.round(soft)}% more soft circled`}
+            parts={[
+              { key: "hard", label: "Committed", value: hard, tone: "hard" },
+              { key: "soft", label: "Soft circled", value: soft, tone: "hatch" },
+            ]}
+          >
+            <b>{Math.round(hard)}%</b>
+          </Ring>
         ) : null}
         <span className="cmd-s">
           {raise.target
