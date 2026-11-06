@@ -70,14 +70,23 @@ test("an SPV starts from a deal, takes terms and allocations, and tracks its che
   await expect(page.getByRole("status")).toHaveText("Terms saved.");
 
   const allocs = page.getByRole("region", { name: "Allocations" });
-  await allocs.getByLabel("Investor").fill("FIXTURE Example Investor");
-  await allocs.getByLabel("Amount").fill("$100K");
+  await allocs.getByLabel("Investor", { exact: true }).fill("FIXTURE Example Investor");
+  await allocs.getByLabel("Amount", { exact: true }).fill("$100K");
   await allocs.getByRole("group", { name: "New allocation status" }).getByRole("button", { name: "Committed" }).click();
   await allocs.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByRole("region", { name: "Progress" })).toContainText("$100K");
 
+  await allocs.getByLabel("Investor", { exact: true }).fill("FIXTURE Rhea Reply");
+  await allocs.getByLabel("Amount", { exact: true }).fill("$25K");
+  await allocs.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(allocs).toContainText("2 investors");
+
   await page.getByRole("region", { name: "Checklist" }).getByRole("checkbox", { name: "Entity formed" }).click();
   await expect(page.getByRole("region", { name: "Checklist" })).toContainText("1 of 9");
+
+  // The allocation shows on the investor's own page.
+  await page.goto("/os/crm/fix-rhea");
+  await expect(page.getByRole("region", { name: "With Backfield" })).toContainText("Northwind");
 
   await page.goto("/os/deals/pitch_fixture-northwind");
   await expect(page.getByRole("link", { name: /^Open Backfield/ })).toBeVisible();

@@ -6,6 +6,12 @@ import { isOsHost } from "@/lib/os/host";
 import { buildPerson, buildToday } from "@/lib/os/night";
 import { osChromeCounts, osHrefs } from "@/lib/os/nav";
 import { loadOsPage } from "@/lib/os/page-data";
+import { InvestorHistory } from "@/components/os/night/InvestorHistory";
+import { readDoc } from "@/lib/os/doc-store";
+import { investorHistory } from "@/lib/os/investor-history";
+import { parsePipeline } from "@/lib/os/lp-pipeline";
+import { readRaise } from "@/lib/os/raise";
+import { parseSpvs } from "@/lib/os/spv";
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +34,17 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     key = id;
   }
   const person = page.snapshot?.crm.people.find((row) => row.id === key) ?? null;
+  const hrefs = osHrefs(onOs);
+  const history = person
+    ? investorHistory(person, await readRaise(), parsePipeline(await readDoc("lp-pipeline").catch(() => null)), parseSpvs(await readDoc("spvs").catch(() => null)))
+    : null;
   return (
     <NightFrame onOs={onOs} active="people" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       {person && page.snapshot ? (
-        <PersonDesk person={buildPerson(person, page.snapshot)} peopleHref={osHrefs(onOs).people} />
+        <>
+          <PersonDesk person={buildPerson(person, page.snapshot)} peopleHref={hrefs.people} />
+          {history ? <InvestorHistory rows={history.rows} committed={history.committed} soft={history.soft} fundHref={hrefs.raise} spvHref={hrefs.spvItem} /> : null}
+        </>
       ) : (
         <p className="t-body muted">That person is not in this snapshot.</p>
       )}
