@@ -229,3 +229,21 @@ test("past SPV investors are one tap away on the next SPV", async ({ page }) => 
   await expect(allocs.getByLabel("Investor", { exact: true })).toHaveValue("FIXTURE Example Investor");
   await expect(allocs.getByLabel("Amount", { exact: true })).toHaveValue("$100K");
 });
+
+test("an SPV investor's page shows what their stake is worth and a statement to send", async ({ page }) => {
+  await signIn(page);
+  await page.evaluate(async () => {
+    const post = (url: string, body: unknown) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((res) => res.json() as Promise<{ id: string }>);
+    const { id } = await post("/api/os/spvs", { op: "create", company: "FIXTURE Marked Co" });
+    await post("/api/os/spvs", { op: "allocate", id, name: "FIXTURE Rhea Reply", person_id: "fix-rhea", amount_usd: 50000, status: "wired" });
+    const holding = await post("/api/os/holdings", { op: "create", company: "FIXTURE Marked Co", invested_usd: 500000, valuation_usd: "$10M", date: "2025-01-15", vehicle: "spv", spv_id: id });
+    await post("/api/os/holdings", { op: "mark", id: holding.id, value_usd: 1500000, date: "2026-06-01" });
+  });
+  await page.goto("/os/crm/fix-rhea");
+  const card = page.getByRole("region", { name: "With Backfield" });
+  await expect(card).toContainText("now $150K · 3.00x");
+  await page.getByText("Statement to send", { exact: true }).click();
+  const statement = page.getByRole("textbox", { name: "Statement to send" });
+  await expect(statement).toHaveValue(/FIXTURE Marked Co SPV: \$50K in, marked at \$150K \(3\.00x\)\./);
+  await expect(statement).toHaveValue(/before carry and fees/);
+});
