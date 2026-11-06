@@ -164,3 +164,29 @@ body.os .deal-terms summary { cursor: pointer; min-height: 44px; display: inline
 body.os .deal-terms dl { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 6px 12px; margin: 4px 0 0; max-width: 640px; }
 body.os .deal-terms dt { margin: 0; font-weight: 600; }
 body.os .deal-terms dd { margin: 0; color: rgba(0, 0, 0, 0.7); }
+
+/* Fundraising: LP pipeline under the commitments. */
+body.os .lp-pipe { margin-top: 24px; }
+body.os .lp-sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 4px 0 8px; }
+body.os .lp-sum > div { background: #fff; border-radius: 14px; padding: 14px 16px; display: grid; gap: 4px; }
+body.os .lp-sum b { font-size: 24px; line-height: 1.1; }
+body.os .lp-sum span { color: rgba(0, 0, 0, 0.62); font-size: 13px; line-height: 1.4; }
+body.os .lp-stages { margin: 0 0 10px; color: rgba(0, 0, 0, 0.62); font-size: 14px; }
+body.os .lp-list { list-style: none; margin: 0; padding: 0; background: #fff; border-radius: 16px; overflow: hidden; }
+body.os .lp-list > li { padding: 12px 16px; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+body.os .lp-list > li:first-child { border-top: 0; }
+body.os .lp-list > li.is-due { box-shadow: inset 3px 0 0 #123D22; }
+body.os .lp-row { display: grid; grid-template-columns: minmax(0, 1.4fr) auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+body.os .lp-name { display: grid; gap: 2px; color: #000; text-decoration: none; min-width: 0; }
+body.os .lp-name b { overflow-wrap: anywhere; }
+body.os .lp-name span { color: rgba(0, 0, 0, 0.62); font-size: 13px; overflow-wrap: anywhere; }
+body.os .lp-name:hover b, body.os .lp-name:focus-visible b { text-decoration: underline; }
+body.os .lp-money { font-size: 14px; text-align: right; }
+body.os .lp-stage.is-soft, body.os .lp-stage.is-committed, body.os .lp-stage.is-wired { background: rgba(18, 61, 34, 0.1); border-color: rgba(18, 61, 34, 0.3); color: #123D22; }
+body.os .lp-next { margin: 6px 0 0; font-size: 14px; color: rgba(0, 0, 0, 0.75); line-height: 1.4; }
+body.os .lp-edit { display: grid; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(0, 0, 0, 0.12); }
+@media (max-width: 700px) {
+  body.os .lp-sum { grid-template-columns: minmax(0, 1fr); }
+  body.os .lp-row { grid-template-columns: minmax(0, 1fr) auto; }
+  body.os .lp-money { text-align: left; }
+}
