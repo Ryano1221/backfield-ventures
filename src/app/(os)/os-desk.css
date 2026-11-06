@@ -446,3 +446,11 @@ body.os .spv-pick-wrap .sx-hint { margin: 0; }
   body.os .phead { grid-template-columns: auto minmax(0, 1fr); }
   body.os .phead .person-actions { grid-column: 1 / -1; }
 }
+
+/* Investments pipeline: five steps now that tracked companies have their own */
+body.os .deal-pipeline { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 560px) {
+  body.os .deal-pipeline button { padding: 10px 8px; }
+  body.os .deal-pipeline button b { font-size: 20px; }
+  body.os .deal-pipeline button span { font-size: 12px; }
+}
