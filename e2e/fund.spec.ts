@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -51,4 +51,40 @@ test("a pass needs a reason, and the decision is kept", async ({ page }) => {
   await expect(memo.getByRole("status")).toHaveText("Saved.");
   await page.reload();
   await expect(page.getByRole("region", { name: "Investment memo" }).getByRole("group", { name: "Decision" }).getByRole("button", { name: "Pass" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("an SPV starts from a deal, takes terms and allocations, and tracks its checklist", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/os/deals/pitch_fixture-northwind");
+  await page.getByRole("link", { name: "Start an SPV for this deal" }).click();
+  await expect(page).toHaveURL(/\/os\/spv\?company=/);
+  await expect(page.getByLabel("Company")).toHaveValue(/Northwind/);
+  await page.getByRole("button", { name: "Create SPV" }).click();
+  await expect(page).toHaveURL(/\/os\/spv\/spv_/);
+
+  const terms = page.getByRole("region", { name: "Terms" });
+  await terms.getByLabel("Target").fill("$500K");
+  await terms.getByLabel("Minimum check").fill("$10K");
+  await terms.getByLabel("Close date").fill("2099-01-15");
+  await terms.getByRole("button", { name: "Save terms" }).click();
+  await expect(page.getByRole("status")).toHaveText("Terms saved.");
+
+  const allocs = page.getByRole("region", { name: "Allocations" });
+  await allocs.getByLabel("Investor").fill("FIXTURE Example Investor");
+  await allocs.getByLabel("Amount").fill("$100K");
+  await allocs.getByRole("group", { name: "New allocation status" }).getByRole("button", { name: "Committed" }).click();
+  await allocs.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Progress" })).toContainText("$100K");
+
+  await page.getByRole("region", { name: "Checklist" }).getByRole("checkbox", { name: "Entity formed" }).click();
+  await expect(page.getByRole("region", { name: "Checklist" })).toContainText("1 of 9");
+
+  await page.goto("/os/deals/pitch_fixture-northwind");
+  await expect(page.getByRole("link", { name: /^Open Backfield/ })).toBeVisible();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  expect(overflow).toBe(false);
+});
+
+test("the SPV API needs a session", async ({ request }) => {
+  expect((await request.get("/api/os/spvs")).status()).toBe(401);
 });
