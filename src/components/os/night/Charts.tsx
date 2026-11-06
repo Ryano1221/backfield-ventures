@@ -128,17 +128,17 @@ export function Columns({ rows, label, unit }: { rows: { day: string; label: str
   const peak = rows.reduce((best, row, i) => (row.count > rows[best].count ? i : best), 0);
   const word = (n: number) => (n === 1 ? unit[0] : unit[1]);
   return (
-    <figure className="os-cols" aria-label={`${label}: ${total} ${word(total)}`}>
-      <div className="os-cols-plot">
+    <figure className="os-chartcols" aria-label={`${label}: ${total} ${word(total)}`}>
+      <div className="os-chartcols-plot">
         {rows.map((row, i) => (
-          <span key={row.day} className="os-col" title={`${row.label}: ${row.count} ${word(row.count)}`}>
+          <span key={row.day} className="os-chartcol" title={`${row.label}: ${row.count} ${word(row.count)}`}>
             <i className={row.count ? "" : "is-zero"} style={{ height: `${row.count ? Math.max(6, (row.count / max) * 100) : 2}%`, animationDelay: `${i * 35}ms` }}>
               {(i === peak && row.count > 0) || (i === rows.length - 1 && row.count > 0) ? <em>{row.count}</em> : null}
             </i>
           </span>
         ))}
       </div>
-      <figcaption className="os-cols-axis" aria-hidden="true">
+      <figcaption className="os-chartcols-axis" aria-hidden="true">
         <span>{rows[0]?.label}</span>
         <span>{rows[rows.length - 1]?.label}</span>
       </figcaption>

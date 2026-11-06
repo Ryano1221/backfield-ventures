@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { DealPick } from "@/lib/os/deals";
 import { CompanyPicker } from "./CompanyPicker";
+import { Logo } from "./Logo";
 import { usd } from "@/lib/os/raise-model";
 import { Ring, StepDots } from "./Charts";
 import {
@@ -170,6 +171,7 @@ export function SpvDesk({
               spv={spv}
               href={`${root}/${encodeURIComponent(spv.id)}`}
               now={now}
+              pick={pickFor(deals, spv)}
             />
           ))}
         </ul>
@@ -191,6 +193,7 @@ export function SpvDesk({
                 spv={spv}
                 href={`${root}/${encodeURIComponent(spv.id)}`}
                 now={now}
+                pick={pickFor(deals, spv)}
               />
             ))}
           </ul>
@@ -200,7 +203,11 @@ export function SpvDesk({
   );
 }
 
-function SpvCard({ spv, href, now }: { spv: Spv; href: string; now: number }) {
+function pickFor(deals: DealPick[], spv: Spv): DealPick | undefined {
+  return deals.find((d) => d.id === spv.deal_id) ?? deals.find((d) => d.company.toLowerCase() === spv.company.toLowerCase());
+}
+
+function SpvCard({ spv, href, now, pick }: { spv: Spv; href: string; now: number; pick?: DealPick }) {
   const s = summarizeSpv(spv, now);
   const target = spv.target_usd ?? 0;
   const pct = target ? Math.round((s.hard / target) * 100) : null;
@@ -208,7 +215,10 @@ function SpvCard({ spv, href, now }: { spv: Spv; href: string; now: number }) {
     <li>
       <Link className="spv-card" href={href}>
         <span className="spv-card-top">
-          <b>{spv.name}</b>
+          <span className="spv-card-name">
+            <Logo name={spv.company} domain={pick?.domain} logoUrl={pick?.logoUrl} />
+            <b>{spv.name}</b>
+          </span>
           <span className={`sx-chip spv-status is-${spv.status}`}>
             {SPV_STATUS_LABEL[spv.status]}
           </span>
