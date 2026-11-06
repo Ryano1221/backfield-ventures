@@ -79,9 +79,8 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   }
   const preview = cards.first().locator(".inbox-line");
   await expect(preview).toHaveCSS("-webkit-line-clamp", "2");
-  await cards.first().getByRole("button", { name: "Read" }).click();
-  await expect(cards.first()).toHaveClass(/is-open/);
-  await expect(preview).toHaveCSS("-webkit-line-clamp", "none");
+  // Read always opens the full item, even when the preview is short.
+  await expect(cards.first().getByRole("link", { name: "Read" })).toHaveAttribute("href", /^\/os\/.+/);
 
   const before = await page.locator(".inbox-card").count();
   expect(before).toBeGreaterThan(0);
