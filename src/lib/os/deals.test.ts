@@ -174,3 +174,17 @@ test("pitches per day: last 14 days in Central time, oldest first, empty days ar
   assert.equal(rows.find((r) => r.day === "2026-11-01")?.count, 1);
   assert.equal(rows.reduce((sum, r) => sum + r.count, 0), 3);
 });
+
+test("typing a company finds the deal: starts-with first, then word starts, then anywhere", async () => {
+  const { matchDeals } = await import("./deals");
+  const deals = [
+    { id: "a", company: "Northwind", detail: "" },
+    { id: "b", company: "Blue North Labs", detail: "" },
+    { id: "c", company: "Unnorthodox", detail: "" },
+    { id: "d", company: "Cedar", detail: "" },
+  ];
+  assert.deepEqual(matchDeals(deals, "nor").map((d) => d.id), ["a", "b", "c"]);
+  assert.deepEqual(matchDeals(deals, "  CED ").map((d) => d.id), ["d"]);
+  assert.deepEqual(matchDeals(deals, ""), []);
+  assert.equal(matchDeals(deals, "n", 2).length, 2);
+});

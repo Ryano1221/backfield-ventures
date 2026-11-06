@@ -112,3 +112,20 @@ test("an SPV starts from a deal, takes terms and allocations, and tracks its che
 test("the SPV API needs a session", async ({ request }) => {
   expect((await request.get("/api/os/spvs")).status()).toBe(401);
 });
+
+test("a new SPV can be pulled from a deal by typing the company", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/os/spv");
+  const newButton = page.getByRole("button", { name: "New SPV" });
+  if (await newButton.isVisible()) await newButton.click();
+  const company = page.getByRole("combobox", { name: "Company" });
+  await company.fill("cedar");
+  const option = page.getByRole("option", { name: /FIXTURE Cedar/ });
+  await expect(option).toBeVisible();
+  await option.click();
+  await expect(company).toHaveValue(/FIXTURE Cedar/);
+  await expect(page.getByText(/^Linked to the FIXTURE Cedar/)).toBeVisible();
+  await page.getByRole("button", { name: "Create SPV" }).click();
+  await expect(page).toHaveURL(/\/os\/spv\/spv_/);
+  await expect(page.getByRole("link", { name: "Open the deal" })).toBeVisible();
+});
