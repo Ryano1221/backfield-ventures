@@ -142,3 +142,27 @@ test("companies that never pitched still show on Investments and open their own 
   await expect(page.getByRole("heading", { name: "GROWL" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Start an SPV for this deal" })).toBeVisible();
 });
+
+test("a LinkedIn pitch can be logged by hand, opened, and taken back off", async ({ page }, testInfo) => {
+  const name = `FIXTURE LinkedIn Co ${testInfo.project.name} ${Date.now()}`;
+  await signIn(page);
+  await page.goto("/os/deals");
+  await page.getByRole("button", { name: "Add a company" }).click();
+  const form = page.getByRole("form", { name: "Add a company" });
+  await form.getByLabel("Company", { exact: true }).fill(name);
+  await form.getByLabel("Website (optional)").fill("linkedin-co.example");
+  await expect(form.getByRole("group", { name: "Where it came from" }).getByRole("button", { name: "LinkedIn" })).toHaveAttribute("aria-pressed", "true");
+  await form.getByRole("button", { name: "Add company" }).click();
+  await expect(page).toHaveURL(/\/os\/deals\/co_/);
+  await expect(page.getByRole("heading", { name })).toBeVisible();
+  await expect(page.getByText("LinkedIn, added by you").first()).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Remove from my list" }).click();
+  await expect(page).toHaveURL(/\/os\/deals$/);
+  await expect(page.locator(".deal-card", { hasText: name })).toHaveCount(0);
+});
+
+test("the companies API needs a session", async ({ request }) => {
+  const res = await request.post("/api/os/companies", { data: { op: "add", name: "x" } });
+  expect(res.status()).toBe(401);
+});

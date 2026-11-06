@@ -1,4 +1,4 @@
-import { trackedCompanies } from "./companies";
+import { trackedCompanies, type CompanyExtras } from "./companies";
 import { storedDecisionAnswer, type AnswerLabel } from "./decision-merge";
 import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
@@ -526,17 +526,17 @@ export function buildDeals(snapshot: Snapshot | null): DeskDeal[] {
     .map((pitch) => presentDeal(pitch, snapshot.generated_at));
 }
 
-export function buildDeal(snapshot: Snapshot | null, id: string): DeskDeal | null {
+export function buildDeal(snapshot: Snapshot | null, id: string, extras: CompanyExtras = {}): DeskDeal | null {
   if (!snapshot) return null;
   const pitch = snapshot.pitches.find((item) => pitchTarget(item) === id);
   if (pitch) return presentDeal(pitch, snapshot.generated_at);
-  return id.startsWith("co_") ? (buildAllDeals(snapshot).find((deal) => deal.id === id) ?? null) : null;
+  return id.startsWith("co_") ? (buildAllDeals(snapshot, extras).find((deal) => deal.id === id) ?? null) : null;
 }
 
 /** Pitches first, then every other company Backfield is tracking (Handoff, Best 3, founders). */
-export function buildAllDeals(snapshot: Snapshot | null): DeskDeal[] {
+export function buildAllDeals(snapshot: Snapshot | null, extras: CompanyExtras = {}): DeskDeal[] {
   const pitches = buildDeals(snapshot);
-  return [...pitches, ...trackedCompanies(snapshot, pitches)];
+  return [...pitches, ...trackedCompanies(snapshot, pitches, extras)];
 }
 
 export type StageCount = { stage: string; label: string; count: number; stageCount: number; detail: string | null };
