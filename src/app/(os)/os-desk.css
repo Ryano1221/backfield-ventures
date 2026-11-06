@@ -532,3 +532,7 @@ body.os .heat.is-cooling i.on { background: #B07A1C; }
 body.os .heat.is-cold i.on { background: rgba(0, 0, 0, 0.35); }
 body.os .going-cold { margin: 16px 0; display: grid; gap: 8px; }
 body.os .going-cold .sx-hint { margin: 0; }
+body.os .deal-sources-card { margin: 12px 0; }
+body.os .deal-sources-card summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+body.os .deal-sources-card[open] summary { margin-bottom: 8px; }
+body.os .deal-sources-card .port-table { min-width: 520px; }

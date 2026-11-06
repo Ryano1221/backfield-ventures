@@ -188,3 +188,19 @@ test("typing a company finds the deal: starts-with first, then word starts, then
   assert.deepEqual(matchDeals(deals, ""), []);
   assert.equal(matchDeals(deals, "n", 2).length, 2);
 });
+
+test("source stats: per channel counts, outcomes and average score; tracked companies left out", async () => {
+  const { sourceStats } = await import("./deals");
+  const rows = sourceStats(
+    [
+      { source: "linkedin", status: "advanced", score: 8 },
+      { source: "LinkedIn", status: "passed", score: 4 },
+      { source: "Email", status: "new", score: null },
+      { source: null, status: "reviewing", score: 6 },
+      { source: "The Handoff", status: "tracking", score: null },
+    ],
+    (deal: { score: number | null }) => (deal.score === 8 ? "great" : null),
+  );
+  assert.deepEqual(rows.map((r) => r.source), ["LinkedIn", "Email", "Unknown"]);
+  assert.deepEqual({ ...rows[0] }, { source: "LinkedIn", pitches: 2, advanced: 1, passed: 1, open: 0, avgScore: 6, liked: 1 });
+});
