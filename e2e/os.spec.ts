@@ -187,6 +187,8 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   await expect(sheet).toBeVisible();
   await sheet.getByRole("button", { name: "Pause" }).click();
   await expect(sheet.getByRole("button", { name: "Resume" })).toBeVisible();
+  // Focus stays on the button you pressed; the sheet does not pull it back to Close.
+  await expect(sheet.getByRole("button", { name: "Resume" })).toBeFocused();
   await sheet.getByRole("button", { name: "Resume" }).click();
   await expect(sheet.getByRole("button", { name: "Pause" })).toBeVisible();
   await page.keyboard.press("Escape");

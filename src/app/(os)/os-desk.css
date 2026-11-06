@@ -14,3 +14,7 @@ body.os .card > p.note { margin: 0; padding: 14px 20px 16px; }
 body.os .act-day { margin-top: 32px; }
 body.os .act-h { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
 body.os .act-day .tl { margin-top: 12px; }
+
+/* Bots: the Office / Flow / List switch sits under the summary, not under
+   the tower. The default view is the map, which runs thousands of px. */
+body.os .bots-toggle { order: 0; margin: 4px 0 20px; align-self: flex-start; }
