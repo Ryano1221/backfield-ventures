@@ -10,6 +10,7 @@ import type { AnsweredDecision, OsPost, OsScheduleItem, OsTodayNote } from "@/li
 import type { CommandModel } from "@/lib/os/command";
 import type { TrackWeek } from "@/lib/os/outreach-history";
 import type { ContentWaiting } from "@/lib/os/studio";
+import type { SpvToday } from "@/lib/os/spv";
 import { OutreachWeek } from "./OutreachWeek";
 import { usd } from "@/lib/os/raise-model";
 import { asOfWord } from "@/lib/os/as-of";
@@ -28,6 +29,7 @@ export function TodayDesk({
   stale = false,
   outreachWeeks = [],
   content = [],
+  spvs = [],
 }: {
   model: TodayModel;
   onOs: boolean;
@@ -41,6 +43,8 @@ export function TodayDesk({
   outreachWeeks?: TrackWeek[];
   /** Content Studio drafts in review: waiting on Ryan's yes. */
   content?: ContentWaiting[];
+  /** Open SPVs closing within two weeks. */
+  spvs?: SpvToday[];
 }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
@@ -179,6 +183,22 @@ export function TodayDesk({
 
       <aside className="inbox-side">
       {command ? <CommandLists command={command} hrefs={hrefs} /> : null}
+      {spvs.length ? (
+        <section className="stack" aria-label="SPVs closing">
+          <h2>SPVs closing</h2>
+          <ul className="bot-list">
+            {spvs.map((row) => (
+              <li key={row.id}>
+                <Link className="note-row" href={hrefs.spvItem(row.id)} prefetch>
+                  <span className="bot-wait-name">{row.name}</span>
+                  <span className={`bot-wait-when${row.urgent ? " is-due" : ""}`}>{row.when}</span>
+                  <span className="bot-wait-sum">{row.next}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       {content.length ? (
         <section className="stack" aria-label="Content to approve">
           <h2>Content to approve</h2>

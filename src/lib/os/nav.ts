@@ -45,6 +45,8 @@ export function osHrefs(onOs: boolean) {
     waiting: `${root}/waiting`,
     raise: `${root}/raise`,
     studio: `${root}/studio`,
+    spv: `${root}/spv`,
+    spvItem: (id: string) => `${root}/spv/${encodeURIComponent(id)}`,
     studioItem: (id: string) => `${root}/studio/${encodeURIComponent(id)}`,
     login: onOs ? "/login" : "/os/login",
     decision: (id: string) => `${root}/d/${encodeURIComponent(id)}`,
