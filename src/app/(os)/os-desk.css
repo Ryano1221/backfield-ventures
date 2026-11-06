@@ -407,3 +407,8 @@ body.os .os-stack-bar i.is-soft { background: #7FB08D; }
 body.os .os-stack-bar i.is-pale { background: #BFD9C6; }
 body.os .os-stack-bar i.is-hatch { background: repeating-linear-gradient(135deg, #7FB08D 0 3px, #DCEBE0 3px 7px); }
 body.os .bots-summary > .os-stack { margin-bottom: 14px; }
+body.os .cmd-deals { position: relative; }
+body.os .cmd-spark { position: absolute; top: 16px; right: 16px; display: flex; align-items: flex-end; gap: 3px; height: 30px; }
+body.os .cmd-spark i { width: 6px; border-radius: 2px 2px 0 0; background: #123D22; }
+body.os .cmd-spark i.is-zero { background: rgba(0, 0, 0, 0.12); }
+@media (max-width: 560px) { body.os .cmd-spark { top: 14px; right: 14px; height: 20px; gap: 2px; } body.os .cmd-spark i { width: 5px; } }

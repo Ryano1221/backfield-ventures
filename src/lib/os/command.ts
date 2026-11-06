@@ -1,4 +1,5 @@
 import type { BotDesk } from "./bot-desk";
+import { pitchesByDay } from "./deals";
 import { plainBotText, stageLabel } from "./night";
 import { pitchTarget } from "./pitch-rate";
 import { summarizeRaise, type RaiseLedger, type RaiseSummary } from "./raise-model";
@@ -21,7 +22,7 @@ export type CommandModel = {
   funnel: FunnelStep[];
   chase: ChaseRow[];
   due: DueRow[];
-  deals: { fresh: number; reviewing: number; unrated: number; advanced: number; newest: DealRow[] };
+  deals: { fresh: number; reviewing: number; unrated: number; advanced: number; newest: DealRow[]; week: { day: string; label: string; count: number }[] };
   bots: { done: number; working: number; stuck: number; waiting: number; lines: BotLine[] };
 };
 
@@ -34,7 +35,7 @@ const NO_CHASE = new Set(["do_not_contact", "dnc", "bounced", "passed", "lost", 
 export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, desk: BotDesk | null, now = Date.now()): CommandModel {
   const raise = summarizeRaise(ledger, now);
   if (!snapshot) {
-    return { raise, funnel: [], chase: [], due: [], deals: { fresh: 0, reviewing: 0, unrated: 0, advanced: 0, newest: [] }, bots: { done: 0, working: 0, stuck: 0, waiting: 0, lines: [] } };
+    return { raise, funnel: [], chase: [], due: [], deals: { fresh: 0, reviewing: 0, unrated: 0, advanced: 0, newest: [], week: [] }, bots: { done: 0, working: 0, stuck: 0, waiting: 0, lines: [] } };
   }
   const today = ctDay(now);
   const people = snapshot.crm.people;
@@ -93,6 +94,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
     chase,
     due,
     deals: {
+      week: pitchesByDay(pitches.map((pitch) => ({ receivedIso: pitch.received })), new Date(now).toISOString(), 7),
       fresh: pitches.filter((pitch) => Date.parse(pitch.received) >= weekAgo).length,
       reviewing: pitches.filter((pitch) => pitch.status === "reviewing").length,
       unrated: pitches.filter((pitch) => (pitch.status === "new" || pitch.status === "reviewing") && !pitch.ryan_rating).length,

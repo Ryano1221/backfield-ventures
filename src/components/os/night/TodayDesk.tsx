@@ -435,7 +435,14 @@ function CommandStrip({ command, hrefs, briefs, asOf }: { command: CommandModel;
           {[briefs ? `${briefs} ${briefs === 1 ? "call" : "calls"}` : null, due.length ? `${due.length} follow-${due.length === 1 ? "up" : "ups"} due` : null].filter(Boolean).join(" · ") || "No calls or follow-ups due"}
         </span>
       </Link>
-      <Link className="cmd" href={hrefs.deals} prefetch>
+      <Link className="cmd cmd-deals" href={hrefs.deals} prefetch>
+        {deals.week.some((day) => day.count) ? (
+          <span className="cmd-spark" role="img" aria-label={`Pitches per day this week: ${deals.week.map((day) => day.count).join(", ")}`}>
+            {deals.week.map((day) => (
+              <i key={day.day} className={day.count ? "" : "is-zero"} style={{ height: `${day.count ? Math.max(18, (day.count / Math.max(...deals.week.map((d) => d.count))) * 100) : 8}%` }} />
+            ))}
+          </span>
+        ) : null}
         <span className="cmd-k">Deal flow</span>
         <b className="cmd-v">
           {deals.fresh}
