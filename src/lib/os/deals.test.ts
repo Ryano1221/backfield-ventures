@@ -144,6 +144,7 @@ function sampleDeal(extra: Partial<DeskDeal>): DeskDeal {
     pips: 1,
     waiting: null,
     received: "2026-11-01",
+    receivedIso: "2026-11-01",
     founder: null,
     domain: null,
     website: null,
@@ -159,3 +160,17 @@ function sampleDeal(extra: Partial<DeskDeal>): DeskDeal {
     ...extra,
   };
 }
+
+test("pitches per day: last 14 days in Central time, oldest first, empty days are zero", async () => {
+  const { pitchesByDay } = await import("./deals");
+  const rows = pitchesByDay(
+    [{ receivedIso: "2026-11-06" }, { receivedIso: "2026-11-06T03:00:00Z" }, { receivedIso: "2026-11-01T18:00:00Z" }, { receivedIso: "2026-09-01" }, { receivedIso: "junk" }],
+    "2026-11-06T15:00:00Z",
+  );
+  assert.equal(rows.length, 14);
+  assert.equal(rows[13].day, "2026-11-06");
+  assert.equal(rows[13].count, 1);
+  assert.equal(rows[12].count, 1);
+  assert.equal(rows.find((r) => r.day === "2026-11-01")?.count, 1);
+  assert.equal(rows.reduce((sum, r) => sum + r.count, 0), 3);
+});
