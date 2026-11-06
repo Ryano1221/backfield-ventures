@@ -40,19 +40,30 @@ export function DealDetail({ deal, dealsHref }: { deal: DeskDeal; dealsHref: str
         <Field label="Deck note" value={deal.deckNote} source={source("deck_note")} />
         <Field label="Rating" value={deal.loggedRating ? deal.loggedRating.charAt(0).toUpperCase() + deal.loggedRating.slice(1) : deal.loggedRating} source={source("ryan_rating")} />
       </dl>
+      {deal.sources.length ? (
+        // File paths and run ids help when something looks wrong, not day to day.
+        <details className="deal-sources">
+          <summary>Where this data came from</summary>
+          <dl>
+            {deal.sources.map((item) => (
+              <div key={item.field} style={{ display: "contents" }}>
+                <dt>{item.label}</dt>
+                <dd>{item.source}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      ) : null}
     </>
   );
 }
 
-function Field({ label, value, source }: { label: string; value: string | null; source: string | null }) {
+function Field({ label, value }: { label: string; value: string | null; source?: string | null }) {
   if (!value) return null;
   return (
     <>
       <dt>{label}</dt>
-      <dd>
-        {value}
-        {source ? <div className="src">{source}</div> : null}
-      </dd>
+      <dd>{value}</dd>
     </>
   );
 }
