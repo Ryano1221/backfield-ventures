@@ -67,6 +67,8 @@ export function Ring({ parts, total, size = 120, stroke = 12, label, children, d
               strokeLinecap="butt"
               strokeDasharray={`${dash} ${c - dash}`}
               strokeDashoffset={-offset}
+              className="os-ring-seg"
+              style={{ ["--d" as string]: `${dash}px`, ["--g" as string]: `${c - dash}px`, ["--c" as string]: `${c}px`, animationDelay: `${120 + i * 140}ms` }}
               transform={`rotate(-90 ${size / 2} ${size / 2})`}
             >
               <title>{`${part.label}`}</title>
@@ -88,8 +90,8 @@ export function StackBar({ parts, total, label, legend = true, format = (n: numb
   return (
     <div className="os-stack">
       <span className="os-stack-bar" role="img" aria-label={label}>
-        {shown.map((part) => (
-          <i key={part.key} className={`is-${part.tone}`} style={{ width: `${(part.value / scale) * 100}%` }} title={`${part.label}: ${format(part.value)}`} />
+        {shown.map((part, index) => (
+          <i key={part.key} className={`is-${part.tone}`} style={{ width: `${(part.value / scale) * 100}%`, animationDelay: `${index * 110}ms` }} title={`${part.label}: ${format(part.value)}`} />
         ))}
       </span>
       {legend && shown.length ? (
@@ -130,7 +132,7 @@ export function Columns({ rows, label, unit }: { rows: { day: string; label: str
       <div className="os-cols-plot">
         {rows.map((row, i) => (
           <span key={row.day} className="os-col" title={`${row.label}: ${row.count} ${word(row.count)}`}>
-            <i className={row.count ? "" : "is-zero"} style={{ height: `${row.count ? Math.max(6, (row.count / max) * 100) : 2}%` }}>
+            <i className={row.count ? "" : "is-zero"} style={{ height: `${row.count ? Math.max(6, (row.count / max) * 100) : 2}%`, animationDelay: `${i * 35}ms` }}>
               {(i === peak && row.count > 0) || (i === rows.length - 1 && row.count > 0) ? <em>{row.count}</em> : null}
             </i>
           </span>

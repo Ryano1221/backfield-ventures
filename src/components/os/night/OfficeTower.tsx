@@ -4,6 +4,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import type { DeskBot } from "@/lib/os/bot-desk";
 import { buildTower, type Floor, type TowerBot } from "@/lib/os/tower";
 import type { Interaction } from "@/lib/os/types";
+import { DEPT, DeptGlyph, deptOf } from "./BotAvatar";
 
 /**
  * The bot office as a building: one floor per team, bots at desks, a standup
@@ -22,7 +23,10 @@ export function OfficeTower({ bots, interactions, now, onOpenBot }: { bots: Desk
       <div className="tower-bar">
         <nav className="tower-floors" aria-label="Floors">
           {floors.map((floor) => (
-            <a key={floor.key} href={`#floor-${floor.key}`}>
+            <a key={floor.key} href={`#floor-${floor.key}`} style={{ ["--dept" as string]: DEPT[deptOf(floor.label)].color }}>
+              <span className="tower-glyph">
+                <DeptGlyph dept={deptOf(floor.label)} size={14} />
+              </span>
               <b>{floor.level}F</b> {floor.label}
               {floor.counts.needs ? <i className="tower-dot" aria-label={`${floor.counts.needs} need you`} /> : null}
             </a>
@@ -65,9 +69,12 @@ function FloorView({ floor, top, onOpenBot }: { floor: Floor; top: boolean; onOp
   // standup or the lift keep their desk, since they are coming back to it.
   const deskBots = floor.bots.filter((bot) => bot.spot !== "coffee");
   return (
-    <article className="floor" id={`floor-${floor.key}`} aria-labelledby={`floor-h-${floor.key}`}>
+    <article className="floor" id={`floor-${floor.key}`} aria-labelledby={`floor-h-${floor.key}`} style={{ ["--dept" as string]: DEPT[deptOf(floor.label)].color }}>
       <header className="floor-head">
         <h2 id={`floor-h-${floor.key}`}>
+          <span className="floor-emblem">
+            <DeptGlyph dept={deptOf(floor.label)} size={18} />
+          </span>
           <span className="floor-num">{floor.level}F</span> {floor.label}
         </h2>
         <p>
