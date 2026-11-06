@@ -41,6 +41,12 @@ export type RaiseSummary = {
   daysLeft: number | null;
   perWeekNeeded: number | null;
   closeLabel: string | null;
+  /** Average hard check so far, and how many more LPs that implies. */
+  avgCheck: number | null;
+  lpsNeeded: number | null;
+  /** Share of hard plus soft dollars held by the two biggest names, 0-100. */
+  topTwoShare: number | null;
+  topTwo: string[];
 };
 
 export const EMPTY_LEDGER: RaiseLedger = { fund: "Fund I", target_usd: null, close_date: null, commitments: [], updated_at: null };
@@ -81,7 +87,20 @@ export function summarizeRaise(ledger: RaiseLedger, now = Date.now()): RaiseSumm
     daysLeft,
     perWeekNeeded: remaining != null && weeks ? Math.ceil(remaining / weeks) : null,
     closeLabel,
+    ...checks(ledger, target, hard),
   };
+}
+
+function checks(ledger: RaiseLedger, target: number | null, hard: number) {
+  const hardRows = ledger.commitments.filter((row) => row.status !== "soft");
+  const avgCheck = hardRows.length ? Math.round(hard / hardRows.length) : null;
+  const remaining = target ? Math.max(0, target - hard) : null;
+  const lpsNeeded = avgCheck && remaining != null ? Math.ceil(remaining / avgCheck) : null;
+  const sorted = [...ledger.commitments].sort((a, b) => b.amount_usd - a.amount_usd);
+  const total = sorted.reduce((sum, row) => sum + row.amount_usd, 0);
+  const top = sorted.slice(0, 2);
+  const topTwoShare = total && sorted.length > 2 ? Math.round((top.reduce((sum, row) => sum + row.amount_usd, 0) / total) * 100) : null;
+  return { avgCheck, lpsNeeded, topTwoShare, topTwo: top.map((row) => row.name) };
 }
 
 /** $1.2M, $250K, $40K, $900 */

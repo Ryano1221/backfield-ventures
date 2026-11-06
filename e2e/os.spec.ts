@@ -324,6 +324,7 @@ test("an unknown OS path uses the OS missing page", async ({ page }) => {
   await page.goto("/os/login");
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Enter" }).click();
+  await expect(page).toHaveURL(/\/os\/?$/);
   await page.goto("/os/not-a-real-page");
   await expect(page.locator("body")).toContainText("Missing page");
   await expect(page.locator("body")).not.toContainText("This page could not be found");

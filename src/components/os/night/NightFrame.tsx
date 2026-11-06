@@ -551,7 +551,7 @@ export function NightFrame({
       ) : null}
       <nav className="tabbar" aria-label="Sections">
         {links
-          .filter((link) => link.id === "today" || link.id === "deals" || link.id === "people" || link.id === "bots")
+          .filter((link) => link.id === "today" || link.id === "raise" || link.id === "deals" || link.id === "people" || link.id === "bots")
           .map((link) => (
             <Link key={link.id} href={link.href} prefetch className={active === link.id ? "on" : ""} aria-current={active === link.id ? "page" : undefined}>
               <TabIcon id={link.id} on={active === link.id} />
@@ -612,6 +612,7 @@ function TabIcon({ id, on }: { id: string; on: boolean }) {
   if (id === "people") return <svg {...common}><circle cx="12" cy="8" r="3" /><path d="M5 19c1.4-3 3.8-4.5 7-4.5S17.6 16 19 19" /></svg>;
   if (id === "bots") return <svg {...common}><rect x="6" y="7" width="12" height="10" rx="2" /><path d="M12 7V4M9 12h.01M15 12h.01" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
   if (id === "ask") return <svg {...common}><path d="M5 6h14v9H8l-3 3V6z" /></svg>;
+  if (id === "raise") return <svg {...common} fill="none"><path d="M4 19h16" /><path d="M7 16v-4M12 16V9M17 16V5" strokeWidth={on ? 2.6 : 1.7} strokeLinecap="round" /></svg>;
   return <svg {...common}><path d="M4 6h16M4 12h16M4 18h10" stroke={on ? "#f0ede8" : "currentColor"} /></svg>;
 }
 

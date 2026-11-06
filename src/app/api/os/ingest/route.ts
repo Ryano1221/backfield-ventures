@@ -2,6 +2,11 @@ import { bearerToken, tokenMatches } from "@/lib/os/session";
 import { osJson } from "@/lib/os/response";
 import { validateSnapshot } from "@/lib/os/schema";
 import { SnapshotStoreError, writeSnapshot } from "@/lib/os/store";
+import { readDoc, writeDoc } from "@/lib/os/doc-store";
+import { parseHistory, recordOutreach } from "@/lib/os/outreach-history";
+import { lpFunnel } from "@/lib/os/command";
+import { parseFunnelHistory, recordFunnel } from "@/lib/os/funnel-history";
+import { EMPTY_LEDGER } from "@/lib/os/raise-model";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +44,16 @@ export async function POST(req: Request) {
 
   try {
     const stored_at = await writeSnapshot(result.snapshot);
+    // Keep a daily outreach history for the weekly chart. A failure here
+    // never fails the ingest; the snapshot is already stored.
+    try {
+      const history = recordOutreach(parseHistory(await readDoc("outreach-history")), result.snapshot);
+      await writeDoc("outreach-history", JSON.stringify(history));
+      const funnel = recordFunnel(parseFunnelHistory(await readDoc("funnel-history")), lpFunnel(result.snapshot, EMPTY_LEDGER), Date.now());
+      await writeDoc("funnel-history", JSON.stringify(funnel));
+    } catch {
+      console.error("os outreach history failed");
+    }
     return osJson({
       ok: true,
       generated_at: result.snapshot.generated_at,

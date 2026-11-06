@@ -48,7 +48,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
       const overdue = Boolean(due && due <= today);
       const last = person.last_touch_at ? Date.parse(person.last_touch_at) : NaN;
       const quiet = Number.isFinite(last) ? Math.floor((now - last) / DAY) : null;
-      const why = overdue && person.next_step ? `Due: ${shortStep(person.next_step)}` : quiet != null ? (quiet === 0 ? "Touched today" : `Quiet ${quiet} ${quiet === 1 ? "day" : "days"}`) : "Never touched";
+      const why = overdue && person.next_step ? `Due: ${person.next_step_short || shortStep(person.next_step)}` : quiet != null ? (quiet === 0 ? "Touched today" : `Quiet ${quiet} ${quiet === 1 ? "day" : "days"}`) : "Never touched";
       return { row: { id: person.id, name: person.name, firm: person.firm, stage: stageLabel(person.stage) || null, why, overdue }, score: (overdue ? 10_000 : 0) + (quiet ?? 5_000) };
     })
     .sort((a, b) => b.score - a.score)
@@ -61,7 +61,7 @@ export function buildCommand(snapshot: Snapshot | null, ledger: RaiseLedger, des
     .slice(0, 6)
     .map((person) => {
       const day = (person.next_step_due || "").slice(0, 10);
-      return { id: person.id, name: person.name, what: shortStep(person.next_step || ""), when: day === today ? "Today" : `Since ${shortDay(day)}`, overdue: day < today };
+      return { id: person.id, name: person.name, what: person.next_step_short || shortStep(person.next_step || ""), when: day === today ? "Today" : `Since ${shortDay(day)}`, overdue: day < today };
     });
 
   const pitches = snapshot.pitches;

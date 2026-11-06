@@ -239,6 +239,8 @@ export type CrmPerson = {
   last_touch_channel: string | null;
   next_step: string | null;
   next_step_due: string | null;
+  /** Optional one-line version of next_step for lists (bots send it; 90 chars max). */
+  next_step_short?: string | null;
   email: string | null;
   linkedin: string | null;
   notes: string | null;

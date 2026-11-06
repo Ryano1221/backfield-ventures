@@ -806,7 +806,7 @@ function presentPersonRow(person: CrmPerson, generatedAt: string, useImIn: boole
     lp: personIsLp(person, useLp),
     last: formatCt(person.last_touch_at, false),
     lastAge: waitingLabel(person.last_touch_at, generatedAt),
-    next: cleanNext(person.next_step),
+    next: cleanNext(person.next_step_short) || cleanNext(person.next_step),
     domain: person.domain || null,
     logoUrl: person.logo_url || null,
   };

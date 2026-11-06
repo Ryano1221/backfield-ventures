@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ChaseRow, FunnelStep } from "@/lib/os/command";
+import type { Diagnosis } from "@/lib/os/funnel-history";
 import { COMMIT_STATUSES, summarizeRaise, usd, type CommitStatus, type Commitment, type RaiseLedger } from "@/lib/os/raise-model";
 
 const STATUS_LABEL: Record<CommitStatus, string> = { soft: "Soft circle", committed: "Committed", wired: "Wired" };
@@ -14,12 +15,16 @@ const STATUS_LABEL: Record<CommitStatus, string> = { soft: "Soft circle", commit
 export function RaiseDesk({
   initial,
   funnel,
+  deltas = null,
+  diagnosis = null,
   chase,
   lps,
   personRoot,
 }: {
   initial: RaiseLedger;
   funnel: FunnelStep[];
+  deltas?: Record<string, number> | null;
+  diagnosis?: Diagnosis | null;
   chase: ChaseRow[];
   lps: { id: string; name: string; firm: string | null }[];
   personRoot: string;
@@ -71,6 +76,13 @@ export function RaiseDesk({
             {summary.soft ? `, ${usd(summary.soft)} more soft circled from ${summary.softCount}` : ""}
             {summary.wired ? `. ${usd(summary.wired)} wired` : ""}.
           </p>
+          {summary.avgCheck || summary.topTwoShare != null ? (
+            <p className="raise-checks">
+              {summary.avgCheck ? `Average check ${usd(summary.avgCheck)}` : ""}
+              {summary.avgCheck && summary.lpsNeeded != null ? ` · about ${summary.lpsNeeded} more ${summary.lpsNeeded === 1 ? "LP" : "LPs"} like that to close` : ""}
+              {summary.topTwoShare != null && summary.topTwoShare >= 50 ? ` · ${summary.topTwoShare}% sits with ${summary.topTwo.join(" and ")}` : ""}
+            </p>
+          ) : null}
         </div>
         <Settings ledger={ledger} saving={saving} onSave={send} />
       </header>
@@ -104,7 +116,7 @@ export function RaiseDesk({
         <p className="raise-empty">Set a target and close date to see progress and the weekly pace you need.</p>
       )}
 
-      <Funnel steps={funnel} />
+      <Funnel steps={funnel} deltas={deltas} diagnosis={diagnosis} />
 
       {error ? (
         <p className="os-error" role="alert">
@@ -183,7 +195,7 @@ export function RaiseDesk({
   );
 }
 
-function Funnel({ steps }: { steps: FunnelStep[] }) {
+function Funnel({ steps, deltas, diagnosis }: { steps: FunnelStep[]; deltas: Record<string, number> | null; diagnosis: Diagnosis | null }) {
   const top = steps[0]?.count ?? 0;
   if (!top) return null;
   return (
@@ -200,11 +212,20 @@ function Funnel({ steps }: { steps: FunnelStep[] }) {
                 <i style={{ width: `${Math.max(2, (step.count / top) * 100)}%` }} />
               </span>
               <b className="fb-n">{step.count.toLocaleString("en-US")}</b>
+              {deltas && deltas[step.key] ? <span className={`fb-delta${deltas[step.key]! > 0 ? " is-up" : ""}`}>{deltas[step.key]! > 0 ? "+" : ""}{deltas[step.key]} this week</span> : null}
               <span className="fb-rate">{index === 0 ? "LPs" : rate != null ? `${rate}% of ${steps[index - 1]!.label.toLowerCase()}` : ""}</span>
             </li>
           );
         })}
       </ol>
+      {diagnosis ? (
+        <p className="fb-diagnosis">
+          <b>
+            Biggest drop: {diagnosis.from.toLowerCase()} to {diagnosis.to.toLowerCase()}, {diagnosis.rate}%.
+          </b>{" "}
+          {diagnosis.advice}
+        </p>
+      ) : null}
     </section>
   );
 }

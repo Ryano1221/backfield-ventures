@@ -8,6 +8,8 @@ import { snoozeUntil } from "@/lib/os/snooze";
 import { osHrefs, waitingOnYou } from "@/lib/os/nav";
 import type { AnsweredDecision, OsPost, OsScheduleItem, OsTodayNote } from "@/lib/os/types";
 import type { CommandModel } from "@/lib/os/command";
+import type { TrackWeek } from "@/lib/os/outreach-history";
+import { OutreachWeek } from "./OutreachWeek";
 import { usd } from "@/lib/os/raise-model";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
@@ -22,6 +24,7 @@ export function TodayDesk({
   answered = [],
   command = null,
   stale = false,
+  outreachWeeks = [],
 }: {
   model: TodayModel;
   onOs: boolean;
@@ -32,6 +35,7 @@ export function TodayDesk({
   answered?: AnsweredDecision[];
   command?: CommandModel | null;
   stale?: boolean;
+  outreachWeeks?: TrackWeek[];
 }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
@@ -190,6 +194,8 @@ export function TodayDesk({
           </ul>
         </section>
       ) : null}
+
+      <OutreachWeek weeks={outreachWeeks} compact />
 
       <NoteList label="Pre-call briefs" rows={briefs} />
       <NoteList label="Warmups today" rows={warmups} />
