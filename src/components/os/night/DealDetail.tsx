@@ -40,6 +40,17 @@ export function DealDetail({ deal, dealsHref }: { deal: DeskDeal; dealsHref: str
         <Field label="Deck note" value={deal.deckNote} source={source("deck_note")} />
         <Field label="Rating" value={deal.loggedRating ? deal.loggedRating.charAt(0).toUpperCase() + deal.loggedRating.slice(1) : deal.loggedRating} source={source("ryan_rating")} />
       </dl>
+      <details className="deal-terms">
+        <summary>Score, rating and status</summary>
+        <dl>
+          <dt>Score</dt>
+          <dd>The number the office gives each pitch. A starting point, not a decision.</dd>
+          <dt>Rating</dt>
+          <dd>Yours: great, good, maybe or no.</dd>
+          <dt>Status</dt>
+          <dd>Where the pitch sits: new, reviewing, advanced or passed.</dd>
+        </dl>
+      </details>
       {deal.sources.length ? (
         // File paths and run ids help when something looks wrong, not day to day.
         <details className="deal-sources">

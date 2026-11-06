@@ -157,3 +157,10 @@ body.os .sx-count.is-over { color: #7a1414; font-weight: 650; }
   body.os .sx-cal > li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   body.os .sx-card, body.os .sx-editor { padding: 16px; }
 }
+
+/* Deals: what score, rating and status each mean, one tap away. */
+body.os .deal-terms { margin: 4px 0 12px; font-size: 14px; }
+body.os .deal-terms summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-weight: 600; color: #000; }
+body.os .deal-terms dl { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 6px 12px; margin: 4px 0 0; max-width: 640px; }
+body.os .deal-terms dt { margin: 0; font-weight: 600; }
+body.os .deal-terms dd { margin: 0; color: rgba(0, 0, 0, 0.7); }

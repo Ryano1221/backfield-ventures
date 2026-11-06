@@ -9,6 +9,8 @@ import { buildBotDesk } from "@/lib/os/bot-desk";
 import { buildCommand } from "@/lib/os/command";
 import { readRaise } from "@/lib/os/raise";
 import { headers } from "next/headers";
+import { readDoc } from "@/lib/os/doc-store";
+import { contentWaiting, parseStudio } from "@/lib/os/studio";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +26,10 @@ export default async function OsPage() {
   const model = buildToday(page.snapshot, page.actions);
   const now = readClock();
   const command = buildCommand(page.snapshot, await readRaise(), page.snapshot ? buildBotDesk(page.snapshot, page.actions, now) : null, now);
+  const content = contentWaiting(parseStudio(await readDoc("content-studio").catch(() => null)));
   return (
     <NightFrame onOs={isOsHost(host)} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} stale={page.model.stale} outreachWeeks={await loadOutreachWeeks(page.snapshot, now)} />
+      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} stale={page.model.stale} outreachWeeks={await loadOutreachWeeks(page.snapshot, now)} content={content} />
     </NightFrame>
   );
 }

@@ -9,6 +9,7 @@ import { osHrefs, waitingOnYou } from "@/lib/os/nav";
 import type { AnsweredDecision, OsPost, OsScheduleItem, OsTodayNote } from "@/lib/os/types";
 import type { CommandModel } from "@/lib/os/command";
 import type { TrackWeek } from "@/lib/os/outreach-history";
+import type { ContentWaiting } from "@/lib/os/studio";
 import { OutreachWeek } from "./OutreachWeek";
 import { usd } from "@/lib/os/raise-model";
 import { asOfWord } from "@/lib/os/as-of";
@@ -26,6 +27,7 @@ export function TodayDesk({
   command = null,
   stale = false,
   outreachWeeks = [],
+  content = [],
 }: {
   model: TodayModel;
   onOs: boolean;
@@ -37,6 +39,8 @@ export function TodayDesk({
   command?: CommandModel | null;
   stale?: boolean;
   outreachWeeks?: TrackWeek[];
+  /** Content Studio drafts in review: waiting on Ryan's yes. */
+  content?: ContentWaiting[];
 }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
@@ -175,6 +179,22 @@ export function TodayDesk({
 
       <aside className="inbox-side">
       {command ? <CommandLists command={command} hrefs={hrefs} /> : null}
+      {content.length ? (
+        <section className="stack" aria-label="Content to approve">
+          <h2>Content to approve</h2>
+          <ul className="bot-list">
+            {content.map((row) => (
+              <li key={row.id}>
+                <Link className="note-row" href={hrefs.studioItem(row.id)} prefetch>
+                  <span className="bot-wait-name">{row.title}</span>
+                  <span className="bot-wait-when">In review</span>
+                  <span className="bot-wait-sum">{row.channels} draft waiting on your yes.</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       {bots.length ? (
         <section className="stack" aria-label="Bots waiting on you">
           <h2>Bots waiting</h2>
