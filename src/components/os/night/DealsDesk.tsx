@@ -8,9 +8,11 @@ import { osHrefs } from "@/lib/os/nav";
 import { shownPitchRating } from "@/lib/os/pitch-rate";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
+import { PortfolioCard } from "./PortfolioCard";
 import { RateControl } from "./RateControl";
+import type { Portfolio } from "@/lib/os/portfolio";
 
-export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; reviewing: number; onOs: boolean }) {
+export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDeal[]; reviewing: number; onOs: boolean; portfolio?: Portfolio }) {
   const hrefs = osHrefs(onOs);
   const { actions } = useNightActions();
   const [query, setQuery] = useState("");
@@ -34,6 +36,7 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
       <p className="lede">
         {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
       </p>
+      {portfolio ? <PortfolioCard portfolio={portfolio} spvHref={hrefs.spvItem} dealHref={hrefs.deal} /> : null}
       <details className="deal-terms">
         <summary>Score, rating and status</summary>
         <dl>

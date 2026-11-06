@@ -318,3 +318,6 @@ body.os .inv-rows a b { overflow-wrap: anywhere; }
 body.os .inv-rows a span { font-size: 13px; color: rgba(0, 0, 0, 0.6); }
 body.os .inv-rows a:hover b, body.os .inv-rows a:focus-visible b { text-decoration: underline; }
 body.os .inv-amt { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Portfolio card on Investments */
+body.os .port { margin: 20px 0 8px; }

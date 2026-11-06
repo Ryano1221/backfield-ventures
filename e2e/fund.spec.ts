@@ -84,6 +84,15 @@ test("an SPV starts from a deal, takes terms and allocations, and tracks its che
   await page.getByRole("region", { name: "Checklist" }).getByRole("checkbox", { name: "Entity formed" }).click();
   await expect(page.getByRole("region", { name: "Checklist" })).toContainText("1 of 9");
 
+  // Closing puts the company in the portfolio on Investments.
+  await page.getByRole("group", { name: "SPV status" }).getByRole("button", { name: "Closing", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Marked closing.");
+  await page.goto("/os/deals");
+  const portfolio = page.getByRole("region", { name: "Portfolio" });
+  await expect(portfolio).toContainText("Northwind");
+  await expect(portfolio).toContainText("SPV closing");
+  await page.goBack();
+
   // The allocation shows on the investor's own page.
   await page.goto("/os/crm/fix-rhea");
   await expect(page.getByRole("region", { name: "With Backfield" })).toContainText("Northwind");
