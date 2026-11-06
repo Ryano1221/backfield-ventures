@@ -307,3 +307,14 @@ export function calendar(studio: Studio, now: number, days = 14): { day: string;
   }
   return out;
 }
+
+export type ContentWaiting = { id: string; title: string; channels: string };
+
+/** Drafts sitting in review: the content that is waiting on Ryan's yes. */
+export function contentWaiting(studio: Studio): ContentWaiting[] {
+  return studio.items
+    .filter((item) => !item.archived)
+    .map((item) => ({ item, review: item.drafts.filter((draft) => draft.status === "review") }))
+    .filter((row) => row.review.length > 0)
+    .map(({ item, review }) => ({ id: item.id, title: item.title, channels: review.map((draft) => CHANNEL_LABEL[draft.channel]).join(", ") }));
+}

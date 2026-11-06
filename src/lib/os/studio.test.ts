@@ -82,3 +82,14 @@ test("parseStudio drops junk instead of throwing", () => {
   assert.deepEqual(parseStudio(JSON.stringify({ items: [{ nope: 1 }] })).items, []);
   assert.equal(parseStudio(JSON.stringify(make())).items.length, 1);
 });
+
+test("contentWaiting lists only drafts in review, by item", async () => {
+  const { contentWaiting } = await import("./studio");
+  let studio = make(["x", "linkedin"]);
+  assert.deepEqual(contentWaiting(studio), []);
+  studio = step(studio, { op: "edit_draft", id: "c_1", channel: "x", body: "Post." });
+  studio = step(studio, { op: "set_status", id: "c_1", channel: "x", status: "review" });
+  assert.deepEqual(contentWaiting(studio), [{ id: "c_1", title: "Why athletes make good angels", channels: "X" }]);
+  studio = step(studio, { op: "archive", id: "c_1", archived: true });
+  assert.deepEqual(contentWaiting(studio), []);
+});
