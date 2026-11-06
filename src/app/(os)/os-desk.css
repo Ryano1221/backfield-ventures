@@ -1,5 +1,6 @@
 /*
- * Loaded after os.css. New OS rules go here so os.css stays stable.
+ * Loaded after os.css. New OS rules go here so os.css stays stable and
+ * small changes do not rewrite a 134KB file.
  */
 
 /* The decision-detail list uses details.co with a top rule. People table
