@@ -550,3 +550,24 @@ body.os .review-text span { font-size: 14px; color: rgba(0, 0, 0, 0.65); }
 body.os .review-area li.is-clear .review-text b { color: rgba(0, 0, 0, 0.6); font-weight: 600; }
 body.os .review-clear { font-size: 13px; color: rgba(0, 0, 0, 0.45); }
 body.os .review .btn.sm { min-height: 44px; }
+
+/* Fundraising: warm leads */
+body.os .warm-leads { display: grid; gap: 14px; margin-top: 32px; }
+body.os .warm-leads > .sx-hint { margin: 0; }
+body.os .wl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+body.os .wl-card { display: grid; gap: 8px; align-content: start; }
+body.os .wl-card .sx-hint { margin: 0; }
+body.os .wl-sub { margin: 10px 0 0; font-size: 13px; color: rgba(0, 0, 0, 0.55); font-weight: 600; }
+body.os .wl-list { list-style: none; margin: 0; padding: 0; display: grid; }
+body.os .wl-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 52px; padding: 6px 0; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+body.os .wl-list li:first-child { border-top: 0; }
+body.os .wl-list span { display: grid; gap: 2px; min-width: 0; }
+body.os .wl-list small, body.os .wl-lead-top small { font-size: 13px; color: rgba(0, 0, 0, 0.6); }
+body.os .wl-list a, body.os .wl-leads a { color: #123D22; }
+body.os .wl-btns { display: flex !important; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+body.os .wl-list .btn.sm { min-height: 44px; flex: none; }
+body.os .wl-add { display: grid; gap: 12px; }
+body.os .wl-leads { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+body.os .wl-leads li { display: grid; gap: 10px; }
+body.os .wl-lead-top span { display: grid; gap: 2px; }
+@media (max-width: 760px) { body.os .wl-grid { grid-template-columns: minmax(0, 1fr); } }
