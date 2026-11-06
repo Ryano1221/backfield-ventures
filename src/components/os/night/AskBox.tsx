@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useEscape } from "./useEscape";
 import { dedupedAsks, officeStatus, routeAsk, whoLabel } from "@/lib/os/ask";
 import type { ActionPayload, ActionType, OsAction } from "@/lib/os/types";
 
@@ -35,6 +36,7 @@ export function AskBox({
   const [text, setText] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [whoOpen, setWhoOpen] = useState(false);
+  useEscape(whoOpen, useCallback(() => setWhoOpen(false), []));
   const bot = picked ?? context.botName ?? "";
   const [local, setLocal] = useState<OsAction[]>([]);
   const [error, setError] = useState("");

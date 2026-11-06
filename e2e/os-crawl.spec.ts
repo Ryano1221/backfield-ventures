@@ -405,18 +405,29 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
     if (!item.href || item.target === "_blank" || /^(mailto|tel|javascript):/.test(item.href)) return false;
     return new URL(item.href, page.url()).pathname !== routePath;
   };
-  const keyOf = (item: TapItem) => `${item.kind}|${item.name}|${item.href}`;
+  // Kind, name and link, plus which copy it is, so three identical "Copy text" buttons stay three.
+  const keysOf = (items: TapItem[]) => {
+    const count = new Map<string, number>();
+    return items.map((item) => {
+      const base = `${item.kind}|${item.name}|${item.href}`;
+      const n = count.get(base) || 0;
+      count.set(base, n + 1);
+      return { key: `${base}|${n}`, item };
+    });
+  };
+  const keyed = keysOf(marked);
+  const keyOf = (item: TapItem) => keyed.find((entry) => entry.item === item)?.key || "";
   // Links that leave the page go last, so every in-page control is tapped first.
   const plan = [...marked.filter((item) => !leaves(item)), ...marked.filter(leaves)];
   // Coming back to the route renders a fresh DOM without the marks, so mark it again
   // and look each remaining control up by what it is, not by its old id.
-  let current = new Map(marked.map((item) => [keyOf(item), item.i]));
+  let current = new Map(keyed.map(({ key, item }) => [key, item.i]));
   const returnTo = async () => {
     if (new URL(page.url()).pathname !== routePath) {
       await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => undefined);
     }
     await page.getByRole("heading", { level: 1 }).first().waitFor({ timeout: 15_000 }).catch(() => undefined);
-    current = new Map((await markControls(page).catch(() => [] as TapItem[])).map((item) => [keyOf(item), item.i]));
+    current = new Map(keysOf(await markControls(page).catch(() => [] as TapItem[])).map(({ key, item }) => [key, item.i]));
   };
 
   for (const item of plan) {
@@ -479,12 +490,22 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       continue;
     }
     if (before && after === before) await note(route, "tap", `${item.name || item.href || item.kind} did nothing`);
-    if ((await page.locator("[role='dialog']").count()) > 0) {
-      const close = page.locator("[role='dialog']").getByRole("button", { name: /close/i }).first();
-      if (await close.count()) await close.click().catch(() => undefined);
-      else await page.keyboard.press("Escape").catch(() => undefined);
-    }
+    await closeDialogs(page, route, note);
   }
+}
+
+// Every open dialog must close, by Escape or its Close control, before the next tap.
+async function closeDialogs(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
+  const dialogs = page.locator("[role='dialog']:visible");
+  if (!(await dialogs.count())) return;
+  await page.keyboard.press("Escape").catch(() => undefined);
+  if (await dialogs.first().waitFor({ state: "hidden", timeout: 1_000 }).then(() => true).catch(() => false)) return;
+  const label = (await dialogs.first().getAttribute("aria-label").catch(() => null)) || "dialog";
+  await note(route, "dialog", `${label} does not close on Escape`);
+  // A full-screen scrim sits under the sheet card, so click its corner, not its centre.
+  const close = dialogs.first().getByRole("button", { name: /close/i }).first();
+  if (await close.count()) await close.click({ position: { x: 4, y: 4 }, timeout: 2_000 }).catch(() => undefined);
+  if (await dialogs.count()) await note(route, "dialog", `${label} stays open after Escape and Close`);
 }
 
 async function signOut(page: Page, note: (route: string, check: string, detail: string) => Promise<void>) {
