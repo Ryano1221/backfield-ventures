@@ -46,6 +46,7 @@ export function osHrefs(onOs: boolean) {
     raise: `${root}/raise`,
     studio: `${root}/studio`,
     spv: `${root}/spv`,
+    portfolio: `${root}/portfolio`,
     spvItem: (id: string) => `${root}/spv/${encodeURIComponent(id)}`,
     studioItem: (id: string) => `${root}/studio/${encodeURIComponent(id)}`,
     login: onOs ? "/login" : "/os/login",

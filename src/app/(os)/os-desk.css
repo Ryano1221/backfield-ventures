@@ -460,3 +460,48 @@ body.os .add-co { display: grid; gap: 12px; margin: 16px 0 4px; justify-items: s
 body.os .add-co > form { width: 100%; }
 body.os .add-co-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 760px) { body.os .add-co-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Portfolio: holdings, marks and fund metrics */
+body.os .port-page { display: grid; gap: 16px; }
+body.os .port-page > .sx-head { margin-bottom: 4px; }
+body.os .port-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+body.os .port-kpi { display: grid; gap: 4px; align-content: start; background: #fff; border-radius: 16px; padding: 16px; min-width: 0; }
+body.os .port-kpi b { font-size: 26px; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+body.os .port-kpi-note { font-size: 12px; color: rgba(0, 0, 0, 0.55); line-height: 1.35; }
+body.os .port-kpis .port-kpi:first-child { background: #123D22; color: #fff; }
+body.os .port-kpis .port-kpi:first-child .lbl { color: rgba(255, 255, 255, 0.75); }
+body.os .port-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+body.os .port-table th, body.os .port-table td { text-align: left; padding: 10px 8px; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+body.os .port-table thead th { border-top: 0; font-size: 12px; color: rgba(0, 0, 0, 0.55); font-weight: 600; }
+body.os .port-suggest ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+body.os .port-suggest li { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+body.os .port-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+body.os .port-card { display: grid; gap: 14px; }
+body.os .port-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+body.os .port-co { display: block; font-size: 19px; }
+body.os .port-sub { display: block; font-size: 13px; color: rgba(0, 0, 0, 0.6); margin-top: 2px; }
+body.os .port-moic { flex: none; font-size: 20px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.05); font-variant-numeric: tabular-nums; }
+body.os .port-moic.is-up { background: rgba(18, 61, 34, 0.12); color: #123D22; }
+body.os .port-moic.is-down { background: rgba(160, 40, 30, 0.08); color: #8a2a1e; }
+body.os .port-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; }
+body.os .port-nums div { display: grid; gap: 2px; min-width: 0; }
+body.os .port-nums dt { font-size: 12px; color: rgba(0, 0, 0, 0.55); }
+body.os .port-nums dd { margin: 0; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+body.os .port-nums small { font-size: 12px; font-weight: 400; color: rgba(0, 0, 0, 0.55); }
+body.os .port-more summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+body.os .port-more-body { display: grid; gap: 18px; padding-top: 8px; }
+body.os .port-more-body form { display: grid; gap: 10px; }
+body.os .port-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+body.os .port-marks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+body.os .port-marks li { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 44px; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+body.os .port-links { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+body.os .port-links a { min-height: 44px; display: inline-flex; align-items: center; color: #123D22; }
+@media (max-width: 1100px) { body.os .port-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  body.os .port-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.os .port-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.os .port-kpi b { font-size: 22px; }
+}
+body.os .port-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+body.os .port-card-head a, body.os .port-link-empty a { color: #123D22; min-height: 44px; display: inline-flex; align-items: center; }
+body.os .port-link-empty { margin: 12px 0 0; font-size: 14px; color: rgba(0, 0, 0, 0.6); }

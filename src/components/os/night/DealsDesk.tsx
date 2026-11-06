@@ -53,7 +53,7 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
           <Columns rows={flow} label="Pitches per day, last 14 days" unit={["pitch", "pitches"]} />
         </section>
       ) : null}
-      {portfolio ? <PortfolioCard portfolio={portfolio} spvHref={hrefs.spvItem} dealHref={hrefs.deal} /> : null}
+      {portfolio ? <PortfolioCard portfolio={portfolio} spvHref={hrefs.spvItem} dealHref={hrefs.deal} portfolioHref={hrefs.portfolio} /> : null}
       <details className="deal-terms">
         <summary>Score, rating and status</summary>
         <dl>
