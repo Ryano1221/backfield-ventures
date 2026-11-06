@@ -3,12 +3,15 @@ import { headers } from "next/headers";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { RaiseDesk } from "@/components/os/night/RaiseDesk";
 import { buildBotDesk } from "@/lib/os/bot-desk";
-import { buildCommand } from "@/lib/os/command";
+import { buildCommand, lpFunnel } from "@/lib/os/command";
+import { EMPTY_LEDGER } from "@/lib/os/raise-model";
 import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts } from "@/lib/os/nav";
 import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
 import { readRaise } from "@/lib/os/raise";
+import { readDoc } from "@/lib/os/doc-store";
+import { diagnoseFunnel, parseFunnelHistory, weekDeltas } from "@/lib/os/funnel-history";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +29,14 @@ export default async function RaisePage() {
   const model = buildToday(page.snapshot, page.actions);
   const ledger = await readRaise();
   const command = buildCommand(page.snapshot, ledger, page.snapshot ? buildBotDesk(page.snapshot, page.actions, now) : null, now);
+  const funnelHistory = parseFunnelHistory(await readDoc("funnel-history").catch(() => null));
+  // History is CRM-only, so compare like with like.
+  const deltas = page.snapshot ? weekDeltas(funnelHistory, lpFunnel(page.snapshot, EMPTY_LEDGER), now) : null;
+  const diagnosis = diagnoseFunnel(command.funnel);
   const lps = (page.snapshot?.crm.people ?? []).filter((person) => person.lp).map((person) => ({ id: person.id, name: person.name, firm: person.firm }));
   return (
     <NightFrame onOs={onOs} active="raise" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <RaiseDesk initial={ledger} funnel={command.funnel} chase={command.chase} lps={lps} personRoot={onOs ? "/crm" : "/os/crm"} />
+      <RaiseDesk initial={ledger} funnel={command.funnel} deltas={deltas} diagnosis={diagnosis} chase={command.chase} lps={lps} personRoot={onOs ? "/crm" : "/os/crm"} />
     </NightFrame>
   );
 }

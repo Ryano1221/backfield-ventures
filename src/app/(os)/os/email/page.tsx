@@ -6,7 +6,8 @@ import { formatJoined } from "@/lib/email/format";
 import { emailHrefs } from "@/lib/email/nav";
 import { loadSends, loadSubscribers } from "@/lib/email/store";
 import { isOsHost } from "@/lib/os/host";
-import { readSnapshotOnce } from "@/lib/os/page-data";
+import { loadOutreachWeeks, readSnapshotOnce } from "@/lib/os/page-data";
+import { OutreachWeek } from "@/components/os/night/OutreachWeek";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,9 @@ export default async function EmailDashboardPage() {
   const subscribers = people.sample ? [] : people.rows;
   const sent = sends.sample ? [] : sends.rows;
   const outreach = snapshot?.outreach ?? [];
-  const month = new Date().toISOString().slice(0, 7);
+  const now = readClock();
+  const weeks = await loadOutreachWeeks(snapshot, now);
+  const month = new Date(now).toISOString().slice(0, 7);
   const newThisMonth = subscribers.filter((row) => row.joined.startsWith(month)).length;
 
   return (
@@ -54,7 +57,9 @@ export default async function EmailDashboardPage() {
           <div className="d">{outreach.length ? "Sent across the tracks on this snapshot." : "No outreach counts on this snapshot."}</div>
         </div>
       </div>
-      {outreach.length ? (
+      {weeks.length ? (
+        <OutreachWeek weeks={weeks} />
+      ) : outreach.length ? (
         <section className="card">
           <div className="h"><span className="lbl">Outreach</span></div>
           <ul>
@@ -134,4 +139,8 @@ export default async function EmailDashboardPage() {
       <p className="note">Nothing goes to a list without a test send and your yes. Open and click tracking is off. Unsubscribes, list signups, and weekly signup counts are not on this snapshot.</p>
     </>
   );
+}
+
+function readClock(): number {
+  return Date.now();
 }

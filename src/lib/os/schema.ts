@@ -889,6 +889,8 @@ function validatePerson(value: unknown, path: string, issues: string[]): CrmPers
     linkedin: linkedin ?? null,
     notes: notes ?? null,
   };
+  const nextShort = typeof value.next_step_short === "string" ? value.next_step_short.replace(/\s+/g, " ").trim().slice(0, 90) : "";
+  if (nextShort) person.next_step_short = nextShort;
   const domain = normalizeDomain(typeof value.domain === "string" ? value.domain : null);
   const logo = normalizeLogoUrl(typeof value.logo_url === "string" ? value.logo_url : null);
   if (domain) person.domain = domain;

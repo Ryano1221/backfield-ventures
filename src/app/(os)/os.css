@@ -1858,3 +1858,39 @@ body.os .stale-banner b { font-weight: 700; }
   body.os .inbox-page .inbox, body.os .inbox-page .empty-clear { grid-row: 8; }
   body.os .inbox-side { grid-row: 7 / span 4; }
 }
+
+/* ===== Outreach week chart ========================================= */
+body.os .ow { display: grid; gap: 10px; min-width: 0; }
+body.os .ow > h2 { margin: 8px 0 0; color: rgba(0, 0, 0, 0.62); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+body.os .ow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+body.os .ow.is-compact .ow-grid { grid-template-columns: minmax(0, 1fr); }
+body.os .ow-track { margin: 0; padding: 14px 16px 10px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 18px; display: grid; gap: 8px; min-width: 0; }
+body.os .ow-track figcaption { display: grid; gap: 2px; }
+body.os .ow-track figcaption b { font-size: 15px; }
+body.os .ow-track figcaption span { font-size: 13px; color: rgba(0, 0, 0, 0.66); font-variant-numeric: tabular-nums; }
+body.os .ow-track svg { width: 100%; height: auto; display: block; overflow: visible; }
+body.os .ow-bar { fill: #123D22; }
+body.os .ow-bar.is-miss { fill: #8fae98; }
+body.os .ow-floor { stroke: #000; stroke-width: 2; stroke-linecap: round; }
+body.os .ow-base { stroke: rgba(0, 0, 0, 0.12); stroke-width: 1; }
+body.os .ow-day, body.os .ow-na { font: 600 10px/1 var(--text); fill: rgba(0, 0, 0, 0.62); }
+body.os .ow-track g:hover .ow-bar { fill: #000; }
+/* Six tabs on the phone: Today, Fund I, Deals, People, Bots, Ask. */
+body.os .tabbar { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+body.os .tabbar a span:not(.tab-badge), body.os .tabbar button span { font-size: 11px; white-space: nowrap; }
+body.os .raise-checks { margin: 4px 0 0; font-size: 14px; color: rgba(0, 0, 0, 0.66); }
+body.os .fb-delta { grid-area: rate; justify-self: end; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.62); }
+body.os .fb-delta.is-up { color: #123D22; }
+body.os .fb-diagnosis { margin: 0; padding: 12px 16px; border-radius: 14px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: inset 3px 0 0 #123D22; font-size: 14px; line-height: 1.5; color: rgba(0, 0, 0, 0.78); }
+@media (min-width: 900px) {
+  body.os .funnel-bars li { grid-template-columns: 160px minmax(0, 1fr) 56px 110px 150px; grid-template-areas: "label track n delta rate"; }
+  body.os .fb-delta { grid-area: delta; }
+}
+@media (max-width: 899px) {
+  body.os .funnel-bars li { grid-template-areas: "label n" "track track" "rate delta"; }
+  body.os .fb-delta { grid-area: delta; }
+}
+body.os .email .ow { margin: 0 0 20px; }
+body.os .ow.is-compact .ow-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+body.os .ow.is-compact .ow-track { padding: 12px 12px 8px; }
+body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
