@@ -267,3 +267,27 @@ export function spvsForToday(book: SpvBook, now = Date.now()): SpvToday[] {
       urgent: s.daysLeft != null && s.daysLeft <= 3,
     }));
 }
+
+/**
+ * A plain status note Ryan can paste into an email to the SPV's investors.
+ * Built only from what the SPV record holds; nothing is sent from the OS.
+ */
+export function spvUpdateText(spv: Spv, now = Date.now()): string {
+  const s = summarizeSpv(spv, now);
+  const lines: string[] = [`${spv.name}: update`, ""];
+  lines.push(spv.target_usd ? `Committed so far: ${usdShort(s.hard)} of ${usdShort(spv.target_usd)}.` : `Committed so far: ${usdShort(s.hard)}.`);
+  if (spv.close_date && /^\d{4}-\d{2}-\d{2}$/.test(spv.close_date)) {
+    const date = new Date(`${spv.close_date}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+    lines.push(`Target close: ${date}${s.daysLeft != null && s.daysLeft <= 90 && spv.status !== "closed" ? ` (${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"} out)` : ""}.`);
+  }
+  const terms = [
+    spv.min_check_usd ? `minimum check ${usdShort(spv.min_check_usd)}` : null,
+    spv.carry_pct != null ? `${spv.carry_pct}% carry` : null,
+    spv.fee_pct != null ? `${spv.fee_pct}% management fee` : null,
+  ].filter(Boolean);
+  if (terms.length) lines.push(`Terms: ${terms.join(", ")}.`);
+  if (spv.status === "closed") lines.push("", "The SPV is closed and the money has gone to the company. Reporting and K-1s will follow.");
+  else if (s.nextStep) lines.push("", `Where we are: ${s.stepsDone} of ${SPV_STEPS.length} steps done. Next up: ${s.nextStep.charAt(0).toLowerCase()}${s.nextStep.slice(1)}.`);
+  if (spv.status !== "closed") lines.push("", "Reply here if you want in, or if your allocation has changed.");
+  return lines.join("\n");
+}

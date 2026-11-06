@@ -7,6 +7,7 @@ import {
   ALLOC_LABEL,
   ALLOC_STATUSES,
   spvNext,
+  spvUpdateText,
   summarizeSpv,
   SPV_STATUS_LABEL,
   SPV_STATUSES,
@@ -126,6 +127,8 @@ export function SpvDetail({ initial, id, backHref, dealHref, lps, now }: { initi
         ) : null}
         {s.belowMin.length ? <p className="sx-hint">Below the minimum check: {s.belowMin.join(", ")}.</p> : null}
       </section>
+
+      <InvestorUpdate text={spvUpdateText(spv, now)} />
 
       <div className="sx-split">
         <Terms spv={spv} busy={busy} onSave={(fields) => run({ op: "update", ...fields }, "Terms saved.")} />
@@ -281,7 +284,7 @@ function Notes({ spv, busy, onSave }: { spv: Spv; busy: boolean; onSave: (fields
   const [next, setNext] = useState(spv.next_action);
   const [notes, setNotes] = useState(spv.notes);
   return (
-    <section className="sx-card" aria-label="Notes">
+    <section className="sx-card spv-notes" aria-label="Notes">
       <h2 className="sx-h2">Next step and notes</h2>
       <label className="sx-field">
         <span className="lbl">Next step (leave blank to use the checklist)</span>
@@ -297,5 +300,31 @@ function Notes({ spv, busy, onSave }: { spv: Spv; busy: boolean; onSave: (fields
         </button>
       </div>
     </section>
+  );
+}
+
+/** A note to paste into an email to this SPV's investors. Nothing sends from here. */
+function InvestorUpdate({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+  return (
+    <details className="sx-card spv-update">
+      <summary>Update for investors</summary>
+      <p className="sx-hint">Copy it into your own email. Nothing sends from here, and no names are included.</p>
+      <textarea className="sx-text" readOnly rows={9} value={text} aria-label="Update for investors" />
+      <div className="sx-actions">
+        <button type="button" className="btn" onClick={copy}>
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+    </details>
   );
 }

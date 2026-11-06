@@ -321,3 +321,17 @@ body.os .inv-amt { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* Portfolio card on Investments */
 body.os .port { margin: 20px 0 8px; }
+
+/* SPV notes: same rhythm as the other cards */
+body.os .spv-notes { display: grid; gap: 14px; }
+body.os .spv-notes .sx-h2, body.os .spv-notes .sx-actions { margin: 0; }
+
+/* A KPI with no number says so quietly instead of in giant type */
+body.os .email .kpi .v.is-text { font-size: 24px; line-height: 1.2; color: rgba(0, 0, 0, 0.55); margin: 14px 0 8px; }
+
+/* SPV: investor update */
+body.os .spv-update { margin-top: 16px; display: grid; gap: 12px; }
+body.os .spv-update summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+body.os .spv-update[open] summary { margin-bottom: 4px; }
+body.os .spv-update .sx-hint, body.os .spv-update .sx-actions { margin: 0; }
+body.os .spv-update textarea { width: 100%; font-size: 14px; line-height: 1.5; }
