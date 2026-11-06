@@ -26,6 +26,7 @@ export function SpvDesk({
   prefill,
   deals = [],
   personBase,
+  startOpen = false,
 }: {
   initial: SpvBook;
   root: string;
@@ -33,10 +34,11 @@ export function SpvDesk({
   prefill: { company: string; deal: string };
   deals?: DealPick[];
   personBase?: string;
+  startOpen?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(
-    Boolean(prefill.company) || initial.spvs.length === 0,
+    startOpen || Boolean(prefill.company) || initial.spvs.length === 0,
   );
   const [company, setCompany] = useState(prefill.company);
   const [dealId, setDealId] = useState(prefill.deal);

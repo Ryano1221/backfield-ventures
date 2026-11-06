@@ -34,7 +34,7 @@ export default async function SpvPage({ searchParams }: { searchParams: Promise<
   return (
     <NightFrame onOs={onOs} active="raise" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <FundTabs active="spv" fundHref={hrefs.raise} spvHref={hrefs.spv} spvCount={open} />
-      <SpvDesk initial={book} root={hrefs.spv} now={readClock()} prefill={{ company: one(params.company), deal: one(params.deal) }} deals={deals} personBase={hrefs.people} />
+      <SpvDesk initial={book} root={hrefs.spv} now={readClock()} prefill={{ company: one(params.company), deal: one(params.deal) }} deals={deals} personBase={hrefs.people} startOpen={params.new === "1"} />
     </NightFrame>
   );
 }
