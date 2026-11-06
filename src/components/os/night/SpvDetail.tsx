@@ -7,6 +7,7 @@ import { usd } from "@/lib/os/raise-model";
 import {
   ALLOC_LABEL,
   ALLOC_STATUSES,
+  spvBackers,
   spvNext,
   spvUpdateText,
   summarizeSpv,
@@ -14,6 +15,7 @@ import {
   SPV_STATUSES,
   SPV_STEPS,
   type AllocStatus,
+  type Backer,
   type Spv,
   type SpvBook,
   type SpvStatus,
@@ -151,7 +153,7 @@ export function SpvDetail({ initial, id, backHref, dealHref, lps, now }: { initi
         <Steps spv={spv} busy={busy} onSave={(steps) => run({ op: "update", steps }, "Checklist saved.")} />
       </div>
 
-      <Allocations spv={spv} lps={lps} busy={busy} run={run} />
+      <Allocations spv={spv} lps={lps} busy={busy} run={run} backers={spvBackers(book)} />
 
       <Notes spv={spv} busy={busy} onSave={(fields) => run({ op: "update", ...fields }, "Saved.")} />
     </div>
@@ -221,12 +223,14 @@ function Steps({ spv, busy, onSave }: { spv: Spv; busy: boolean; onSave: (steps:
   );
 }
 
-function Allocations({ spv, lps, busy, run }: { spv: Spv; lps: Lp[]; busy: boolean; run: (op: Record<string, unknown>, done: string) => Promise<boolean> }) {
+function Allocations({ spv, lps, busy, run, backers }: { spv: Spv; lps: Lp[]; busy: boolean; run: (op: Record<string, unknown>, done: string) => Promise<boolean>; backers: Backer[] }) {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<AllocStatus>("soft");
   const match = lps.find((lp) => lp.name.toLowerCase() === name.trim().toLowerCase());
   const total = spv.allocations.reduce((sum, row) => sum + row.amount_usd, 0);
+  const inThis = new Set(spv.allocations.flatMap((row) => [row.person_id ? `p:${row.person_id}` : "", `n:${row.name.trim().toLowerCase()}`]));
+  const past = backers.filter((row) => !inThis.has(row.key) && !inThis.has(`n:${row.name.toLowerCase()}`)).slice(0, 8);
   return (
     <section className="sx-card" aria-label="Allocations">
       <h2 className="sx-h2">
@@ -256,6 +260,26 @@ function Allocations({ spv, lps, busy, run }: { spv: Spv; lps: Lp[]; busy: boole
       ) : (
         <p className="sx-muted">No one in yet. Add the first investor when they say yes, even a soft yes.</p>
       )}
+      {past.length ? (
+        <div className="spv-past">
+          <span className="lbl">Backed you before</span>
+          <div className="spv-past-chips">
+            {past.map((row) => (
+              <button
+                key={row.key}
+                type="button"
+                className="btn sm"
+                onClick={() => {
+                  setName(row.name);
+                  setAmount(usd(row.typical));
+                }}
+              >
+                {row.name} · {usd(row.typical)}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="spv-add">
         <label className="sx-field">
           <span className="lbl">Investor</span>
