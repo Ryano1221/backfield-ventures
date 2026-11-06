@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
+import { emailParagraphs, mergeLabel } from "@/lib/os/email-preview";
 import { sanitizePreviewHtml } from "@/lib/os/preview-html";
 import type { DecisionCompany, DecisionDetail as Detail, DecisionSwap } from "@/lib/os/types";
 
@@ -146,24 +147,52 @@ function Preview({ preview }: { preview: NonNullable<Detail["preview"]> }) {
     <div className="block pack">
       <div className="lbl">Preview what we&apos;d send</div>
       <p className="preview-flag">Preview. Nothing has been sent, and nothing sends from this view.</p>
-      <div className="preview-body">
-        {preview.subject ? (
-          <p>
-            <span className="lbl">Subject</span> {preview.subject}
-          </p>
+      <article className="preview-body mail" aria-label="Email preview">
+        <header className="mail-head">
+          {preview.subject ? <h2 className="mail-subject">{preview.subject}</h2> : null}
+          {preview.to_label ? (
+            <p className="mail-to">
+              <span className="lbl">To</span> {preview.to_label}
+            </p>
+          ) : null}
+        </header>
+        {html ? (
+          <div className="preview-html mail-text" dangerouslySetInnerHTML={{ __html: html }} />
+        ) : preview.text ? (
+          <div className="preview-text mail-text">
+            {emailParagraphs(preview.text).map((paragraph, p) => (
+              <p key={p}>
+                {paragraph.map((line, l) => (
+                  <Fragment key={l}>
+                    {l ? <br /> : null}
+                    {line.map((part, i) =>
+                      part.kind === "merge" ? (
+                        <span key={i} className="mail-merge" title={`Filled in per person${part.fallback ? `, or "${part.fallback}"` : ""}`}>
+                          {mergeLabel(part.field)}
+                        </span>
+                      ) : part.kind === "link" ? (
+                        <a key={i} href={part.value} target="_blank" rel="noopener noreferrer">
+                          {part.value}
+                        </a>
+                      ) : (
+                        <Fragment key={i}>{part.value}</Fragment>
+                      ),
+                    )}
+                  </Fragment>
+                ))}
+              </p>
+            ))}
+          </div>
         ) : null}
-        {preview.to_label ? (
-          <p>
-            <span className="lbl">To</span> {preview.to_label}
-          </p>
-        ) : null}
-        {html ? <div className="preview-html" dangerouslySetInnerHTML={{ __html: html }} /> : preview.text ? <p className="preview-text">{preview.text}</p> : null}
         {preview.attachment_label ? (
-          <p>
-            <span className="lbl">Attachment</span> {preview.attachment_label}
+          <p className="mail-attach">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" role="img" aria-label="Attachment">
+              <path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.6 8.6a2 2 0 0 1-2.8-2.8l7.9-7.9" />
+            </svg>
+            <span>{preview.attachment_label}</span>
           </p>
         ) : null}
-      </div>
+      </article>
     </div>
   );
 }
