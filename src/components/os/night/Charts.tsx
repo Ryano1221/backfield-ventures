@@ -129,3 +129,39 @@ export function StepDots({ steps, done, label }: { steps: readonly string[]; don
     </span>
   );
 }
+
+/** Columns over time, e.g. pitches per day. Peak and latest are labeled; every column has a tooltip. */
+export function Columns({ rows, label, unit }: { rows: { day: string; label: string; count: number }[]; label: string; unit: [string, string] }) {
+  const max = Math.max(1, ...rows.map((row) => row.count));
+  const total = rows.reduce((sum, row) => sum + row.count, 0);
+  const peak = rows.reduce((best, row, i) => (row.count > rows[best].count ? i : best), 0);
+  const word = (n: number) => (n === 1 ? unit[0] : unit[1]);
+  return (
+    <figure className="os-cols" aria-label={`${label}: ${total} ${word(total)}`}>
+      <div className="os-cols-plot">
+        {rows.map((row, i) => (
+          <span key={row.day} className="os-col" title={`${row.label}: ${row.count} ${word(row.count)}`}>
+            <i className={row.count ? "" : "is-zero"} style={{ height: `${row.count ? Math.max(6, (row.count / max) * 100) : 2}%` }}>
+              {(i === peak && row.count > 0) || (i === rows.length - 1 && row.count > 0) ? <em>{row.count}</em> : null}
+            </i>
+          </span>
+        ))}
+      </div>
+      <figcaption className="os-cols-axis" aria-hidden="true">
+        <span>{rows[0]?.label}</span>
+        <span>{rows[rows.length - 1]?.label}</span>
+      </figcaption>
+      <table className="sr-only">
+        <caption>{label}</caption>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.day}>
+              <th scope="row">{row.label}</th>
+              <td>{row.count}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </figure>
+  );
+}

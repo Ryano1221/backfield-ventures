@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { RATING_FILTERS, visibleDeals, ratingCounts, type DealFilter, type DealSort } from "@/lib/os/deals";
+import { pitchesByDay, RATING_FILTERS, visibleDeals, ratingCounts, type DealFilter, type DealSort } from "@/lib/os/deals";
 import type { DeskDeal } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { shownPitchRating } from "@/lib/os/pitch-rate";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
+import { Columns } from "./Charts";
 import { PortfolioCard } from "./PortfolioCard";
 import { RateControl } from "./RateControl";
 import type { Portfolio } from "@/lib/os/portfolio";
@@ -25,6 +26,8 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
   const [stage, setStage] = useState<string>("all");
   const counts = ratingCounts(deals, ratingOf);
   const rows = visibleDeals(deals, query, filter, sort, ratingOf).filter((deal) => stage === "all" || deal.status === stage);
+  const flow = deals.length ? pitchesByDay(deals, deals[0].generatedAt, 14) : [];
+  const flowTotal = flow.reduce((sum, row) => sum + row.count, 0);
   const pipeline = PIPELINE.map((step) => ({ ...step, count: deals.filter((deal) => deal.status === step.id).length }));
 
   return (
@@ -36,6 +39,15 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
       <p className="lede">
         {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
       </p>
+      {flow.length ? (
+        <section className="deal-flow" aria-label="Deal flow">
+          <div className="deal-flow-k">
+            <b>{flowTotal.toLocaleString("en-US")}</b>
+            <span>{flowTotal === 1 ? "pitch" : "pitches"} in the last 14 days</span>
+          </div>
+          <Columns rows={flow} label="Pitches per day, last 14 days" unit={["pitch", "pitches"]} />
+        </section>
+      ) : null}
       {portfolio ? <PortfolioCard portfolio={portfolio} spvHref={hrefs.spvItem} dealHref={hrefs.deal} /> : null}
       <details className="deal-terms">
         <summary>Score, rating and status</summary>

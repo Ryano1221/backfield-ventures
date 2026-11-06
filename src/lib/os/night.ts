@@ -170,6 +170,8 @@ export type DeskDeal = {
   pips: number | null;
   waiting: string | null;
   received: string;
+  /** The raw date the pitch came in, for charts. */
+  receivedIso: string;
   founder: string | null;
   domain: string | null;
   website: string | null;
@@ -743,6 +745,7 @@ function presentDeal(pitch: Pitch, generatedAt: string): DeskDeal {
     pips: scorePips(pitch.score),
     waiting: waitingLabel(pitch.received.length === 10 ? `${pitch.received}T12:00:00-06:00` : pitch.received, generatedAt),
     received: formatCt(pitch.received, pitch.received.length > 10) || pitch.received,
+    receivedIso: pitch.received,
     founder: blankToNull(pitch.founder),
     domain: pitch.domain || null,
     website: pitch.website || (pitch.domain ? `https://${pitch.domain}` : null),

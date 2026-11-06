@@ -382,3 +382,16 @@ body.os .cmd-raise .os-ring-c b { font-size: 13px; }
 body.os .spv-update { display: block; padding: 6px 20px; }
 body.os .spv-update[open] { padding-bottom: 20px; }
 body.os .spv-update[open] > * + * { margin-top: 12px; }
+body.os .os-cols { margin: 0; display: grid; gap: 6px; }
+body.os .os-cols-plot { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; align-items: end; height: 72px; padding-top: 16px; box-sizing: content-box; }
+body.os .os-col { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; }
+body.os .os-col i { position: relative; display: block; border-radius: 4px 4px 0 0; background: #123D22; }
+body.os .os-col i.is-zero { background: rgba(0, 0, 0, 0.1); border-radius: 2px; }
+body.os .os-col:hover i { background: #3E7A52; }
+body.os .os-col em { position: absolute; left: 0; right: 0; bottom: 100%; padding-bottom: 2px; font-style: normal; font-size: 11px; font-weight: 600; text-align: center; color: #000; }
+body.os .os-cols-axis { display: flex; justify-content: space-between; font-size: 11px; color: rgba(0, 0, 0, 0.55); }
+body.os .deal-flow { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; align-items: end; margin: 20px 0 8px; }
+body.os .deal-flow-k b { display: block; font-size: 32px; letter-spacing: -0.02em; line-height: 1.1; }
+body.os .deal-flow-k span { font-size: 13px; color: rgba(0, 0, 0, 0.6); }
+@media (max-width: 560px) { body.os .deal-flow { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
+body.os .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
