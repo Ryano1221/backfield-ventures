@@ -56,3 +56,25 @@ export const RATING_FILTERS: { id: DealFilter; label: string }[] = [
   ...RATING_ORDER.map((id) => ({ id, label: id.charAt(0).toUpperCase() + id.slice(1) })),
   { id: "unrated", label: "Unrated" },
 ];
+
+/** Pitches in per day for the last `days` days, oldest first, in Central time. */
+export function pitchesByDay(deals: Pick<DeskDeal, "receivedIso">[], nowIso: string, days = 14): { day: string; label: string; count: number }[] {
+  const key = (iso: string) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+    const t = Date.parse(iso);
+    return Number.isFinite(t) ? new Date(t).toLocaleDateString("en-CA", { timeZone: "America/Chicago" }) : null;
+  };
+  const today = key(nowIso);
+  if (!today) return [];
+  const counts = new Map<string, number>();
+  for (const deal of deals) {
+    const day = key(deal.receivedIso);
+    if (day) counts.set(day, (counts.get(day) ?? 0) + 1);
+  }
+  const base = Date.parse(`${today}T12:00:00Z`);
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date(base - (days - 1 - i) * 86_400_000);
+    const day = d.toISOString().slice(0, 10);
+    return { day, label: d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }), count: counts.get(day) ?? 0 };
+  });
+}
