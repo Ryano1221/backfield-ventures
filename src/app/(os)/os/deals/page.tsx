@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function DealsPage() {
+export default async function DealsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
   const page = await loadOsPage();
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
@@ -31,7 +32,7 @@ export default async function DealsPage() {
   const portfolio = buildPortfolio(parseMemos(memos), parseSpvs(spvs), (id) => companies.get(id) ?? null);
   return (
     <NightFrame onOs={isOsHost(host)} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <DealsDesk deals={deals} reviewing={model.reviewingCount} onOs={isOsHost(host)} portfolio={portfolio} />
+      <DealsDesk deals={deals} reviewing={model.reviewingCount} onOs={isOsHost(host)} portfolio={portfolio} openAdd={params.add === "1"} />
     </NightFrame>
   );
 }

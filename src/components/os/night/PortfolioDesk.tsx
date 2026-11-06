@@ -31,13 +31,13 @@ type Run = (op: Record<string, unknown>, ok: string) => Promise<boolean>;
 
 const pctText = (n: number | null) => (n == null ? "None yet" : `${(n * 100).toFixed(1)}%`);
 
-export function PortfolioDesk({ book: initial, today, deals, suggestions, dealBase, spvBase }: { book: HoldingBook; today: string; deals: DealPick[]; suggestions: Suggestion[]; dealBase: string; spvBase: string }) {
+export function PortfolioDesk({ book: initial, today, deals, suggestions, dealBase, spvBase, startOpen = false }: { book: HoldingBook; today: string; deals: DealPick[]; suggestions: Suggestion[]; dealBase: string; spvBase: string; startOpen?: boolean }) {
   const router = useRouter();
   // The API answers with the whole updated book, so the page never waits on a reload.
   const [book, setBook] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const [adding, setAdding] = useState(initial.holdings.length === 0 && suggestions.length === 0);
+  const [adding, setAdding] = useState(startOpen || (initial.holdings.length === 0 && suggestions.length === 0));
   const open = suggestions.filter((s) => !book.holdings.some((h) => h.spv_id === s.spvId));
   const all = bookMetrics(book.holdings, today);
   const byVehicle = VEHICLES.map((vehicle) => ({ vehicle, m: bookMetrics(book.holdings.filter((h) => h.vehicle === vehicle), today) })).filter((row) => row.m.count);

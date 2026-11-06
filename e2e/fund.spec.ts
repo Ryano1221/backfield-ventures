@@ -247,3 +247,17 @@ test("an SPV investor's page shows what their stake is worth and a statement to 
   await expect(statement).toHaveValue(/FIXTURE Marked Co SPV: \$50K in, marked at \$150K \(3\.00x\)\./);
   await expect(statement).toHaveValue(/before carry and fees/);
 });
+
+test("search can start work: typing 'add a holding' opens the form", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByLabel("Search people, deals, bots").fill("add a holding");
+  await page.getByRole("link", { name: /Add a holding/ }).evaluate((el: HTMLAnchorElement) => el.click());
+  await expect(page).toHaveURL(/\/os\/portfolio\?add=1/);
+  await expect(page.getByRole("form", { name: "Add a holding" })).toBeVisible();
+
+  await page.goto("/os/deals?add=1");
+  await expect(page.getByRole("form", { name: "Add a company" })).toBeVisible();
+  await page.goto("/os/spv?new=1");
+  await expect(page.getByRole("combobox", { name: "Company" })).toBeVisible();
+});
