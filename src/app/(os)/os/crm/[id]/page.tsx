@@ -8,7 +8,9 @@ import { osChromeCounts, osHrefs } from "@/lib/os/nav";
 import { loadOsPage } from "@/lib/os/page-data";
 import { InvestorHistory } from "@/components/os/night/InvestorHistory";
 import { readDoc } from "@/lib/os/doc-store";
-import { investorHistory } from "@/lib/os/investor-history";
+import { investorHistory, investorStatement } from "@/lib/os/investor-history";
+import { parseHoldings } from "@/lib/os/holdings";
+import { CopyNote } from "@/components/os/night/CopyNote";
 import { parsePipeline } from "@/lib/os/lp-pipeline";
 import { readRaise } from "@/lib/os/raise";
 import { parseSpvs } from "@/lib/os/spv";
@@ -36,18 +38,24 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const person = page.snapshot?.crm.people.find((row) => row.id === key) ?? null;
   const hrefs = osHrefs(onOs);
   const history = person
-    ? investorHistory(person, await readRaise(), parsePipeline(await readDoc("lp-pipeline").catch(() => null)), parseSpvs(await readDoc("spvs").catch(() => null)))
+    ? investorHistory(person, await readRaise(), parsePipeline(await readDoc("lp-pipeline").catch(() => null)), parseSpvs(await readDoc("spvs").catch(() => null)), parseHoldings(await readDoc("holdings").catch(() => null)))
     : null;
+  const hasMoney = history?.rows.some((row) => row.kind !== "pipeline");
   return (
     <NightFrame onOs={onOs} active="people" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       {person && page.snapshot ? (
         <>
           <PersonDesk person={buildPerson(person, page.snapshot)} peopleHref={hrefs.people} />
-          {history ? <InvestorHistory rows={history.rows} committed={history.committed} soft={history.soft} fundHref={hrefs.raise} spvHref={hrefs.spvItem} /> : null}
+          {history ? <InvestorHistory rows={history.rows} committed={history.committed} soft={history.soft} valueNow={history.valueNow} fundHref={hrefs.raise} spvHref={hrefs.spvItem} /> : null}
+          {history && hasMoney ? <CopyNote title="Statement to send" hint="Their position with Backfield, ready to paste into your own email. Nothing sends from here." text={investorStatement(person.name, history.rows, todayIso())} /> : null}
         </>
       ) : (
         <p className="t-body muted">That person is not in this snapshot.</p>
       )}
     </NightFrame>
   );
+}
+
+function todayIso(): string {
+  return new Date().toISOString();
 }

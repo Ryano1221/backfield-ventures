@@ -515,3 +515,5 @@ body.os .spv-backers a { color: #123D22; }
 body.os .spv-past { display: grid; gap: 8px; margin: 12px 0; }
 body.os .spv-past-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 body.os .spv-past-chips .btn { min-height: 44px; }
+body.os .inv-amt { text-align: right; }
+body.os .inv-mark { display: block; font-size: 12px; font-weight: 600; color: #123D22; }

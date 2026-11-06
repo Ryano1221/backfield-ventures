@@ -34,3 +34,24 @@ test("without a fund commitment, the pipeline entry shows instead", () => {
   assert.equal(h.rows[0].detail, "Interested · High (80%) confidence");
   assert.equal(h.rows[0].amount, 100000);
 });
+
+test("an SPV investor's stake is valued from the SPV's holding, and the statement reads plainly", async () => {
+  const { investorStatement } = await import("./investor-history");
+  const holdings = {
+    version: 1 as const,
+    holdings: [
+      { id: "h1", company: "Northwind", deal_id: null, spv_id: "s1", vehicle: "spv" as const, instrument: "safe" as const, invested_usd: 500000, date: "2025-01-01", valuation_usd: 10000000, ownership_pct: null, status: "active" as const, marks: [{ id: "m", date: "2026-06-01", value_usd: 1500000, note: "" }], distributions: [], notes: "", created_at: NOW, updated_at: NOW },
+    ],
+  };
+  const h = investorHistory({ id: "p1", name: "Ada North" }, EMPTY_LEDGER, EMPTY_PIPELINE, spvs, holdings);
+  const row = h.rows.find((r) => r.kind === "spv")!;
+  assert.equal(row.moic, 3);
+  assert.equal(row.value, 150000);
+  assert.equal(h.valueNow, 150000);
+  const text = investorStatement("Ada North", h.rows, "2026-11-06");
+  assert.match(text, /^Hi Ada,/);
+  assert.match(text, /as of November 6, 2026/);
+  assert.match(text, /Northwind SPV: \$50K in, marked at \$150K \(3\.00x\)\./);
+  assert.match(text, /before carry and fees/);
+  assert.doesNotMatch(text, /Someone Else/);
+});
