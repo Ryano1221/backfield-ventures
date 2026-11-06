@@ -34,6 +34,17 @@ export function DealsDesk({ deals, reviewing, onOs }: { deals: DeskDeal[]; revie
       <p className="lede">
         {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
       </p>
+      <details className="deal-terms">
+        <summary>Score, rating and status</summary>
+        <dl>
+          <dt>Score</dt>
+          <dd>The number the office gives each pitch. A starting point, not a decision.</dd>
+          <dt>Rating</dt>
+          <dd>Yours: great, good, maybe or no.</dd>
+          <dt>Status</dt>
+          <dd>Where the pitch sits: new, reviewing, advanced or passed.</dd>
+        </dl>
+      </details>
       <nav className="deal-pipeline" aria-label="Pipeline">
         {pipeline.map((step) => (
           <button key={step.id} type="button" aria-pressed={stage === step.id} onClick={() => setStage((current) => (current === step.id ? "all" : step.id))}>
