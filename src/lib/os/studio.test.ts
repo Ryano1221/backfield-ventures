@@ -93,3 +93,15 @@ test("contentWaiting lists only drafts in review, by item", async () => {
   studio = step(studio, { op: "archive", id: "c_1", archived: true });
   assert.deepEqual(contentWaiting(studio), []);
 });
+
+test("a newsletter template becomes a new draft that cannot be approved until its prompts are filled", () => {
+  const made = applyStudioOp(EMPTY_STUDIO, { op: "create", title: "November Handoff", source_kind: "note", channels: ["newsletter", "x"], template: "handoff" }, NOW, () => "c_t");
+  assert.equal(made.ok, true);
+  if (!made.ok) return;
+  const [letter, post] = made.studio.items[0].drafts;
+  assert.match(letter.subject, /^The Handoff, Issue/);
+  assert.equal(post.body, "");
+  assert.ok(checkDraft(letter).some((c) => c.level === "block" && c.text.includes("bracketed")));
+  const blocked = applyStudioOp(made.studio, { op: "set_status", id: "c_t", channel: "newsletter", status: "approved" }, NOW);
+  assert.equal(blocked.ok, false);
+});
