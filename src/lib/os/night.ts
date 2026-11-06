@@ -1,4 +1,5 @@
 import { trackedCompanies, type CompanyExtras } from "./companies";
+import { warmth, type WarmthBand } from "./warmth";
 import { storedDecisionAnswer, type AnswerLabel } from "./decision-merge";
 import { decisionKey } from "./decision-id";
 import { displayParty } from "./interactions";
@@ -221,6 +222,11 @@ export type PeopleRow = {
   stage: string | null;
   stageLabel: string | null;
   warm: boolean;
+  /** 0 to 100 from stage and last touch; see warmth.ts. */
+  warmth: number;
+  band: WarmthBand;
+  goingCold: boolean;
+  daysQuiet: number | null;
   imIn: boolean;
   lp: boolean;
   last: string | null;
@@ -804,7 +810,12 @@ function pitchStatusLabel(status: string): string {
 
 function presentPersonRow(person: CrmPerson, generatedAt: string, useImIn: boolean, useLp: boolean): PeopleRow {
   const stage = stageKey(person);
+  const heat = warmth(stage, person.last_touch_at, Date.parse(generatedAt) || 0);
   return {
+    warmth: heat.score,
+    band: heat.band,
+    goingCold: heat.goingCold,
+    daysQuiet: heat.days,
     id: person.id,
     name: person.name,
     firm: blankToNull(person.firm),

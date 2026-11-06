@@ -1,6 +1,7 @@
 "use client";
 
 import { Ring } from "./Charts";
+import { BAND_LABEL, type WarmthBand } from "@/lib/os/warmth";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { imInChipCount, rowsForStage, stageChipCount, type PeopleRow, type StageCount } from "@/lib/os/night";
@@ -72,6 +73,7 @@ export function PeopleDesk({
           </Ring>
         ) : null}
       </div>
+      <GoingCold rows={rows} hrefs={hrefs} />
       <PeopleList
         hrefs={hrefs}
         rows={rows}
@@ -206,7 +208,12 @@ function PeopleList({
                       {row.imIn && row.stage !== "im_in" ? <span className="tag warm">I&apos;m in</span> : null}
                     </span>
                   </td>
-                  <td className="hm" data-label="Last touch">{row.lastAge || row.last || ""}</td>
+                  <td className="hm" data-label="Last touch">
+                    <span className="heat-cell">
+                      <Heat band={row.band} score={row.warmth} />
+                      {row.lastAge || row.last || "Never"}
+                    </span>
+                  </td>
                   <td className="nx" data-label="Next step">{row.next || ""}</td>
                 </tr>
               ))}
@@ -229,5 +236,43 @@ function PeopleList({
         ) : null}
       </p>
     </>
+  );
+}
+
+const BARS: Record<WarmthBand, number> = { hot: 4, warm: 3, cooling: 2, cold: 1 };
+
+/** Four bars: hot, warm, cooling, cold. The label carries it for screen readers. */
+function Heat({ band, score }: { band: WarmthBand; score: number }) {
+  return (
+    <span className={`heat is-${band}`} role="img" aria-label={`${BAND_LABEL[band]} (${score})`} title={`${BAND_LABEL[band]} · ${score} of 100`}>
+      {[1, 2, 3, 4].map((n) => (
+        <i key={n} className={n <= BARS[band] ? "on" : ""} />
+      ))}
+    </span>
+  );
+}
+
+/** Engaged people you haven't touched in three weeks, warmest first. */
+function GoingCold({ rows, hrefs }: { rows: PeopleRow[]; hrefs: ReturnType<typeof osHrefs> }) {
+  const cold = rows.filter((row) => row.goingCold).sort((a, b) => b.warmth - a.warmth || (b.daysQuiet ?? 999) - (a.daysQuiet ?? 999));
+  if (!cold.length) return null;
+  return (
+    <section className="sx-card going-cold" aria-label="Going cold">
+      <h2 className="sx-h2">Going cold · {cold.length}</h2>
+      <p className="sx-hint">Already engaged, but nothing from you in three weeks or more.</p>
+      <ul className="inv-rows">
+        {cold.slice(0, 6).map((row) => (
+          <li key={row.id}>
+            <Link href={hrefs.person(row.id)} prefetch>
+              <b>{row.name}</b>
+              <span>
+                {[row.stageLabel, row.firm].filter(Boolean).join(" · ")}
+              </span>
+            </Link>
+            <span className="inv-amt">{row.daysQuiet == null ? "Never touched" : `${row.daysQuiet} days quiet`}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
