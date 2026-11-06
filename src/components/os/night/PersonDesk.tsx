@@ -23,18 +23,17 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
               ))}
             </div>
           ) : null}
+          {person.next ? (
+            <div className="next person-next" id="next">
+              <div>
+                <div className="lbl">{person.nextWhen ? `Next step · due ${person.nextWhen}` : "Next step"}</div>
+                <p className="t">{person.next}</p>
+              </div>
+            </div>
+          ) : null}
         </div>
         <PersonActions person={person} />
       </div>
-      {person.next ? (
-        <div className="next" id="next">
-          <div>
-            <div className="lbl">Next step</div>
-            <div className="t">{person.nextWhen ? `${person.nextWhen}` : "Next"}</div>
-            <p className="t-body" style={{ marginTop: 8 }}>{person.next}</p>
-          </div>
-        </div>
-      ) : null}
       <div className="dgrid" style={{ marginTop: 48 }}>
         <div>
           {person.history.length ? (

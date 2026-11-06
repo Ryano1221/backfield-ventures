@@ -51,14 +51,21 @@ export function waitingTitle(action: OsAction): string {
     if (choice === "edit") return "Edit";
     return "Decision";
   }
-  if (action.type === "rate") return rating ? `Rated ${rating}` : "Rating";
+  if (action.type === "rate") return rating ? `Rated ${rating.charAt(0).toUpperCase()}${rating.slice(1)}` : "Rating";
   if ((action.type === "free_text" || action.type === "bot_request") && text) return text.slice(0, 140);
   return WAITING_LABEL[action.type] || "Saved";
 }
 
 export function waitingWho(action: OsAction, snapshot: Snapshot | null): string | null {
-  if (!snapshot) return null;
   const id = action.target_id;
+  // Bot actions and asks are addressed to a bot name or a director key.
+  if (action.type === "bot_pause" || action.type === "bot_resume" || action.type === "bot_request" || action.type === "free_text") {
+    const key = id.trim().toLowerCase();
+    if (!key || key === "executive" || key === "ryan") return action.type === "free_text" ? "The office" : id.trim() || null;
+    const bot = snapshot?.bots.bots.find((row) => row.name.toLowerCase() === key || (row.slug || "").toLowerCase() === key);
+    return bot?.name ?? id.trim();
+  }
+  if (!snapshot) return null;
   const person = snapshot.crm.people.find((row) => row.id === id);
   if (person?.name) return person.name;
   const pitch = snapshot.pitches.find((row) => row.id === id);
@@ -70,4 +77,9 @@ export function waitingWho(action: OsAction, snapshot: Snapshot | null): string 
     if (titled && !titled.includes("_") && titled.length < 80) return titled;
   }
   return null;
+}
+
+/** Newest first, so the latest ask is at the top of Waiting. */
+export function waitingNewestFirst(actions: OsAction[]): OsAction[] {
+  return [...waitingActions(actions)].sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
 }

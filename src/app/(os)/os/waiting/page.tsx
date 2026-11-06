@@ -5,7 +5,8 @@ import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts } from "@/lib/os/nav";
 import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
-import { waitingActions, waitingTitle, waitingWho } from "@/lib/os/waiting";
+import { relativeTime } from "@/lib/os/bot-desk";
+import { waitingNewestFirst, waitingTitle, waitingWho } from "@/lib/os/waiting";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,8 @@ export default async function WaitingPage() {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const model = buildToday(page.snapshot, page.actions);
-  const rows = waitingActions(page.actions);
+  const rows = waitingNewestFirst(page.actions);
+  const now = readClock();
   return (
     <NightFrame onOs={isOsHost(host)} active="waiting" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <div className="lbl eyebrow">Waiting</div>
@@ -31,7 +33,9 @@ export default async function WaitingPage() {
             <li key={row.action_id}>
               <b>{waitingTitle(row)}</b>
               {waitingWho(row, page.snapshot) ? <span>{waitingWho(row, page.snapshot)}</span> : null}
-              <span className="lbl">Not picked up</span>
+              <span className="lbl">
+                {[relativeTime(row.created_at, now), "Not picked up"].filter(Boolean).join(" · ")}
+              </span>
             </li>
           ))}
         </ul>
@@ -40,4 +44,9 @@ export default async function WaitingPage() {
       )}
     </NightFrame>
   );
+}
+
+/** Request time, read once per render of this server page. */
+function readClock() {
+  return Date.now();
 }

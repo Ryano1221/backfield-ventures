@@ -38,7 +38,7 @@ export function DealDetail({ deal, dealsHref }: { deal: DeskDeal; dealsHref: str
         <Field label="Website" value={deal.website} source={source("website")} />
         <Field label="Deck" value={deal.deckUrl} source={source("deck_url") || source("deck")} />
         <Field label="Deck note" value={deal.deckNote} source={source("deck_note")} />
-        <Field label="Rating" value={deal.loggedRating} source={source("ryan_rating")} />
+        <Field label="Rating" value={deal.loggedRating ? deal.loggedRating.charAt(0).toUpperCase() + deal.loggedRating.slice(1) : deal.loggedRating} source={source("ryan_rating")} />
       </dl>
     </>
   );

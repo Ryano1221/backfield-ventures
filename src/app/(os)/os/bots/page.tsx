@@ -35,6 +35,14 @@ export default async function BotsPage() {
       ) : (
         <p className="t-body muted bots-lede">The office fills in when the snapshot arrives.</p>
       )}
+      {desk.usage ? (
+        <p className="bots-usage-line">
+          <b>Usage</b>{" "}
+          {[desk.usage.weekly, desk.usage.onDemand ? `${desk.usage.onDemand} on demand this cycle` : null, desk.usage.reset ? `resets ${desk.usage.reset}` : null]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      ) : null}
       <OfficeSwitch desk={desk} office={office} interactions={page.snapshot?.interactions ?? []} now={now} decisionRoot={onOs ? "/d" : "/os/d"} />
     </NightFrame>
   );
