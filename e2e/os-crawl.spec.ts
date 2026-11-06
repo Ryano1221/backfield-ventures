@@ -349,8 +349,13 @@ async function openBotSheets(
   }
 }
 
-async function tapControls(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
-  const plan = await page.evaluate((needles) => {
+type TapItem = { i: string; name: string; href: string; target: string; kind: string };
+
+// Marks the controls to tap with data-crawl-i and returns them in page order.
+async function markControls(page: Page): Promise<TapItem[]> {
+  return page.evaluate((needles) => {
+    // Drop marks from an earlier pass so ids never point at two elements.
+    for (const old of document.querySelectorAll("[data-crawl-i]")) old.removeAttribute("data-crawl-i");
     const visible = (el: Element) => {
       const node = el as HTMLElement;
       const style = getComputedStyle(node);
@@ -384,13 +389,40 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       if (items.length >= 24) break;
     }
     return items;
-  }, EDGE_NEEDLES).catch(async (error: unknown) => {
+  }, EDGE_NEEDLES);
+}
+
+async function tapControls(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
+  let marked: TapItem[];
+  try {
+    marked = await markControls(page);
+  } catch (error) {
     await note(route, "tap", error instanceof Error ? error.message : String(error));
-    return [] as { i: string; name: string; href: string; target: string; kind: string }[];
-  });
+    return;
+  }
+  const routePath = new URL(route, page.url()).pathname;
+  const leaves = (item: TapItem) => {
+    if (!item.href || item.target === "_blank" || /^(mailto|tel|javascript):/.test(item.href)) return false;
+    return new URL(item.href, page.url()).pathname !== routePath;
+  };
+  const keyOf = (item: TapItem) => `${item.kind}|${item.name}|${item.href}`;
+  // Links that leave the page go last, so every in-page control is tapped first.
+  const plan = [...marked.filter((item) => !leaves(item)), ...marked.filter(leaves)];
+  // Coming back to the route renders a fresh DOM without the marks, so mark it again
+  // and look each remaining control up by what it is, not by its old id.
+  let current = new Map(marked.map((item) => [keyOf(item), item.i]));
+  const returnTo = async () => {
+    if (new URL(page.url()).pathname !== routePath) {
+      await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => undefined);
+    }
+    await page.getByRole("heading", { level: 1 }).first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+    current = new Map((await markControls(page).catch(() => [] as TapItem[])).map((item) => [keyOf(item), item.i]));
+  };
 
   for (const item of plan) {
-    const el = page.locator(`[data-crawl-i="${item.i}"]`);
+    const id = current.get(keyOf(item));
+    if (!id) continue;
+    const el = page.locator(`[data-crawl-i="${id}"]`);
     if (!(await el.count())) continue;
     if (!(await el.isVisible().catch(() => false))) continue;
     if (await el.evaluate((node) => (node as HTMLButtonElement).disabled || node.getAttribute("aria-disabled") === "true").catch(() => false)) continue;
@@ -422,19 +454,29 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       return false;
     });
     if (!clicked) continue;
-    await page.waitForTimeout(120);
-    const afterUrl = page.url();
-    if (new URL(afterUrl).pathname !== new URL(beforeUrl).pathname) {
-      await page.goBack({ waitUntil: "domcontentloaded", timeout: 8_000 }).catch(async () => {
-        await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-      });
+    const beforePath = new URL(beforeUrl).pathname;
+    if (leaves(item)) {
+      // A client-side navigation can land well after the click, so wait for it
+      // instead of checking the URL once.
+      const moved = await page
+        .waitForURL((url) => url.pathname !== beforePath, { timeout: 8_000, waitUntil: "commit" })
+        .then(() => true)
+        .catch(() => false);
+      if (!moved) await note(route, "tap", `${item.name || item.href} did not navigate`);
+      await returnTo();
       continue;
     }
+    await page.waitForTimeout(120);
     let after = await signature(page);
     const started = Date.now();
     while (before && after === before && Date.now() - started < 700) {
       await page.waitForTimeout(100);
       after = await signature(page);
+    }
+    // A button can navigate too (router.push after a save); come back before the next tap.
+    if (new URL(page.url()).pathname !== beforePath) {
+      await returnTo();
+      continue;
     }
     if (before && after === before) await note(route, "tap", `${item.name || item.href || item.kind} did nothing`);
     if ((await page.locator("[role='dialog']").count()) > 0) {
