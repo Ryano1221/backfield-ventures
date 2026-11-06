@@ -1,6 +1,7 @@
 "use client";
 
 import { StackBar } from "./Charts";
+import { BotAvatar, DEPT, DeptGlyph, deptOf } from "./BotAvatar";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BotDesk, DeskBot, DeskFilter, RoutineView } from "@/lib/os/bot-desk";
 import { botMatches, groupTeams } from "@/lib/os/bot-desk";
@@ -111,8 +112,13 @@ export function OfficeSwitch({
               {needs.map((bot) => (
                 <article key={bot.id} className="bots-need">
                   <button type="button" className="bots-need-open" onClick={() => setSelected(bot.id)}>
-                    <span className="bots-need-name">{bot.name}</span>
-                    <Status bot={bot} />
+                    <span className="bots-id">
+                      <BotAvatar team={bot.team} status={bot.status} />
+                      <span className="bots-id-text">
+                        <span className="bots-need-name">{bot.name}</span>
+                        <Status bot={bot} />
+                      </span>
+                    </span>
                     {bot.result ? <span className="bots-need-result">{summarizeBotResult(bot.result)}</span> : null}
                   </button>
                   <When relative={bot.relative} ct={bot.ct} />
@@ -159,7 +165,12 @@ export function OfficeSwitch({
             <section key={team.name} className="bots-block" aria-labelledby={`${panelId}-h`}>
               <h2 id={`${panelId}-h`}>
                 <button type="button" className="bots-team" aria-expanded={open} aria-controls={panelId} onClick={() => setClosed((current) => ({ ...current, [team.name]: open }))}>
-                  <span>{team.name}</span>
+                  <span className="bots-team-name" style={{ ["--dept" as string]: DEPT[deptOf(team.name)].color }}>
+                    <span className="bots-team-glyph">
+                      <DeptGlyph dept={deptOf(team.name)} size={16} />
+                    </span>
+                    {team.name}
+                  </span>
                   <span className="bots-team-n">{team.bots.length}</span>
                   <span aria-hidden>{open ? "▾" : "▸"}</span>
                 </button>
@@ -169,11 +180,13 @@ export function OfficeSwitch({
                   {team.bots.map((bot) => (
                     <article key={bot.id} className="bots-person">
                       <button type="button" className="bots-person-open" onClick={() => setSelected(bot.id)}>
-                        <span className="bots-person-top">
-                          <span className="bots-person-name">{bot.name}</span>
-                          <span className="bots-team-chip">{bot.team}</span>
+                        <span className="bots-id">
+                          <BotAvatar team={bot.team} status={bot.status} />
+                          <span className="bots-id-text">
+                            <span className="bots-person-name">{bot.name}</span>
+                            <Status bot={bot} />
+                          </span>
                         </span>
-                        <Status bot={bot} />
                       </button>
                       <When relative={bot.relative} ct={bot.ct} />
                       {bot.nextRun ? <p className="bots-next">Next {bot.nextRun}</p> : null}
@@ -265,12 +278,26 @@ function Summary({
         ]}
       />
       <div className="segment bots-sum" role="group" aria-label="Filter bots">
-        {row.map((chip) => (
-          <button key={chip.id} type="button" aria-pressed={filter === chip.id} onClick={() => onFilter(chip.id)}>
-            <span>{chip.label}</span>
-            <b className="num">{chip.count.toLocaleString("en-US")}</b>
-          </button>
-        ))}
+        {row.map((chip) => {
+          const members = desk.bots.filter((bot) => (chip.id === "needs" ? bot.status === "Needs Ryan" : chip.id === "working" ? bot.status === "Working" : bot.doneToday));
+          return (
+            <button key={chip.id} type="button" className={`bots-tile is-${chip.id}`} aria-pressed={filter === chip.id} onClick={() => onFilter(chip.id)}>
+              <span className="bots-tile-label">
+                {chip.id === "working" && chip.count ? <i className="bots-live" aria-hidden="true" /> : null}
+                {chip.label}
+              </span>
+              <b className="num">{chip.count.toLocaleString("en-US")}</b>
+              {members.length ? (
+                <span className="bots-stack" aria-hidden="true">
+                  {members.slice(0, 5).map((bot) => (
+                    <BotAvatar key={bot.id} team={bot.team} size={28} />
+                  ))}
+                  {members.length > 5 ? <span className="bots-stack-more">+{members.length - 5}</span> : null}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
       </div>
       {counts.failedRoutines > 0 ? (
         <button type="button" className="bots-failed" onClick={onRoutines}>
@@ -360,7 +387,10 @@ function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: 
         <button ref={closeRef} type="button" className="bots-sheet-close" onClick={onClose}>
           Close
         </button>
-        <h2 id={titleId} className="bots-sheet-name">{bot.name}</h2>
+        <div className="bots-sheet-id">
+          <BotAvatar team={bot.team} status={bot.status} size={64} />
+          <h2 id={titleId} className="bots-sheet-name">{bot.name}</h2>
+        </div>
         <p className="bots-sheet-meta">
           {bot.team}
           {bot.role && bot.role.toLowerCase() !== bot.team.toLowerCase() ? ` · ${bot.role}` : ""}

@@ -1,5 +1,6 @@
 "use client";
 
+import { DEPT, DeptGlyph, deptOf } from "./BotAvatar";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { DeskBot } from "@/lib/os/bot-desk";
 import {
@@ -376,6 +377,9 @@ function NodeGlyph({ node, point, pressed, onPick }: { node: FlowNode; point: Po
     [node.counts.idle, IDLE],
     [node.counts.paused, PAUSED],
   ] as const;
+  const isRyan = /ryan/i.test(node.label);
+  const dept = deptOf(node.label);
+  const glyph = Math.round(Math.min(18, point.r * 0.55));
   const label = `${node.label}, ${node.count} ${node.count === 1 ? "bot" : "bots"}${node.counts.needs ? `, ${node.counts.needs} need you` : ""}`;
   return (
     <g
@@ -416,8 +420,13 @@ function NodeGlyph({ node, point, pressed, onPick }: { node: FlowNode; point: Po
             return circle;
           })
         : null}
-      <circle className="flow-fill" r={point.r} />
-      <text className="flow-count" y={1} dominantBaseline="middle">
+      <circle className="flow-fill" r={point.r} style={isRyan ? undefined : { fill: DEPT[dept].color, stroke: DEPT[dept].color }} />
+      {!isRyan && point.r >= 22 ? (
+        <g transform={`translate(${-glyph / 2} ${-point.r * 0.55})`} className="flow-glyph">
+          <DeptGlyph dept={dept} size={glyph} />
+        </g>
+      ) : null}
+      <text className="flow-count" y={!isRyan && point.r >= 22 ? point.r * 0.3 : 1} dominantBaseline="middle">
         {node.count}
       </text>
       <text className="flow-name" y={point.r + 16}>
