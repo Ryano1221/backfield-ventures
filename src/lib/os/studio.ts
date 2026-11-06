@@ -89,11 +89,52 @@ const MAX_REVISIONS = 20;
 
 export type Check = { level: "block" | "warn"; text: string };
 
+/**
+ * Newsletter starting points. Each creates a new draft; the [bracketed] parts
+ * are prompts, and approval stays blocked until every one is replaced.
+ */
+export const NEWSLETTER_TEMPLATES = {
+  handoff: {
+    label: "The Handoff",
+    subject: "The Handoff, Issue [number]: [Brand A], [Brand B] and [Brand C]",
+    preview: "[One line on this month's three brands]",
+    body: [
+      "Hi there,",
+      "[Opener: what you saw this month and why these three brands.]",
+      "01 / [Category]\n[Brand A]\n[Two or three short paragraphs on what it makes and why it is impressive. Every fact links to a public source.]",
+      "02 / [Category]\n[Brand B]\n[Same shape as above.]",
+      "03 / [Category]\n[Brand C]\n[Same shape as above.]",
+      "Got a consumer or sports company I should look at? Reply to this email.",
+      "Ryan",
+    ].join("\n\n"),
+  },
+  best3: {
+    label: "Best 3",
+    subject: "Three companies worth a look ([Month] [Year])",
+    preview: "[One line on why these three]",
+    body: [
+      "Hi there,",
+      "Here are three companies I thought you might like. Let me know if you want to know more or want an intro.",
+      "1. [Company one] ([link])\n[One or two plain sentences: what it makes, where it sells, and the public fact that made you pick it.]",
+      "2. [Company two] ([link])\n[Same shape as above.]",
+      "3. [Company three] ([link])\n[Same shape as above.]",
+      "Reply for an intro.",
+      "Best,\nRyan",
+    ].join("\n\n"),
+  },
+} as const;
+export type NewsletterTemplate = keyof typeof NEWSLETTER_TEMPLATES;
+
+const PLACEHOLDER = /\[[^\]\n]{2,}\]/;
+
 /** What stands between a draft and approval. Blocking checks stop the Approve button. */
 export function checkDraft(draft: Pick<Draft, "channel" | "subject" | "preview" | "body" | "image_url">, item?: Pick<ContentItem, "sources">): Check[] {
   const out: Check[] = [];
   const body = draft.body.trim();
   if (!body) out.push({ level: "block", text: "The draft is empty." });
+  if (PLACEHOLDER.test(body) || PLACEHOLDER.test(draft.subject) || PLACEHOLDER.test(draft.preview)) {
+    out.push({ level: "block", text: "Replace the [bracketed] template prompts." });
+  }
   if (body.length > LIMITS[draft.channel]) out.push({ level: "block", text: `${body.length.toLocaleString("en-US")} characters. ${CHANNEL_LABEL[draft.channel]} allows ${LIMITS[draft.channel].toLocaleString("en-US")}.` });
   if (draft.channel === "newsletter") {
     if (!draft.subject.trim()) out.push({ level: "block", text: "Add a subject line." });
@@ -138,7 +179,7 @@ export function nextAction(item: ContentItem): string {
 }
 
 export type StudioOp =
-  | { op: "create"; title: string; source_kind: string; source_ref?: string; brief?: string; channels: string[]; owner?: string }
+  | { op: "create"; title: string; source_kind: string; source_ref?: string; brief?: string; channels: string[]; owner?: string; template?: string }
   | { op: "update_item"; id: string; title?: string; brief?: string; source_kind?: string; source_ref?: string; owner?: string }
   | { op: "add_source"; id: string; url: string; note?: string }
   | { op: "remove_source"; id: string; url: string }
@@ -175,7 +216,11 @@ export function applyStudioOp(studio: Studio, raw: unknown, now = new Date().toI
       archived: false,
       created_at: now,
       updated_at: now,
-      drafts: channels.map((channel) => emptyDraft(channel, now)),
+      drafts: channels.map((channel) => {
+        const draft = emptyDraft(channel, now);
+        const template = channel === "newsletter" && typeof op.template === "string" && op.template in NEWSLETTER_TEMPLATES ? NEWSLETTER_TEMPLATES[op.template as NewsletterTemplate] : null;
+        return template ? { ...draft, subject: template.subject, preview: template.preview, body: template.body } : draft;
+      }),
     });
     return { ok: true, studio: { version: 1, items }, id };
   }
