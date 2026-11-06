@@ -5,6 +5,7 @@ import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts } from "@/lib/os/nav";
 import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
+import { groupActivityByDay } from "@/lib/os/activity";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +26,20 @@ export default async function ActivityPage() {
       {page.model.activity.length === 0 ? (
         <p className="t-body muted" style={{ marginTop: 24 }}>No activity in this snapshot.</p>
       ) : (
-        <div className="tl" style={{ marginTop: 32 }}>
-          {page.model.activity.map((item) => (
-            <div className="e" key={`${item.actor}-${item.timeLabel}-${item.summary}`}>
-              <div className="lbl when">{item.timeLabel}</div>
-              <div className="what">{item.summary}</div>
-              <div className="src">{item.actor}</div>
+        groupActivityByDay(page.model.activity).map((group) => (
+          <section className="act-day" key={group.day} aria-label={group.day}>
+            <h2 className="act-h">{group.day}</h2>
+            <div className="tl">
+              {group.items.map((item) => (
+                <div className="e" key={`${item.actor}-${item.at}-${item.summary}`}>
+                  <div className="lbl when">{item.time}</div>
+                  <div className="what">{item.summary}</div>
+                  <div className="src">{item.actor}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </section>
+        ))
       )}
     </NightFrame>
   );

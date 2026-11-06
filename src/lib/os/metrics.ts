@@ -57,7 +57,7 @@ export type DashboardModel = {
   usage: { weekly: string | null; onDemand: string | null; reset: string | null } | null;
   outreach: OutreachView[];
   decisions: { title: string; sinceLabel: string; relative: string; link: string | null }[];
-  activity: { timeLabel: string; relative: string; actor: string; summary: string }[];
+  activity: { at: string; timeLabel: string; relative: string; actor: string; summary: string }[];
 };
 
 const TEAM_ORDER = ["Executive", "Investment", "Network", "Growth", "Intelligence", "Firm OS"];
@@ -128,6 +128,7 @@ export function buildDashboard(snapshot: Snapshot | null, now = Date.now()): Das
     activity: [...snapshot.activity]
       .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
       .map((item) => ({
+        at: item.timestamp,
         timeLabel: formatWhen(item.timestamp, true),
         relative: relativeTime(Date.parse(item.timestamp), now),
         actor: item.actor,
@@ -173,15 +174,21 @@ export function formatWhen(value: string, withTime = false): string {
   }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-US", {
+  if (!withTime) {
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/Chicago" }).format(date);
+  }
+  // Same shape as the rest of the OS: "Nov 3, 12:00pm CT".
+  const parts = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: withTime ? "numeric" : undefined,
-    hour: withTime ? "numeric" : undefined,
-    minute: withTime ? "2-digit" : undefined,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
     timeZone: "America/Chicago",
-    timeZoneName: withTime ? "short" : undefined,
-  }).format(date);
+  }).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  const period = get("dayPeriod").toLowerCase().replace(/\./g, "");
+  return `${get("month")} ${get("day")}, ${get("hour")}:${get("minute")}${period} CT`;
 }
 
 function presentTrack(track: OutreachTrack): OutreachView {
