@@ -1,5 +1,6 @@
 "use client";
 
+import { Ring } from "./Charts";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { imInChipCount, rowsForStage, stageChipCount, type PeopleRow, type StageCount } from "@/lib/os/night";
@@ -48,15 +49,29 @@ export function PeopleDesk({
   return (
     <>
       <div className="eyebrow lbl">Relationships</div>
-      <h1 className="d-xl">
-        {total.toLocaleString("en-US")} {total === 1 ? "person." : "people."}
-        {warm ? (
-          <>
-            <br />
-            <span className="dim">{warm.toLocaleString("en-US")} {warm === 1 ? "is" : "are"} warm.</span>
-          </>
+      <div className="people-head">
+        <h1 className="d-xl">
+          {total.toLocaleString("en-US")} {total === 1 ? "person." : "people."}
+          {warm ? (
+            <>
+              <br />
+              <span className="dim">{warm.toLocaleString("en-US")} {warm === 1 ? "is" : "are"} warm.</span>
+            </>
+          ) : null}
+        </h1>
+        {total ? (
+          <Ring
+            size={96}
+            stroke={10}
+            total={total}
+            label={`${warm} of ${total} people are warm`}
+            parts={[{ key: "warm", label: `${warm} warm`, value: warm, tone: "hard" }]}
+          >
+            <b>{Math.round((warm / total) * 100)}%</b>
+            <span>warm</span>
+          </Ring>
         ) : null}
-      </h1>
+      </div>
       <PeopleList
         hrefs={hrefs}
         rows={rows}
