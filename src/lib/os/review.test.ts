@@ -42,3 +42,9 @@ test("wires, closings, unbooked SPVs and stale marks are all caught", () => {
   assert.equal(get("fund").count, 0, "far from the close, Fund I is not an action item");
   assert.equal(get("cold").count, 1);
 });
+
+test("intro asks and untouched warm leads show up when given", () => {
+  const items = weeklyReview({ ...base, introAsks: ["Ada"], staleLeads: [] });
+  assert.equal(items.find((i) => i.key === "intros")?.detail, "Ada said yes but hasn't been asked for intros.");
+  assert.equal(items.find((i) => i.key === "leads")?.count, 0);
+});
