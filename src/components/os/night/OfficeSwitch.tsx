@@ -1,5 +1,6 @@
 "use client";
 
+import { StackBar } from "./Charts";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { BotDesk, DeskBot, DeskFilter, RoutineView } from "@/lib/os/bot-desk";
 import { botMatches, groupTeams } from "@/lib/os/bot-desk";
@@ -254,6 +255,15 @@ function Summary({
   ];
   return (
     <div className="bots-summary">
+      <StackBar
+        label="Bots by status"
+        parts={[
+          { key: "needs", label: "Need you", value: counts.needs, tone: "hard" },
+          { key: "working", label: "Working", value: counts.working, tone: "mid" },
+          { key: "idle", label: "Idle", value: counts.idle, tone: "pale" },
+          { key: "paused", label: "Paused", value: counts.paused, tone: "hatch" },
+        ]}
+      />
       <div className="segment bots-sum" role="group" aria-label="Filter bots">
         {row.map((chip) => (
           <button key={chip.id} type="button" aria-pressed={filter === chip.id} onClick={() => onFilter(chip.id)}>
