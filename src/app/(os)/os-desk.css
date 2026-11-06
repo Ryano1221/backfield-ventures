@@ -295,3 +295,13 @@ body.os .dm-check span::before { margin-right: 0; vertical-align: middle; flex: 
 /* Remove is a quiet, small action next to each allocation. */
 body.os .spv-allocs .btn { min-height: 36px; padding: 0 12px; font-size: 13px; }
 body.os .segment.spv-alloc-status { flex-wrap: nowrap; }
+
+/* ---------- Today: your work on the left, the office on the right ---------- */
+body.os .inbox-page .today-main { display: grid; gap: 24px; align-content: start; min-width: 0; }
+body.os .today-main .inbox { gap: 12px; }
+body.os .today-main .cmd-lists { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px 20px; }
+body.os .today-main .stack > h2, body.os .today-main .cmd-lists h2 { margin-top: 0; }
+body.os .today-more { justify-self: start; min-height: 44px; }
+/* The page-level row numbers are for the column itself, not the cards inside it. */
+body.os .inbox-page .today-main > .inbox,
+body.os .inbox-page .today-main > .empty-clear { grid-row: auto; grid-column: auto; }

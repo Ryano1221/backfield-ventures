@@ -51,6 +51,7 @@ export function TodayDesk({
   const view = useMemo(() => withLiveAnswers(model, actions), [actions, model]);
   const items = useMemo(() => [...view.ready, ...view.hold, ...view.open], [view]);
   const [current, setCurrent] = useState(0);
+  const [showAllBots, setShowAllBots] = useState(false);
   const selected = Math.min(current, Math.max(0, items.length - 1));
   const item = items[selected] ?? null;
   const asked = new Set(items.map((row) => (row.requestedBy || "").trim().toLowerCase()).filter(Boolean));
@@ -162,64 +163,71 @@ export function TodayDesk({
         </div>
       ) : null}
 
-      {items.length ? (
-        <ol className="inbox">
-          {items.map((decision, index) => (
-            <InboxCard
-              key={decision.id}
-              item={decision}
-              selected={index === selected}
-              href={hrefs.decision(decision.id)}
-              busy={Boolean(inflight[decision.id])}
-              onApprove={() => approve(decision)}
-              onDismiss={() => dismiss(decision)}
-              onFocus={() => setCurrent(index)}
-            />
-          ))}
-        </ol>
-      ) : (
-        <p className="empty-clear">Inbox clear.</p>
-      )}
+      {/* Left column: your work. Decisions first, then people, SPVs and content. */}
+      <div className="inbox today-main">
+        {items.length ? (
+          <ol className="inbox">
+            {items.map((decision, index) => (
+              <InboxCard
+                key={decision.id}
+                item={decision}
+                selected={index === selected}
+                href={hrefs.decision(decision.id)}
+                busy={Boolean(inflight[decision.id])}
+                onApprove={() => approve(decision)}
+                onDismiss={() => dismiss(decision)}
+                onFocus={() => setCurrent(index)}
+              />
+            ))}
+          </ol>
+        ) : (
+          <p className="empty-clear">Inbox clear.</p>
+        )}
+        {command ? <CommandLists command={command} hrefs={hrefs} part="people" /> : null}
+        {spvs.length ? (
+          <section className="stack" aria-label="SPVs closing">
+            <h2>SPVs closing</h2>
+            <ul className="bot-list">
+              {spvs.map((row) => (
+                <li key={row.id}>
+                  <Link className="note-row" href={hrefs.spvItem(row.id)} prefetch>
+                    <span className="bot-wait-name">{row.name}</span>
+                    <span className={`bot-wait-when${row.urgent ? " is-due" : ""}`}>{row.when}</span>
+                    <span className="bot-wait-sum">{row.next}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        {content.length ? (
+          <section className="stack" aria-label="Content to approve">
+            <h2>Content to approve</h2>
+            <ul className="bot-list">
+              {content.map((row) => (
+                <li key={row.id}>
+                  <Link className="note-row" href={hrefs.studioItem(row.id)} prefetch>
+                    <span className="bot-wait-name">{row.title}</span>
+                    <span className="bot-wait-when">In review</span>
+                    <span className="bot-wait-sum">{row.channels} draft waiting on your yes.</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        <NoteList label="Pre-call briefs" rows={briefs} />
+        <NoteList label="Warmups today" rows={warmups} />
+      </div>
 
+      {/* Right column: the office. What the bots did and need, and firm status. */}
       <aside className="inbox-side">
-      {command ? <CommandLists command={command} hrefs={hrefs} /> : null}
-      {spvs.length ? (
-        <section className="stack" aria-label="SPVs closing">
-          <h2>SPVs closing</h2>
-          <ul className="bot-list">
-            {spvs.map((row) => (
-              <li key={row.id}>
-                <Link className="note-row" href={hrefs.spvItem(row.id)} prefetch>
-                  <span className="bot-wait-name">{row.name}</span>
-                  <span className={`bot-wait-when${row.urgent ? " is-due" : ""}`}>{row.when}</span>
-                  <span className="bot-wait-sum">{row.next}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-      {content.length ? (
-        <section className="stack" aria-label="Content to approve">
-          <h2>Content to approve</h2>
-          <ul className="bot-list">
-            {content.map((row) => (
-              <li key={row.id}>
-                <Link className="note-row" href={hrefs.studioItem(row.id)} prefetch>
-                  <span className="bot-wait-name">{row.title}</span>
-                  <span className="bot-wait-when">In review</span>
-                  <span className="bot-wait-sum">{row.channels} draft waiting on your yes.</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      {command ? <CommandLists command={command} hrefs={hrefs} part="office" /> : null}
       {bots.length ? (
         <section className="stack" aria-label="Bots waiting on you">
           <h2>Bots waiting</h2>
           <ul className="bot-list">
-            {bots.map((bot) => (
+            {(showAllBots ? bots : bots.slice(0, 3)).map((bot) => (
               <li key={bot.slug}>
                 <details className="bot-wait">
                   <summary>
@@ -235,13 +243,16 @@ export function TodayDesk({
               </li>
             ))}
           </ul>
+          {bots.length > 3 ? (
+            <button type="button" className="btn quiet sm today-more" onClick={() => setShowAllBots((value) => !value)}>
+              {showAllBots ? "Show fewer" : `Show all ${bots.length}`}
+            </button>
+          ) : null}
         </section>
       ) : null}
 
       <OutreachWeek weeks={outreachWeeks} compact />
 
-      <NoteList label="Pre-call briefs" rows={briefs} />
-      <NoteList label="Warmups today" rows={warmups} />
       <WaitingToSend rows={answered} />
 
       <PostsAndSchedule posts={posts} schedule={schedule} />
@@ -434,10 +445,12 @@ function CommandStrip({ command, hrefs, briefs, asOf }: { command: CommandModel;
   );
 }
 
-function CommandLists({ command, hrefs }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs> }) {
-  const { bots, due } = command;
+function CommandLists({ command, hrefs, part }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs>; part: "people" | "office" }) {
+  const due = part === "people" ? command.due : [];
+  // People lists sit with Ryan's work; overnight bot results sit with the office.
+  const bots = part === "office" ? command.bots : { ...command.bots, lines: [] };
   // Someone already under follow-ups due is not listed again as an LP to chase.
-  const chase = command.chase.filter((row) => !due.some((item) => item.id === row.id));
+  const chase = part === "people" ? command.chase.filter((row) => !due.some((item) => item.id === row.id)) : [];
   return (
     <>
       {due.length || chase.length || bots.lines.length ? (
