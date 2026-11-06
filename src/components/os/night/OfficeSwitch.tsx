@@ -315,20 +315,27 @@ function RoutineRow({ routine }: { routine: RoutineView }) {
 function BotSheet({ bot, decisionRoot, onClose }: { bot: DeskBot; decisionRoot: string; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
+  // The parent passes a new onClose every render. Read it through a ref so the
+  // effect below runs once per open: focus lands on Close when the sheet
+  // opens, not again after every Pause or Resume, and Escape has one listener.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   useEffect(() => {
     closeRef.current?.focus();
     const wide = window.matchMedia("(min-width: 1101px)").matches;
     const previous = document.body.style.overflow;
     if (!wide) document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <>
