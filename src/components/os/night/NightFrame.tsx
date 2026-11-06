@@ -52,7 +52,7 @@ export function useNightActions(): NightApi {
 
 const SINGLETON = new Set<ActionType>(["decide", "pitch_status", "crm_stage", "crm_hold", "crm_dnc", "bot_pause", "bot_resume", "snooze"]);
 
-type Section = "today" | "raise" | "deals" | "people" | "bots" | "activity" | "email" | "waiting";
+type Section = "today" | "raise" | "deals" | "people" | "bots" | "activity" | "email" | "waiting" | "review";
 type NavLink = { id: Section; label: string; short: string; href: string; count: number | null };
 
 export function NightFrame({
@@ -389,6 +389,7 @@ export function NightFrame({
     { id: "email", label: "Audience Growth", short: "Growth", href: hrefs.studio, count: null },
   ];
   const ops: NavLink[] = [
+    { id: "review", label: "Weekly review", short: "Review", href: hrefs.review, count: null },
     { id: "bots", label: "Bots", short: "Bots", href: hrefs.bots, count: counts.bots ?? null },
     { id: "activity", label: "Activity", short: "Activity", href: hrefs.activity, count: null },
     { id: "waiting", label: "Waiting", short: "Waiting", href: hrefs.waiting, count: waitingCount },
