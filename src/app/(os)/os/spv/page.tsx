@@ -4,6 +4,7 @@ import { FundTabs } from "@/components/os/night/FundTabs";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { SpvDesk } from "@/components/os/night/SpvDesk";
 import { readDoc } from "@/lib/os/doc-store";
+import { loadCompanyExtras } from "@/lib/os/company-extras";
 import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts, osHrefs } from "@/lib/os/nav";
 import { buildAllDeals, buildToday } from "@/lib/os/night";
@@ -28,7 +29,7 @@ export default async function SpvPage({ searchParams }: { searchParams: Promise<
   const book = parseSpvs(await readDoc("spvs").catch(() => null));
   const one = (value: string | string[] | undefined) => (typeof value === "string" ? value.slice(0, 200) : "");
   // Every pitch, so a new SPV can be pulled straight from a deal by typing its name.
-  const deals = buildAllDeals(page.snapshot).map((deal) => ({ id: deal.id, company: deal.company, detail: [deal.stage, deal.sector, deal.status === "tracking" ? deal.source : deal.statusLabel].filter(Boolean).join(" · ") }));
+  const deals = buildAllDeals(page.snapshot, await loadCompanyExtras()).map((deal) => ({ id: deal.id, company: deal.company, detail: [deal.stage, deal.sector, deal.status === "tracking" ? deal.source : deal.statusLabel].filter(Boolean).join(" · ") }));
   const open = book.spvs.filter((spv) => spv.status !== "closed" && spv.status !== "cancelled").length;
   return (
     <NightFrame onOs={onOs} active="raise" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>

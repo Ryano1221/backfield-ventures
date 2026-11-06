@@ -454,3 +454,9 @@ body.os .deal-pipeline { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   body.os .deal-pipeline button b { font-size: 20px; }
   body.os .deal-pipeline button span { font-size: 12px; }
 }
+
+/* Investments: log a company by hand */
+body.os .add-co { display: grid; gap: 12px; margin: 16px 0 4px; justify-items: start; }
+body.os .add-co > form { width: 100%; }
+body.os .add-co-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { body.os .add-co-grid { grid-template-columns: minmax(0, 1fr); } }

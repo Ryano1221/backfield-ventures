@@ -6,7 +6,9 @@ import Link from "next/link";
 import { parseSpvs } from "@/lib/os/spv";
 import { headers } from "next/headers";
 import { DealDetail } from "@/components/os/night/DealDetail";
+import { RemoveAdded } from "@/components/os/night/RemoveAdded";
 import { NightFrame } from "@/components/os/night/NightFrame";
+import { loadCompanyExtras } from "@/lib/os/company-extras";
 import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts, osHrefs } from "@/lib/os/nav";
 import { buildDeal, buildToday } from "@/lib/os/night";
@@ -32,7 +34,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   } catch {
     key = id;
   }
-  const deal = buildDeal(page.snapshot, key);
+  const deal = buildDeal(page.snapshot, key, key.startsWith("co_") ? await loadCompanyExtras() : {});
   const memos = parseMemos(await readDoc("deal-memos").catch(() => null));
   const hrefs = osHrefs(onOs);
   const spv = deal ? parseSpvs(await readDoc("spvs").catch(() => null)).spvs.find((row) => row.deal_id === deal.id && row.status !== "cancelled") : undefined;
@@ -53,6 +55,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
           <DealMemo dealId={deal.id} initial={memos.deals[deal.id] ?? null} />
+          {deal.status === "tracking" && deal.source?.includes("added by you") ? <RemoveAdded name={deal.company} backHref={hrefs.deals} /> : null}
         </>
       ) : (
         <p className="t-body muted">That pitch is not in this snapshot.</p>
