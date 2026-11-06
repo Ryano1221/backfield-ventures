@@ -24,7 +24,7 @@ export default async function WaitingPage() {
   const now = readClock();
   return (
     <NightFrame onOs={isOsHost(host)} active="waiting" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <div className="lbl eyebrow">Waiting</div>
+      <div className="lbl eyebrow">Operations</div>
       <h1 className="d-xl">{rows.length.toLocaleString("en-US")} with the office.</h1>
       <p className="lede">These are saved here. The office has not picked them up yet.</p>
       {rows.length ? (

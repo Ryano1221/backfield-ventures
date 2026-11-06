@@ -416,9 +416,11 @@ function CommandStrip({ command, hrefs, briefs, asOf }: { command: CommandModel;
 
 function CommandLists({ command, hrefs }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs> }) {
   const { bots, due } = command;
+  // Someone already under follow-ups due is not listed again as an LP to chase.
+  const chase = command.chase.filter((row) => !due.some((item) => item.id === row.id));
   return (
     <>
-      {due.length || command.chase.length || bots.lines.length ? (
+      {due.length || chase.length || bots.lines.length ? (
         <div className="cmd-lists">
           {due.length ? (
             <div id="day">
@@ -436,11 +438,11 @@ function CommandLists({ command, hrefs }: { command: CommandModel; hrefs: Return
               </ul>
             </div>
           ) : null}
-          {command.chase.length ? (
+          {chase.length ? (
             <div>
               <h2>LPs to chase</h2>
               <ul className="bot-list">
-                {command.chase.slice(0, 4).map((row) => (
+                {chase.slice(0, 4).map((row) => (
                   <li key={row.id}>
                     <Link className="note-row" href={hrefs.person(row.id)} prefetch>
                       <span className="bot-wait-name">{row.name}</span>
