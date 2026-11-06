@@ -283,6 +283,8 @@ test("dark system setting keeps the light palette and passes contrast", async ({
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(240, 237, 232)");
+    // Let entrance animations (fade and rise) finish; looping ones never do.
+    await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => null))));
     const scan = await new AxeBuilder({ page }).withRules(["color-contrast"]).exclude(".tower .hall").analyze();
     expect(scan.violations.map((v) => `${path} ${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
   }

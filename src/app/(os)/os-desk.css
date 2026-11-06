@@ -667,3 +667,38 @@ body.os .bots-needs > article:nth-child(n + 5), body.os .bots-people > article:n
 @media (prefers-reduced-motion: reduce) {
   body.os .bots-needs > article, body.os .bots-people > article, body.os .bots-sum .bots-tile, body.os .floor { animation: none; }
 }
+
+/* Motion across the OS: charts draw themselves in, cards rise a beat apart.
+   Everything here turns off under prefers-reduced-motion. */
+body.os .os-ring-seg { animation: os-ring-draw 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) both; }
+body.os .os-ring-c { animation: os-fade 0.5s ease 0.35s both; }
+body.os .os-stack-bar i { transform-origin: left center; animation: os-grow 0.75s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
+body.os .os-col i { transform-origin: bottom center; animation: os-col-rise 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
+body.os .cmd-spark i { transform-origin: bottom center; animation: os-col-rise 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
+body.os .raise-bar .hard, body.os .raise-bar .soft, body.os .spv-bar i { transform-origin: left center; animation: os-grow 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) 0.15s both; }
+body.os .heat i.on { transform-origin: bottom center; animation: os-col-rise 0.5s ease both; }
+body.os .heat i.on:nth-child(2) { animation-delay: 0.06s; }
+body.os .heat i.on:nth-child(3) { animation-delay: 0.12s; }
+body.os .heat i.on:nth-child(4) { animation-delay: 0.18s; }
+body.os .os-dots i.is-done { animation: os-pop 0.35s ease both; }
+body.os .os-dots i.is-next { animation: os-next 1.8s ease-in-out infinite; }
+
+body.os .command .cmd, body.os .port-kpi, body.os .review-area, body.os .spv-list > li, body.os .port-card, body.os .wl-card, body.os .deal-flow, body.os .inv-hist { animation: os-rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .command .cmd:nth-child(2), body.os .port-kpi:nth-child(2), body.os .review-area:nth-of-type(2), body.os .spv-list > li:nth-child(2), body.os .port-card:nth-child(2), body.os .wl-card:nth-child(2) { animation-delay: 0.05s; }
+body.os .command .cmd:nth-child(3), body.os .port-kpi:nth-child(3), body.os .review-area:nth-of-type(3), body.os .spv-list > li:nth-child(3), body.os .port-card:nth-child(3) { animation-delay: 0.1s; }
+body.os .command .cmd:nth-child(4), body.os .port-kpi:nth-child(4), body.os .review-area:nth-of-type(4), body.os .spv-list > li:nth-child(n + 4), body.os .port-card:nth-child(n + 4) { animation-delay: 0.15s; }
+body.os .port-kpi:nth-child(n + 5), body.os .review-area:nth-of-type(n + 5) { animation-delay: 0.2s; }
+body.os .command .cmd, body.os .spv-card, body.os .port-card, body.os .port-kpi, body.os .deal-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+body.os .command .cmd:hover, body.os .spv-card:hover, body.os .port-kpi:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09); }
+body.os .review-area li.is-open .review-mark { animation: os-pop 0.4s ease both; }
+
+@keyframes os-ring-draw { from { stroke-dasharray: 0 var(--c); } to { stroke-dasharray: var(--d) var(--g); } }
+@keyframes os-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes os-col-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes os-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes os-pop { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes os-next { 0%, 100% { box-shadow: inset 0 0 0 2px #123D22; } 50% { box-shadow: inset 0 0 0 2px #123D22, 0 0 0 4px rgba(18, 61, 34, 0.15); } }
+@media (prefers-reduced-motion: reduce) {
+  body.os .os-ring-seg, body.os .os-ring-c, body.os .os-stack-bar i, body.os .os-col i, body.os .cmd-spark i, body.os .raise-bar .hard, body.os .raise-bar .soft, body.os .spv-bar i, body.os .heat i.on, body.os .os-dots i, body.os .command .cmd, body.os .port-kpi, body.os .review-area, body.os .spv-list > li, body.os .port-card, body.os .wl-card, body.os .deal-flow, body.os .inv-hist, body.os .review-mark { animation: none !important; }
+  body.os .command .cmd:hover, body.os .spv-card:hover, body.os .port-kpi:hover { transform: none; }
+}
