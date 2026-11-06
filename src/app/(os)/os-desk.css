@@ -1,0 +1,15 @@
+/*
+ * Loaded after os.css. New OS rules go here so os.css stays stable.
+ */
+
+/* The decision-detail list uses details.co with a top rule. People table
+   links also use .co, so they must not inherit that rule. */
+.tbl a.co { border-top: 0; }
+
+/* Empty-state lines inside a card sit on the card's inner padding, not its edge. */
+body.os .card > p.note { margin: 0; padding: 14px 20px 16px; }
+
+/* Activity, grouped by Chicago day. */
+body.os .act-day { margin-top: 32px; }
+body.os .act-h { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+body.os .act-day .tl { margin-top: 12px; }

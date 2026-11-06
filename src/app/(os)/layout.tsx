@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./os.css";
+import "./os-desk.css";
 
 export const metadata: Metadata = {
   title: "Backfield OS",

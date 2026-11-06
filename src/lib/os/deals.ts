@@ -53,6 +53,6 @@ export function compareDeals(a: DeskDeal, b: DeskDeal, sort: DealSort, ratingOf:
 
 export const RATING_FILTERS: { id: DealFilter; label: string }[] = [
   { id: "all", label: "All" },
-  ...RATING_ORDER.map((id) => ({ id, label: id })),
+  ...RATING_ORDER.map((id) => ({ id, label: id.charAt(0).toUpperCase() + id.slice(1) })),
   { id: "unrated", label: "Unrated" },
 ];
