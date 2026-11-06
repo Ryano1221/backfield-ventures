@@ -190,3 +190,50 @@ body.os .lp-edit { display: grid; gap: 12px; margin-top: 12px; padding-top: 12px
   body.os .lp-row { grid-template-columns: minmax(0, 1fr) auto; }
   body.os .lp-money { text-align: left; }
 }
+
+/* Investments: decision, memo and diligence on each deal. */
+body.os .deal-memo { display: grid; gap: 14px; margin-top: 28px; background: #fff; border-radius: 16px; padding: 20px; min-width: 0; }
+body.os .dm-checks { display: flex; flex-wrap: wrap; gap: 8px; }
+body.os .dm-check { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid rgba(0, 0, 0, 0.14); border-radius: 999px; cursor: pointer; font-size: 15px; }
+/* The real checkbox covers the whole pill, so the tap target is the pill. */
+body.os .dm-check input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+body.os .dm-check span::before { content: ""; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px; border: 1.5px solid rgba(0, 0, 0, 0.4); border-radius: 4px; font-size: 12px; line-height: 1; color: #fff; }
+body.os .dm-check:has(input:checked) span::before { content: "✓"; background: #123D22; border-color: #123D22; }
+body.os .dm-check:has(input:checked) { border-color: #123D22; background: rgba(18, 61, 34, 0.08); }
+body.os .dm-check:has(input:focus-visible) { outline: 2px solid #123D22; outline-offset: 2px; }
+body.os .dm-next { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 700px) {
+  body.os .deal-memo { padding: 16px; }
+  body.os .dm-next { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Consistency pass ---------- */
+
+/* One section-heading style everywhere: small, bold, grey. */
+body.os .lp-pipe > h2,
+body.os .sx-h2,
+body.os .sx-col h2 { margin: 0 0 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: rgba(0, 0, 0, 0.62); }
+body.os .sx-col h2 span { color: rgba(0, 0, 0, 0.62); }
+
+/* Fund I: commitments take the full width; who to chase lives in the pipeline below. */
+body.os .raise-grid { grid-template-columns: minmax(0, 1fr); }
+
+/* Email pages use the same headline and buttons as the rest of the OS. */
+body.os .email h1 { font-size: 40px; line-height: 42px; font-weight: 700; letter-spacing: -0.03em; }
+body.os .email .primary-btn { font-size: 15px; border-radius: 12px; }
+body.os .email .split { border: 0; }
+body.os .email .checks li i { width: 12px; height: 12px; border-radius: 50%; border-color: rgba(0, 0, 0, 0.35); }
+body.os .email .checks li.pass i { background: #123D22; border-color: #123D22; }
+@media (max-width: 700px) {
+  body.os .email h1 { font-size: 34px; line-height: 36px; }
+}
+
+/* Email fields look like every other text field (the shared input rule missed type=email). */
+body.os .email input[type="email"] { background: #fff; border: 1px solid rgba(0, 0, 0, 0.16); border-radius: 12px; }
+
+/* "Try this signup" and similar actions read as buttons, not loose links. */
+body.os .email .actions .text-btn { padding: 0 16px; border: 1px solid rgba(0, 0, 0, 0.16); border-radius: 12px; background: #fff; text-decoration: none; font-size: 15px; font-weight: 600; }
+body.os .email .actions .text-btn:hover, body.os .email .actions .text-btn:focus-visible { border-color: #123D22; }
+
+/* Studio calendar entries are tap targets, not tiny inline links. */
+body.os .sx-cal ul a { display: inline-flex; align-items: center; min-height: 36px; }

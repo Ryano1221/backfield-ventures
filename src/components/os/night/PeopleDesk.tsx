@@ -47,7 +47,7 @@ export function PeopleDesk({
 
   return (
     <>
-      <div className="eyebrow lbl">People · CRM</div>
+      <div className="eyebrow lbl">Relationships</div>
       <h1 className="d-xl">
         {total.toLocaleString("en-US")} {total === 1 ? "person." : "people."}
         {warm ? (

@@ -27,7 +27,7 @@ export default async function BotsPage() {
   const desk = buildBotDesk(page.snapshot, page.actions, now);
   return (
     <NightFrame onOs={onOs} active="bots" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <div className="lbl eyebrow">Bots</div>
+      <div className="lbl eyebrow">Operations</div>
       <h1 className="d-xl">The office.</h1>
       {desk.bots.length ? (
         <p className="lede">
