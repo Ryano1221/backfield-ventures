@@ -27,7 +27,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   const hrefs = osHrefs(onOs);
   const model = buildToday(page.snapshot, page.actions);
   const [book, extras] = await Promise.all([readDoc("holdings").catch(() => null).then(parseHoldings), loadCompanyExtras()]);
-  const deals = buildAllDeals(page.snapshot, extras).map((deal) => ({ id: deal.id, company: deal.company, detail: [deal.stage, deal.sector, deal.status === "tracking" ? deal.source : deal.statusLabel].filter(Boolean).join(" · ") }));
+  const deals = buildAllDeals(page.snapshot, extras).map((deal) => ({ id: deal.id, company: deal.company, detail: [deal.stage, deal.sector, deal.status === "tracking" ? deal.source : deal.statusLabel].filter(Boolean).join(" · "), domain: deal.domain, logoUrl: deal.logoUrl }));
   const now = readClock();
   const booked = new Set(book.holdings.map((h) => h.spv_id).filter(Boolean));
   // A closed SPV with money in is a holding waiting to be recorded.

@@ -79,7 +79,7 @@ export function pitchesByDay(deals: Pick<DeskDeal, "receivedIso">[], nowIso: str
   });
 }
 
-export type DealPick = { id: string; company: string; detail: string };
+export type DealPick = { id: string; company: string; detail: string; domain?: string | null; logoUrl?: string | null };
 
 /** Deals whose company matches what Ryan has typed: starts-with first, then word starts, then anywhere. */
 export function matchDeals(deals: DealPick[], query: string, limit = 6): DealPick[] {
