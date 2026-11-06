@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -204,4 +204,28 @@ test("a holding goes on the books, gets marked at a new round, and shows its mul
 test("the holdings API needs a session", async ({ request }) => {
   const res = await request.post("/api/os/holdings", { data: { op: "create", company: "x", invested_usd: 1 } });
   expect(res.status()).toBe(401);
+});
+
+test("past SPV investors are one tap away on the next SPV", async ({ page }) => {
+  await signIn(page);
+  // A closed SPV with one committed investor.
+  await page.evaluate(async () => {
+    const post = (body: unknown) => fetch("/api/os/spvs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((res) => res.json() as Promise<{ id: string }>);
+    const { id } = await post({ op: "create", company: "FIXTURE Past Co" });
+    await post({ op: "allocate", id, name: "FIXTURE Example Investor", amount_usd: 100000, status: "committed" });
+  });
+  await page.goto("/os/spv");
+  await expect(page.getByRole("region", { name: "Your SPV investors" })).toContainText("FIXTURE Example Investor");
+  const add = page.getByRole("button", { name: "New SPV" });
+  await expect(async () => {
+    if (await add.isVisible()) await add.click();
+    await expect(page.getByRole("combobox", { name: "Company" })).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 15000 });
+  await page.getByRole("combobox", { name: "Company" }).fill(`FIXTURE Repeat Co ${Date.now()}`);
+  await page.getByRole("button", { name: "Create SPV" }).click();
+  await expect(page).toHaveURL(/\/os\/spv\/spv_/);
+  const allocs = page.getByRole("region", { name: "Allocations" });
+  await allocs.getByRole("button", { name: /^FIXTURE Example Investor/ }).click();
+  await expect(allocs.getByLabel("Investor", { exact: true })).toHaveValue("FIXTURE Example Investor");
+  await expect(allocs.getByLabel("Amount", { exact: true })).toHaveValue("$100K");
 });
