@@ -101,3 +101,42 @@ export function matchDeals(deals: DealPick[], query: string, limit = 6): DealPic
     .filter((deal) => (seen.has(deal.id) ? false : (seen.add(deal.id), true)))
     .slice(0, limit);
 }
+
+export type SourceStat = { source: string; pitches: number; advanced: number; passed: number; open: number; avgScore: number | null; liked: number };
+
+/**
+ * Which channels send the deals worth having: per source, how many pitches,
+ * how many advanced or passed, the average office score, and how many Ryan
+ * rated great or good. Tracked companies (never pitched) are left out.
+ */
+export function sourceStats(deals: Pick<DeskDeal, "source" | "status" | "score">[], ratingOf: (deal: never) => string | null = () => null): SourceStat[] {
+  const rows = new Map<string, { label: string; pitches: number; advanced: number; passed: number; open: number; scores: number[]; liked: number }>();
+  const caps = (text: string) => text.replace(/[^A-Z]/g, "").length;
+  for (const deal of deals) {
+    if (deal.status === "tracking") continue;
+    const raw = (deal.source || "Unknown").trim().replace(/^./, (c) => c.toUpperCase());
+    const source = raw.toLowerCase();
+    const row = rows.get(source) ?? { label: raw, pitches: 0, advanced: 0, passed: 0, open: 0, scores: [], liked: 0 };
+    // "linkedin" and "LinkedIn" are one channel; show the better-capitalized spelling.
+    if (caps(raw) > caps(row.label)) row.label = raw;
+    row.pitches += 1;
+    if (deal.status === "advanced") row.advanced += 1;
+    else if (deal.status === "passed") row.passed += 1;
+    else row.open += 1;
+    if (typeof deal.score === "number") row.scores.push(deal.score);
+    const rating = ratingOf(deal as never);
+    if (rating === "great" || rating === "good") row.liked += 1;
+    rows.set(source, row);
+  }
+  return [...rows.entries()]
+    .map(([, row]) => ({
+      source: row.label,
+      pitches: row.pitches,
+      advanced: row.advanced,
+      passed: row.passed,
+      open: row.open,
+      avgScore: row.scores.length ? row.scores.reduce((sum, n) => sum + n, 0) / row.scores.length : null,
+      liked: row.liked,
+    }))
+    .sort((a, b) => b.pitches - a.pitches || a.source.localeCompare(b.source));
+}

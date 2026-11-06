@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { pitchesByDay, RATING_FILTERS, visibleDeals, ratingCounts, type DealFilter, type DealSort } from "@/lib/os/deals";
+import { pitchesByDay, sourceStats, RATING_FILTERS, visibleDeals, ratingCounts, type DealFilter, type DealSort } from "@/lib/os/deals";
 import type { DeskDeal } from "@/lib/os/night";
 import { osHrefs } from "@/lib/os/nav";
 import { shownPitchRating } from "@/lib/os/pitch-rate";
@@ -31,6 +31,7 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
   const rows = visibleDeals(deals, query, filter, sort, ratingOf).filter((deal) => stage === "all" || deal.status === stage);
   const flow = deals.length ? pitchesByDay(deals, deals[0].generatedAt, 14) : [];
   const flowTotal = flow.reduce((sum, row) => sum + row.count, 0);
+  const sources = sourceStats(deals, ratingOf as (deal: never) => string | null);
   const pipeline = PIPELINE.map((step) => ({ ...step, count: deals.filter((deal) => deal.status === step.id).length }));
 
   return (
@@ -52,6 +53,37 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
           </div>
           <Columns rows={flow} label="Pitches per day, last 14 days" unit={["pitch", "pitches"]} />
         </section>
+      ) : null}
+      {sources.length > 1 ? (
+        <details className="sx-card deal-sources-card">
+          <summary>Where your deals come from · {sources.length} sources</summary>
+          <div className="spv-backers-scroll">
+            <table className="port-table">
+              <thead>
+                <tr>
+                  <th scope="col">Source</th>
+                  <th scope="col">Pitches</th>
+                  <th scope="col">Advanced</th>
+                  <th scope="col">Passed</th>
+                  <th scope="col">Avg score</th>
+                  <th scope="col">You liked</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sources.map((row) => (
+                  <tr key={row.source}>
+                    <th scope="row">{row.source}</th>
+                    <td>{row.pitches}</td>
+                    <td>{row.advanced ? `${row.advanced} (${Math.round((row.advanced / row.pitches) * 100)}%)` : "0"}</td>
+                    <td>{row.passed}</td>
+                    <td>{row.avgScore == null ? "None" : row.avgScore.toFixed(1)}</td>
+                    <td>{row.liked}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       ) : null}
       {portfolio ? <PortfolioCard portfolio={portfolio} spvHref={hrefs.spvItem} dealHref={hrefs.deal} portfolioHref={hrefs.portfolio} /> : null}
       <details className="deal-terms">
