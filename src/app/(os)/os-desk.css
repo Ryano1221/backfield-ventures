@@ -517,3 +517,18 @@ body.os .spv-past-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 body.os .spv-past-chips .btn { min-height: 44px; }
 body.os .inv-amt { text-align: right; }
 body.os .inv-mark { display: block; font-size: 12px; font-weight: 600; color: #123D22; }
+
+/* Relationships: warmth */
+body.os .heat-cell { display: inline-flex; align-items: center; gap: 8px; }
+body.os .heat { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; flex: none; }
+body.os .heat i { width: 4px; border-radius: 1px; background: rgba(0, 0, 0, 0.12); }
+body.os .heat i:nth-child(1) { height: 5px; }
+body.os .heat i:nth-child(2) { height: 8px; }
+body.os .heat i:nth-child(3) { height: 11px; }
+body.os .heat i:nth-child(4) { height: 14px; }
+body.os .heat.is-hot i.on { background: #123D22; }
+body.os .heat.is-warm i.on { background: #3E7A52; }
+body.os .heat.is-cooling i.on { background: #B07A1C; }
+body.os .heat.is-cold i.on { background: rgba(0, 0, 0, 0.35); }
+body.os .going-cold { margin: 16px 0; display: grid; gap: 8px; }
+body.os .going-cold .sx-hint { margin: 0; }
