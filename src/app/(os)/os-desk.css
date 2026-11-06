@@ -18,3 +18,15 @@ body.os .act-day .tl { margin-top: 12px; }
 /* Bots: the Office / Flow / List switch sits under the summary, not under
    the tower. The default view is the map, which runs thousands of px. */
 body.os .bots-toggle { order: 0; margin: 4px 0 20px; align-self: flex-start; }
+
+/* Person page: the name sits at the top beside the action column instead of
+   floating halfway down it. */
+body.os .phead { align-items: start; }
+
+/* Bots: firm-wide usage under the headline. */
+body.os .bots-usage-line { margin: -4px 0 16px; font-size: 13px; line-height: 20px; color: var(--e-ink2, #555); }
+body.os .bots-usage-line b { color: #000; font-weight: 600; }
+
+/* Person page: the next step sits under the name, where Ryan looks first. */
+body.os .person-next { margin-top: 24px; max-width: 640px; }
+body.os .person-next .t { margin: 6px 0 0; font-size: 18px; line-height: 26px; }
