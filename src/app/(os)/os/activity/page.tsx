@@ -21,7 +21,7 @@ export default async function ActivityPage() {
   const model = buildToday(page.snapshot, page.actions);
   return (
     <NightFrame onOs={isOsHost(host)} active="activity" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <div className="lbl eyebrow">Activity</div>
+      <div className="lbl eyebrow">Operations</div>
       <h1 className="d-xl">What ran.</h1>
       {page.model.activity.length === 0 ? (
         <p className="t-body muted" style={{ marginTop: 24 }}>No activity in this snapshot.</p>

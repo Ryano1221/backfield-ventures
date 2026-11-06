@@ -46,7 +46,7 @@ test("a pass needs a reason, and the decision is kept", async ({ page }) => {
   await memo.getByRole("group", { name: "Decision" }).getByRole("button", { name: "Pass" }).click();
   await expect(memo.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
   await memo.getByLabel(/^Why/).fill("FIXTURE reason: too early for this fund.");
-  await memo.getByText("Team", { exact: true }).click();
+  await memo.getByRole("checkbox", { name: "Team" }).check();
   await memo.getByRole("button", { name: "Save", exact: true }).click();
   await expect(memo.getByRole("status")).toHaveText("Saved.");
   await page.reload();

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { ChaseRow, FunnelStep } from "@/lib/os/command";
+import type { FunnelStep } from "@/lib/os/command";
 import type { Diagnosis } from "@/lib/os/funnel-history";
 import { COMMIT_STATUSES, summarizeRaise, usd, type CommitStatus, type Commitment, type RaiseLedger } from "@/lib/os/raise-model";
 
 const STATUS_LABEL: Record<CommitStatus, string> = { soft: "Soft circle", committed: "Committed", wired: "Wired" };
 
 /**
- * Fund I: where the raise stands, who has said yes, and who to chase next.
+ * Fund I: where the raise stands and who has said yes. Who to chase next lives
+ * in the LP pipeline below it.
  * Everything here is Ryan's own ledger; bots never write to it.
  */
 export function RaiseDesk({
@@ -17,7 +18,6 @@ export function RaiseDesk({
   funnel,
   deltas = null,
   diagnosis = null,
-  chase,
   lps,
   personRoot,
 }: {
@@ -25,7 +25,6 @@ export function RaiseDesk({
   funnel: FunnelStep[];
   deltas?: Record<string, number> | null;
   diagnosis?: Diagnosis | null;
-  chase: ChaseRow[];
   lps: { id: string; name: string; firm: string | null }[];
   personRoot: string;
 }) {
@@ -65,7 +64,7 @@ export function RaiseDesk({
 
   return (
     <div className="raise">
-      <div className="lbl eyebrow">Fundraise</div>
+      <div className="lbl eyebrow">Fundraising</div>
       <header className="raise-hero">
         <div>
           <h1 className="d-xl">
@@ -172,24 +171,6 @@ export function RaiseDesk({
           )}
         </section>
 
-        <section className="stack" aria-label="LPs to chase">
-          <h2>Chase next</h2>
-          {chase.length ? (
-            <ul className="bot-list">
-              {chase.map((row) => (
-                <li key={row.id}>
-                  <Link className="note-row raise-chase" href={`${personRoot}/${encodeURIComponent(row.id)}`}>
-                    <span className="bot-wait-name">{row.name}</span>
-                    <span className={`bot-wait-when${row.overdue ? " is-due" : ""}`}>{row.why}</span>
-                    {row.firm || row.stage ? <span className="bot-wait-sum">{[row.firm, row.stage].filter(Boolean).join(" · ")}</span> : null}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="raise-empty">No LPs flagged in the CRM yet. Mark people as LPs and they show up here, oldest touch first.</p>
-          )}
-        </section>
       </div>
     </div>
   );
