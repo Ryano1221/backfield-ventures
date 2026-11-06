@@ -70,11 +70,11 @@ export function PersonDesk({ person, peopleHref }: { person: PersonModel; people
               </dd>
             </>
           ) : null}
-              {person.website ? <><dt>Website</dt><dd><a href={person.website}>{person.domain}</a></dd></> : null}
+              {person.website ? <><dt>Website</dt><dd><a href={person.website} target="_blank" rel="noopener noreferrer">{person.domain}</a></dd></> : null}
               {person.trackLabel ? <><dt>Track</dt><dd>{person.trackLabel}</dd></> : null}
               {person.owner ? <><dt>Owner</dt><dd>{person.owner}</dd></> : null}
               {person.last ? <><dt>Last touch</dt><dd>{person.last}</dd></> : null}
-              {person.linkedin ? <><dt>Link</dt><dd><a href={person.linkedin}>{person.linkedin.replace(/^https?:\/\//, "")}</a></dd></> : null}
+              {person.linkedin ? <><dt>Link</dt><dd><a href={person.linkedin} target="_blank" rel="noopener noreferrer">{person.linkedin.replace(/^https?:\/\//, "")}</a></dd></> : null}
             </dl>
           </div>
         </aside>

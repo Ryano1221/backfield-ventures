@@ -279,7 +279,7 @@ function PersonDrawer({
         <p className="os-quiet">{[person.firm, person.stage, person.owner].filter(Boolean).join(" · ")}</p>
         {person.badge ? <p className="os-sent">{person.badge}{person.badgeNote ? `. ${person.badgeNote}` : ""}</p> : null}
         {person.email ? <p>{person.email}</p> : null}
-        {person.linkedin ? <p><a href={person.linkedin}>{person.linkedin}</a></p> : null}
+        {person.linkedin ? <p><a href={person.linkedin} target="_blank" rel="noopener noreferrer">{person.linkedin}</a></p> : null}
         <label className="os-note-label">
           Stage
           <input value={stage} onChange={(event) => setStage(event.target.value)} />

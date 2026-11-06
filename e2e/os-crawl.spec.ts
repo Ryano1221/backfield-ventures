@@ -401,6 +401,8 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
     return;
   }
   const routePath = new URL(route, page.url()).pathname;
+  const origin = new URL(page.url()).origin;
+  const offSite = (item: TapItem) => /^https?:/.test(item.href) && new URL(item.href).origin !== origin;
   const leaves = (item: TapItem) => {
     if (!item.href || item.target === "_blank" || /^(mailto|tel|javascript):/.test(item.href)) return false;
     return new URL(item.href, page.url()).pathname !== routePath;
@@ -427,6 +429,7 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => undefined);
     }
     await page.getByRole("heading", { level: 1 }).first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+    await page.waitForLoadState("load", { timeout: 8_000 }).catch(() => undefined);
     current = new Map(keysOf(await markControls(page).catch(() => [] as TapItem[])).map(({ key, item }) => [key, item.i]));
   };
 
@@ -438,6 +441,11 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
     if (!(await el.isVisible().catch(() => false))) continue;
     if (await el.evaluate((node) => (node as HTMLButtonElement).disabled || node.getAttribute("aria-disabled") === "true").catch(() => false)) continue;
     if (item.href.startsWith("mailto:") || item.href.startsWith("tel:")) continue;
+    // An outside site must open in a new tab, so the OS stays put. Never follow it here.
+    if (offSite(item) && item.target !== "_blank") {
+      await note(route, "tap", `${item.name || item.href} opens ${item.href} in the same tab`);
+      continue;
+    }
     if (item.kind === "button" && (await el.getAttribute("type")) === "submit") {
       const form = el.locator("xpath=ancestor::form[1]");
       const name = form.locator("input[type='text'], input:not([type])");
@@ -469,10 +477,14 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
     if (leaves(item)) {
       // A client-side navigation can land well after the click, so wait for it
       // instead of checking the URL once.
-      const moved = await page
-        .waitForURL((url) => url.pathname !== beforePath, { timeout: 8_000, waitUntil: "commit" })
-        .then(() => true)
-        .catch(() => false);
+      const waitMove = (timeout: number) =>
+        page.waitForURL((url) => url.pathname !== beforePath, { timeout, waitUntil: "commit" }).then(() => true).catch(() => false);
+      let moved = await waitMove(6_000);
+      // A click that lands while the page is still hydrating can be dropped; checkBack retries the same way.
+      if (!moved && (await el.count().catch(() => 0))) {
+        await el.click({ noWaitAfter: true, timeout: 2_000 }).catch(() => undefined);
+        moved = await waitMove(6_000);
+      }
       if (!moved) await note(route, "tap", `${item.name || item.href} did not navigate`);
       await returnTo();
       continue;

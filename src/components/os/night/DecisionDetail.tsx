@@ -121,7 +121,7 @@ function Company({ company, action }: { company: DecisionCompany; action?: React
           </dl>
         ) : null}
         {company.website ? (
-          <a className="lnk" href={company.website} rel="noopener noreferrer">
+          <a className="lnk" href={company.website} target="_blank" rel="noopener noreferrer">
             {company.website.replace(/^https:\/\//, "")}
           </a>
         ) : null}
