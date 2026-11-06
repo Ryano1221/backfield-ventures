@@ -16,6 +16,7 @@ export type FinderItem = {
 export const PAGE_ITEMS: FinderItem[] = [
   { kind: "page", id: "today", title: "Today", hint: "Page" },
   { kind: "page", id: "raise", title: "Fundraising", hint: "Fund I · commitments, LP funnel" },
+  { kind: "page", id: "spv", title: "SPVs", hint: "Fundraising · deal-by-deal vehicles" },
   { kind: "page", id: "deals", title: "Investments", hint: "Deals · pipeline" },
   { kind: "page", id: "people", title: "Relationships", hint: "People · CRM" },
   { kind: "page", id: "bots", title: "Bots", hint: "Operations · the office" },

@@ -64,7 +64,6 @@ export function RaiseDesk({
 
   return (
     <div className="raise">
-      <div className="lbl eyebrow">Fundraising</div>
       <header className="raise-hero">
         <div>
           <h1 className="d-xl">
