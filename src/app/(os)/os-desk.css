@@ -190,3 +190,16 @@ body.os .lp-edit { display: grid; gap: 12px; margin-top: 12px; padding-top: 12px
   body.os .lp-row { grid-template-columns: minmax(0, 1fr) auto; }
   body.os .lp-money { text-align: left; }
 }
+
+/* Investments: decision, memo and diligence on each deal. */
+body.os .deal-memo { display: grid; gap: 14px; margin-top: 28px; background: #fff; border-radius: 16px; padding: 20px; min-width: 0; }
+body.os .dm-checks { display: flex; flex-wrap: wrap; gap: 8px; }
+body.os .dm-check { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid rgba(0, 0, 0, 0.14); border-radius: 999px; cursor: pointer; font-size: 15px; }
+body.os .dm-check input { width: 18px; height: 18px; accent-color: #123D22; }
+body.os .dm-check:has(input:checked) { border-color: #123D22; background: rgba(18, 61, 34, 0.08); }
+body.os .dm-check:has(input:focus-visible) { outline: 2px solid #123D22; outline-offset: 2px; }
+body.os .dm-next { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 700px) {
+  body.os .deal-memo { padding: 16px; }
+  body.os .dm-next { grid-template-columns: minmax(0, 1fr); }
+}

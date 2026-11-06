@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -37,4 +37,18 @@ test("an expected check with a confidence moves the weighted pipeline", async ({
 
 test("the pipeline API needs a session", async ({ request }) => {
   expect((await request.get("/api/os/lp-pipeline")).status()).toBe(401);
+});
+
+test("a pass needs a reason, and the decision is kept", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/os/deals/pitch_fixture-northwind");
+  const memo = page.getByRole("region", { name: "Investment memo" });
+  await memo.getByRole("group", { name: "Decision" }).getByRole("button", { name: "Pass" }).click();
+  await expect(memo.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+  await memo.getByLabel(/^Why/).fill("FIXTURE reason: too early for this fund.");
+  await memo.getByText("Team", { exact: true }).click();
+  await memo.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(memo.getByRole("status")).toHaveText("Saved.");
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Investment memo" }).getByRole("group", { name: "Decision" }).getByRole("button", { name: "Pass" })).toHaveAttribute("aria-pressed", "true");
 });

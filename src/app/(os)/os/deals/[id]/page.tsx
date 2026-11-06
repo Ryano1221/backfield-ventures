@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { DealMemo } from "@/components/os/night/DealMemo";
+import { parseMemos } from "@/lib/os/deal-memo";
+import { readDoc } from "@/lib/os/doc-store";
 import { headers } from "next/headers";
 import { DealDetail } from "@/components/os/night/DealDetail";
 import { NightFrame } from "@/components/os/night/NightFrame";
@@ -28,9 +31,17 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
     key = id;
   }
   const deal = buildDeal(page.snapshot, key);
+  const memos = parseMemos(await readDoc("deal-memos").catch(() => null));
   return (
     <NightFrame onOs={onOs} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder} askAbout={deal?.id ?? null}>
-      {deal ? <DealDetail deal={deal} dealsHref={osHrefs(onOs).deals} /> : <p className="t-body muted">That pitch is not in this snapshot.</p>}
+      {deal ? (
+        <>
+          <DealDetail deal={deal} dealsHref={osHrefs(onOs).deals} />
+          <DealMemo dealId={deal.id} initial={memos.deals[deal.id] ?? null} />
+        </>
+      ) : (
+        <p className="t-body muted">That pitch is not in this snapshot.</p>
+      )}
     </NightFrame>
   );
 }
