@@ -49,17 +49,17 @@ export default async function EmailDashboardPage() {
       <div className="kpis">
         <div className="kpi">
           <div className="lbl">Subscribers</div>
-          <div className="v">{people.sample ? "—" : subscribers.length.toLocaleString("en-US")}</div>
+          <div className="v">{people.sample ? "Not loaded" : subscribers.length.toLocaleString("en-US")}</div>
           <div className="d">{people.sample ? "No subscriber list on this snapshot." : "On The Handoff"}</div>
         </div>
         <div className="kpi">
           <div className="lbl">New this month</div>
-          <div className="v">{people.sample ? "—" : newThisMonth.toLocaleString("en-US")}</div>
+          <div className="v">{people.sample ? "Not loaded" : newThisMonth.toLocaleString("en-US")}</div>
           <div className="d">{people.sample ? "Needs a joined date on each subscriber." : "Joined this month"}</div>
         </div>
         <div className="kpi">
           <div className="lbl">Outreach {asOf}</div>
-          <div className="v">{outreach.length ? outreach.reduce((sum, row) => sum + row.sent, 0).toLocaleString("en-US") : "—"}</div>
+          <div className="v">{outreach.length ? outreach.reduce((sum, row) => sum + row.sent, 0).toLocaleString("en-US") : "0"}</div>
           <div className="d">{outreach.length ? "Sent across the tracks on this snapshot." : "No outreach counts on this snapshot."}</div>
         </div>
       </div>
