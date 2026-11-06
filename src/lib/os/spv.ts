@@ -104,6 +104,10 @@ export function spvNext(spv: Spv, now = Date.now()): string {
   if (spv.next_action.trim()) return spv.next_action.trim();
   const s = summarizeSpv(spv, now);
   if (!spv.target_usd) return "Set the target and terms.";
+  const unwired = spv.allocations.filter((row) => row.status === "committed");
+  if ((spv.status === "closing" || (s.remaining === 0 && spv.status !== "closed")) && unwired.length) {
+    return `Collect ${usdShort(s.committed)} in wires from ${unwired.length} ${unwired.length === 1 ? "investor" : "investors"}.`;
+  }
   if (s.remaining && s.remaining > 0 && spv.status !== "closed") return `Raise ${usdShort(s.remaining)} more${s.daysLeft != null ? ` in ${s.daysLeft} ${s.daysLeft === 1 ? "day" : "days"}` : ""}.`;
   if (s.nextStep) return `Next: ${s.nextStep.charAt(0).toLowerCase()}${s.nextStep.slice(1)}.`;
   return "Done. Keep reporting current.";
