@@ -4,6 +4,7 @@ import { DealsDesk } from "@/components/os/night/DealsDesk";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { parseMemos } from "@/lib/os/deal-memo";
 import { readDoc } from "@/lib/os/doc-store";
+import { loadCompanyExtras } from "@/lib/os/company-extras";
 import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts } from "@/lib/os/nav";
 import { buildAllDeals, buildToday } from "@/lib/os/night";
@@ -23,7 +24,8 @@ export default async function DealsPage() {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const model = buildToday(page.snapshot, page.actions);
-  const deals = buildAllDeals(page.snapshot);
+  const extras = await loadCompanyExtras();
+  const deals = buildAllDeals(page.snapshot, extras);
   const [memos, spvs] = await Promise.all([readDoc("deal-memos").catch(() => null), readDoc("spvs").catch(() => null)]);
   const companies = new Map(deals.map((deal) => [deal.id, deal.company]));
   const portfolio = buildPortfolio(parseMemos(memos), parseSpvs(spvs), (id) => companies.get(id) ?? null);

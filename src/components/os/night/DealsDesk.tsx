@@ -8,6 +8,7 @@ import { osHrefs } from "@/lib/os/nav";
 import { shownPitchRating } from "@/lib/os/pitch-rate";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
+import { AddCompany } from "./AddCompany";
 import { Columns } from "./Charts";
 import { PortfolioCard } from "./PortfolioCard";
 import { RateControl } from "./RateControl";
@@ -42,6 +43,7 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
         {pitchCount.toLocaleString("en-US")} {pitchCount === 1 ? "pitch" : "pitches"}, {reviewing.toLocaleString("en-US")} in review
         {tracked ? `. ${tracked.toLocaleString("en-US")} more tracked from The Handoff, Best 3 and your founders` : ""}.
       </p>
+      <AddCompany dealHref={hrefs.deal} />
       {flow.length ? (
         <section className="deal-flow" aria-label="Deal flow">
           <div className="deal-flow-k">

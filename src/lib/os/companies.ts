@@ -1,5 +1,9 @@
 import { brands } from "@/components/handoff/brands";
+import { companyKey, type AddedCompany } from "./added-companies";
+
+export { companyKey };
 import type { DeskDeal } from "./night";
+import type { Spv } from "./spv";
 import type { Snapshot } from "./types";
 
 /**
@@ -12,13 +16,6 @@ import type { Snapshot } from "./types";
 
 export const TRACKING = "tracking";
 
-export function companyKey(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\b(inc|llc|co|corp|ltd|the)\b\.?/g, "")
-    .replace(/[^a-z0-9]/g, "");
-}
-
 function domainOf(url: string | null | undefined): string | null {
   if (!url) return null;
   try {
@@ -30,7 +27,9 @@ function domainOf(url: string | null | undefined): string | null {
 
 type Found = { logo: string | null; name: string; summary: string | null; sector: string | null; stage: string | null; website: string | null; founder: string | null; sources: string[] };
 
-export function trackedCompanies(snapshot: Snapshot | null, pitches: Pick<DeskDeal, "company" | "domain">[]): DeskDeal[] {
+export type CompanyExtras = { added?: AddedCompany[]; spvs?: Spv[] };
+
+export function trackedCompanies(snapshot: Snapshot | null, pitches: Pick<DeskDeal, "company" | "domain">[], extras: CompanyExtras = {}): DeskDeal[] {
   if (!snapshot) return [];
   const taken = new Set<string>();
   const takenDomains = new Set<string>();
@@ -58,6 +57,14 @@ export function trackedCompanies(snapshot: Snapshot | null, pitches: Pick<DeskDe
     current.logo ??= row.logo;
   };
 
+  // Ryan's own entries come first so their source and note win on a merge.
+  for (const row of extras.added ?? []) {
+    add({ name: row.name, summary: row.note || null, sector: null, stage: null, website: row.website, founder: row.founder, logo: null }, `${row.source}, added by you`);
+  }
+  for (const spv of extras.spvs ?? []) {
+    if (spv.deal_id || spv.status === "cancelled") continue;
+    add({ name: spv.company, summary: null, sector: null, stage: null, website: null, founder: null, logo: null }, "SPV");
+  }
   for (const decision of snapshot.decisions) {
     const detail = decision.detail;
     for (const pick of [...(detail?.picks ?? []), ...(detail?.candidates ?? [])]) {
