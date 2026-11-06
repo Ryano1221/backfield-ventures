@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { emailParagraphs, mergeLabel, restoreBreaks } from "./email-preview";
+import { emailParagraphs, mergeLabel, parseSender, restoreBreaks } from "./email-preview";
 import { validateSnapshot } from "./schema";
 import { BEST3_TEXT } from "../email/template-text";
 
@@ -25,7 +25,7 @@ test("a body with real line breaks is left as written", () => {
   assert.equal(restoreBreaks(text), text);
   assert.deepEqual(plain(text), ["Hi <first_name>,", "Line one\nline two", "1. Pick\nSource: https://example.com/a.", "Best,\nRyan"]);
   const source = emailParagraphs(text)[2][1];
-  assert.deepEqual(source[1], { kind: "link", value: "https://example.com/a" });
+  assert.deepEqual(source[1], { kind: "link", value: "https://example.com/a", href: "https://example.com/a" });
   assert.deepEqual(emailParagraphs(text)[0][0][1], { kind: "merge", field: "first_name", fallback: "there" });
 });
 
@@ -58,4 +58,18 @@ test("ingest keeps the line breaks in a preview body", () => {
   assert.match(text, /Hi \{\{first_name\|there\}\},\n\nHere are three companies/);
   assert.match(text, /\n\n1\. Sample Company One/);
   assert.ok(!/\n{3,}/.test(text));
+});
+
+test("bare domains become links the way Gmail shows them, emails and numbers do not", () => {
+  const links = emailParagraphs("WELD (drinkweld.com): $1.5M at a $10M cap. Write ryan@backfieldventures.com or see tryskymd.com/daily.")
+    .flat(2)
+    .filter((part) => part.kind === "link");
+  assert.deepEqual(links, [
+    { kind: "link", value: "drinkweld.com", href: "https://drinkweld.com" },
+    { kind: "link", value: "tryskymd.com/daily", href: "https://tryskymd.com/daily" },
+  ]);
+});
+
+test("the sender splits into name, address and initial", () => {
+  assert.deepEqual(parseSender("Ryan Arnold <ryan@backfieldventures.com>"), { name: "Ryan Arnold", email: "ryan@backfieldventures.com", initial: "R" });
 });

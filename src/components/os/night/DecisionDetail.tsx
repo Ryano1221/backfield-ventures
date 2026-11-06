@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useState, type ReactNode } from "react";
-import { emailParagraphs, mergeLabel } from "@/lib/os/email-preview";
+import { emailParagraphs, mergeLabel, parseSender } from "@/lib/os/email-preview";
+import { BEST3_FROM } from "@/lib/email/templates";
 import { sanitizePreviewHtml } from "@/lib/os/preview-html";
 import type { DecisionCompany, DecisionDetail as Detail, DecisionSwap } from "@/lib/os/types";
 
@@ -141,6 +142,9 @@ function Company({ company, action }: { company: DecisionCompany; action?: React
   );
 }
 
+// Sends go out from Ryan's Gmail.
+const SENDER = parseSender(BEST3_FROM);
+
 function Preview({ preview }: { preview: NonNullable<Detail["preview"]> }) {
   const html = preview.html ? sanitizePreviewHtml(preview.html) : "";
   return (
@@ -148,14 +152,22 @@ function Preview({ preview }: { preview: NonNullable<Detail["preview"]> }) {
       <div className="lbl">Preview what we&apos;d send</div>
       <p className="preview-flag">Preview. Nothing has been sent, and nothing sends from this view.</p>
       <article className="preview-body mail" aria-label="Email preview">
-        <header className="mail-head">
-          {preview.subject ? <h2 className="mail-subject">{preview.subject}</h2> : null}
-          {preview.to_label ? (
-            <p className="mail-to">
-              <span className="lbl">To</span> {preview.to_label}
+        {preview.subject ? (
+          <h2 className="mail-subject">
+            {preview.subject} <span className="mail-inbox">Inbox</span>
+          </h2>
+        ) : null}
+        <div className="mail-from">
+          <span className="mail-avatar" aria-hidden="true">
+            {SENDER.initial}
+          </span>
+          <div>
+            <p className="mail-sender">
+              <b>{SENDER.name}</b> <span className="mail-addr">&lt;{SENDER.email}&gt;</span>
             </p>
-          ) : null}
-        </header>
+            {preview.to_label ? <p className="mail-to">to {preview.to_label}</p> : null}
+          </div>
+        </div>
         {html ? (
           <div className="preview-html mail-text" dangerouslySetInnerHTML={{ __html: html }} />
         ) : preview.text ? (
@@ -171,9 +183,10 @@ function Preview({ preview }: { preview: NonNullable<Detail["preview"]> }) {
                           {mergeLabel(part.field)}
                         </span>
                       ) : part.kind === "link" ? (
-                        <a key={i} href={part.value} target="_blank" rel="noopener noreferrer">
+                        // Shown the way Gmail shows a link. Not clickable: this is a preview.
+                        <span key={i} className="mail-link" title={part.href}>
                           {part.value}
-                        </a>
+                        </span>
                       ) : (
                         <Fragment key={i}>{part.value}</Fragment>
                       ),
@@ -185,12 +198,14 @@ function Preview({ preview }: { preview: NonNullable<Detail["preview"]> }) {
           </div>
         ) : null}
         {preview.attachment_label ? (
-          <p className="mail-attach">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" role="img" aria-label="Attachment">
-              <path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.6 8.6a2 2 0 0 1-2.8-2.8l7.9-7.9" />
-            </svg>
-            <span>{preview.attachment_label}</span>
-          </p>
+          <div className="mail-attach">
+            <span className="mail-file" aria-hidden="true">
+              {/\.pdf$/i.test(preview.attachment_label) ? "PDF" : "FILE"}
+            </span>
+            <span className="mail-file-name">
+              <span className="lbl">Attachment</span> {preview.attachment_label}
+            </span>
+          </div>
         ) : null}
       </article>
     </div>
