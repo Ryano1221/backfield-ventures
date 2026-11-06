@@ -64,3 +64,17 @@ test("the studio API needs a session", async ({ request }) => {
   expect((await request.get("/api/os/studio")).status()).toBe(401);
   expect((await request.post("/api/os/studio", { data: { op: "create", title: "x", channels: ["x"] } })).status()).toBe(401);
 });
+
+test("a Handoff template opens as a new draft and stays unapprovable until filled in", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/os/studio");
+  await page.getByLabel("Idea").fill("November Handoff");
+  // Newsletter is one of the default channels.
+  await page.getByRole("group", { name: "Newsletter starts from" }).getByRole("button", { name: "The Handoff" }).click();
+  await page.getByRole("button", { name: "Create drafts" }).click();
+  await expect(page).toHaveURL(/\/os\/studio\/c_/);
+  await page.getByRole("tab", { name: /Newsletter/ }).click();
+  await expect(page.getByLabel("Subject")).toHaveValue(/^The Handoff, Issue/);
+  await expect(page.locator(".sx-checks")).toContainText("Replace the [bracketed] template prompts.");
+  await expect(page.getByRole("button", { name: "Approve this exact text" })).toBeDisabled();
+});

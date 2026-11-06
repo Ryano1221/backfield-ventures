@@ -8,6 +8,7 @@ import {
   CHANNEL_LABEL,
   CHANNELS,
   itemStatus,
+  NEWSLETTER_TEMPLATES,
   nextAction,
   SOURCE_KINDS,
   SOURCE_LABEL,
@@ -15,6 +16,7 @@ import {
   type Channel,
   type ContentItem,
   type DraftStatus,
+  type NewsletterTemplate,
   type SourceKind,
   type Studio,
 } from "@/lib/os/studio";
@@ -39,6 +41,7 @@ export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studi
   const [ref, setRef] = useState("");
   const [brief, setBrief] = useState("");
   const [channels, setChannels] = useState<Channel[]>(["newsletter", "linkedin", "x"]);
+  const [template, setTemplate] = useState<NewsletterTemplate | "">("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +58,7 @@ export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studi
     event.preventDefault();
     setBusy(true);
     setError(null);
-    const result = await saveStudio({ op: "create", title, source_kind: kind, source_ref: ref, brief, channels });
+    const result = await saveStudio({ op: "create", title, source_kind: kind, source_ref: ref, brief, channels, template: channels.includes("newsletter") ? template : "" });
     setBusy(false);
     if (result.error || !result.id) {
       setError(result.error || "Could not save that.");
@@ -115,6 +118,22 @@ export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studi
               ))}
             </div>
           </div>
+          {channels.includes("newsletter") ? (
+            <div className="sx-field">
+              <span className="lbl" id="sx-template">Newsletter starts from</span>
+              <div className="segment sx-wrap" role="group" aria-labelledby="sx-template">
+                <button type="button" aria-pressed={template === ""} onClick={() => setTemplate("")}>
+                  Blank
+                </button>
+                {(Object.keys(NEWSLETTER_TEMPLATES) as NewsletterTemplate[]).map((key) => (
+                  <button key={key} type="button" aria-pressed={template === key} onClick={() => setTemplate(key)}>
+                    {NEWSLETTER_TEMPLATES[key].label}
+                  </button>
+                ))}
+              </div>
+              {template ? <p className="sx-hint">A new draft with the {NEWSLETTER_TEMPLATES[template].label} layout. Replace each [bracketed] prompt before approving.</p> : null}
+            </div>
+          ) : null}
           {error ? <p className="sx-error" role="alert">{error}</p> : null}
           <div className="sx-actions">
             <button type="submit" className="btn primary" disabled={busy || !title.trim() || !channels.length}>
