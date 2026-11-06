@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PortfolioPage() {
+export default async function PortfolioPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
   const page = await loadOsPage();
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
@@ -39,7 +40,7 @@ export default async function PortfolioPage() {
     .filter((row) => row.amount > 0);
   return (
     <NightFrame onOs={onOs} active="deals" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <PortfolioDesk book={book} today={new Date(now).toISOString()} deals={deals} suggestions={suggestions} dealBase={hrefs.deals} spvBase={hrefs.spv} />
+      <PortfolioDesk book={book} today={new Date(now).toISOString()} deals={deals} suggestions={suggestions} dealBase={hrefs.deals} spvBase={hrefs.spv} startOpen={params.add === "1"} />
     </NightFrame>
   );
 }

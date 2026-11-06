@@ -5,9 +5,9 @@ import { useState } from "react";
 import { ADDED_SOURCES, companyKey, type AddedSource } from "@/lib/os/added-companies";
 
 /** Log a pitch the office never saw, like a LinkedIn DM. Saves to the OS only; nothing sends. */
-export function AddCompany({ dealHref }: { dealHref: (id: string) => string }) {
+export function AddCompany({ dealHref, startOpen = false }: { dealHref: (id: string) => string; startOpen?: boolean }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startOpen);
   const [name, setName] = useState("");
   const [website, setWebsite] = useState("");
   const [founder, setFounder] = useState("");

@@ -14,7 +14,7 @@ import { PortfolioCard } from "./PortfolioCard";
 import { RateControl } from "./RateControl";
 import type { Portfolio } from "@/lib/os/portfolio";
 
-export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDeal[]; reviewing: number; onOs: boolean; portfolio?: Portfolio }) {
+export function DealsDesk({ deals, reviewing, onOs, portfolio, openAdd = false }: { deals: DeskDeal[]; reviewing: number; onOs: boolean; portfolio?: Portfolio; openAdd?: boolean }) {
   const hrefs = osHrefs(onOs);
   const { actions } = useNightActions();
   const [query, setQuery] = useState("");
@@ -44,7 +44,7 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
         {pitchCount.toLocaleString("en-US")} {pitchCount === 1 ? "pitch" : "pitches"}, {reviewing.toLocaleString("en-US")} in review
         {tracked ? `. ${tracked.toLocaleString("en-US")} more tracked from The Handoff, Best 3 and your founders` : ""}.
       </p>
-      <AddCompany dealHref={hrefs.deal} />
+      <AddCompany dealHref={hrefs.deal} startOpen={openAdd} />
       {flow.length ? (
         <section className="deal-flow" aria-label="Deal flow">
           <div className="deal-flow-k">
