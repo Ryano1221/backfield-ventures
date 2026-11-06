@@ -291,3 +291,45 @@ export function spvUpdateText(spv: Spv, now = Date.now()): string {
   if (spv.status !== "closed") lines.push("", "Reply here if you want in, or if your allocation has changed.");
   return lines.join("\n");
 }
+
+export type Backer = { key: string; name: string; personId: string | null; spvs: number; committed: number; typical: number; wiredShare: number | null; last: string };
+
+/**
+ * Everyone who has put money into Backfield SPVs, biggest first: how many
+ * deals, how much, their usual check, and how reliably they wire. Soft
+ * circles don't count as backing. Cancelled SPVs are ignored.
+ */
+export function spvBackers(book: SpvBook): Backer[] {
+  const rows = new Map<string, { name: string; personId: string | null; spvs: Set<string>; checks: number[]; hard: number; wired: number; last: string }>();
+  for (const spv of book.spvs) {
+    if (spv.status === "cancelled") continue;
+    for (const a of spv.allocations) {
+      if (a.status === "soft") continue;
+      const key = a.person_id ? `p:${a.person_id}` : `n:${a.name.trim().toLowerCase()}`;
+      const row = rows.get(key) ?? { name: a.name.trim(), personId: a.person_id, spvs: new Set<string>(), checks: [], hard: 0, wired: 0, last: "" };
+      // Keep the properly capitalized spelling when one entry was typed in lower case.
+      if (row.name === row.name.toLowerCase() && a.name.trim() !== a.name.trim().toLowerCase()) row.name = a.name.trim();
+      row.spvs.add(spv.id);
+      row.checks.push(a.amount_usd);
+      row.hard += 1;
+      if (a.status === "wired") row.wired += 1;
+      if (a.updated_at > row.last) row.last = a.updated_at;
+      rows.set(key, row);
+    }
+  }
+  return [...rows.entries()]
+    .map(([key, row]) => {
+      const sorted = [...row.checks].sort((a, b) => a - b);
+      return {
+        key,
+        name: row.name,
+        personId: row.personId,
+        spvs: row.spvs.size,
+        committed: row.checks.reduce((sum, n) => sum + n, 0),
+        typical: sorted[Math.floor((sorted.length - 1) / 2)],
+        wiredShare: row.hard ? row.wired / row.hard : null,
+        last: row.last,
+      };
+    })
+    .sort((a, b) => b.committed - a.committed || b.spvs - a.spvs || a.name.localeCompare(b.name));
+}

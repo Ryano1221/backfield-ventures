@@ -9,6 +9,7 @@ import { usd } from "@/lib/os/raise-model";
 import { Ring, StepDots } from "./Charts";
 import {
   applySpvOp,
+  spvBackers,
   spvNext,
   summarizeSpv,
   SPV_STATUS_LABEL,
@@ -24,12 +25,14 @@ export function SpvDesk({
   now,
   prefill,
   deals = [],
+  personBase,
 }: {
   initial: SpvBook;
   root: string;
   now: number;
   prefill: { company: string; deal: string };
   deals?: DealPick[];
+  personBase?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(
@@ -174,6 +177,8 @@ export function SpvDesk({
         </p>
       ) : null}
 
+      <Backers book={initial} personBase={personBase} />
+
       {done.length ? (
         <details className="sx-revs">
           <summary>Closed and cancelled ({done.length})</summary>
@@ -266,5 +271,44 @@ function SpvCard({ spv, href, now }: { spv: Spv; href: string; now: number }) {
         <span className="sx-next">{spvNext(spv, now)}</span>
       </Link>
     </li>
+  );
+}
+
+/** The people who back Backfield SPVs, so the next one starts with them. */
+function Backers({ book, personBase }: { book: SpvBook; personBase?: string }) {
+  const rows = spvBackers(book);
+  if (!rows.length) return null;
+  const repeat = rows.filter((row) => row.spvs > 1).length;
+  return (
+    <section className="sx-card spv-backers" aria-label="Your SPV investors">
+      <h2 className="sx-h2">Your SPV investors</h2>
+      <p className="sx-hint">
+        {rows.length} {rows.length === 1 ? "person has" : "people have"} committed to an SPV{repeat ? `, ${repeat} more than once` : ""}. Start the next one with them.
+      </p>
+      <div className="spv-backers-scroll">
+        <table className="port-table">
+          <thead>
+            <tr>
+              <th scope="col">Investor</th>
+              <th scope="col">SPVs</th>
+              <th scope="col">Committed</th>
+              <th scope="col">Usual check</th>
+              <th scope="col">Wired</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.slice(0, 25).map((row) => (
+              <tr key={row.key}>
+                <th scope="row">{row.personId && personBase ? <Link href={`${personBase}/${encodeURIComponent(row.personId)}`}>{row.name}</Link> : row.name}</th>
+                <td>{row.spvs}</td>
+                <td>{usd(row.committed)}</td>
+                <td>{usd(row.typical)}</td>
+                <td>{row.wiredShare == null ? "None yet" : `${Math.round(row.wiredShare * 100)}%`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

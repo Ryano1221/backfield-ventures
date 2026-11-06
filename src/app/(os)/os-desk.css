@@ -505,3 +505,13 @@ body.os .port-links a { min-height: 44px; display: inline-flex; align-items: cen
 body.os .port-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 body.os .port-card-head a, body.os .port-link-empty a { color: #123D22; min-height: 44px; display: inline-flex; align-items: center; }
 body.os .port-link-empty { margin: 12px 0 0; font-size: 14px; color: rgba(0, 0, 0, 0.6); }
+
+/* SPVs: repeat investors */
+body.os .spv-backers { margin-top: 16px; display: grid; gap: 10px; }
+body.os .spv-backers .sx-hint { margin: 0; }
+body.os .spv-backers-scroll { overflow-x: auto; }
+body.os .spv-backers .port-table { min-width: 460px; }
+body.os .spv-backers a { color: #123D22; }
+body.os .spv-past { display: grid; gap: 8px; margin: 12px 0; }
+body.os .spv-past-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+body.os .spv-past-chips .btn { min-height: 44px; }

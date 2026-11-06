@@ -5,8 +5,9 @@ import { applySpvOp, EMPTY_SPVS, parseSpvs, spvNext, summarizeSpv, SPV_STEPS, ty
 const NOW = "2026-11-06T15:00:00.000Z";
 const NOW_MS = Date.parse(NOW);
 
+// One counter for the whole file, so two SPVs never share an id.
+let n = 0;
 function step(book: SpvBook, op: Record<string, unknown>): SpvBook {
-  let n = 0;
   const result = applySpvOp(book, op, NOW, (prefix) => `${prefix}_${++n}`);
   if (!result.ok) throw new Error(result.error);
   return result.book;
@@ -97,4 +98,26 @@ test("the investor update uses only what the record holds", async () => {
   assert.match(text, /Terms: minimum check \$10K, 20% carry\./);
   assert.match(text, /1 of 9 steps done\. Next up: allocation confirmed\./);
   assert.doesNotMatch(text, /Ada/);
+});
+
+test("SPV backers roll up across deals: soft circles and cancelled SPVs don't count", async () => {
+  const { spvBackers } = await import("./spv");
+  let book = make();
+  const a = book.spvs[0].id;
+  book = step(book, { op: "allocate", id: a, name: "Ada", amount_usd: 50000, status: "wired" });
+  book = step(book, { op: "allocate", id: a, name: "Soft Sam", amount_usd: 90000, status: "soft" });
+  book = step(book, { op: "create", company: "Second" });
+  const b = book.spvs[0].id;
+  book = step(book, { op: "allocate", id: b, name: "ada", amount_usd: 25000, status: "committed" });
+  book = step(book, { op: "allocate", id: b, name: "Bea", amount_usd: 10000, status: "wired" });
+  book = step(book, { op: "create", company: "Dead" });
+  const c = book.spvs[0].id;
+  book = step(book, { op: "allocate", id: c, name: "Cy", amount_usd: 999999, status: "wired" });
+  book = step(book, { op: "update", id: c, status: "cancelled" });
+  const backers = spvBackers(book);
+  assert.deepEqual(backers.map((r) => r.name), ["Ada", "Bea"]);
+  assert.equal(backers[0].spvs, 2);
+  assert.equal(backers[0].committed, 75000);
+  assert.equal(backers[0].typical, 25000);
+  assert.equal(backers[0].wiredShare, 0.5);
 });
