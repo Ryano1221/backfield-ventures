@@ -353,14 +353,13 @@ function InboxCard({
   }
 
   const line = previewCopy(item.message || item.summary || item.happened || "");
-  const [open, setOpen] = useState(false);
   const kind = item.channel || (item.hold ? "Hold" : "Decision");
 
   return (
     <li className={`swipe${selected ? " is-sel" : ""}`} style={{ ["--dx" as string]: `${dx}px` }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <span className="swipe-yes">Approve</span>
       <span className="swipe-no">Not now</span>
-      <article className={`inbox-card${open ? " is-open" : ""}`} onClick={onFocus}>
+      <article className="inbox-card" onClick={onFocus}>
         <div className="inbox-who">
           <Logo name={item.org || item.name} domain={item.domain} logoUrl={item.logoUrl} />
           <div>
@@ -379,13 +378,9 @@ function InboxCard({
           <button type="button" className="btn quiet" disabled={busy} onClick={onDismiss}>
             Not now
           </button>
-          {line ? (
-            <button type="button" className="btn quiet" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-              {open ? "Show less" : "Read"}
-            </button>
-          ) : (
-            <Link className="btn quiet" href={href} prefetch>Read</Link>
-          )}
+          <Link className="btn quiet" href={href} prefetch>
+            Read
+          </Link>
         </div>
       </article>
     </li>

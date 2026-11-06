@@ -78,3 +78,26 @@ export function pitchesByDay(deals: Pick<DeskDeal, "receivedIso">[], nowIso: str
     return { day, label: d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }), count: counts.get(day) ?? 0 };
   });
 }
+
+export type DealPick = { id: string; company: string; detail: string };
+
+/** Deals whose company matches what Ryan has typed: starts-with first, then word starts, then anywhere. */
+export function matchDeals(deals: DealPick[], query: string, limit = 6): DealPick[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const rank = (deal: DealPick) => {
+    const name = deal.company.toLowerCase();
+    if (name.startsWith(q)) return 0;
+    if (name.split(/[\s\-.&]+/).some((word) => word.startsWith(q))) return 1;
+    if (name.includes(q)) return 2;
+    return 3;
+  };
+  const seen = new Set<string>();
+  return deals
+    .map((deal) => ({ deal, r: rank(deal) }))
+    .filter((row) => row.r < 3)
+    .sort((a, b) => a.r - b.r || a.deal.company.localeCompare(b.deal.company))
+    .map((row) => row.deal)
+    .filter((deal) => (seen.has(deal.id) ? false : (seen.add(deal.id), true)))
+    .slice(0, limit);
+}

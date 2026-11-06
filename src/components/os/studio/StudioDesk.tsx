@@ -159,6 +159,25 @@ export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studi
 
       <section className="sx-card" aria-label="Next 14 days">
         <h2 className="sx-h2">Next 14 days</h2>
+        <ol className="sx-strip" aria-label="Two-week calendar">
+          {days.map((day, i) => {
+            const date = new Date(`${day.day}T12:00:00Z`);
+            return (
+              <li key={day.day} className={`${day.entries.length ? "has" : ""}${i === 0 ? " is-today" : ""}`}>
+                <span className="sx-strip-wd">{date.toLocaleDateString("en-US", { weekday: "narrow", timeZone: "UTC" })}</span>
+                <b>{date.getUTCDate()}</b>
+                <span className="sx-strip-marks">
+                  {day.entries.slice(0, 3).map((entry) => (
+                    <i key={`${entry.id}-${entry.channel}`} className={`ch-${entry.channel}`} title={`${entry.title}: ${CHANNEL_LABEL[entry.channel]}`} />
+                  ))}
+                </span>
+                <span className="sr-only">
+                  {day.label}: {day.entries.length ? day.entries.map((entry) => `${entry.title} on ${CHANNEL_LABEL[entry.channel]}`).join(", ") : "nothing scheduled"}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
         {scheduledCount ? (
           <ol className="sx-cal">
             {days
