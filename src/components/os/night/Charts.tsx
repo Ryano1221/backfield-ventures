@@ -87,22 +87,11 @@ export function StackBar({ parts, total, label, legend = true, format = (n: numb
   const scale = Math.max(total ?? 0, sum) || 1;
   return (
     <div className="os-stack">
-      <svg className="os-stack-bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label={label}>
-        <rect x="0" y="0" width="100" height="10" rx="0" className="os-stack-track" />
-        {(() => {
-          const widths = shown.map((part) => (part.value / scale) * 100);
-          return shown.map((part, i) => {
-            const w = widths[i];
-            const x = widths.slice(0, i).reduce((acc, n) => acc + n, 0);
-            const rect = (
-              <rect key={part.key} x={x} y="0" width={Math.max(0, w - 0.4)} height="10" fill={TONE[part.tone]}>
-                <title>{`${part.label}: ${format(part.value)}`}</title>
-              </rect>
-            );
-            return rect;
-          });
-        })()}
-      </svg>
+      <span className="os-stack-bar" role="img" aria-label={label}>
+        {shown.map((part) => (
+          <i key={part.key} className={`is-${part.tone}`} style={{ width: `${(part.value / scale) * 100}%` }} title={`${part.label}: ${format(part.value)}`} />
+        ))}
+      </span>
       {legend && shown.length ? (
         <ul className="os-legend">
           {shown.map((part) => (
