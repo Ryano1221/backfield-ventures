@@ -1,3 +1,4 @@
+import { trackedCompanies } from "./companies";
 import { decisionKey } from "./decision-id";
 import { stageLabel } from "./night";
 import { pitchTarget } from "./pitch-rate";
@@ -42,6 +43,9 @@ export function buildFinder(snapshot: Snapshot | null): FinderItem[] {
       title: pitch.company,
       hint: [blankToNull(pitch.sector), blankToNull(pitch.stage)].filter(Boolean).join(" · "),
     });
+  }
+  for (const company of trackedCompanies(snapshot, snapshot.pitches.map((pitch) => ({ company: pitch.company, domain: pitch.domain || null })))) {
+    items.push({ kind: "company", id: company.id, title: company.company, hint: ["Tracking", company.source].filter(Boolean).join(" · ") });
   }
   for (const bot of snapshot.bots.bots) {
     items.push({ kind: "bot", id: bot.name, title: bot.name, hint: bot.status });

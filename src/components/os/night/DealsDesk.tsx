@@ -24,7 +24,9 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
     [actions],
   );
   const [stage, setStage] = useState<string>("all");
-  const counts = ratingCounts(deals, ratingOf);
+  const pitchCount = deals.filter((deal) => deal.status !== "tracking").length;
+  const tracked = deals.length - pitchCount;
+  const counts = { ...ratingCounts(deals.filter((deal) => deal.status !== "tracking"), ratingOf), all: deals.length };
   const rows = visibleDeals(deals, query, filter, sort, ratingOf).filter((deal) => stage === "all" || deal.status === stage);
   const flow = deals.length ? pitchesByDay(deals, deals[0].generatedAt, 14) : [];
   const flowTotal = flow.reduce((sum, row) => sum + row.count, 0);
@@ -34,10 +36,11 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
     <>
       <div className="lbl eyebrow">Investments</div>
       <h1 className="d-xl">
-        {deals.length.toLocaleString("en-US")} {deals.length === 1 ? "pitch" : "pitches"}.
+        {deals.length.toLocaleString("en-US")} {deals.length === 1 ? "company" : "companies"}.
       </h1>
       <p className="lede">
-        {reviewing.toLocaleString("en-US")} {reviewing === 1 ? "is" : "are"} in review.
+        {pitchCount.toLocaleString("en-US")} {pitchCount === 1 ? "pitch" : "pitches"}, {reviewing.toLocaleString("en-US")} in review
+        {tracked ? `. ${tracked.toLocaleString("en-US")} more tracked from The Handoff, Best 3 and your founders` : ""}.
       </p>
       {flow.length ? (
         <section className="deal-flow" aria-label="Deal flow">
@@ -69,7 +72,7 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
         ))}
       </nav>
       <div className="deals-tools">
-        <input className="pill" value={query} placeholder="Search pitches" aria-label="Search pitches" onChange={(event) => setQuery(event.target.value)} />
+        <input className="pill" value={query} placeholder="Search companies" aria-label="Search companies" onChange={(event) => setQuery(event.target.value)} />
         <div className="segment" role="group" aria-label="Sort pitches">
           {(["rating", "score", "newest", "name"] as DealSort[]).map((id) => (
             <button key={id} type="button" aria-pressed={sort === id} onClick={() => setSort(id)}>
@@ -94,24 +97,24 @@ export function DealsDesk({ deals, reviewing, onOs, portfolio }: { deals: DeskDe
                   <Logo name={deal.company} domain={deal.domain} logoUrl={deal.logoUrl} />
                   <div>
                     <div className="n">{deal.company}</div>
-                    <p className="clamp1">{deal.summary || deal.title || "No summary in this snapshot."}</p>
+                    <p className="clamp1">{deal.summary || deal.title || (deal.founder ? `Founder: ${deal.founder}` : "No summary in this snapshot.")}</p>
                     <div className="deal-meta">
                       <span className={`chip st-${deal.status}`}>{deal.statusLabel}</span>
                       {deal.sector ? <span className="chip">{deal.sector}</span> : null}
                       {deal.stage ? <span className="chip">{deal.stage}</span> : null}
-                      <span className="num chip">{deal.score == null ? "No score" : `Score ${deal.score}`}</span>
+                      {deal.status === "tracking" ? (deal.source ? <span className="chip">{deal.source}</span> : null) : <span className="num chip">{deal.score == null ? "No score" : `Score ${deal.score}`}</span>}
                       {deal.waiting ? <span className="chip">{deal.waiting}</span> : null}
                     </div>
                   </div>
                 </Link>
                 <DealLinks deal={deal} />
-                <RateControl id={deal.id} company={deal.company} logged={deal.loggedRating} generatedAt={deal.generatedAt} />
+                {deal.status === "tracking" ? null : <RateControl id={deal.id} company={deal.company} logged={deal.loggedRating} generatedAt={deal.generatedAt} />}
               </article>
             ))}
           </div>
         ) : (
           <p className="t-body muted" style={{ padding: "16px 18px" }}>
-            {deals.length ? "No pitches match." : "No pitches in this snapshot."}
+            {deals.length ? "No companies match." : "No pitches in this snapshot."}
           </p>
         )}
     </>
@@ -123,6 +126,7 @@ const PIPELINE = [
   { id: "reviewing", label: "In review" },
   { id: "advanced", label: "Advanced" },
   { id: "passed", label: "Passed" },
+  { id: "tracking", label: "Tracking" },
 ];
 
 export function DealLinks({ deal }: { deal: DeskDeal }) {

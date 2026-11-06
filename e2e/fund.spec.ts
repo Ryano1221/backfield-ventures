@@ -129,3 +129,16 @@ test("a new SPV can be pulled from a deal by typing the company", async ({ page 
   await expect(page).toHaveURL(/\/os\/spv\/spv_/);
   await expect(page.getByRole("link", { name: "Open the deal" })).toBeVisible();
 });
+
+test("companies that never pitched still show on Investments and open their own page", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/os/deals");
+  await page.getByRole("textbox", { name: "Search companies" }).fill("growl");
+  const card = page.locator(".deal-card", { hasText: "GROWL" });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("The Handoff");
+  await card.getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/os\/deals\/co_growl/);
+  await expect(page.getByRole("heading", { name: "GROWL" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start an SPV for this deal" })).toBeVisible();
+});

@@ -25,7 +25,11 @@ export function DealDetail({ deal, dealsHref }: { deal: DeskDeal; dealsHref: str
       </div>
       {deal.summary ? <p className="lede">{deal.summary}</p> : null}
       <DealLinks deal={deal} />
-      <RateControl id={deal.id} company={deal.company} logged={deal.loggedRating} generatedAt={deal.generatedAt} />
+      {deal.status === "tracking" ? (
+        <p className="sx-hint">Not a pitch yet. Found in {deal.source || "the office's notes"}. Write a memo or start an SPV below.</p>
+      ) : (
+        <RateControl id={deal.id} company={deal.company} logged={deal.loggedRating} generatedAt={deal.generatedAt} />
+      )}
       <dl className="dl deal-fields">
         <Field label="Sector" value={deal.sector} source={source("sector")} />
         <Field label="Stage" value={deal.stage} source={source("stage")} />
