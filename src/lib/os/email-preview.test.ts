@@ -61,7 +61,7 @@ test("ingest keeps the line breaks in a preview body", () => {
 });
 
 test("bare domains become links the way Gmail shows them, emails and numbers do not", () => {
-  const links = emailParagraphs("WELD (drinkweld.com): $1.5M at a $10M cap. Write ryan@backfieldventures.com or see tryskymd.com/daily.")
+  const links = emailParagraphs("WELD (drinkweld.com): $1.5M at a $10M cap. Write owner@example.com or see tryskymd.com/daily.")
     .flat(2)
     .filter((part) => part.kind === "link");
   assert.deepEqual(links, [
@@ -71,5 +71,5 @@ test("bare domains become links the way Gmail shows them, emails and numbers do 
 });
 
 test("the sender splits into name, address and initial", () => {
-  assert.deepEqual(parseSender("Ryan Arnold <ryan@backfieldventures.com>"), { name: "Ryan Arnold", email: "ryan@backfieldventures.com", initial: "R" });
+  assert.deepEqual(parseSender("Fixture Owner <owner@example.com>"), { name: "Fixture Owner", email: "owner@example.com", initial: "F" });
 });
