@@ -543,7 +543,7 @@ function PostsAndSchedule({ posts, schedule }: { posts: OsPost[]; schedule: OsSc
     ...posts.map((post, index) => ({
       key: post.id || `post-${index}`,
       title: platformLabel(post.platform),
-      meta: passedGate(post.status) ? null : [postStatusLabel(post.status), post.gate].filter(Boolean).join(" · ") || null,
+      meta: passedGate(post.status) ? postStatusLabel(post.status) : [postStatusLabel(post.status), post.gate].filter(Boolean).join(" · ") || null,
       note: null as string | null,
     })),
     ...schedule.map((row, index) => ({
