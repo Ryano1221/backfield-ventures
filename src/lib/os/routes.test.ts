@@ -76,7 +76,7 @@ test("detail links from a live-shaped snapshot resolve instead of 404", () => {
     assert.equal(decision.kind, "rewrite", href);
   }
 
-  for (const href of ["/", "/raise", "/deals", "/crm", "/bots", "/activity", "/waiting", "/email"]) {
+  for (const href of ["/", "/raise", "/deals", "/crm", "/bots", "/activity", "/waiting", "/email", "/studio"]) {
     assert.equal(decideOs({ host: HOST, pathname: href, authed: true }).kind, "rewrite", href);
   }
   assert.equal(decideOs({ host: HOST, pathname: "/ask", authed: true }).kind, "not-found");
