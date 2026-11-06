@@ -11,6 +11,7 @@ import type { CommandModel } from "@/lib/os/command";
 import type { TrackWeek } from "@/lib/os/outreach-history";
 import { OutreachWeek } from "./OutreachWeek";
 import { usd } from "@/lib/os/raise-model";
+import { asOfWord } from "@/lib/os/as-of";
 import { Logo } from "./Logo";
 import { useNightActions } from "./NightFrame";
 
@@ -48,6 +49,8 @@ export function TodayDesk({
   const bots = model.waiting.filter((bot) => !asked.has(bot.name.trim().toLowerCase()));
   const waiting = waitingOnYou({ ...view, waiting: model.waiting }).total;
   const outreach = view.kpis.find((kpi) => kpi.label === "Outreach today") ?? null;
+  // Counts come from the snapshot. When it is stale, say which day they are from.
+  const asOf = asOfWord(stale, model.stamp);
 
   useEffect(() => {
     reportToday(waiting);
@@ -139,7 +142,7 @@ export function TodayDesk({
           : "Nothing needs you right now."}
       </p>
       <p className="pointer-keys keys">J and K move. E approves. / searches.</p>
-      {command ? <CommandStrip command={command} hrefs={hrefs} briefs={briefs.length} /> : null}
+      {command ? <CommandStrip command={command} hrefs={hrefs} briefs={briefs.length} asOf={asOf} /> : null}
       {readyNow.length > 1 ? (
         <div className="approve-all">
           <p>
@@ -209,7 +212,7 @@ export function TodayDesk({
           <b>Email</b>
           <span>
             {outreach
-              ? `Outreach today ${outreach.value}${outreach.small || ""}${outreach.sub ? ` · ${outreach.sub}` : ""}`
+              ? `Outreach ${asOf} ${outreach.value}${outreach.small || ""}${outreach.sub ? ` · ${outreach.sub}` : ""}`
               : "No send counts in this snapshot."}
           </span>
         </Link>
@@ -337,7 +340,7 @@ function InboxCard({
   );
 }
 
-function CommandStrip({ command, hrefs, briefs }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs>; briefs: number }) {
+function CommandStrip({ command, hrefs, briefs, asOf }: { command: CommandModel; hrefs: ReturnType<typeof osHrefs>; briefs: number; asOf: string }) {
   const { raise, deals, bots, due } = command;
   const hard = raise.pctHard ?? 0;
   const soft = Math.max(0, (raise.pctSoft ?? 0) - hard);
@@ -383,7 +386,7 @@ function CommandStrip({ command, hrefs, briefs }: { command: CommandModel; hrefs
         <span className="cmd-k">The office</span>
         <b className="cmd-v">
           {bots.done}
-          <small> done today</small>
+          <small> done {asOf}</small>
         </b>
         <span className="cmd-s">{[`${bots.working} working`, bots.stuck ? `${bots.stuck} stuck` : null, bots.waiting ? `${bots.waiting} need you` : null].filter(Boolean).join(" · ")}</span>
       </Link>
