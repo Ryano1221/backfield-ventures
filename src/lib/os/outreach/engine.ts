@@ -8,7 +8,7 @@
  */
 import type { Lead, LeadBook } from "../leads/types";
 import { logEvent, makeEnrollment } from "./book";
-import { autoAddress, autoEligible, buildDigest, centralNow, dailyCap, firstTouchesToday, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, shouldPause } from "./plan";
+import { autoAddress, autoEligible, buildDigest, centralNow, dailyCap, pickVariant, subjectTest, firstTouchesToday, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, shouldPause } from "./plan";
 import type { Enrollment, OutreachBook, ReplyTriage, Step } from "./types";
 
 export type Mailer = {
@@ -98,6 +98,14 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
     report.errors.push(`Bounce check: ${error instanceof Error ? error.message : "failed"}`);
   }
 
+  // Subject test: once an arm clearly wins for a lead type, every new sequence uses it.
+  for (const kind of ["founder", "partner", "lp"] as const) {
+    if (!out.settings.subject_test || out.settings.subject_winner[kind]) continue;
+    const test = subjectTest(out, kind);
+    if (!test.winner) continue;
+    out = logEvent({ ...out, settings: { ...out.settings, subject_winner: { ...out.settings.subject_winner, [kind]: test.winner } } }, { at: at(), lead_id: null, text: `Subject test for ${kind}s: ${test.winner === "A" ? "the draft's own subject" : "the playbook subject"} won (${test.A.rate}% vs ${test.B.rate}%). New sequences use it.` });
+  }
+
   // 2. Too many bounces: stop sending until Ryan looks.
   const pause = out.settings.enabled ? shouldPause(out, deps.now()) : null;
   if (pause) {
@@ -127,7 +135,7 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
     if (!autoEligible(lead, out, deps.researchReady, deps.isKnown?.(lead) ?? false)) continue;
     const email = autoAddress(lead)!;
     const ai = deps.aiSteps ? await deps.aiSteps(lead).catch(() => null) : null;
-    out.enrollments.push(makeEnrollment({ ...lead, to: email }, email, "auto", at(), ai));
+    out.enrollments.push(makeEnrollment({ ...lead, to: email }, email, "auto", at(), ai, pickVariant(out, lead.kind)));
     out = logEvent(out, { at: at(), lead_id: lead.id, text: `${lead.company}: sequence started automatically (score ${lead.score}).` });
     report.enrolled++;
   }

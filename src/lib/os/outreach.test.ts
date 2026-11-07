@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildDigest, buildSteps, isHoliday, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { altSubject, autoEligible, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -392,4 +392,35 @@ test("do-not-contact can be corrected by hand, and reply rate splits by lead typ
     { kind: "founder", emailed: 5, replied: 1, rate: 20 },
     { kind: "lp", emailed: 1, replied: 1, rate: null },
   ]);
+});
+
+test("subject A/B: arms alternate, B swaps only the first subject, and a clear winner takes over", async () => {
+  assert.equal(altSubject("founder", "Fixture Snacks, Inc.", "Fixture Founder"), "Quick question about Fixture Snacks");
+  assert.ok(!LP_FORBIDDEN.test(altSubject("lp", "Example FO", "Fixture Person")));
+  const b = makeEnrollment(lead(), "fixture@example.com", "auto", "2026-11-10T00:00:00.000Z", null, "B");
+  assert.equal(b.variant, "B");
+  assert.equal(b.steps[0].subject, "Quick question about Fixture Snacks");
+  assert.equal(b.steps[1].subject, "Re: Quick question about Fixture Snacks");
+  assert.equal(b.steps[4].subject, "Fixture Snacks, checking back in", "the 3-month check-in keeps its own subject");
+
+  const base: OutreachBook = { ...EMPTY_OUTREACH, settings: { ...DEFAULT_SETTINGS } };
+  assert.equal(pickVariant(base, "founder"), "A");
+  const oneA = { ...base, enrollments: [makeEnrollment(lead(), "a@example.com", "auto", "2026-11-10T00:00:00.000Z", null, "A")] };
+  assert.equal(pickVariant(oneA, "founder"), "B");
+  assert.equal(pickVariant({ ...base, settings: { ...base.settings, subject_test: false } }, "founder"), undefined);
+
+  const sent = (i: number, variant: "A" | "B", replied: boolean) => {
+    const e = makeEnrollment(lead({ id: `v${i}` }), `v${i}@example.com`, "auto", "2026-11-05T00:00:00.000Z", null, variant);
+    e.steps[0].sent_at = "2026-11-05T15:00:00.000Z";
+    e.thread_id = `tv${i}`;
+    return { ...e, status: replied ? ("replied" as const) : ("active" as const) };
+  };
+  const arms = [...Array.from({ length: 20 }, (_, i) => sent(i, "A", i < 2)), ...Array.from({ length: 20 }, (_, i) => sent(20 + i, "B", i < 4))];
+  const test = subjectTest({ ...base, enrollments: arms }, "founder");
+  assert.deepEqual([test.A.rate, test.B.rate, test.winner], [10, 20, "B"]);
+  const run = await runOutreach({ ...base, settings: { ...base.settings, enabled: false }, enrollments: arms }, EMPTY_BOOK, deps(fakeMailer().mailer, "2026-11-10T14:30:00Z"));
+  assert.equal(run.book.settings.subject_winner.founder, "B");
+  assert.equal(pickVariant(run.book, "founder"), "B", "every new sequence uses the winner");
+  assert.ok(run.book.log.some((l) => l.text.includes("playbook subject won (10% vs 20%)")));
+  assert.equal(mergeRun(base, { ...base, settings: { ...base.settings, threshold: 70 } }, run.book).settings.subject_winner.founder, "B", "survives a mid-run settings change");
 });

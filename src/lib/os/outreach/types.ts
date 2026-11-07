@@ -44,6 +44,8 @@ export type Enrollment = {
   reply?: { at: string; snippet: string; handled_at: string | null; triage?: ReplyTriage | null } | null;
   /** An out-of-office came back; noted once, and it doesn't stop the sequence. */
   auto_reply_seen?: boolean;
+  /** Subject test arm: A keeps the draft's subject, B uses the playbook formula. */
+  variant?: "A" | "B";
 };
 
 export type OutreachSettings = {
@@ -64,6 +66,10 @@ export type OutreachSettings = {
   digest: boolean;
   /** The Central-time date the last morning email went out, YYYY-MM-DD. */
   last_digest: string | null;
+  /** Split first-email subjects A/B per lead type until one clearly wins. */
+  subject_test: boolean;
+  /** The winning arm per lead type, once the test has decided. */
+  subject_winner: Partial<Record<LeadKind, "A" | "B">>;
 };
 
 export type OutreachEvent = { at: string; lead_id: string | null; text: string };
@@ -88,6 +94,8 @@ export const DEFAULT_SETTINGS: OutreachSettings = {
   paused_reason: null,
   digest: false,
   last_digest: null,
+  subject_test: true,
+  subject_winner: {},
 };
 
 export const EMPTY_OUTREACH: OutreachBook = { version: 1, settings: DEFAULT_SETTINGS, enrollments: [], suppress: [], log: [] };
