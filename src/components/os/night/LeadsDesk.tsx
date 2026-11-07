@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StepDots } from "./Charts";
-import { gmailLink } from "@/lib/os/leads/book";
+import { bulkPick, gmailLink } from "@/lib/os/leads/book";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
@@ -36,7 +36,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const [kind, setKind] = useState<LeadKind>("founder");
   const [status, setStatus] = useState<LeadStatus>("new");
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string; undo?: string } | null>(null);
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string; undo?: string; undoMany?: string[] } | null>(null);
 
   useEffect(() => {
     const result = new URLSearchParams(window.location.search).get("gmail");
@@ -128,7 +128,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         return false;
       }
       setBook(data.book);
-      const change = body as { op?: string; id?: string };
+      const change = body as { op?: string; id?: string; action?: string; ids?: string[] };
+      if (change.op === "bulk" && change.ids) setMessage({ tone: "ok", text: `${change.action === "approve" ? "Approved" : "Skipped"} ${change.ids.length} ${change.ids.length === 1 ? "lead" : "leads"}.`, undoMany: change.ids });
       if ((change.op === "skip" || change.op === "approve") && change.id) {
         const company = data.book.leads.find((lead) => lead.id === change.id)?.company ?? "Lead";
         setMessage({ tone: "ok", text: `${change.op === "skip" ? "Skipped" : "Approved"} ${company}.`, undo: change.id });
@@ -182,6 +183,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       {message ? (
         <p className={`${message.tone === "error" ? "sx-error" : "sx-ok"} leads-toast`} role={message.tone === "error" ? "alert" : "status"}>
           {message.text}
+          {message.undoMany ? (
+            <button type="button" className="btn sm" onClick={() => send("/api/os/leads/book", { op: "restore_many", ids: message.undoMany }, "bulk")}>
+              Undo
+            </button>
+          ) : null}
           {message.undo ? (
             <button type="button" className="btn sm" onClick={() => send("/api/os/leads/book", { op: "restore", id: message.undo }, message.undo!)}>
               Undo
@@ -197,6 +203,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           </button>
         ))}
       </div>
+
+      {status === "new" ? <BulkBar book={book} kind={kind} busy={busy === "bulk"} onBulk={(action, score, ids) => send("/api/os/leads/book", { op: "bulk", kind, action, score, ids }, "bulk")} /> : null}
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
@@ -513,6 +521,27 @@ function Research({ lead, canResearch, researching, onResearch }: { lead: Lead; 
             {researching ? "Researching, about 2 minutes…" : research ? "Research again" : "Research"}
           </button>
         </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** One-tap triage for long lists: skip the weak ones, approve the strong ones that have an email. */
+function BulkBar({ book, kind, busy, onBulk }: { book: LeadBook; kind: LeadKind; busy: boolean; onBulk: (action: "approve" | "skip", score: number, ids: string[]) => Promise<boolean> }) {
+  const weak = bulkPick(book, kind, "skip", 50);
+  const strong = bulkPick(book, kind, "approve", 85);
+  if (!weak.length && !strong.length) return null;
+  return (
+    <div className="sx-actions leads-bulk">
+      {strong.length ? (
+        <button type="button" className="btn" disabled={busy} onClick={() => onBulk("approve", 85, strong.map((lead) => lead.id))}>
+          Approve the {strong.length} at 85+ with an email
+        </button>
+      ) : null}
+      {weak.length ? (
+        <button type="button" className="btn" disabled={busy} onClick={() => onBulk("skip", 50, weak.map((lead) => lead.id))}>
+          Skip the {weak.length} under 50
+        </button>
       ) : null}
     </div>
   );
