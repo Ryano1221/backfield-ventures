@@ -63,6 +63,7 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, preview =
           {s.enabled ? "Turn off" : "Turn on"}
         </button>
       </div>
+      <ApLive enabled={s.enabled} next={upcoming[0] ?? null} recent={book.log.filter((e) => now - Date.parse(e.at) < 86_400_000).slice(-4).reverse()} now={now} />
       {stats.emailed ? (
         <ul className="ap-stats" aria-label="Last 30 days">
           <li>
@@ -262,6 +263,44 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, preview =
 }
 
 /** Ryan's booking link, offered in suggested answers only once someone is interested. */
+function until(at: string, now: number): string {
+  const ms = Date.parse(at) - now;
+  if (ms <= 60_000) return "any minute";
+  const min = Math.round(ms / 60_000);
+  if (min < 60) return `in ${min} min`;
+  const hours = Math.round(min / 60);
+  if (hours < 24) return `in ${hours}h`;
+  return new Date(at).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
+}
+
+/** What autopilot is doing right now: the next send and the last day's activity, newest first. */
+function ApLive({ enabled, next, recent, now }: { enabled: boolean; next: ReturnType<typeof upcomingSends>[number] | null; recent: OutreachBook["log"]; now: number }) {
+  return (
+    <div className={`ap-live${enabled ? " is-on" : ""}`} aria-label="Autopilot right now">
+      <p className="ap-next">
+        <span className="ap-dot" aria-hidden="true" />
+        {next ? (
+          <span>
+            <b>Next:</b> {STEP_LABEL[next.kind].toLowerCase()} to {next.company} <span className="ap-when">{enabled ? until(next.at, now) : "paused"}</span>
+          </span>
+        ) : (
+          <span>{enabled ? "Nothing scheduled. New sequences start on the next hourly run." : "Paused. Nothing is scheduled."}</span>
+        )}
+      </p>
+      {recent.length ? (
+        <ol className="ap-feed">
+          {recent.map((event, i) => (
+            <li key={`${event.at}-${event.text}`} style={{ animationDelay: `${i * 60}ms` }}>
+              <time dateTime={event.at}>{new Date(event.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time>
+              <span>{event.text}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
 function BookingLink({ value, busy, onSave }: { value: string | null; busy: boolean; onSave: (url: string) => void }) {
   const [url, setUrl] = useState(value ?? "");
   return (
