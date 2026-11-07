@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildDigest, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { autoEligible, buildDigest, buildSteps, isHoliday, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -356,4 +356,20 @@ test("a reply is read in full, quoted history dropped, and triaged; a clear no i
   assert.ok(!yes.book.suppress.includes("fixture@example.com"));
   const no = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(mailer("We'll pass for now, thanks"), "2026-11-11T14:30:00Z", { triage }));
   assert.ok(no.book.suppress.includes("fixture@example.com"));
+});
+
+test("no sends on holidays: Thanksgiving week, the year-end break, and federal holidays", () => {
+  assert.ok(isHoliday("2026-11-26"), "Thanksgiving 2026");
+  assert.ok(isHoliday("2026-11-27"), "the day after");
+  assert.ok(isHoliday("2026-12-29"));
+  assert.ok(isHoliday("2027-01-01"));
+  assert.ok(isHoliday("2027-01-18"), "MLK Day 2027");
+  assert.ok(isHoliday("2027-05-31"), "Memorial Day 2027");
+  assert.ok(isHoliday("2027-09-06"), "Labor Day 2027");
+  assert.ok(!isHoliday("2026-11-24"));
+  assert.ok(!inSendWindow(new Date("2026-11-26T15:00:00Z"), "America/Chicago"), "Thursday 9am, but Thanksgiving");
+  assert.ok(inSendWindow(new Date("2026-11-24T15:00:00Z"), "America/Chicago"));
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.steps[0].sent_at = "2026-11-23T14:30:00.000Z";
+  assert.equal(stepDates(e, new Date("2026-11-24T00:00:00Z"))[1].at.slice(0, 10), "2026-12-01", "due Thanksgiving Thursday, so it waits to Tue Dec 1");
 });

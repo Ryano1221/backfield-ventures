@@ -103,10 +103,33 @@ function local(now: Date, tz: string): { weekday: string; hour: number; date: st
   return { weekday: parts.weekday, hour: Number(parts.hour), date: `${parts.year}-${parts.month}-${parts.day}` };
 }
 
-/** Tuesday to Thursday, 8 to 11 in the morning, their time. */
+/** nth weekday (0 Sunday) of a month, 1-based; n = -1 for the last one. YYYY-MM-DD. */
+function nthWeekday(year: number, month: number, weekday: number, n: number): string {
+  if (n > 0) {
+    const first = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+    const day = 1 + ((weekday - first + 7) % 7) + (n - 1) * 7;
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+  const last = new Date(Date.UTC(year, month, 0));
+  const day = last.getUTCDate() - ((last.getUTCDay() - weekday + 7) % 7);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** Days nobody wants a cold email: US federal holidays, the Friday after Thanksgiving, and Dec 24 to Jan 1. */
+export function isHoliday(date: string): boolean {
+  const [y, m, d] = date.split("-").map(Number);
+  if ((m === 12 && d >= 24) || (m === 1 && d === 1)) return true;
+  const fixed = ["01-01", "06-19", "07-04", "11-11", "12-25"].map((md) => `${y}-${md}`);
+  const thanksgiving = nthWeekday(y, 11, 4, 4);
+  const dayAfter = new Date(Date.parse(`${thanksgiving}T12:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+  const floating = [nthWeekday(y, 1, 1, 3), nthWeekday(y, 2, 1, 3), nthWeekday(y, 5, 1, -1), nthWeekday(y, 9, 1, 1), nthWeekday(y, 10, 1, 2), thanksgiving, dayAfter];
+  return [...fixed, ...floating].includes(date);
+}
+
+/** Tuesday to Thursday, 8 to 11 in the morning, their time, and not a holiday there. */
 export function inSendWindow(now: Date, tz: string): boolean {
-  const { weekday, hour } = local(now, tz);
-  return ["Tue", "Wed", "Thu"].includes(weekday) && hour >= 8 && hour < 11;
+  const { weekday, hour, date } = local(now, tz);
+  return ["Tue", "Wed", "Thu"].includes(weekday) && hour >= 8 && hour < 11 && !isHoliday(date);
 }
 
 /** The step to send next, or null. Due when its gap has passed since the step before. */
@@ -214,8 +237,8 @@ export function stepDates(enrollment: Enrollment, now: Date): { n: number; at: s
       return { n: step.n, at: step.sent_at, sent: true };
     }
     cursor = i === 0 ? Math.max(cursor, now.getTime()) : Math.max(cursor + step.gap_days * DAY_MS, now.getTime());
-    // Sends only go out Tuesday to Thursday: move the estimate to the next of those days.
-    while (![2, 3, 4].includes(new Date(cursor).getUTCDay())) cursor += DAY_MS;
+    // Sends only go out Tuesday to Thursday, never on a holiday: move the estimate to the next good day.
+    while (![2, 3, 4].includes(new Date(cursor).getUTCDay()) || isHoliday(new Date(cursor).toISOString().slice(0, 10))) cursor += DAY_MS;
     return { n: step.n, at: new Date(cursor).toISOString(), sent: false };
   });
 }
