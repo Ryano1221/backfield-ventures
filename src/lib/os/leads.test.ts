@@ -331,3 +331,18 @@ test("snoozed leads wait in Skipped and come back to review on their date", asyn
   const run = await runFinder(snoozed.book, { secText: async () => null, webText: async () => null, hasMx: async () => false, vendor: null, ai: null, research: null, taste: learnTaste([]), now: new Date("2026-12-08T12:00:00Z"), pause: async () => undefined }, { ...DEFAULT_LIMITS, days: 1 });
   assert.equal(run.book.leads[0].status, "new", "the daily run wakes it");
 });
+
+test("a failed SEC read is reported and retried, never taken for a holiday; mistaken days self-heal", async () => {
+  const base = { webText: async () => null, hasMx: async () => false, vendor: null, ai: null, research: null, taste: learnTaste([]), now: new Date("2026-11-06T12:00:00Z"), pause: async () => undefined };
+  const failing = await runFinder(EMPTY_BOOK, { ...base, secText: async () => { throw new Error("SEC answered 403 for form.20261105.idx"); } }, { ...DEFAULT_LIMITS, days: 5 });
+  assert.equal(failing.run.scanned, 0);
+  assert.deepEqual(failing.book.cursor.done_days, [], "no day is marked read after a failed read");
+  assert.ok(failing.run.errors.some((e) => e.includes("SEC answered 403")));
+
+  const holiday = await runFinder(EMPTY_BOOK, { ...base, secText: async () => null }, { ...DEFAULT_LIMITS, days: 5 });
+  assert.ok(holiday.book.cursor.done_days.length > 0, "a real 404 older than 3 days still counts as no index");
+
+  const mistaken = { ...EMPTY_BOOK, cursor: { done_days: ["20261103", "20261104"], done_filings: [] } };
+  const healed = await runFinder(mistaken, { ...base, secText: async (url) => (url === dailyIndexUrl("20261105") ? INDEX : null) }, { ...DEFAULT_LIMITS, days: 1 });
+  assert.ok(healed.run.scanned > 0, "reads again after healing");
+});

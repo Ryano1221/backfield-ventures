@@ -39,6 +39,23 @@ async function text(url: string, headers: Record<string, string>, ms: number, ma
   }
 }
 
+/**
+ * SEC pages. The daily index is served as application/octet-stream, so no content-type
+ * filter here. Only a 404 means "no index that day" (a holiday or not out yet); any
+ * other failure throws, so the run reports it and doesn't mark the day as read.
+ */
+async function secText(url: string): Promise<string | null> {
+  let res: Response;
+  try {
+    res = await fetch(url, { headers: { "user-agent": SEC_AGENT, accept: "text/plain, application/xml, */*" }, redirect: "follow", signal: AbortSignal.timeout(10_000) });
+  } catch (error) {
+    throw new Error(`SEC request failed (${error instanceof Error ? `${error.name}: ${error.message}` : String(error)})`);
+  }
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`SEC answered ${res.status} for ${new URL(url).pathname.split("/").pop()}`);
+  return (await res.text()).slice(0, 2_000_000);
+}
+
 async function hasMx(domain: string): Promise<boolean> {
   try {
     return (await resolveMx(domain)).length > 0;
@@ -59,7 +76,7 @@ function liveDeps(started: number, budgetMs: number): Omit<RunDeps, "taste"> {
   const vendor = vendorConfig();
   const findy = findymailKey();
   return {
-    secText: (url) => text(url, { "user-agent": SEC_AGENT, accept: "text/plain, application/xml" }, 10_000, 2_000_000),
+    secText,
     webText: (url) => text(url, { "user-agent": "Mozilla/5.0 (compatible; BackfieldOS/1.0)" }, 4_000, 400_000),
     hasMx,
     vendor: findy

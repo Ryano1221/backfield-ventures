@@ -178,6 +178,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       </div>
       <p className="sx-hint leads-run" aria-live="polite">
         {book.last_run ? `Last search ${new Date(book.last_run.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}: read ${book.last_run.scanned} ${book.last_run.scanned === 1 ? "filing" : "filings"}, ${book.last_run.added} new.` : "No search yet. Each search reads the next batch of SEC filings."}{" "}
+        {book.last_run?.errors.length ? <span className="sx-error leads-run-errors">Last search problems: {book.last_run.errors.slice(0, 3).join("; ")}{book.last_run.errors.length > 3 ? ` and ${book.last_run.errors.length - 3} more` : ""}. </span> : null}
         {setup.ai ? "AI writes the drafts." : "Drafts use a plain template until an AI key is set."} {setup.vendor ? `Contacts: company sites and ${setup.vendor}.` : "Contacts: company sites only, until a paid finder is connected."}
       </p>
       {message ? (
