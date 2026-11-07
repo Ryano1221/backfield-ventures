@@ -91,6 +91,19 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
       }
       if (typeof op.digest === "boolean") s.digest = op.digest;
       if (typeof op.subject_test === "boolean") s.subject_test = op.subject_test;
+      if (typeof op.calendar_url === "string") {
+        const raw = op.calendar_url.trim();
+        if (!raw) s.calendar_url = null;
+        else {
+          try {
+            const url = new URL(raw);
+            if (url.protocol !== "https:") throw new Error("not https");
+            s.calendar_url = url.toString().slice(0, 300);
+          } catch {
+            return { ok: false, error: "The booking link should start with https://" };
+          }
+        }
+      }
       if (op.threshold !== undefined) s.threshold = clampInt(op.threshold, 50, 100, s.threshold);
       if (op.kinds && typeof op.kinds === "object") {
         const k = op.kinds as Record<string, unknown>;

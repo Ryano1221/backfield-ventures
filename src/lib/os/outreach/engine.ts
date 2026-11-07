@@ -35,7 +35,7 @@ export type EngineDeps = {
   /** Where the Leads page lives, for the morning summary's link. */
   leadsUrl?: string;
   /** Reads a reply: what it means and a suggested answer. Null when no AI key is set. */
-  triage?: ((enrollment: Enrollment, replyText: string) => Promise<ReplyTriage | null>) | null;
+  triage?: ((enrollment: Enrollment, replyText: string, calendarUrl: string | null) => Promise<ReplyTriage | null>) | null;
   /** True when Ryan already knows the lead (Relationships, warm leads, or a pitch in Deals). */
   isKnown?: (lead: Lead) => boolean;
   /** True when leads get researched; autopilot then waits for the research before starting. */
@@ -77,7 +77,7 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
         let triage: ReplyTriage | null = null;
         if (deps.triage && reply.messageId && mailer.readReply) {
           const text = await mailer.readReply(reply.messageId).catch(() => reply.snippet);
-          triage = await deps.triage(enrollment, text || reply.snippet).catch(() => null);
+          triage = await deps.triage(enrollment, text || reply.snippet, out.settings.calendar_url).catch(() => null);
         }
         enrollment.reply = { at: at(), snippet: reply.snippet.slice(0, 400), handled_at: null, triage };
         // A clear no is respected for good, like an opt-out.

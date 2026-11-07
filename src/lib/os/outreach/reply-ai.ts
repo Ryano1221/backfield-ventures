@@ -11,7 +11,7 @@ const SYSTEM = `You help Ryan Arnold, who runs Backfield Ventures (an early-stag
 
 Classify the reply's intent as one of: interested (wants to talk or keep going), question (asks something Ryan should answer), referral (points Ryan to someone else), not_now (open later, not now), not_interested (declines or asks not to be contacted), other.
 
-Summarize the reply in one short sentence. Then write the answer Ryan could send: 25 to 90 words, plain, friendly, no hype, no em dashes, no exclamation marks, signed "Best,\\nRyan". Never invent times, dates, numbers, links or facts. If they want to meet, ask which times work for them. If they decline, thank them briefly and wish them well. Never mention a fund, raising money or investing with Ryan when the lead kind is lp.`;
+Summarize the reply in one short sentence. Then write the answer Ryan could send: 25 to 90 words, plain, friendly, no hype, no em dashes, no exclamation marks, signed "Best,\\nRyan". Never invent times, dates, numbers, links or facts. If they want to meet and a booking_link is given, offer it ("grab a time here: <link>") and also offer to work around their schedule; without a link, ask which times work for them. Never share the link when they aren't interested. If they decline, thank them briefly and wish them well. Never mention a fund, raising money or investing with Ryan when the lead kind is lp.`;
 
 const SCHEMA = {
   type: "object",
@@ -20,9 +20,9 @@ const SCHEMA = {
   additionalProperties: false,
 };
 
-export async function triageReply(enrollment: Enrollment, replyText: string, client = new Anthropic()): Promise<ReplyTriage | null> {
+export async function triageReply(enrollment: Enrollment, replyText: string, calendarUrl: string | null = null, client = new Anthropic()): Promise<ReplyTriage | null> {
   const lastSent = [...enrollment.steps].reverse().find((s) => s.sent_at);
-  const context = JSON.stringify({ lead_kind: enrollment.kind, their_name: enrollment.name, company: enrollment.company, ryans_last_email: lastSent ? { subject: lastSent.subject, body: lastSent.body } : null, their_reply: replyText });
+  const context = JSON.stringify({ booking_link: calendarUrl, lead_kind: enrollment.kind, their_name: enrollment.name, company: enrollment.company, ryans_last_email: lastSent ? { subject: lastSent.subject, body: lastSent.body } : null, their_reply: replyText });
   try {
     const response = await client.beta.messages.create({
       model: "claude-opus-5-5",

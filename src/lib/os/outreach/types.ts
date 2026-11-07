@@ -70,6 +70,8 @@ export type OutreachSettings = {
   subject_test: boolean;
   /** The winning arm per lead type, once the test has decided. */
   subject_winner: Partial<Record<LeadKind, "A" | "B">>;
+  /** Ryan's booking link (Calendly or similar), offered only once someone is interested. */
+  calendar_url: string | null;
 };
 
 export type OutreachEvent = { at: string; lead_id: string | null; text: string };
@@ -96,6 +98,7 @@ export const DEFAULT_SETTINGS: OutreachSettings = {
   last_digest: null,
   subject_test: true,
   subject_winner: {},
+  calendar_url: null,
 };
 
 export const EMPTY_OUTREACH: OutreachBook = { version: 1, settings: DEFAULT_SETTINGS, enrollments: [], suppress: [], log: [] };

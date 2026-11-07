@@ -142,7 +142,7 @@ export async function runAndSave(budgetMs: number) {
     maxSendsPerRun: 12,
     researchReady: aiReady() && !fixturesAllowed(),
     isKnown: (lead) => Boolean(knownFor(lead, known)),
-    triage: aiReady() && !fixturesAllowed() ? triageReply : null,
+    triage: aiReady() && !fixturesAllowed() ? (enrollment, text, calendarUrl) => triageReply(enrollment, text, calendarUrl) : null,
     verify: findymailVerifier(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,
