@@ -127,6 +127,8 @@ export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimit
       lead.contacts = site.contacts;
       if (site.kind === "store") lead.signals.push({ label: "Website", value: "Sells online (store)" });
       if (site.kind === "b2b") lead.signals.push({ label: "Website", value: "Business software" });
+      const fit = [site.thesis?.famousFounder === "athlete" ? "Founded by an athlete" : site.thesis?.famousFounder === "creator" ? "Founded by a creator or celebrity" : null, site.thesis?.sports ? "Sports / fitness brand" : null].filter(Boolean).join(" · ");
+      if (fit) lead.signals.push({ label: "Thesis", value: fit });
     } catch {
       errors.push(`${lead.company}: website check failed`);
     }

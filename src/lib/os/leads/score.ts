@@ -74,6 +74,11 @@ export function scoreLead(lead: Lead, taste: Taste): { score: number; reasons: s
     if (signal(lead, "Website") === "Sells online (store)") add(10, "sells online, a consumer brand");
     if (signal(lead, "Website") === "Business software") add(-10, "looks like business software");
     if (signal(lead, "Industry") === "Retailing" || signal(lead, "Industry") === "Restaurants") add(10, "consumer industry");
+    // Backfield's thesis: sports and consumer, especially athlete- and creator-founded brands.
+    const thesis = signal(lead, "Thesis") ?? "";
+    if (/athlete/.test(thesis)) add(15, "founded by an athlete");
+    else if (/creator or celebrity/.test(thesis)) add(12, "founded by a creator or celebrity");
+    if (/Sports/.test(thesis)) add(10, "sports or fitness brand");
   } else if (lead.kind === "partner") {
     const vehicles = Number(signal(lead, "Vehicles filed") ?? 1);
     if (vehicles > 1) add(Math.min(20, vehicles * 4), `${vehicles} deals filed recently`);

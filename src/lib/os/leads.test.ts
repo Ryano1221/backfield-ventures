@@ -7,7 +7,7 @@ import { learnTaste, scoreLead } from "./leads/score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, syndicateName, syndicatePerson } from "./leads/sec-form-d";
 import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { vendorConfig, vendorContacts, vendorUrl } from "./leads/vendor";
-import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails, siteKind } from "./leads/website";
+import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails, siteKind, siteThesis } from "./leads/website";
 
 // Shaped like a real EDGAR Form D primary_doc.xml. Names and numbers are fake.
 function formD(opts: { name: string; industry: string; fundType?: string; total?: string; sold?: string; investors?: string; age?: string; amendment?: boolean; people?: [string, string, string][] }): string {
@@ -358,4 +358,25 @@ test("the homepage tells a consumer store from business software", async () => {
   assert.ok(store.reasons.includes("+10 sells online, a consumer brand"));
   const saas = scoreLead(lead({ signals: [{ label: "Website", value: "Business software" }] }), learnTaste([]));
   assert.ok(saas.reasons.includes("-10 looks like business software"));
+});
+
+test("siteThesis spots sports brands and athlete- or creator-founded brands, and ignores passing mentions", () => {
+  assert.deepEqual(siteThesis("<h1>Hydration for athletes</h1><p>Built for training and recovery.</p>"), { sports: true, famousFounder: null });
+  // One sports word alone is not a sports brand.
+  assert.equal(siteThesis("<p>We sponsor a local sports league.</p><p>Organic snacks.</p>").sports, false);
+  assert.equal(siteThesis("<p>Founded by former NFL quarterback Sam Example, who wanted a better protein bar.</p>").famousFounder, "athlete");
+  assert.equal(siteThesis("<section>Meet the founders: a YouTuber and her sister.</section>").famousFounder, "creator");
+  // Words in scripts or far from "founded by" don't count.
+  assert.equal(siteThesis('<script>var nba = "founded by";</script><p>Founded by two friends in Austin.</p>').famousFounder, null);
+  assert.equal(siteThesis(`<p>Founded by two friends in Austin.${" Lorem ipsum.".repeat(20)} Follow us on Instagram.</p>`).famousFounder, null);
+});
+
+test("scoreLead adds points for the thesis: athlete-founded and sports brands", () => {
+  const none = { weights: new Map<string, number>(), rated: 0 };
+  const base = lead({ signals: [] });
+  const plain = scoreLead(base, none);
+  const fit = scoreLead({ ...base, signals: [{ label: "Thesis", value: "Founded by an athlete · Sports / fitness brand" }] }, none);
+  assert.equal(fit.score - plain.score, 25);
+  assert.ok(fit.reasons.includes("+15 founded by an athlete"));
+  assert.ok(fit.reasons.includes("+10 sports or fitness brand"));
 });

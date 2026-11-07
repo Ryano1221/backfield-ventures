@@ -384,6 +384,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
 // The facts that make a lead worth an email, in the order they matter, for the collapsed row.
 const PITCH: { label: string; show: (value: string) => string }[] = [
+  { label: "Thesis", show: (v) => v.split(" · ")[0] },
   { label: "Raising", show: (v) => `Raising ${v}` },
   { label: "In so far", show: (v) => v.replace(/^(\S+)\s*(\(.*\))?$/, (_, amount: string, share?: string) => `${amount} in${share ? ` ${share}` : ""}`) },
   { label: "Vehicle size", show: (v) => `${v} vehicle` },
