@@ -5,6 +5,7 @@ import { NightFrame } from "@/components/os/night/NightFrame";
 import { isOsHost } from "@/lib/os/host";
 import { leadsSetup, readKnownIndex, readLeads } from "@/lib/os/leads/server";
 import { setupChecklist } from "@/lib/os/leads/setup";
+import { wouldStart } from "@/lib/os/outreach/plan";
 import { SetupCard } from "@/components/os/night/SetupCard";
 import { knownFor, type Known } from "@/lib/os/leads/known";
 import { osChromeCounts } from "@/lib/os/nav";
@@ -26,6 +27,7 @@ export default async function LeadsPage() {
   const model = buildToday(page.snapshot, page.actions);
   const [book, outreach, mailSetup, index] = await Promise.all([readLeads(), readOutreach(), outreachSetup(), readKnownIndex(page.snapshot)]);
   const known: Record<string, Known> = {};
+  const research = leadsSetup().ai;
   for (const lead of book.leads) {
     const hit = knownFor(lead, index);
     if (hit) known[lead.id] = hit;
@@ -36,7 +38,7 @@ export default async function LeadsPage() {
       <h1 className="d-xl">Leads</h1>
       <p className="lede">Founders raising, investors running syndicates, and LPs worth a first email. Found from public SEC filings and company websites. Autopilot emails the best ones from your Gmail and stops when they reply.</p>
       <SetupCard items={setupChecklist({ lastAutoRun: book.last_auto_run ?? null, lastCronAt: outreach.last_cron_at ?? null, gmail: mailSetup.gmail, googleReady: mailSetup.googleReady, aiReady: leadsSetup().ai, now: readClock() })} />
-      <LeadsDesk initial={book} setup={leadsSetup()} outreach={outreach} outreachSetup={mailSetup} known={known} />
+      <LeadsDesk initial={book} setup={leadsSetup()} outreach={outreach} outreachSetup={mailSetup} known={known} preview={wouldStart(outreach, book.leads, new Date(readClock()), research, (lead) => Boolean(known[lead.id])).slice(0, 20)} />
     </NightFrame>
   );
 }

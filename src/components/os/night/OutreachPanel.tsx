@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { outreachStats, statsByKind, subjectTest } from "@/lib/os/outreach/plan";
+import { outreachStats, STEP_LABEL, statsByKind, statsBySource, subjectTest, upcomingSends } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import { KIND_LABEL, LEAD_KINDS } from "@/lib/os/leads/types";
 
@@ -17,7 +17,7 @@ export function sequenceLine(enrollment: Enrollment): string {
 }
 
 /** Autopilot: the switch, its rules, and what it is doing. Every change saves; the hourly run sends. */
-export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }: { book: OutreachBook; setup: OutreachSetup; capToday: number; sentToday: number; now: number; onBook: (book: OutreachBook, setup?: OutreachSetup) => void }) {
+export function OutreachPanel({ book, setup, capToday, sentToday, now, preview = [], onBook }: { book: OutreachBook; setup: OutreachSetup; capToday: number; sentToday: number; now: number; preview?: { id: string; company: string; score: number; email: string }[]; onBook: (book: OutreachBook, setup?: OutreachSetup) => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const s = book.settings;
@@ -42,8 +42,10 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
   }
 
   const live = book.enrollments.filter((e) => e.status === "active");
+  const upcoming = upcomingSends(book, new Date(now));
   const stats = outreachStats(book, new Date(now));
   const byKind = statsByKind(book, new Date(now));
+  const bySource = statsBySource(book, new Date(now));
   const recent = [...book.enrollments].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 12);
 
   return (
@@ -85,6 +87,11 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
         <p className="sx-hint">
           By type:{" "}
           {byKind.map((row) => `${KIND_LABEL[row.kind]} ${row.rate != null ? `${row.rate}%` : `${row.replied} of ${row.emailed}`}`).join(" · ")}
+        </p>
+      ) : null}
+      {bySource.length > 1 ? (
+        <p className="sx-hint">
+          By source (90 days): {bySource.map((row) => `${row.source} ${row.rate != null ? `${row.rate}%` : `${row.replied} of ${row.emailed}`}`).join(" · ")}
         </p>
       ) : null}
       {s.subject_test
@@ -165,6 +172,40 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
 
         </div>
       </details>
+      {upcoming.length || preview.length ? (
+        <details className="lead-why" open={!s.enabled}>
+          <summary>Next 7 days{s.enabled ? "" : ", if you switch it on"}</summary>
+          {upcoming.length ? (
+            <ul className="autopilot-list">
+              {upcoming.slice(0, 15).map((row) => (
+                <li key={`${row.lead_id}-${row.n}`}>
+                  <span>
+                    <b>{row.company}</b> · email {row.n}, {STEP_LABEL[row.kind].toLowerCase()}
+                  </span>
+                  <span className="sx-hint">{new Date(row.at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, their morning · {row.email}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {preview.length ? (
+            <>
+              <p className="sx-hint">{s.enabled ? "Starting next" : "Would start"} (score {s.threshold}+, real address, researched, not someone you know):</p>
+              <ul className="autopilot-list">
+                {preview.map((row) => (
+                  <li key={row.id}>
+                    <span>
+                      <b>{row.company}</b> · {row.score}
+                    </span>
+                    <span className="sx-hint">{row.email}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="sx-hint">No lead meets the bar right now.</p>
+          )}
+        </details>
+      ) : null}
       {recent.length ? (
         <details className="lead-why">
           <summary>Sequences ({book.enrollments.length})</summary>

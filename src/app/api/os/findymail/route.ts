@@ -4,13 +4,19 @@ import { writeDoc } from "@/lib/os/doc-store";
 import { osJson } from "@/lib/os/response";
 import { mergeLeads } from "@/lib/os/leads/book";
 import { templateDraft } from "@/lib/os/leads/draft";
-import { applySearchOp, credits, findymailKey, FindymailError, keyNote, leadFromContact, listContacts, listLists } from "@/lib/os/leads/findymail";
+import { applySearchOp, credits, findymailKey, FindymailError, FIXTURE_KEY, fixtureFindymail, keyNote, leadFromContact, listContacts, listLists, type Fetch } from "@/lib/os/leads/findymail";
+import { fixturesAllowed } from "@/lib/os/store";
 import { scoreLead } from "@/lib/os/leads/score";
 import { FINDYMAIL_DOC, LEADS_DOC, readFindyMap, readLeads, readTaste } from "@/lib/os/leads/server";
 import { LEAD_KINDS, type LeadKind } from "@/lib/os/leads/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+/** The e2e server gets canned Findymail answers; everything else talks to Findymail. */
+function findymailFetch(key: string): Fetch {
+  return fixturesAllowed() && key === FIXTURE_KEY ? fixtureFindymail : fetch;
+}
 
 /** Logs everything about a failure (never the key) and returns what the panel should say. */
 function explain(where: string, error: unknown): string {
@@ -28,7 +34,7 @@ export async function GET() {
   const saved = await readFindyMap();
   if (!key) return osJson({ ok: true, ready: false, lists: [], map: saved.lists, searches: saved.searches, credits: null });
   try {
-    const [lists, balance] = await Promise.all([listLists(fetch, key), credits(fetch, key).catch(() => null)]);
+    const [lists, balance] = await Promise.all([listLists(findymailFetch(key), key), credits(findymailFetch(key), key).catch(() => null)]);
     return osJson({ ok: true, ready: true, lists, map: saved.lists, searches: saved.searches, credits: balance, key_note: keyNote() });
   } catch (error) {
     return osJson({ error: explain("GET", error), key_note: keyNote() }, 502);
@@ -66,7 +72,7 @@ export async function POST(req: Request) {
   try {
     const now = new Date().toISOString();
     const taste = await readTaste();
-    const found = (await listContacts(fetch, key, id)).map((contact) => {
+    const found = (await listContacts(findymailFetch(key), key, id)).map((contact) => {
       const lead = leadFromContact(contact, body.kind as LeadKind, name, now);
       const scored = scoreLead(lead, taste);
       return { ...lead, score: scored.score, reasons: scored.reasons, draft: templateDraft(lead) };

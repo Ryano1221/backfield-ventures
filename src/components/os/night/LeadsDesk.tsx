@@ -29,7 +29,7 @@ const GMAIL_NOTE: Record<string, { tone: "ok" | "error"; text: string }> = {
   failed: { tone: "error", text: "Gmail could not be connected. Check the Google client settings and try again." },
 };
 
-export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup, known = {} }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup; known?: Record<string, Known> }) {
+export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup, known = {}, preview = [] }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup; known?: Record<string, Known>; preview?: { id: string; company: string; score: number; email: string }[] }) {
   const [book, setBook] = useState(initial);
   const [outreach, setOutreach] = useState(initialOutreach);
   const [mailSetup, setMailSetup] = useState(outreachSetup);
@@ -86,7 +86,10 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const matches = (lead: Lead) => !q || `${lead.company} ${lead.people.map((p) => p.name).join(" ")} ${lead.location ?? ""} ${lead.contacts.map((c) => c.email).join(" ")}`.toLowerCase().includes(q);
-  const shown = book.leads.filter((lead) => lead.kind === kind && lead.status === status && matches(lead)).sort((a, b) => b.score - a.score);
+  const [sort, setSort] = useState<"score" | "newest">("score");
+  const shown = book.leads
+    .filter((lead) => lead.kind === kind && lead.status === status && matches(lead))
+    .sort((a, b) => (sort === "newest" ? b.found_at.localeCompare(a.found_at) || b.score - a.score : b.score - a.score));
   const isOpen = (id: string, index: number) => open.has(id) || (!touched && index === 0);
   const firstId = shown[0]?.id ?? null;
 
@@ -159,6 +162,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         capToday={dailyCap(outreach.settings, outreach, new Date(now))}
         sentToday={firstTouchesToday(outreach, new Date(now))}
         now={now}
+        preview={preview}
         onBook={(next, nextSetup) => {
           setOutreach(next);
           if (nextSetup) setMailSetup(nextSetup);
@@ -210,6 +214,14 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
+      <div className="segment sx-wrap" role="group" aria-label="Sort leads">
+        <button type="button" aria-pressed={sort === "score"} onClick={() => setSort("score")}>
+          Best first
+        </button>
+        <button type="button" aria-pressed={sort === "newest"} onClick={() => setSort("newest")}>
+          Newest first
+        </button>
+      </div>
       <label className="sx-field leads-search">
         <span className="lbl">Find a lead</span>
         <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company, person, city or email" autoComplete="off" />
@@ -308,7 +320,9 @@ function LeadCard({
   const [body, setBody] = useState(lead.draft?.body ?? "");
   const [copied, setCopied] = useState(false);
   const gmail = gmailLink(lead);
-  const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location].filter(Boolean).join(" · ");
+  const days = Math.max(0, Math.floor((now - Date.parse(lead.found_at)) / 86_400_000));
+  const age = Number.isFinite(days) ? (days === 0 ? "found today" : days === 1 ? "found yesterday" : `found ${days}d ago`) : null;
+  const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location, age].filter(Boolean).join(" · ");
   // One tap to look the person up yourself, in your own browser.
   const plainCompany = plainName(lead.company);
   const lookup = lead.people[0] ? `${lead.people[0].name} ${plainCompany}`.trim() : null;
