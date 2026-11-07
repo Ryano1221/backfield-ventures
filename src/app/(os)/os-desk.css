@@ -812,3 +812,10 @@ body.os .os-funnel-share { font-size: 12px; color: var(--ink3); text-align: righ
 @media (max-width: 480px) { body.os .os-funnel li { grid-template-columns: 70px minmax(0, 1fr) 44px 36px; gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { body.os .os-funnel-track i { animation: none; } }
 body.os .send-now { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; animation: os-fade 0.25s ease both; }
+
+/* One toolbar row: search, sort, export. Wraps on narrow screens. */
+body.os .leads-tools { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: flex-end; }
+body.os .leads-tools .leads-search { flex: 1 1 260px; max-width: 420px; }
+body.os .leads-tools .leads-sort { display: inline-flex; width: auto; flex: none; }
+body.os .leads-tools .leads-sort button { flex: none; padding-left: 14px; padding-right: 14px; }
+body.os .leads-tools > .btn { flex: none; }

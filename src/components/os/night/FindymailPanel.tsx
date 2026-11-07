@@ -143,6 +143,8 @@ function Searches({ searches, onSearches }: { searches: FindySearch[]; onSearche
       ) : (
         <p className="sx-hint">Describe who you want in plain words. Findymail finds matching companies, the right person and a verified email, every week.</p>
       )}
+      <details className="lead-why">
+        <summary>Add a saved search</summary>
       <form
         className="lead-edit"
         onSubmit={async (event) => {
@@ -187,6 +189,7 @@ function Searches({ searches, onSearches }: { searches: FindySearch[]; onSearche
           </button>
         </div>
       </form>
+      </details>
     </div>
   );
 }
