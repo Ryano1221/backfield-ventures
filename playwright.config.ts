@@ -17,6 +17,8 @@ const SERVER_ENV: Record<string, string> = {
   OS_SNAPSHOT_FILE: "/tmp/os-e2e-none.json",
   OS_INGEST_TOKEN: "e2e-ingest-token",
   CRON_SECRET: "e2e-cron-secret",
+  // A Tuesday, 8:30am in Austin: inside the outreach send window. Fixture servers only.
+  OUTREACH_FIXTURE_NOW: "2026-11-10T14:30:00Z",
   NEXT_TELEMETRY_DISABLED: "1",
 };
 const quote = (value: string) => `'${value.replace(/'/g, `'\\''`)}'`;

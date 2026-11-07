@@ -44,14 +44,14 @@ export function templateDraft(lead: Lead): LeadDraft {
       ].join("\n\n"),
     };
   }
-  // LP: a relationship note only. No fund terms in a cold email.
+  // LP: about startups and The Handoff, never the fund.
   return {
     by: "template",
-    subject: `Intro from Backfield Ventures`,
+    subject: `Startups worth knowing about`,
     body: [
       hi,
-      `I'm Ryan, I run Backfield Ventures in Austin. We invest in early consumer brands.${lead.note ? ` ${lead.note}` : ""}`,
-      `Would love to get to know you. Open to a quick call in the next couple weeks?`,
+      `I'm Ryan, I run Backfield Ventures in Austin. Each month I write The Handoff, a short note on early consumer brands I think are impressive and why.`,
+      `A lot of readers just like seeing what's being built early. Want me to add you? Here's the page: backfieldventures.com/handoff`,
       `Best,\nRyan`,
     ].join("\n\n"),
   };

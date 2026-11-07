@@ -1,0 +1,36 @@
+# Runs outreach autopilot every hour across US weekday mornings (12:07 to 19:07 UTC).
+# The app decides what to send: Tuesday to Thursday, 8 to 11am in each person's
+# time zone. Monday and Friday runs only check for replies and bounces.
+# Needs two repository secrets: CRON_SECRET (same as Vercel) and OUTREACH_CRON_URL
+# (https://os.backfieldventures.com/api/cron/outreach). Without them it does nothing.
+name: Outreach autopilot
+
+on:
+  schedule:
+    - cron: "7 12-19 * * 1-5"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: outreach-autopilot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Run one autopilot pass
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          OUTREACH_CRON_URL: ${{ secrets.OUTREACH_CRON_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$OUTREACH_CRON_URL" ]; then
+            echo "CRON_SECRET or OUTREACH_CRON_URL is not set; skipping."
+            exit 0
+          fi
+          status=$(curl -sS -o response.json -w '%{http_code}' --max-time 330 \
+            -H "Authorization: Bearer $CRON_SECRET" "$OUTREACH_CRON_URL")
+          cat response.json; echo
+          test "$status" = "200"

@@ -1938,3 +1938,6 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
 .lead-edit { display: grid; gap: 10px; }
 .lead-actions { flex-wrap: wrap; }
 .lead-import { display: grid; gap: 10px; }
+.autopilot { display: grid; gap: 14px; }
+.autopilot-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+.autopilot-list li { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }

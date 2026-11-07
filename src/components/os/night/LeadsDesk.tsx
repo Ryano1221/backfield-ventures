@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { gmailLink } from "@/lib/os/leads/book";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
+import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
+import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
+import { OutreachPanel, sequenceLine, type OutreachSetup } from "./OutreachPanel";
 
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "To review", approved: "Approved", contacted: "Sent", skipped: "Skipped" };
 const STATUSES: LeadStatus[] = ["new", "approved", "contacted", "skipped"];
@@ -11,12 +14,46 @@ const CONFIDENCE = { high: "Named person", medium: "Team inbox", low: "Unverifie
 type Setup = { ai: boolean; vendor: string | null };
 
 /** The lead list. Every change saves to the OS; nothing here sends email. */
-export function LeadsDesk({ initial, setup }: { initial: LeadBook; setup: Setup }) {
+const GMAIL_NOTE: Record<string, { tone: "ok" | "error"; text: string }> = {
+  connected: { tone: "ok", text: "Gmail connected. Autopilot can send once it's switched on." },
+  declined: { tone: "error", text: "Gmail was not connected: access was declined." },
+  expired: { tone: "error", text: "That Gmail sign-in expired. Try Connect Gmail again." },
+  failed: { tone: "error", text: "Gmail could not be connected. Check the Google client settings and try again." },
+};
+
+export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup }) {
   const [book, setBook] = useState(initial);
+  const [outreach, setOutreach] = useState(initialOutreach);
+  const [mailSetup, setMailSetup] = useState(outreachSetup);
+  const [now] = useState(() => Date.now());
   const [kind, setKind] = useState<LeadKind>("founder");
   const [status, setStatus] = useState<LeadStatus>("new");
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get("gmail");
+    if (result && GMAIL_NOTE[result]) setMessage(GMAIL_NOTE[result]);
+  }, []);
+  const sequences = useMemo(() => new Map(outreach.enrollments.map((e) => [e.lead_id, e])), [outreach]);
+
+  async function enroll(lead: Lead, to: string) {
+    setBusy(lead.id);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/os/outreach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "enroll", lead_id: lead.id, to }) });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; book?: OutreachBook };
+      if (!res.ok || !data.book) setMessage({ tone: "error", text: data.error || "Could not start the sequence." });
+      else {
+        setOutreach(data.book);
+        setMessage({ tone: "ok", text: `Sequence started for ${lead.company}. The first email goes out in their next Tuesday to Thursday morning.` });
+      }
+    } catch {
+      setMessage({ tone: "error", text: "No connection. Nothing was saved." });
+    } finally {
+      setBusy(null);
+    }
+  }
 
   const counts = useMemo(() => {
     const out: Record<string, number> = {};
@@ -53,6 +90,16 @@ export function LeadsDesk({ initial, setup }: { initial: LeadBook; setup: Setup 
 
   return (
     <div className="leads">
+      <OutreachPanel
+        book={outreach}
+        setup={mailSetup}
+        capToday={dailyCap(outreach.settings, outreach, new Date(now))}
+        sentToday={firstTouchesToday(outreach, new Date(now))}
+        onBook={(next, nextSetup) => {
+          setOutreach(next);
+          if (nextSetup) setMailSetup(nextSetup);
+        }}
+      />
       <div className="leads-bar">
         <div className="segment" role="group" aria-label="Lead type">
           {LEAD_KINDS.map((value) => (
@@ -88,7 +135,7 @@ export function LeadsDesk({ initial, setup }: { initial: LeadBook; setup: Setup 
       {shown.length ? (
         <ul className="leads-list">
           {shown.map((lead) => (
-            <LeadCard key={lead.id} lead={lead} busy={busy === lead.id} onOp={op} />
+            <LeadCard key={lead.id} lead={lead} busy={busy === lead.id} onOp={op} sequence={sequences.get(lead.id) ?? null} onEnroll={enroll} />
           ))}
         </ul>
       ) : (
@@ -104,7 +151,7 @@ function emptyText(kind: LeadKind, status: LeadStatus): string {
   return `Nothing to review. Find new leads to read the next batch of filings.`;
 }
 
-function LeadCard({ lead, busy, onOp }: { lead: Lead; busy: boolean; onOp: (body: Record<string, unknown>) => Promise<boolean> }) {
+function LeadCard({ lead, busy, onOp, sequence, onEnroll }: { lead: Lead; busy: boolean; onOp: (body: Record<string, unknown>) => Promise<boolean>; sequence: Enrollment | null; onEnroll: (lead: Lead, to: string) => Promise<void> }) {
   const [to, setTo] = useState(lead.to ?? lead.contacts[0]?.email ?? "");
   const [editing, setEditing] = useState(false);
   const [subject, setSubject] = useState(lead.draft?.subject ?? "");
@@ -146,6 +193,11 @@ function LeadCard({ lead, busy, onOp }: { lead: Lead; busy: boolean; onOp: (body
         </dl>
       ) : null}
       {lead.note ? <p className="t-body">{lead.note}</p> : null}
+      {sequence ? (
+        <p className="sx-ok" role="status">
+          Sequence: {sequenceLine(sequence)}. {sequence.reason}
+        </p>
+      ) : null}
 
       {lead.reasons.length ? (
         <details className="lead-why">
@@ -228,8 +280,13 @@ function LeadCard({ lead, busy, onOp }: { lead: Lead; busy: boolean; onOp: (body
         ) : null}
         {lead.status === "approved" ? (
           <>
+            {!sequence || sequence.status !== "active" ? (
+              <button type="button" className="btn primary" disabled={busy} onClick={() => onEnroll(lead, to)}>
+                Start sequence
+              </button>
+            ) : null}
             {gmail ? (
-              <a className="btn primary" href={gmail} target="_blank" rel="noopener noreferrer">
+              <a className="btn" href={gmail} target="_blank" rel="noopener noreferrer">
                 Open in Gmail
               </a>
             ) : null}

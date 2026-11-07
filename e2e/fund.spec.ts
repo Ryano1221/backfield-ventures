@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-leads.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-leads.json", "/tmp/os-outreach.json", "/tmp/os-outreach-outbox.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -290,4 +290,33 @@ test("the daily lead search needs the cron secret, then finds leads and they sho
   await page.goto("/os/leads");
   await expect(page.getByRole("heading", { name: "Example Fixture Snacks, Inc." })).toBeVisible();
   await expect(page.getByText("Last search")).toBeVisible();
+});
+
+test("autopilot: a started sequence sends its first email from the hourly run, and only with the cron secret", async ({ request, page }) => {
+  expect((await request.get("/api/cron/outreach")).status()).toBe(401);
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  await expect(page.getByRole("heading", { name: "Autopilot off" })).toBeVisible();
+  await expect(page.getByText("Sending from owner@example.com")).toBeVisible();
+
+  const card = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Example Fixture Snacks, Inc." }) });
+  await card.getByRole("textbox").fill("founder@example.com");
+  await card.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: /^Approved/ }).click();
+  await page.getByRole("button", { name: "Start sequence" }).click();
+  await expect(page.getByRole("status").filter({ hasText: /Sequence started for Example Fixture Snacks/ })).toBeVisible();
+
+  // Autopilot off: the run only checks replies.
+  let run = await request.get("/api/cron/outreach", { headers: { authorization: "Bearer e2e-cron-secret" } });
+  expect(((await run.json()) as { report: { sent: number } }).report.sent).toBe(0);
+
+  await page.getByRole("button", { name: "Turn on" }).click();
+  await expect(page.getByRole("heading", { name: "Autopilot on" })).toBeVisible();
+  run = await request.get("/api/cron/outreach", { headers: { authorization: "Bearer e2e-cron-secret" } });
+  expect(((await run.json()) as { report: { sent: number } }).report.sent).toBe(1);
+
+  await page.reload();
+  await page.getByRole("button", { name: /^Sent/ }).click();
+  await expect(page.getByText(/^Sequence: Running · email 1 of 5 sent/)).toBeVisible();
 });
