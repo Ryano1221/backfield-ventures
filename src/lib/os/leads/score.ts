@@ -71,6 +71,8 @@ export function scoreLead(lead: Lead, taste: Taste): { score: number; reasons: s
     if (inSoFar && Number(inSoFar) >= 25 && Number(inSoFar) < 100) add(10, `${inSoFar}% committed, still open`);
     if (inSoFar && Number(inSoFar) >= 100) add(-10, "round looks full");
     if (signal(lead, "Company age")) add(5, "under 5 years old");
+    if (signal(lead, "Website") === "Sells online (store)") add(10, "sells online, a consumer brand");
+    if (signal(lead, "Website") === "Business software") add(-10, "looks like business software");
     if (signal(lead, "Industry") === "Retailing" || signal(lead, "Industry") === "Restaurants") add(10, "consumer industry");
   } else if (lead.kind === "partner") {
     const vehicles = Number(signal(lead, "Vehicles filed") ?? 1);

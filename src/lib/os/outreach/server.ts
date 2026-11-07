@@ -142,13 +142,13 @@ export async function runAndSave(budgetMs: number) {
     maxSendsPerRun: 12,
     researchReady: aiReady() && !fixturesAllowed(),
     isKnown: (lead) => Boolean(knownFor(lead, known)),
-    triage: aiReady() && !fixturesAllowed() ? triageReply : null,
+    triage: aiReady() && !fixturesAllowed() ? (enrollment, text, calendarUrl) => triageReply(enrollment, text, calendarUrl) : null,
     verify: findymailVerifier(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,
   // the lead search may have added leads). Merge onto the latest saves instead of overwriting them.
   const [freshBook, freshLeads] = await Promise.all([readOutreach(), readLeads()]);
-  const saved = mergeRun(book, freshBook, result.book);
+  const saved = { ...mergeRun(book, freshBook, result.book), last_cron_at: new Date().toISOString() };
   const contacted = new Map(result.leads.leads.filter((lead) => lead.status === "contacted").map((lead) => [lead.id, lead]));
   const leadsSaved = { ...freshLeads, leads: freshLeads.leads.map((lead) => ((lead.status === "new" || lead.status === "approved") && contacted.has(lead.id) ? { ...lead, status: "contacted" as const, to: contacted.get(lead.id)!.to, updated_at: contacted.get(lead.id)!.updated_at } : lead)) };
   await writeDoc(OUTREACH_DOC, JSON.stringify(saved));

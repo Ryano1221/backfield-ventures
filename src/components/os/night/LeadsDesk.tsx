@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StepDots } from "./Charts";
 import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
+import { plainName } from "@/lib/os/leads/draft";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
@@ -308,6 +309,9 @@ function LeadCard({
   const [copied, setCopied] = useState(false);
   const gmail = gmailLink(lead);
   const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location].filter(Boolean).join(" · ");
+  // One tap to look the person up yourself, in your own browser.
+  const plainCompany = plainName(lead.company);
+  const lookup = lead.people[0] ? `${lead.people[0].name} ${plainCompany}`.trim() : null;
   const band = lead.score >= 80 ? "is-high" : lead.score >= 60 ? "is-mid" : "is-low";
   const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
   const warm = Boolean(said);
@@ -473,6 +477,16 @@ function LeadCard({
           <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "restore", id: lead.id })}>
             Back to review
           </button>
+        ) : null}
+        {lookup ? (
+          <>
+            <a className="btn" href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(lookup)}`} target="_blank" rel="noopener noreferrer">
+              LinkedIn
+            </a>
+            <a className="btn" href={`https://www.google.com/search?q=${encodeURIComponent(`"${lead.people[0].name}" ${plainCompany}`)}`} target="_blank" rel="noopener noreferrer">
+              Google
+            </a>
+          </>
         ) : null}
         {lead.source_url ? (
           <a className="btn" href={lead.source_url} target="_blank" rel="noopener noreferrer">

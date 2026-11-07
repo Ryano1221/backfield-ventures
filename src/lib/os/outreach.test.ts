@@ -424,3 +424,21 @@ test("subject A/B: arms alternate, B swaps only the first subject, and a clear w
   assert.ok(run.book.log.some((l) => l.text.includes("playbook subject won (10% vs 20%)")));
   assert.equal(mergeRun(base, { ...base, settings: { ...base.settings, threshold: 70 } }, run.book).settings.subject_winner.founder, "B", "survives a mid-run settings change");
 });
+
+test("a booking link is validated and handed to reply triage only", async () => {
+  assert.deepEqual(applyOutreachOp(EMPTY_OUTREACH, { op: "settings", calendar_url: "calendly.com/x" }, []), { ok: false, error: "The booking link should start with https://" });
+  const set = applyOutreachOp(EMPTY_OUTREACH, { op: "settings", calendar_url: "https://calendly.example/ryan/20min" }, []);
+  assert.ok(set.ok);
+  assert.equal(set.book.settings.calendar_url, "https://calendly.example/ryan/20min");
+  const cleared = applyOutreachOp(set.book, { op: "settings", calendar_url: "" }, []);
+  assert.ok(cleared.ok && cleared.book.settings.calendar_url === null);
+
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.thread_id = "t1";
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  for (const step of e.steps) assert.ok(!step.body.includes("calendly"), "never in cold emails");
+  let passed: string | null = "unset";
+  const mailer: Mailer = { ...fakeMailer().mailer, reply: async () => ({ replied: true, snippet: "Yes", messageId: "m" }), readReply: async () => "Yes, let's talk" };
+  await runOutreach({ ...set.book, enrollments: [e] }, EMPTY_BOOK, deps(mailer, "2026-11-11T14:30:00Z", { triage: async (_e, _t, url) => { passed = url; return null; } }));
+  assert.equal(passed, "https://calendly.example/ryan/20min");
+});

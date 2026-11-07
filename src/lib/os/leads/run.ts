@@ -125,6 +125,8 @@ export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimit
       const site = await findOnWebsite(lead.company, lead.people, lead.website, { fetchText: deps.webText, hasMx: deps.hasMx });
       lead.website = site.website;
       lead.contacts = site.contacts;
+      if (site.kind === "store") lead.signals.push({ label: "Website", value: "Sells online (store)" });
+      if (site.kind === "b2b") lead.signals.push({ label: "Website", value: "Business software" });
     } catch {
       errors.push(`${lead.company}: website check failed`);
     }

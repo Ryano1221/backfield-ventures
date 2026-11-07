@@ -149,7 +149,8 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
                 </button>
               ))}
             </div>
-            <div className="segment sx-wrap" role="group" aria-label="Subject test">
+            <BookingLink value={s.calendar_url} busy={busy} onSave={(calendar_url) => send({ op: "settings", calendar_url })} />
+        <div className="segment sx-wrap" role="group" aria-label="Subject test">
           <button type="button" aria-pressed={s.subject_test} disabled={busy} onClick={() => send({ op: "settings", subject_test: !s.subject_test })}>
             Subject A/B test {s.subject_test ? "on" : "off"}
           </button>
@@ -216,5 +217,30 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
         </details>
       ) : null}
     </section>
+  );
+}
+
+/** Ryan's booking link, offered in suggested answers only once someone is interested. */
+function BookingLink({ value, busy, onSave }: { value: string | null; busy: boolean; onSave: (url: string) => void }) {
+  const [url, setUrl] = useState(value ?? "");
+  return (
+    <form
+      className="lead-edit"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSave(url);
+      }}
+    >
+      <label className="sx-field">
+        <span className="lbl">Booking link (optional)</span>
+        <input type="url" inputMode="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://calendly.com/you/20min" />
+      </label>
+      <p className="sx-hint">Shared only in suggested answers to people who said they&apos;re interested, never in cold emails.</p>
+      <div className="sx-actions">
+        <button type="submit" className="btn sm" disabled={busy || url.trim() === (value ?? "")}>
+          Save link
+        </button>
+      </div>
+    </form>
   );
 }

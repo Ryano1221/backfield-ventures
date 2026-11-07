@@ -123,13 +123,14 @@ function fixtureDeps(): Omit<RunDeps, "taste"> {
 }
 
 /** Runs one batch and saves it. `budgetMs` is how long the host lets the request run. */
-export async function findAndSave(budgetMs: number, limits: RunLimits = DEFAULT_LIMITS) {
+export async function findAndSave(budgetMs: number, limits: RunLimits = DEFAULT_LIMITS, scheduled = false) {
   const started = Date.now();
   const book = await readLeads();
   const base = fixturesAllowed() ? fixtureDeps() : liveDeps(started, budgetMs);
   const result = await runFinder(book, { ...base, taste: await readTaste() }, fixturesAllowed() ? { ...limits, days: 1 } : limits);
-  await writeDoc(LEADS_DOC, JSON.stringify(result.book));
-  return result;
+  const saved = scheduled ? { ...result.book, last_auto_run: new Date().toISOString() } : result.book;
+  await writeDoc(LEADS_DOC, JSON.stringify(saved));
+  return { ...result, book: saved };
 }
 
 export function leadsSetup(env: Record<string, string | undefined> = process.env) {
@@ -197,3 +198,4 @@ export async function readKnownIndex(snapshot?: import("../types").Snapshot | nu
   const warm = parseWarmLeads(await readDoc("warm-leads").catch(() => null));
   return buildKnownIndex({ crm: snap?.crm.people ?? [], pitches: snap?.pitches ?? [], warm: warm.leads.map((w) => ({ name: w.name, firm: w.firm, status: w.status })) });
 }
+

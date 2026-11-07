@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { applySearchOp, cleanKey, credits, EMPTY_MAP, failureReason, findEmail, FindymailError, findymailKey, keyNote, leadFromContact, leadFromMatch, listContacts, listLists, searchResults, searchStatus, searchStep, startSearch, verifyEmail, type Fetch } from "./leads/findymail";
 import { DEFAULT_LIMITS, runFinder } from "./leads/run";
+import { setupChecklist } from "./leads/setup";
 import { learnTaste, scoreLead } from "./leads/score";
 import { EMPTY_BOOK } from "./leads/types";
 import { makeEnrollment } from "./outreach/book";
@@ -179,4 +180,23 @@ test("a pasted key with invisible characters, quotes or a Bearer prefix still wo
   };
   await assert.rejects(listLists(slow, "abc"), /no answer within 15 seconds/);
   assert.equal(failureReason("x"), "x");
+});
+
+test("the setup checklist says what's ready and what's missing, without secrets", () => {
+  const now = Date.parse("2026-11-07T15:00:00Z");
+  const items = setupChecklist({ lastAutoRun: "2026-11-07T11:17:00Z", lastCronAt: null, gmail: "owner@example.com", googleReady: true, aiReady: false, now }, { FINDYMAIL_API_KEY: "​abc|123" });
+  const by = new Map(items.map((i) => [i.key, i]));
+  assert.equal(by.get("daily")?.ok, true);
+  assert.match(by.get("daily")?.detail ?? "", /4 hours ago/);
+  assert.equal(by.get("hourly")?.ok, false);
+  assert.match(by.get("hourly")?.detail ?? "", /GitHub repository secrets/);
+  assert.equal(by.get("ai")?.ok, false);
+  assert.equal(by.get("gmail")?.detail, "Sending from owner@example.com.");
+  assert.equal(by.get("findymail")?.ok, true);
+  assert.match(by.get("findymail")?.detail ?? "", /extra character/);
+  assert.ok(!JSON.stringify(items).includes("abc|123"), "never shows the key");
+  const stale = setupChecklist({ lastAutoRun: "2026-11-04T11:17:00Z", lastCronAt: "2026-11-01T13:00:00Z", gmail: null, googleReady: false, aiReady: true, now }, {});
+  assert.equal(stale.find((i) => i.key === "daily")?.ok, false);
+  assert.match(stale.find((i) => i.key === "daily")?.detail ?? "", /3 days ago.*CRON_SECRET/);
+  assert.equal(stale.find((i) => i.key === "findymail")?.ok, false);
 });

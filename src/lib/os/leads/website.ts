@@ -87,7 +87,22 @@ export function guessAddress(people: LeadPerson[], domain: string): LeadContact 
 
 const PAGES = ["", "/contact", "/pages/contact", "/about", "/pages/about", "/pages/about-us", "/about-us"];
 
-export type WebsiteResult = { website: string | null; contacts: LeadContact[] };
+export type SiteKind = "store" | "b2b" | null;
+
+/**
+ * What the homepage says the company is. A consumer fund wants brands that sell
+ * to people; business software is a different business. Null when it's unclear.
+ */
+export function siteKind(html: string): SiteKind {
+  const text = html.slice(0, 400_000).toLowerCase();
+  const store = [/cdn\.shopify\.com|myshopify\.com|shopify\.theme/, /add to (?:cart|bag)/, /shop (?:now|all)/, /free shipping/, /subscribe (?:&|and) save/, /\bcheckout\b/].filter((r) => r.test(text)).length;
+  const b2b = [/(?:book|request|schedule|get) a demo/, /\bsoc ?2\b/, /\benterprise\b/, /per (?:seat|user)\b/, /\bsaas\b/, /\bapi (?:docs|reference)\b/, /talk to sales|contact sales/].filter((r) => r.test(text)).length;
+  if (store >= 2 && store > b2b) return "store";
+  if (b2b >= 2 && b2b > store) return "b2b";
+  return null;
+}
+
+export type WebsiteResult = { website: string | null; contacts: LeadContact[]; kind?: SiteKind };
 
 /** Finds the site and its published addresses. `known` is a website we already have. */
 export async function findOnWebsite(company: string, people: LeadPerson[], known: string | null, deps: { fetchText: FetchText; hasMx: HasMx }): Promise<WebsiteResult> {
@@ -122,5 +137,5 @@ export async function findOnWebsite(company: string, people: LeadPerson[], known
     const guess = guessAddress(people, domain);
     if (guess && !contacts.some((contact) => contact.email === guess.email)) contacts.push(guess);
   }
-  return { website: `https://${domain}`, contacts };
+  return { website: `https://${domain}`, contacts, kind: home ? siteKind(home) : null };
 }

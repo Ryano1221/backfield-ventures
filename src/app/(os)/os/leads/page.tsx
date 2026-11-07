@@ -4,6 +4,8 @@ import { LeadsDesk } from "@/components/os/night/LeadsDesk";
 import { NightFrame } from "@/components/os/night/NightFrame";
 import { isOsHost } from "@/lib/os/host";
 import { leadsSetup, readKnownIndex, readLeads } from "@/lib/os/leads/server";
+import { setupChecklist } from "@/lib/os/leads/setup";
+import { SetupCard } from "@/components/os/night/SetupCard";
 import { knownFor, type Known } from "@/lib/os/leads/known";
 import { osChromeCounts } from "@/lib/os/nav";
 import { outreachSetup, readOutreach } from "@/lib/os/outreach/server";
@@ -33,7 +35,13 @@ export default async function LeadsPage() {
       <div className="lbl eyebrow">Operations</div>
       <h1 className="d-xl">Leads</h1>
       <p className="lede">Founders raising, investors running syndicates, and LPs worth a first email. Found from public SEC filings and company websites. Autopilot emails the best ones from your Gmail and stops when they reply.</p>
+      <SetupCard items={setupChecklist({ lastAutoRun: book.last_auto_run ?? null, lastCronAt: outreach.last_cron_at ?? null, gmail: mailSetup.gmail, googleReady: mailSetup.googleReady, aiReady: leadsSetup().ai, now: readClock() })} />
       <LeadsDesk initial={book} setup={leadsSetup()} outreach={outreach} outreachSetup={mailSetup} known={known} />
     </NightFrame>
   );
+}
+
+/** Request time, read once per render of this server page. */
+function readClock() {
+  return Date.now();
 }
