@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StepDots } from "./Charts";
 import { gmailLink } from "@/lib/os/leads/book";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
@@ -46,15 +46,17 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const [open, setOpen] = useState<Set<string>>(() => new Set());
   const [touched, setTouched] = useState(false);
   const listRef = useRef<HTMLUListElement>(null);
-  const toggle = useCallback((id: string) => {
-    setTouched(true);
+  // Flip what's on screen: the best lead counts as open until the first toggle.
+  function toggle(id: string, showing: boolean) {
     setOpen((current) => {
       const next = new Set(current);
-      if (next.has(id)) next.delete(id);
+      if (!touched && firstId && firstId !== id) next.add(firstId);
+      if (showing) next.delete(id);
       else next.add(id);
       return next;
     });
-  }, []);
+    setTouched(true);
+  }
 
   async function enroll(lead: Lead, to: string) {
     setBusy(lead.id);
@@ -84,6 +86,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const matches = (lead: Lead) => !q || `${lead.company} ${lead.people.map((p) => p.name).join(" ")} ${lead.location ?? ""} ${lead.contacts.map((c) => c.email).join(" ")}`.toLowerCase().includes(q);
   const shown = book.leads.filter((lead) => lead.kind === kind && lead.status === status && matches(lead)).sort((a, b) => b.score - a.score);
   const isOpen = (id: string, index: number) => open.has(id) || (!touched && index === 0);
+  const firstId = shown[0]?.id ?? null;
 
   // Triage from the keyboard: j and k move between leads, a approves, s skips. Typing in a field is left alone.
   useEffect(() => {
@@ -211,7 +214,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
             <LeadCard
               key={lead.id}
               open={isOpen(lead.id, index)}
-              onToggle={() => toggle(lead.id)}
+              onToggle={() => toggle(lead.id, isOpen(lead.id, index))}
               lead={lead}
               busy={busy === lead.id}
               researching={busy === `research:${lead.id}`}
