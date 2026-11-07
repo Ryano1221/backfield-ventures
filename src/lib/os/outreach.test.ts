@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildDigest, buildSteps, isHoliday, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { autoEligible, buildDigest, buildSteps, isHoliday, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -372,4 +372,24 @@ test("no sends on holidays: Thanksgiving week, the year-end break, and federal h
   const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
   e.steps[0].sent_at = "2026-11-23T14:30:00.000Z";
   assert.equal(stepDates(e, new Date("2026-11-24T00:00:00Z"))[1].at.slice(0, 10), "2026-12-01", "due Thanksgiving Thursday, so it waits to Tue Dec 1");
+});
+
+test("do-not-contact can be corrected by hand, and reply rate splits by lead type", () => {
+  const book: OutreachBook = { ...EMPTY_OUTREACH, suppress: ["fixture@example.com"] };
+  const fixed = applyOutreachOp(book, { op: "unsuppress", email: "Fixture@Example.com" }, [], "2026-11-10T00:00:00.000Z");
+  assert.ok(fixed.ok);
+  assert.deepEqual(fixed.book.suppress, []);
+  assert.match(fixed.book.log.at(-1)?.text ?? "", /removed from do-not-contact/);
+  assert.equal(applyOutreachOp(book, { op: "unsuppress", email: "other@example.com" }, []).ok, false);
+
+  const sent = (i: number, kind: "founder" | "lp", status: "active" | "replied") => {
+    const e = makeEnrollment(lead({ id: `k${i}`, kind }), `k${i}@example.com`, "auto", "2026-11-05T00:00:00.000Z", null);
+    e.steps[0].sent_at = "2026-11-05T15:00:00.000Z";
+    return { ...e, status };
+  };
+  const mixed: OutreachBook = { ...EMPTY_OUTREACH, enrollments: [...Array.from({ length: 4 }, (_, i) => sent(i, "founder", "active")), sent(4, "founder", "replied"), sent(5, "lp", "replied")] };
+  assert.deepEqual(statsByKind(mixed, new Date("2026-11-10T00:00:00Z")), [
+    { kind: "founder", emailed: 5, replied: 1, rate: 20 },
+    { kind: "lp", emailed: 1, replied: 1, rate: null },
+  ]);
 });

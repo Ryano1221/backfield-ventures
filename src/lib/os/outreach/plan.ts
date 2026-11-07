@@ -266,3 +266,15 @@ export function buildDigest(book: OutreachBook, leads: Lead[], since: string | n
   const subject = [replies.length ? `${replies.length} ${replies.length === 1 ? "reply" : "replies"}` : null, fresh.length ? `${fresh.length} new ${fresh.length === 1 ? "lead" : "leads"}` : null, !replies.length && !fresh.length ? `${sent} sent` : null].filter(Boolean).join(", ");
   return { subject: `Backfield leads: ${subject}`, body: parts.join("\n\n") };
 }
+
+/** Reply rate by lead kind over the last 30 days, for kinds with at least one email sent. */
+export function statsByKind(book: OutreachBook, now: Date): { kind: LeadKind; emailed: number; replied: number; rate: number | null }[] {
+  const recent = book.enrollments.filter((e) => e.steps[0]?.sent_at && now.getTime() - Date.parse(e.steps[0].sent_at) < 30 * DAY_MS);
+  return (["founder", "partner", "lp"] as const).flatMap((kind) => {
+    const rows = recent.filter((e) => e.kind === kind);
+    if (!rows.length) return [];
+    const delivered = rows.filter((e) => e.status !== "bounced").length;
+    const replied = rows.filter((e) => e.status === "replied").length;
+    return [{ kind, emailed: rows.length, replied, rate: delivered >= 5 ? Math.round((replied / delivered) * 100) : null }];
+  });
+}
