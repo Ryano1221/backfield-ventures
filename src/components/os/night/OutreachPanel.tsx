@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { outreachStats, statsByKind, subjectTest } from "@/lib/os/outreach/plan";
+import { outreachStats, statsByKind, statsBySource, subjectTest } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import { KIND_LABEL, LEAD_KINDS } from "@/lib/os/leads/types";
 
@@ -44,6 +44,7 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
   const live = book.enrollments.filter((e) => e.status === "active");
   const stats = outreachStats(book, new Date(now));
   const byKind = statsByKind(book, new Date(now));
+  const bySource = statsBySource(book, new Date(now));
   const recent = [...book.enrollments].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 12);
 
   return (
@@ -85,6 +86,11 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
         <p className="sx-hint">
           By type:{" "}
           {byKind.map((row) => `${KIND_LABEL[row.kind]} ${row.rate != null ? `${row.rate}%` : `${row.replied} of ${row.emailed}`}`).join(" · ")}
+        </p>
+      ) : null}
+      {bySource.length > 1 ? (
+        <p className="sx-hint">
+          By source (90 days): {bySource.map((row) => `${row.source} ${row.rate != null ? `${row.rate}%` : `${row.replied} of ${row.emailed}`}`).join(" · ")}
         </p>
       ) : null}
       {s.subject_test

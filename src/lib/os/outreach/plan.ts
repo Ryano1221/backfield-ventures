@@ -316,3 +316,17 @@ export function subjectTest(book: OutreachBook, kind: LeadKind): { A: ArmStats; 
   if (A.delivered >= 20 && B.delivered >= 20 && A.rate != null && B.rate != null && Math.abs(A.rate - B.rate) >= 5) winner = A.rate > B.rate ? "A" : "B";
   return { A, B, winner };
 }
+
+/** Reply rate by where leads came from, last 90 days, so credits go where people answer. */
+export function statsBySource(book: OutreachBook, now: Date): { source: string; emailed: number; replied: number; rate: number | null }[] {
+  const recent = book.enrollments.filter((e) => e.source && e.steps[0]?.sent_at && now.getTime() - Date.parse(e.steps[0].sent_at) < 90 * DAY_MS);
+  const sources = [...new Set(recent.map((e) => e.source!))];
+  return sources
+    .map((source) => {
+      const rows = recent.filter((e) => e.source === source);
+      const delivered = rows.filter((e) => e.status !== "bounced").length;
+      const replied = rows.filter((e) => e.status === "replied").length;
+      return { source, emailed: rows.length, replied, rate: delivered >= 5 ? Math.round((replied / delivered) * 100) : null };
+    })
+    .sort((a, b) => b.emailed - a.emailed);
+}

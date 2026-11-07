@@ -44,6 +44,8 @@ export type Enrollment = {
   reply?: { at: string; snippet: string; handled_at: string | null; triage?: ReplyTriage | null } | null;
   /** An out-of-office came back; noted once, and it doesn't stop the sequence. */
   auto_reply_seen?: boolean;
+  /** Where the lead came from (SEC Form D, Findymail, Findymail search, Added by you), for reply rate by source. */
+  source?: string;
   /** Subject test arm: A keeps the draft's subject, B uses the playbook formula. */
   variant?: "A" | "B";
 };

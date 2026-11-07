@@ -53,6 +53,7 @@ export function makeEnrollment(lead: Lead, email: string, by: "auto" | "you", no
   }
   return {
     ...(variant ? { variant } : {}),
+    source: lead.source,
     lead_id: lead.id,
     kind: lead.kind,
     email: email.toLowerCase(),

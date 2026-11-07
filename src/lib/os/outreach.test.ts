@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { altSubject, autoEligible, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { altSubject, autoEligible, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -441,4 +441,18 @@ test("a booking link is validated and handed to reply triage only", async () => 
   const mailer: Mailer = { ...fakeMailer().mailer, reply: async () => ({ replied: true, snippet: "Yes", messageId: "m" }), readReply: async () => "Yes, let's talk" };
   await runOutreach({ ...set.book, enrollments: [e] }, EMPTY_BOOK, deps(mailer, "2026-11-11T14:30:00Z", { triage: async (_e, _t, url) => { passed = url; return null; } }));
   assert.equal(passed, "https://calendly.example/ryan/20min");
+});
+
+test("reply rate by source tells which lead sources answer", () => {
+  const sent = (i: number, source: string, replied: boolean) => {
+    const e = makeEnrollment(lead({ id: `src${i}`, source }), `src${i}@example.com`, "auto", "2026-11-01T00:00:00.000Z", null);
+    e.steps[0].sent_at = "2026-11-01T15:00:00.000Z";
+    return { ...e, status: replied ? ("replied" as const) : ("active" as const) };
+  };
+  assert.equal(sent(0, "Findymail", false).source, "Findymail");
+  const book: OutreachBook = { ...EMPTY_OUTREACH, enrollments: [...Array.from({ length: 6 }, (_, i) => sent(i, "SEC Form D", i === 0)), sent(6, "Findymail", true), sent(7, "Findymail", false)] };
+  assert.deepEqual(statsBySource(book, new Date("2026-11-10T00:00:00Z")), [
+    { source: "SEC Form D", emailed: 6, replied: 1, rate: 17 },
+    { source: "Findymail", emailed: 2, replied: 1, rate: null },
+  ]);
 });
