@@ -426,3 +426,35 @@ test("send now: two taps send the first email from Gmail and start the sequence"
   await page.getByRole("button", { name: /^Sent/ }).click();
   await expect(page.getByText(/^Sequence: Running · email 1 of 5 sent/)).toBeVisible();
 });
+
+test("leads on touch screens: swipe a lead left to skip it, with undo; a short drag does nothing", async ({ request, page }) => {
+  test.skip(!test.info().project.use.hasTouch, "swiping is a touch gesture");
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  const row = page.getByRole("button", { name: /Example Fixture Snacks/ });
+  await expect(row).toBeVisible();
+  const card = page.locator("li.lead").filter({ has: row });
+  await row.scrollIntoViewIfNeeded();
+  const box = (await row.boundingBox())!;
+  const cdp = await page.context().newCDPSession(page);
+  const drag = async (dx: number) => {
+    const y = box.y + box.height / 2;
+    const x0 = box.x + box.width / 2;
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: x0, y }] });
+    for (let i = 1; i <= 8; i++) await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x0 + (dx * i) / 8, y }] });
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  };
+
+  // A short drag springs back and changes nothing.
+  await drag(-40);
+  await expect(card).not.toHaveClass(/is-swiping|is-gone/);
+  await expect(row).toBeVisible();
+
+  // A long drag left skips it, and Undo brings it back.
+  await drag(-170);
+  await expect(page.getByRole("status").filter({ hasText: "Skipped Example Fixture Snacks, Inc." })).toBeVisible();
+  await expect(row).toHaveCount(0);
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(row).toBeVisible();
+});
