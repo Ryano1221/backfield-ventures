@@ -7,7 +7,7 @@ import { learnTaste, scoreLead } from "./leads/score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, syndicateName, syndicatePerson } from "./leads/sec-form-d";
 import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { vendorConfig, vendorContacts, vendorUrl } from "./leads/vendor";
-import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails } from "./leads/website";
+import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails, siteKind } from "./leads/website";
 
 // Shaped like a real EDGAR Form D primary_doc.xml. Names and numbers are fake.
 function formD(opts: { name: string; industry: string; fundType?: string; total?: string; sold?: string; investors?: string; age?: string; amendment?: boolean; people?: [string, string, string][] }): string {
@@ -345,4 +345,17 @@ test("a failed SEC read is reported and retried, never taken for a holiday; mist
   const mistaken = { ...EMPTY_BOOK, cursor: { done_days: ["20261103", "20261104"], done_filings: [] } };
   const healed = await runFinder(mistaken, { ...base, secText: async (url) => (url === dailyIndexUrl("20261105") ? INDEX : null) }, { ...DEFAULT_LIMITS, days: 1 });
   assert.ok(healed.run.scanned > 0, "reads again after healing");
+});
+
+test("the homepage tells a consumer store from business software", async () => {
+  assert.equal(siteKind('<script src="https://cdn.shopify.com/s/x.js"></script><button>Add to cart</button>'), "store");
+  assert.equal(siteKind("<a>Book a demo</a> SOC 2 Type II compliant. Pricing per seat."), "b2b");
+  assert.equal(siteKind("<h1>Welcome</h1>"), null);
+  assert.equal(siteKind("Shop now, free shipping. Book a demo."), "store", "two store signs beat one software sign");
+  const site = await findOnWebsite("Fixture Grandma, Inc.", [], null, { fetchText: async (url) => (url === "https://fixturegrandma.com" ? "<title>Fixture Grandma</title> Shop all cookies. Add to cart." : null), hasMx: async () => false });
+  assert.equal(site.kind, "store");
+  const store = scoreLead(lead({ signals: [{ label: "Website", value: "Sells online (store)" }] }), learnTaste([]));
+  assert.ok(store.reasons.includes("+10 sells online, a consumer brand"));
+  const saas = scoreLead(lead({ signals: [{ label: "Website", value: "Business software" }] }), learnTaste([]));
+  assert.ok(saas.reasons.includes("-10 looks like business software"));
 });
