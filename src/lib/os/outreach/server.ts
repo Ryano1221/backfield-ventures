@@ -8,7 +8,8 @@ import { FindymailError, findymailKey, verifyEmail } from "../leads/findymail";
 import { sessionSecret } from "../session";
 import { fixturesAllowed } from "../store";
 import { aiSteps } from "./ai-steps";
-import { mergeRun, parseOutreach } from "./book";
+import { logEvent, makeEnrollment, mergeRun, parseOutreach } from "./book";
+import { LP_FORBIDDEN, pickVariant, suppressed } from "./plan";
 import { runOutreach, type Mailer } from "./engine";
 import { accessToken, bouncedAddresses, googleApp, messageText, sendMail, threadReply } from "./gmail";
 import { triageReply } from "./reply-ai";
@@ -159,4 +160,47 @@ export async function runAndSave(budgetMs: number) {
 export async function outreachSetup() {
   const link = await readGmail();
   return { gmail: link ? link.email : null, googleReady: fixturesAllowed() || Boolean(googleApp()) };
+}
+
+/**
+ * Ryan's "Send now": the first email goes out right away from his Gmail and the
+ * sequence starts, follow-ups on schedule. Still checks do-not-contact and, when
+ * Findymail is set up, that the address accepts mail.
+ */
+export async function sendNow(leadId: string, to: string): Promise<{ ok: true; book: OutreachBook } | { ok: false; error: string }> {
+  const [book, leads] = await Promise.all([readOutreach(), readLeads()]);
+  const lead = leads.leads.find((l) => l.id === leadId);
+  if (!lead) return { ok: false, error: "That lead is not on the list." };
+  const email = to.trim().toLowerCase();
+  if (!/^[^@\s,;<>]+@[^@\s,;<>]+\.[a-z]{2,}$/i.test(email)) return { ok: false, error: "Pick or type an email address first." };
+  if (suppressed(book, email)) return { ok: false, error: "That address asked not to be contacted, or bounced." };
+  if (book.enrollments.some((e) => e.email === email && e.status === "active" && e.steps[0]?.sent_at)) return { ok: false, error: "That person already got the first email." };
+  let mailer: Mailer | null;
+  try {
+    mailer = await liveMailer();
+  } catch (error) {
+    return { ok: false, error: `Gmail connection failed: ${error instanceof Error ? error.message : "unknown"}. Reconnect Gmail.` };
+  }
+  if (!mailer) return { ok: false, error: "Connect Gmail first, in the Autopilot panel's Settings." };
+  const verify = findymailVerifier();
+  if (verify && (await verify(email)) === false) return { ok: false, error: `Findymail says ${email} doesn't accept mail. Not sent.` };
+  const now = new Date().toISOString();
+  const enrollment = makeEnrollment({ ...lead, to: email }, email, "you", now, null, pickVariant(book, lead.kind));
+  const step = enrollment.steps[0];
+  if (enrollment.kind === "lp" && LP_FORBIDDEN.test(`${step.subject} ${step.body}`)) return { ok: false, error: "LP emails can't mention the fund. Edit the draft first." };
+  try {
+    const sent = await mailer.send({ to: email, toName: enrollment.name, subject: step.subject, body: step.body, inReplyTo: null }, null);
+    Object.assign(step, { sent_at: now, gmail_id: sent.gmailId, message_id: sent.messageId });
+    enrollment.thread_id = sent.threadId;
+    enrollment.reason = "Sent now by you.";
+  } catch (error) {
+    return { ok: false, error: `Gmail didn't send it: ${error instanceof Error ? error.message : "unknown"}` };
+  }
+  // Save onto the latest state: the new sequence, and the lead marked contacted.
+  const latest = await readOutreach();
+  const saved = logEvent({ ...latest, enrollments: [...latest.enrollments.filter((e) => e.lead_id !== lead.id), enrollment] }, { at: now, lead_id: lead.id, text: `${lead.company}: email 1 sent now by you to ${email}.` });
+  const freshLeads = await readLeads();
+  await writeDoc(OUTREACH_DOC, JSON.stringify(saved));
+  await writeDoc(LEADS_DOC, JSON.stringify({ ...freshLeads, leads: freshLeads.leads.map((l) => (l.id === lead.id ? { ...l, status: "contacted" as const, to: email, updated_at: now } : l)) }));
+  return { ok: true, book: saved };
 }

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { StepDots } from "./Charts";
+import { Funnel, StepDots } from "./Charts";
 import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
 import { plainName } from "@/lib/os/leads/draft";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
-import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
+import { dailyCap, firstTouchesToday, leadFunnel } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import type { Known } from "@/lib/os/leads/known";
 import { FindymailPanel } from "./FindymailPanel";
@@ -156,6 +156,12 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   return (
     <div className="leads">
       <RepliesPanel book={outreach} onBook={setOutreach} />
+      {book.leads.length ? (
+        <section className="sx-card autopilot" aria-label="Last 30 days">
+          <h2 className="lead-name">Last 30 days</h2>
+          <Funnel steps={leadFunnel(book.leads, outreach, new Date(now))} label="Leads found in the last 30 days: how many were reviewed, emailed and replied" />
+        </section>
+      ) : null}
       <OutreachPanel
         book={outreach}
         setup={mailSetup}
@@ -180,6 +186,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         <button type="button" className="btn primary" disabled={busy === "find"} onClick={() => send("/api/os/leads/find", {}, "find")}>
           {busy === "find" ? "Searching…" : "Find new leads"}
         </button>
+        {busy === "find" ? (
+          <span className="sx-hint" role="status">
+            Reading the latest SEC filings and company sites. About 30 seconds.
+          </span>
+        ) : null}
       </div>
       <p className="sx-hint leads-run" aria-live="polite">
         {book.last_run ? `Last search ${new Date(book.last_run.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}: read ${book.last_run.scanned} ${book.last_run.scanned === 1 ? "filing" : "filings"}, ${book.last_run.added} new.` : "No search yet. Each search reads the next batch of SEC filings."}{" "}
@@ -210,6 +221,13 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         ))}
       </div>
 
+      {status === "new" && setup.ai ? (
+        <ResearchTop
+          leads={shown}
+          busy={busy}
+          onResearch={async (id) => send("/api/os/leads/research", { id }, `research:${id}`)}
+        />
+      ) : null}
       {status === "new" ? <BulkBar book={book} kind={kind} busy={busy === "bulk"} onBulk={(action, score, ids) => send("/api/os/leads/book", { op: "bulk", kind, action, score, ids }, "bulk")} /> : null}
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
@@ -269,6 +287,12 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
               now={now}
               onSequence={setOutreach}
               known={known[lead.id] ?? null}
+              canSend={Boolean(mailSetup.gmail)}
+              onSent={(book) => {
+                setOutreach(book);
+                setBook((current) => ({ ...current, leads: current.leads.map((l) => (l.id === lead.id ? { ...l, status: "contacted" } : l)) }));
+                setMessage({ tone: "ok", text: `Sent to ${lead.company}. Follow-ups go out on schedule; a reply stops them.` });
+              }}
             />
           ))}
         </ul>
@@ -291,6 +315,8 @@ function LeadCard({
   now,
   onSequence,
   known,
+  canSend,
+  onSent,
   lead,
   busy,
   researching,
@@ -305,6 +331,8 @@ function LeadCard({
   now: number;
   onSequence: (book: OutreachBook) => void;
   known: Known | null;
+  canSend: boolean;
+  onSent: (book: OutreachBook) => void;
   lead: Lead;
   busy: boolean;
   researching: boolean;
@@ -468,6 +496,7 @@ function LeadCard({
         ) : null}
         {lead.status === "approved" ? (
           <>
+            {canSend && (!sequence || !sequence.steps[0]?.sent_at) ? <SendNow leadId={lead.id} to={to} onSent={onSent} /> : null}
             {!sequence || sequence.status !== "active" ? (
               <button type="button" className="btn primary" disabled={busy} onClick={() => onEnroll(lead, to)}>
                 Start sequence
@@ -623,5 +652,87 @@ function NoteField({ lead, onOp }: { lead: Lead; onOp: (body: Record<string, unk
         }}
       />
     </label>
+  );
+}
+
+/** Two taps to send the first email now from Gmail: one to ask, one to confirm. */
+function SendNow({ leadId, to, onSent }: { leadId: string; to: string; onSent: (book: OutreachBook) => void }) {
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (!asking) {
+    return (
+      <button type="button" className="btn" onClick={() => setAsking(true)}>
+        Send now from Gmail
+      </button>
+    );
+  }
+  return (
+    <span className="send-now">
+      <button
+        type="button"
+        className="btn primary"
+        disabled={busy || !to.trim()}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            const res = await fetch("/api/os/outreach/send-now", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: leadId, to }) });
+            const data = (await res.json().catch(() => ({}))) as { error?: string; book?: OutreachBook };
+            if (!res.ok || !data.book) setError(data.error || "Could not send.");
+            else onSent(data.book);
+          } catch {
+            setError("No connection. Nothing was sent.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "Sending…" : `Confirm: send to ${to || "this address"}`}
+      </button>
+      <button type="button" className="btn" disabled={busy} onClick={() => setAsking(false)}>
+        Cancel
+      </button>
+      {error ? (
+        <span className="sx-error" role="alert">
+          {error}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+/** Researches the best unresearched leads one after another, so each request stays short. */
+function ResearchTop({ leads, busy, onResearch }: { leads: Lead[]; busy: string | null; onResearch: (id: string) => Promise<boolean> }) {
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const onProgress = setProgress;
+  const picks = leads.filter((lead) => lead.research === undefined && lead.people.length && lead.score >= 60).slice(0, 5);
+  if (!picks.length && !running && !progress) return null;
+  return (
+    <div className="sx-actions">
+      <button
+        type="button"
+        className="btn"
+        disabled={running || Boolean(busy)}
+        onClick={async () => {
+          setRunning(true);
+          let done = 0;
+          for (const [i, lead] of picks.entries()) {
+            onProgress(`Researching ${i + 1} of ${picks.length}: ${lead.company}. About 2 minutes each.`);
+            if (await onResearch(lead.id)) done++;
+          }
+          onProgress(`Researched ${done} of ${picks.length}. Check each card for what they said in the last year.`);
+          setRunning(false);
+        }}
+      >
+        {running ? "Researching…" : `Research the top ${picks.length}`}
+      </button>
+      {progress ? (
+        <span className="sx-hint" role="status">
+          {progress}
+        </span>
+      ) : null}
+    </div>
   );
 }

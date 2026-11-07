@@ -358,3 +358,22 @@ export function wouldStart(book: OutreachBook, leads: Lead[], now: Date, researc
     .slice(0, cap)
     .map((lead) => ({ id: lead.id, company: lead.company, score: lead.score, email: autoAddress(lead)! }));
 }
+
+/**
+ * One cohort, followed through: leads found in the last 30 days, how many were
+ * reviewed, emailed, and replied. Same leads at every step, so the drop-off is honest.
+ */
+export function leadFunnel(leads: Lead[], book: OutreachBook, now: Date, days = 30): { label: string; value: number }[] {
+  const cohort = leads.filter((lead) => now.getTime() - Date.parse(lead.found_at) < days * DAY_MS);
+  const ids = new Set(cohort.map((lead) => lead.id));
+  const byLead = new Map(book.enrollments.filter((e) => ids.has(e.lead_id)).map((e) => [e.lead_id, e]));
+  const reviewed = cohort.filter((lead) => lead.status !== "new").length;
+  const emailed = [...byLead.values()].filter((e) => e.steps[0]?.sent_at).length;
+  const replied = [...byLead.values()].filter((e) => e.status === "replied").length;
+  return [
+    { label: "Found", value: cohort.length },
+    { label: "Reviewed", value: reviewed },
+    { label: "Emailed", value: emailed },
+    { label: "Replied", value: replied },
+  ];
+}
