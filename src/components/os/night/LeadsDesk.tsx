@@ -35,7 +35,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const [kind, setKind] = useState<LeadKind>("founder");
   const [status, setStatus] = useState<LeadStatus>("new");
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string; undo?: string } | null>(null);
 
   useEffect(() => {
     const result = new URLSearchParams(window.location.search).get("gmail");
@@ -79,7 +79,10 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     for (const lead of book.leads) out[`${lead.kind}:${lead.status}`] = (out[`${lead.kind}:${lead.status}`] ?? 0) + 1;
     return out;
   }, [book]);
-  const shown = book.leads.filter((lead) => lead.kind === kind && lead.status === status).sort((a, b) => b.score - a.score);
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const matches = (lead: Lead) => !q || `${lead.company} ${lead.people.map((p) => p.name).join(" ")} ${lead.location ?? ""} ${lead.contacts.map((c) => c.email).join(" ")}`.toLowerCase().includes(q);
+  const shown = book.leads.filter((lead) => lead.kind === kind && lead.status === status && matches(lead)).sort((a, b) => b.score - a.score);
   const isOpen = (id: string, index: number) => open.has(id) || (!touched && index === 0);
 
   // Triage from the keyboard: j and k move between leads, a approves, s skips. Typing in a field is left alone.
@@ -121,6 +124,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         return false;
       }
       setBook(data.book);
+      const change = body as { op?: string; id?: string };
+      if ((change.op === "skip" || change.op === "approve") && change.id) {
+        const company = data.book.leads.find((lead) => lead.id === change.id)?.company ?? "Lead";
+        setMessage({ tone: "ok", text: `${change.op === "skip" ? "Skipped" : "Approved"} ${company}.`, undo: change.id });
+      }
       if (data.run) {
         const found = data.run.added === 1 ? "1 new lead" : `${data.run.added} new leads`;
         setMessage({ tone: "ok", text: `Read ${data.run.scanned} ${data.run.scanned === 1 ? "filing" : "filings"}. ${found}.${data.run.errors.length ? ` ${data.run.errors.length} could not be read.` : ""}` });
@@ -168,8 +176,13 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         {setup.ai ? "AI writes the drafts." : "Drafts use a plain template until an AI key is set."} {setup.vendor ? `Contacts: company sites and ${setup.vendor}.` : "Contacts: company sites only, until a paid finder is connected."}
       </p>
       {message ? (
-        <p className={message.tone === "error" ? "sx-error" : "sx-ok"} role={message.tone === "error" ? "alert" : "status"}>
+        <p className={`${message.tone === "error" ? "sx-error" : "sx-ok"} leads-toast`} role={message.tone === "error" ? "alert" : "status"}>
           {message.text}
+          {message.undo ? (
+            <button type="button" className="btn sm" onClick={() => send("/api/os/leads/book", { op: "restore", id: message.undo }, message.undo!)}>
+              Undo
+            </button>
+          ) : null}
         </p>
       ) : null}
 
@@ -183,6 +196,10 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
+      <label className="sx-field leads-search">
+        <span className="lbl">Find a lead</span>
+        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company, person, city or email" autoComplete="off" />
+      </label>
       {shown.length ? (
         <p className="sx-hint leads-keys">
           <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>a</kbd> approve · <kbd>s</kbd> skip
@@ -209,7 +226,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           ))}
         </ul>
       ) : (
-        <p className="t-body muted">{emptyText(kind, status)}</p>
+        <p className="t-body muted">{q ? `No ${KIND_LABEL[kind].toLowerCase()} match "${query.trim()}".` : emptyText(kind, status)}</p>
       )}
     </div>
   );
