@@ -4,7 +4,7 @@ import { applyLeadOp, gmailLink, mergeLeads, parseImport, parseLeads } from "./l
 import { templateDraft } from "./leads/draft";
 import { DEFAULT_LIMITS, recentDays, runFinder, type RunDeps } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
-import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, syndicateName } from "./leads/sec-form-d";
+import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, syndicateName, syndicatePerson } from "./leads/sec-form-d";
 import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { vendorConfig, vendorContacts, vendorUrl } from "./leads/vendor";
 import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails } from "./leads/website";
@@ -260,4 +260,12 @@ test("a run reads filings, groups syndicates, finds contacts, and remembers wher
 
 test("recent days skip weekends", () => {
   assert.deepEqual(recentDays(new Date("2026-11-09T12:00:00Z"), 3), ["20261106", "20261105", "20261104"]);
+});
+
+test("a syndicate named after a person gets that person; other names don't", () => {
+  assert.equal(syndicatePerson("Fixture Example Angel Funds, LP"), "Fixture Example");
+  assert.equal(syndicatePerson("Casey Example Syndicate"), "Casey Example");
+  assert.equal(syndicatePerson("Roll Up Vehicles, LP"), null);
+  assert.equal(syndicatePerson("JMWTX Investments, LP"), null);
+  assert.equal(syndicatePerson("Platform Funds 2026, LP"), null);
 });

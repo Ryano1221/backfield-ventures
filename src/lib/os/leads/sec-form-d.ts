@@ -157,12 +157,25 @@ export function syndicateName(name: string): string {
 
 const personTitle = (roles: string[]) => (roles.includes("Executive Officer") ? "Executive Officer" : roles[0] ?? null);
 
+/**
+ * Platform syndicates ("a series of Jane Doe Angel Funds, LP") list the platform as
+ * the officer, not the investor. When the syndicate is plainly named after a person, that's who runs it.
+ */
+export function syndicatePerson(group: string): string | null {
+  const match = group.match(/^((?:[A-Z][a-z]+(?:['-][A-Z][a-z]+)?\s){1,2}[A-Z][a-z]+(?:['-][A-Z][a-z]+)?)\s+(?:Angel Funds?|Angels|Syndicate|Syndicates)\b/);
+  return match ? match[1].trim() : null;
+}
+
 /** One lead from one filing. The caller merges partner leads from the same syndicate. */
 export function leadFromFiling(form: FormD, row: IndexRow, kind: Classified, now: string): Lead {
   const people: LeadPerson[] = form.people
     .filter((person) => !ENTITY_NAME.test(person.name))
     .slice(0, 6)
     .map((person) => ({ name: person.name, title: personTitle(person.roles) }));
+  if (kind.kind === "partner" && !people.length) {
+    const lead = syndicatePerson(kind.group);
+    if (lead) people.push({ name: lead, title: "Runs the syndicate (from its name)" });
+  }
   const filed = `${row.filed.slice(0, 4)}-${row.filed.slice(4, 6)}-${row.filed.slice(6, 8)}`;
   const source_url = filingPageUrl(row);
   // A syndicate run on a platform ("a series of ...") files the platform's office address, not the investor's.
