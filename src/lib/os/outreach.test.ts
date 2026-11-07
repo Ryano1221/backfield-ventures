@@ -3,7 +3,7 @@ import test from "node:test";
 import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
-import { accessToken, rawMessage, sendMail, threadReply, type Fetch } from "./outreach/gmail";
+import { accessToken, isAutoReply, rawMessage, sendMail, threadReply, type Fetch } from "./outreach/gmail";
 import { autoEligible, buildDigest, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
@@ -211,7 +211,7 @@ test("gmail: builds a plain-text reply, sends in the thread, refreshes tokens, a
   const result = await sendMail(fetcher, "a1", { from: "owner@example.com", fromName: "Ryan", to: "fixture@example.com", toName: null, subject: "Re: x", body: "b", inReplyTo: null }, "t1");
   assert.deepEqual(result, { gmailId: "g1", threadId: "t1", messageId: "<m9@example.com>" });
   assert.match(calls[1].body, /"threadId":"t1"/);
-  assert.deepEqual(await threadReply(fetcher, "a1", "t1", "owner@example.com"), { replied: true, snippet: "Sounds good" });
+  assert.deepEqual(await threadReply(fetcher, "a1", "t1", "owner@example.com"), { replied: true, snippet: "Sounds good", auto: false });
 });
 
 test("a run's save keeps what Ryan changed meanwhile", () => {
@@ -304,4 +304,31 @@ test("the morning summary lists replies and new top leads, once a day after 7am 
   await runOutreach(morning.book, { ...EMPTY_BOOK, leads: [fresh] }, deps(mailer, "2026-11-11T15:30:00Z"));
   assert.equal(sent.length, 1, "once a day");
   assert.equal(mergeRun(book, { ...book, settings: { ...book.settings, threshold: 70 } }, morning.book).settings.last_digest, "2026-11-11", "survives a settings change mid-run");
+});
+
+test("out-of-office answers don't count as replies; a person's does", async () => {
+  const msg = (headers: Record<string, string>, snippet = "") => ({ id: "m", threadId: "t", snippet, payload: { headers: Object.entries(headers).map(([name, value]) => ({ name, value })) } });
+  assert.ok(isAutoReply(msg({ "Auto-Submitted": "auto-replied" })));
+  assert.ok(!isAutoReply(msg({ "Auto-Submitted": "no" })));
+  assert.ok(isAutoReply(msg({ Subject: "Automatic reply: Fixture Snacks + Backfield Ventures" })));
+  assert.ok(isAutoReply(msg({ Subject: "Out of Office" })));
+  assert.ok(isAutoReply(msg({ Precedence: "auto_reply" })));
+  assert.ok(isAutoReply(msg({ Subject: "Re: Fixture Snacks" }, "I'm currently out of the office until Monday with limited access to email.")));
+  assert.ok(!isAutoReply(msg({ Subject: "Re: Fixture Snacks" }, "Thanks Ryan, happy to chat. I'm out next week but free after.")));
+
+  const fetcher: Fetch = async () =>
+    new Response(JSON.stringify({ messages: [
+      { id: "1", payload: { headers: [{ name: "From", value: "Ryan <owner@example.com>" }] } },
+      { id: "2", snippet: "I'm out of the office until Monday", payload: { headers: [{ name: "From", value: "F <fixture@example.com>" }, { name: "Auto-Submitted", value: "auto-replied" }] } },
+    ] }));
+  assert.deepEqual(await threadReply(fetcher, "a", "t", "owner@example.com"), { replied: false, snippet: "", auto: true });
+
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.thread_id = "t1";
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  const mailer: Mailer = { ...fakeMailer().mailer, reply: async () => ({ replied: false, snippet: "", auto: true }) };
+  const first = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(mailer, "2026-11-11T14:30:00Z"));
+  assert.equal(first.book.enrollments[0].status, "active", "the sequence carries on");
+  const second = await runOutreach(first.book, EMPTY_BOOK, deps(mailer, "2026-11-11T15:30:00Z"));
+  assert.equal(second.book.log.filter((l) => l.text.includes("automatic reply")).length, 1, "noted once");
 });

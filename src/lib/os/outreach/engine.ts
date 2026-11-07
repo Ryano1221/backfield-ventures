@@ -14,7 +14,7 @@ import type { Enrollment, OutreachBook, Step } from "./types";
 export type Mailer = {
   me: { email: string; name: string };
   send: (mail: { to: string; toName: string | null; subject: string; body: string; inReplyTo: string | null }, threadId: string | null) => Promise<{ gmailId: string; threadId: string; messageId: string | null }>;
-  reply: (threadId: string) => Promise<{ replied: boolean; snippet: string }>;
+  reply: (threadId: string) => Promise<{ replied: boolean; snippet: string; auto?: boolean }>;
   bounces: () => Promise<string[]>;
 };
 
@@ -60,6 +60,10 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
     report.checked++;
     try {
       const reply = await mailer.reply(enrollment.thread_id);
+      if (reply.auto && !enrollment.auto_reply_seen) {
+        enrollment.auto_reply_seen = true;
+        out = logEvent(out, { at: at(), lead_id: enrollment.lead_id, text: `${enrollment.company}: automatic reply (out of office). The sequence carries on.` });
+      }
       if (!reply.replied) continue;
       report.replied++;
       if (isOptOut(reply.snippet)) finish(enrollment, "opted_out", "Asked not to be contacted. Will never be emailed again.", true);

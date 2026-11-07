@@ -42,6 +42,8 @@ export type Enrollment = {
   by: "auto" | "you";
   /** Their reply, for Ryan to act on. Cleared from the to-do list once he marks it done. */
   reply?: { at: string; snippet: string; handled_at: string | null } | null;
+  /** An out-of-office came back; noted once, and it doesn't stop the sequence. */
+  auto_reply_seen?: boolean;
 };
 
 export type OutreachSettings = {
