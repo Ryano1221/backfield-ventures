@@ -4,7 +4,7 @@ import { writeDoc } from "@/lib/os/doc-store";
 import { osJson } from "@/lib/os/response";
 import { mergeLeads } from "@/lib/os/leads/book";
 import { templateDraft } from "@/lib/os/leads/draft";
-import { credits, findymailKey, FindymailError, leadFromContact, listContacts, listLists } from "@/lib/os/leads/findymail";
+import { applySearchOp, credits, findymailKey, FindymailError, leadFromContact, listContacts, listLists } from "@/lib/os/leads/findymail";
 import { scoreLead } from "@/lib/os/leads/score";
 import { FINDYMAIL_DOC, LEADS_DOC, readFindyMap, readLeads, readTaste } from "@/lib/os/leads/server";
 import { LEAD_KINDS, type LeadKind } from "@/lib/os/leads/types";
@@ -16,10 +16,11 @@ export const maxDuration = 60;
 export async function GET() {
   if (!(await isOsAuthed())) return osJson({ error: "Unauthorized" }, 401);
   const key = findymailKey();
-  if (!key) return osJson({ ok: true, ready: false, lists: [], map: (await readFindyMap()).lists, credits: null });
+  const saved = await readFindyMap();
+  if (!key) return osJson({ ok: true, ready: false, lists: [], map: saved.lists, searches: saved.searches, credits: null });
   try {
     const [lists, balance] = await Promise.all([listLists(fetch, key), credits(fetch, key).catch(() => null)]);
-    return osJson({ ok: true, ready: true, lists, map: (await readFindyMap()).lists, credits: balance });
+    return osJson({ ok: true, ready: true, lists, map: saved.lists, searches: saved.searches, credits: balance });
   } catch (error) {
     return osJson({ error: error instanceof FindymailError ? error.message : "Findymail could not be reached" }, 502);
   }
@@ -34,7 +35,13 @@ export async function POST(req: Request) {
   if (!sameOriginRequest(req)) return osJson({ error: "Forbidden" }, 403);
   const key = findymailKey();
   if (!key) return osJson({ error: "Add FINDYMAIL_API_KEY in Vercel first." }, 503);
-  const body = (await req.json().catch(() => ({}))) as { list_id?: unknown; name?: unknown; kind?: unknown };
+  const body = (await req.json().catch(() => ({}))) as { op?: unknown; list_id?: unknown; name?: unknown; kind?: unknown; query?: unknown; titles?: unknown; limit?: unknown; id?: unknown };
+  if (body.op === "search_add" || body.op === "search_remove") {
+    const result = applySearchOp(await readFindyMap(), body, new Date().toISOString());
+    if (!result.ok) return osJson({ error: result.error }, 400);
+    await writeDoc(FINDYMAIL_DOC, JSON.stringify(result.map));
+    return osJson({ ok: true, map: result.map.lists, searches: result.map.searches });
+  }
   const id = typeof body.list_id === "number" ? body.list_id : Number(body.list_id);
   if (!Number.isInteger(id) || id < 0) return osJson({ error: "Pick a list." }, 400);
   const map = await readFindyMap();

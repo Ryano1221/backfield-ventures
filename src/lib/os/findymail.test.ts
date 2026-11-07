@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { credits, findEmail, FindymailError, leadFromContact, listContacts, listLists, verifyEmail, type Fetch } from "./leads/findymail";
+import { applySearchOp, credits, EMPTY_MAP, findEmail, FindymailError, leadFromContact, leadFromMatch, listContacts, listLists, searchResults, searchStatus, searchStep, startSearch, verifyEmail, type Fetch } from "./leads/findymail";
 import { DEFAULT_LIMITS, runFinder } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
 import { EMPTY_BOOK } from "./leads/types";
@@ -112,4 +112,40 @@ test("autopilot checks the address with Findymail before the first email", async
   assert.ok(rejected.book.suppress.includes("fp@example.com"));
   const unsure = await runOutreach(book, EMPTY_BOOK, { ...deps, verify: async () => null });
   assert.equal(unsure.report.sent, 1, "can't tell (no credits): the vetted address still goes");
+});
+
+test("saved searches: start weekly, collect when done, and become leads with verified emails", async () => {
+  const calls: { path: string; body: unknown }[] = [];
+  let status = "processing";
+  const fetcher: Fetch = async (url, init) => {
+    const path = new URL(url).pathname;
+    const body = init?.body ? JSON.parse(String(init.body)) : null;
+    calls.push({ path, body });
+    const json = (data: unknown) => new Response(JSON.stringify(data), { status: 200 });
+    if (path === "/api/intellimatch/search") return json({ hash: "h1" });
+    if (path === "/api/intellimatch/status") return json({ status });
+    if (path === "/api/intellimatch/data") return json({ data: [{ id: 9, name: "Example Family Office", domain: "examplefo.example", description: "A single family office.", employee_count_range: "1-10", industries: ["Investment Management"], country: "US", match_score: 91, contact_name: "Fixture Principal", contact_email: "FP@examplefo.example", contact_job_title: "Principal", contact_linkedin_url: null }], meta: { current_page: 1, last_page: 1 } });
+    return json({ error: "nope" });
+  };
+  const added = applySearchOp(EMPTY_MAP, { op: "search_add", kind: "lp", query: "Single family offices in Texas", titles: "Principal, Founder", limit: 25 }, "2026-11-07T00:00:00.000Z", () => "s1");
+  assert.ok(added.ok);
+  const search = added.map.searches[0];
+  assert.deepEqual(search.titles, ["Principal", "Founder"]);
+  assert.equal(searchStep(search, new Date("2026-11-07T12:00:00Z")), "start");
+  assert.equal(await startSearch(fetcher, "k", search), "h1");
+  assert.deepEqual(calls[0].body, { query: "Single family offices in Texas", limit: 25, config: { find_contact: true, find_email: true, require_email: true, find_phone: false, mode: "broad", target_job_titles: [["Principal", "Founder"]] } });
+  assert.equal(searchStep({ ...search, hash: "h1" }, new Date()), "check");
+  assert.equal(await searchStatus(fetcher, "k", "h1"), "processing");
+  status = "success";
+  assert.equal(await searchStatus(fetcher, "k", "h1"), "success");
+  const matches = await searchResults(fetcher, "k", "h1");
+  const lead = leadFromMatch(matches[0], search, "2026-11-08T00:00:00.000Z");
+  assert.equal(lead.kind, "lp");
+  assert.equal(lead.to, "fp@examplefo.example");
+  assert.equal(lead.website, "https://examplefo.example");
+  assert.ok(scoreLead(lead, learnTaste([])).reasons.includes("+10 matched your Findymail search"));
+  assert.equal(searchStep({ ...search, last_run: "2026-11-08T00:00:00.000Z" }, new Date("2026-11-10T00:00:00Z")), "wait", "once a week");
+  assert.equal(searchStep({ ...search, last_run: "2026-11-01T00:00:00.000Z" }, new Date("2026-11-10T00:00:00Z")), "start");
+  assert.equal(applySearchOp(added.map, { op: "search_add", kind: "lp", query: "short" }, "x").ok, false);
+  assert.equal(applySearchOp(added.map, { op: "search_remove", id: "s1" }, "x").ok && applySearchOp(added.map, { op: "search_remove", id: "s1" }, "x").ok, true);
 });

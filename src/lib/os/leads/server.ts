@@ -11,7 +11,7 @@ import { buildKnownIndex, type KnownIndex } from "./known";
 import { parseLeads as parseWarmLeads } from "../warm-leads";
 import { dailyIndexUrl } from "./sec-form-d";
 import { vendorConfig, vendorContacts } from "./vendor";
-import { findEmail, findymailKey, leadFromContact, listContacts, parseMap, type FindyMap } from "./findymail";
+import { findEmail, FindymailError, findymailKey, leadFromContact, leadFromMatch, listContacts, parseMap, searchResults, searchStatus, searchStep, startSearch, type FindyMap } from "./findymail";
 import type { Lead, LeadBook, LeadContact } from "./types";
 
 export const LEADS_DOC = "leads";
@@ -126,14 +126,50 @@ export async function readFindyMap(): Promise<FindyMap> {
   return parseMap(await readDoc(FINDYMAIL_DOC).catch(() => null));
 }
 
-/** Every contact in the Findymail lists Ryan tagged, as leads of the tagged kind. */
+/**
+ * Every contact in the Findymail lists Ryan tagged, plus results of his saved
+ * searches (started weekly, collected on a later run), as leads of the tagged kind.
+ */
 export async function importFindymail(key: string): Promise<Lead[]> {
   const map = await readFindyMap();
-  const now = new Date().toISOString();
+  const now = new Date();
   const out: Lead[] = [];
   for (const [id, list] of Object.entries(map.lists)) {
     const contacts = await listContacts(fetch, key, Number(id));
-    for (const contact of contacts) out.push(leadFromContact(contact, list.kind, list.name, now));
+    for (const contact of contacts) out.push(leadFromContact(contact, list.kind, list.name, now.toISOString()));
+  }
+  let changed = false;
+  for (const search of map.searches) {
+    const step = searchStep(search, now);
+    try {
+      if (step === "start") {
+        search.hash = await startSearch(fetch, key, search);
+        search.started_at = now.toISOString();
+        search.note = "Searching. Results come in on the next daily run.";
+        changed = true;
+      } else if (step === "check" && search.hash) {
+        const status = await searchStatus(fetch, key, search.hash);
+        if (status === "success") {
+          const matches = await searchResults(fetch, key, search.hash, search.limit);
+          for (const match of matches) out.push(leadFromMatch(match, search, now.toISOString()));
+          Object.assign(search, { hash: null, last_run: now.toISOString(), last_count: matches.length, note: `${matches.length} found. Runs again in a week.` });
+          changed = true;
+        } else if (status === "failed" || status === "not_found") {
+          Object.assign(search, { hash: null, last_run: now.toISOString(), last_count: 0, note: "Findymail couldn't finish this search. It tries again next week." });
+          changed = true;
+        }
+      }
+    } catch (error) {
+      search.note = error instanceof Error ? error.message : "Findymail could not be reached";
+      changed = true;
+      if (error instanceof FindymailError && error.stop) break;
+    }
+  }
+  if (changed) {
+    // Save onto the latest map, so a search added or removed meanwhile isn't lost.
+    const latest = await readFindyMap();
+    latest.searches = latest.searches.map((s) => map.searches.find((ran) => ran.id === s.id) ?? s);
+    await writeDoc(FINDYMAIL_DOC, JSON.stringify(latest));
   }
   return out;
 }

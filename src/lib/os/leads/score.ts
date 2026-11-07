@@ -80,6 +80,7 @@ export function scoreLead(lead: Lead, taste: Taste): { score: number; reasons: s
     if (!lead.people.length) add(-10, "no named person in the filing");
   }
   if (lead.source === "Findymail") add(15, "on your Findymail list");
+  if (lead.source === "Findymail search") add(10, "matched your Findymail search");
   if (lead.location && HOME.test(lead.location)) add(5, "in Texas");
   if (lead.website) add(5, "website found");
   const best = lead.contacts[0];
