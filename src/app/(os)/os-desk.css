@@ -975,3 +975,6 @@ body.os .inspo-add { display: grid; gap: 12px; margin-top: 14px; padding-top: 14
 @media (prefers-reduced-motion: reduce) { body.os .sx-steps li, body.os .sx-more-body, body.os .inspo-post { animation: none; } }
 body.os .lead-chip.is-thesis { background: #123D22; color: #fff; }
 body.os .leads-thesis[aria-pressed="true"] { background: #123D22; border-color: #123D22; color: #fff; }
+body.os .fm-presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0 12px; }
+body.os .fm-presets .sx-hint { flex-basis: 100%; margin: 0; }
+body.os .fm-presets .btn[aria-pressed="true"] { background: #123D22; border-color: #123D22; color: #fff; }

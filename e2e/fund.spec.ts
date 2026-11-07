@@ -571,3 +571,17 @@ test("sign in plays the Backfield intro on the way to Today", async ({ page }) =
   await expect(page.getByRole("status", { name: "Opening the OS" }).locator("img")).toBeVisible();
   await expect(page).toHaveURL(/\/os\/?$/, { timeout: 15_000 });
 });
+
+test("Findymail: a thesis preset fills the saved-search form, and nothing runs until Save", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "one viewport is enough for a form fill");
+  await signIn(page);
+  await page.goto("/os/leads");
+  await page.getByText("Add a saved search").click();
+  const presets = page.getByRole("group", { name: "Start from a thesis search" });
+  await presets.getByRole("button", { name: "Athlete-founded brands" }).click();
+  await expect(page.getByLabel("Who to find")).toHaveValue("Consumer brands founded or co-founded by professional athletes");
+  await expect(page.getByRole("group", { name: "Search finds" }).getByRole("button", { name: "Founders" })).toHaveAttribute("aria-pressed", "true");
+  await expect(presets.getByRole("button", { name: "Athlete-founded brands" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Save search" }).click();
+  await expect(page.getByText("Consumer brands founded or co-founded by professional athletes", { exact: true })).toBeVisible();
+});
