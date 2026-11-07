@@ -4,13 +4,16 @@ import { readDoc, writeDoc } from "../doc-store";
 import { readSnapshot, fixturesAllowed } from "../store";
 import { aiRead, aiReady } from "./ai";
 import { parseLeads } from "./book";
-import { DEFAULT_LIMITS, runFinder, type RunDeps } from "./run";
+import { DEFAULT_LIMITS, runFinder, type RunDeps, type RunLimits } from "./run";
 import { learnTaste, type RatedPitch } from "./score";
 import { dailyIndexUrl } from "./sec-form-d";
 import type { LeadBook } from "./types";
 import { vendorConfig, vendorContacts } from "./vendor";
 
 export const LEADS_DOC = "leads";
+
+/** The daily run: a whole day of filings (about 260), more site checks and AI drafts. Time limits still apply. */
+export const CRON_LIMITS: RunLimits = { filings: 1200, days: 10, websites: 40, drafts: 15 };
 
 /** The SEC asks automated readers to name themselves and give a contact address. */
 const SEC_AGENT = `Backfield Ventures OS ${process.env.OS_FROM_MAILBOX?.trim() || "ryan@backfieldventures.com"}`;
@@ -85,11 +88,11 @@ function fixtureDeps(): Omit<RunDeps, "taste"> {
 }
 
 /** Runs one batch and saves it. `budgetMs` is how long the host lets the request run. */
-export async function findAndSave(budgetMs: number) {
+export async function findAndSave(budgetMs: number, limits: RunLimits = DEFAULT_LIMITS) {
   const started = Date.now();
   const book = await readLeads();
   const base = fixturesAllowed() ? fixtureDeps() : liveDeps(started, budgetMs);
-  const result = await runFinder(book, { ...base, taste: await taste() }, fixturesAllowed() ? { ...DEFAULT_LIMITS, days: 1 } : DEFAULT_LIMITS);
+  const result = await runFinder(book, { ...base, taste: await taste() }, fixturesAllowed() ? { ...limits, days: 1 } : limits);
   await writeDoc(LEADS_DOC, JSON.stringify(result.book));
   return result;
 }

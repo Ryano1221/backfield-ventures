@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-leads.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -275,4 +275,19 @@ test("the weekly review catches an unwired SPV commitment and links to fix it", 
   await expect(page.getByRole("region", { name: "Portfolio" })).toContainText("Every closed SPV is a holding.");
   await money.getByRole("link", { name: "Open" }).first().click();
   await expect(page).toHaveURL(/\/os\/spv$/);
+});
+
+test("the daily lead search needs the cron secret, then finds leads and they show on Leads", async ({ request, page }) => {
+  expect((await request.get("/api/cron/leads")).status()).toBe(401);
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer wrong" } })).status()).toBe(401);
+  expect((await request.post("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(405);
+  const run = await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } });
+  expect(run.status()).toBe(200);
+  const body = (await run.json()) as { run: { scanned: number; added: number } };
+  expect(body.run.added).toBe(1);
+  // The test server reads canned filings only; it never reaches the SEC.
+  await signIn(page);
+  await page.goto("/os/leads");
+  await expect(page.getByRole("heading", { name: "Example Fixture Snacks, Inc." })).toBeVisible();
+  await expect(page.getByText("Last search")).toBeVisible();
 });

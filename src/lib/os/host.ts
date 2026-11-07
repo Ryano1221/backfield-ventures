@@ -69,6 +69,8 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
     return { kind: "redirect", pathname: authed ? external : "/login" };
   }
   if (isTokenRoute(path)) return { kind: "os-next" };
+  // The daily lead search checks its own secret.
+  if (path === "/api/cron/leads") return { kind: "os-next" };
   if (path === "/api/os" || path.startsWith("/api/os/")) {
     return authed ? { kind: "os-next" } : { kind: "unauthorized" };
   }
