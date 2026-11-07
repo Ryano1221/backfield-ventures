@@ -69,6 +69,8 @@ export type LeadBook = {
   /** Where the SEC reader left off. */
   cursor: { done_days: string[]; done_filings: string[] };
   last_run: LeadRun | null;
+  /** When the daily scheduled search last ran (not the button). */
+  last_auto_run?: string | null;
 };
 
 export const EMPTY_BOOK: LeadBook = { version: 1, leads: [], cursor: { done_days: [], done_filings: [] }, last_run: null };

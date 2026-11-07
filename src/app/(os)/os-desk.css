@@ -789,3 +789,11 @@ body.os .reply-sum { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; align-
 body.os .reply-intent.is-interested, body.os .reply-intent.is-question, body.os .reply-intent.is-referral { background: #e6f2e9; color: #123D22; font-weight: 600; }
 body.os .reply-intent.is-not_now { background: #fdf3dc; color: #7a5300; font-weight: 600; }
 body.os .reply-intent.is-not_interested { background: rgba(0, 0, 0, 0.06); color: var(--ink3); }
+body.os .setup-card summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+body.os .setup-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+body.os .setup-list li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; animation: os-rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .setup-list li > span:last-child { display: grid; gap: 2px; }
+body.os .setup-mark { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font: 700 13px/1 var(--text); }
+body.os .setup-list .is-ok .setup-mark { background: #e6f2e9; color: #123D22; }
+body.os .setup-list .is-missing .setup-mark { background: #fdf3dc; color: #7a5300; }
+@media (prefers-reduced-motion: reduce) { body.os .setup-list li { animation: none; } }

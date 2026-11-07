@@ -83,6 +83,8 @@ export type OutreachBook = {
   /** Addresses never to email again: opt-outs, bounces, and stopped by hand. */
   suppress: string[];
   log: OutreachEvent[];
+  /** When the hourly scheduled run last reached the OS. */
+  last_cron_at?: string | null;
 };
 
 export const DEFAULT_SETTINGS: OutreachSettings = {

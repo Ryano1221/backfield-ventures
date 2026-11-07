@@ -24,6 +24,7 @@ export function parseLeads(raw: string | null): LeadBook {
         done_filings: Array.isArray(data.cursor?.done_filings) ? data.cursor.done_filings.filter((d) => typeof d === "string") : [],
       },
       last_run: data.last_run ?? null,
+      last_auto_run: typeof data.last_auto_run === "string" ? data.last_auto_run : null,
     };
   } catch {
     return structuredClone(EMPTY_BOOK);

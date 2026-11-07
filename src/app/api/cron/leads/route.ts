@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     return osJson({ ok: false, error: "Unauthorized" }, 401);
   }
   try {
-    const { run } = await findAndSave(maxDuration * 1000 - 20_000, CRON_LIMITS);
+    const { run } = await findAndSave(maxDuration * 1000 - 20_000, CRON_LIMITS, true);
     console.log(`leads cron: read ${run.scanned} filings, ${run.added} new, ${run.updated} updated, ${run.errors.length} errors`);
     return osJson({ ok: true, run });
   } catch (error) {

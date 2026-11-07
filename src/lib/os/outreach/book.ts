@@ -16,6 +16,7 @@ export function parseOutreach(raw: string | null): OutreachBook {
       enrollments: Array.isArray(data.enrollments) ? data.enrollments.filter((e) => e && typeof e.lead_id === "string" && Array.isArray(e.steps)) : [],
       suppress: Array.isArray(data.suppress) ? data.suppress.filter((s) => typeof s === "string") : [],
       log: Array.isArray(data.log) ? data.log.slice(-MAX_LOG) : [],
+      last_cron_at: typeof data.last_cron_at === "string" ? data.last_cron_at : null,
     };
   } catch {
     return structuredClone(EMPTY_OUTREACH);
