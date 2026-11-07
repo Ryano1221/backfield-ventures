@@ -1913,3 +1913,28 @@ body.os .email .ow { margin: 0 0 20px; }
 body.os .ow.is-compact .ow-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 body.os .ow.is-compact .ow-track { padding: 12px 12px 8px; }
 body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
+
+/* Leads: one card per lead, score on the right, the draft as plain text. */
+.leads { display: grid; gap: 16px; margin-top: 24px; }
+.leads-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.leads-bar .segment { flex: 1 1 280px; }
+.leads-bar .segment button { flex: 1; white-space: nowrap; }
+.leads-run { margin: 0; }
+.leads-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.lead { display: grid; gap: 14px; }
+.lead-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.lead-name { margin: 0; font: 600 20px/1.3 var(--text); overflow-wrap: anywhere; }
+.lead-head .sx-hint { margin: 4px 0 0; }
+.lead-score { flex: none; display: grid; place-items: center; min-width: 48px; height: 48px; padding: 0 8px; border-radius: 12px; background: #123d22; color: #fff; font: 600 18px/1 var(--text); }
+.lead-facts { margin: 0; }
+.lead-why summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.lead-why ul { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.lead-to { display: grid; gap: 8px; }
+.lead-to .segment button { overflow-wrap: anywhere; text-align: left; }
+.lead-draft { display: grid; gap: 6px; padding: 14px; border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 12px; background: #fff; }
+.lead-draft .lbl { margin: 0; }
+.lead-subject { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.lead-body { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 15px/1.55 var(--text); }
+.lead-edit { display: grid; gap: 10px; }
+.lead-actions { flex-wrap: wrap; }
+.lead-import { display: grid; gap: 10px; }

@@ -25,6 +25,7 @@ export const PAGE_ITEMS: FinderItem[] = [
   { kind: "page", id: "newSpv", title: "New SPV", hint: "Do · start a vehicle for a deal" },
   { kind: "page", id: "addHolding", title: "Add a holding", hint: "Do · put a check on the books" },
   { kind: "page", id: "people", title: "Relationships", hint: "People · CRM" },
+  { kind: "page", id: "leads", title: "Leads", hint: "Find founders, partners and LPs to reach out to" },
   { kind: "page", id: "bots", title: "Bots", hint: "Operations · the office" },
   { kind: "page", id: "studio", title: "Content studio", hint: "Audience Growth · ideas, drafts, approvals" },
   { kind: "page", id: "email", title: "Email tools", hint: "Audience Growth · subscribers, templates, lead magnets" },

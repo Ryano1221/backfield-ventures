@@ -20,6 +20,7 @@ export function crawlPaths(snapshot: Snapshot): string[] {
     "/os/bots",
     "/os/activity",
     "/os/waiting",
+    "/os/leads",
     "/os/email",
     "/os/email/subscribers",
     "/os/email/compose",

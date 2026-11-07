@@ -6,6 +6,8 @@ import test from "node:test";
 const ALLOWED_DOMAINS = new Set(["example.com", "example.net", "example.org"]);
 const FILE_DOMAIN_ALLOW: Record<string, Set<string>> = {
   "test/pitch-notify.test.mjs": new Set(["backfieldventures.com", "resend.dev"]),
+  // A made-up brand domain the website finder guesses, and an image name that must not count as an email.
+  "src/lib/os/leads.test.ts": new Set(["fixturegrandma.com", "2x.png"]),
 };
 const EMAIL = /[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
 const PHONE = /(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]\d{3}[\s.-]\d{4}/g;
