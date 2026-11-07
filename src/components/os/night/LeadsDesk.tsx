@@ -186,6 +186,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         <button type="button" className="btn primary" disabled={busy === "find"} onClick={() => send("/api/os/leads/find", {}, "find")}>
           {busy === "find" ? "Searching…" : "Find new leads"}
         </button>
+        {busy === "find" ? (
+          <span className="sx-hint" role="status">
+            Reading the latest SEC filings and company sites. About 30 seconds.
+          </span>
+        ) : null}
       </div>
       <p className="sx-hint leads-run" aria-live="polite">
         {book.last_run ? `Last search ${new Date(book.last_run.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}: read ${book.last_run.scanned} ${book.last_run.scanned === 1 ? "filing" : "filings"}, ${book.last_run.added} new.` : "No search yet. Each search reads the next batch of SEC filings."}{" "}
