@@ -7,6 +7,7 @@ import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
+import type { Known } from "@/lib/os/leads/known";
 import { FindymailPanel } from "./FindymailPanel";
 import { RepliesPanel } from "./RepliesPanel";
 import { SequenceEmails } from "./SequenceEmails";
@@ -27,7 +28,7 @@ const GMAIL_NOTE: Record<string, { tone: "ok" | "error"; text: string }> = {
   failed: { tone: "error", text: "Gmail could not be connected. Check the Google client settings and try again." },
 };
 
-export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup }) {
+export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup, known = {} }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup; known?: Record<string, Known> }) {
   const [book, setBook] = useState(initial);
   const [outreach, setOutreach] = useState(initialOutreach);
   const [mailSetup, setMailSetup] = useState(outreachSetup);
@@ -225,6 +226,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
               onEnroll={enroll}
               now={now}
               onSequence={setOutreach}
+              known={known[lead.id] ?? null}
             />
           ))}
         </ul>
@@ -246,6 +248,7 @@ function LeadCard({
   onToggle,
   now,
   onSequence,
+  known,
   lead,
   busy,
   researching,
@@ -259,6 +262,7 @@ function LeadCard({
   onToggle: () => void;
   now: number;
   onSequence: (book: OutreachBook) => void;
+  known: Known | null;
   lead: Lead;
   busy: boolean;
   researching: boolean;
@@ -278,7 +282,7 @@ function LeadCard({
   const band = lead.score >= 80 ? "is-high" : lead.score >= 60 ? "is-mid" : "is-low";
   const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
   const warm = Boolean(said);
-  const chip = said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
+  const chip = known ? `Known: ${known.where}` : said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
 
   async function copy() {
     if (!lead.draft) return;
@@ -301,7 +305,7 @@ function LeadCard({
             <span className="lead-name">{lead.company}</span>
             {headline ? <span className="sx-hint">{headline}</span> : null}
           </span>
-          {chip ? <span className={`lead-chip${warm ? " is-warm" : ""}`}>{chip}</span> : null}
+          {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : ""}`}>{chip}</span> : null}
           {sequence ? <StepDots steps={STEPS.slice(0, sequence.steps.length)} done={sequence.steps.filter((s) => s.sent_at).map((s) => String(s.n))} label={`Sequence: ${sequenceLine(sequence)}`} /> : null}
           <span className="lead-chev" aria-hidden="true" />
         </button>
@@ -317,6 +321,12 @@ function LeadCard({
             </li>
           ))}
         </ul>
+      ) : null}
+      {known ? (
+        <p className="sx-ok lead-known" role="note">
+          Already in {known.where}: {known.name}
+          {known.detail ? ` (${known.detail})` : ""}. Autopilot won&apos;t send this person a cold sequence; reach out yourself.
+        </p>
       ) : null}
       {lead.note ? <p className="t-body">{lead.note}</p> : null}
       <Research lead={lead} canResearch={canResearch} researching={researching} onResearch={onResearch} />

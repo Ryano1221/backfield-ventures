@@ -162,9 +162,11 @@ export function autoAddress(lead: Lead): string | null {
 }
 
 /** Leads that start a sequence on their own: new, at or above the bar, with a real address. */
-export function autoEligible(lead: Lead, book: OutreachBook, researchReady = false): boolean {
+export function autoEligible(lead: Lead, book: OutreachBook, researchReady = false, known = false): boolean {
   const s = book.settings;
   if (!s.enabled || !s.kinds[lead.kind] || lead.status !== "new" || lead.score < s.threshold) return false;
+  // Someone Ryan already knows gets a personal note from him, never an automatic cold sequence.
+  if (known) return false;
   // With research on, wait until the lead is researched so the first email can be personal.
   if (researchReady && lead.research === undefined) return false;
   const email = autoAddress(lead);

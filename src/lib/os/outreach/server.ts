@@ -1,7 +1,8 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { readDoc, writeDoc } from "../doc-store";
-import { readLeads, LEADS_DOC } from "../leads/server";
+import { readKnownIndex, readLeads, LEADS_DOC } from "../leads/server";
+import { knownFor } from "../leads/known";
 import { aiReady } from "../leads/ai";
 import { FindymailError, findymailKey, verifyEmail } from "../leads/findymail";
 import { sessionSecret } from "../session";
@@ -120,7 +121,7 @@ async function liveMailer(): Promise<Mailer | null> {
 /** One autopilot pass, saved. `budgetMs` is how long the host lets the request run. */
 export async function runAndSave(budgetMs: number) {
   const started = Date.now();
-  const [book, leads] = await Promise.all([readOutreach(), readLeads()]);
+  const [book, leads, known] = await Promise.all([readOutreach(), readLeads(), readKnownIndex()]);
   let mailer: Mailer | null = null;
   let note: string | null = null;
   try {
@@ -138,6 +139,7 @@ export async function runAndSave(budgetMs: number) {
     spacingMs: () => (fixturesAllowed() ? 0 : 15_000 + Math.floor(Math.random() * 20_000)),
     maxSendsPerRun: 12,
     researchReady: aiReady() && !fixturesAllowed(),
+    isKnown: (lead) => Boolean(knownFor(lead, known)),
     verify: findymailVerifier(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,

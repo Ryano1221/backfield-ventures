@@ -32,6 +32,8 @@ export type EngineDeps = {
   verify?: ((email: string) => Promise<boolean | null>) | null;
   /** Where the Leads page lives, for the morning summary's link. */
   leadsUrl?: string;
+  /** True when Ryan already knows the lead (Relationships, warm leads, or a pitch in Deals). */
+  isKnown?: (lead: Lead) => boolean;
   /** True when leads get researched; autopilot then waits for the research before starting. */
   researchReady?: boolean;
 };
@@ -112,7 +114,7 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
   const room = () => cap - firstTouchesToday(out, deps.now()) - waiting();
   for (const lead of [...leadList].sort((a, b) => b.score - a.score)) {
     if (room() <= 0 || deps.timeLeft() < 60_000) break;
-    if (!autoEligible(lead, out, deps.researchReady)) continue;
+    if (!autoEligible(lead, out, deps.researchReady, deps.isKnown?.(lead) ?? false)) continue;
     const email = autoAddress(lead)!;
     const ai = deps.aiSteps ? await deps.aiSteps(lead).catch(() => null) : null;
     out.enrollments.push(makeEnrollment({ ...lead, to: email }, email, "auto", at(), ai));

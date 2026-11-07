@@ -7,6 +7,8 @@ import { researchLead } from "./research-call";
 import { parseLeads } from "./book";
 import { DEFAULT_LIMITS, runFinder, type RunDeps, type RunLimits } from "./run";
 import { learnTaste, type RatedPitch } from "./score";
+import { buildKnownIndex, type KnownIndex } from "./known";
+import { parseLeads as parseWarmLeads } from "../warm-leads";
 import { dailyIndexUrl } from "./sec-form-d";
 import { vendorConfig, vendorContacts } from "./vendor";
 import { findEmail, findymailKey, leadFromContact, listContacts, parseMap, type FindyMap } from "./findymail";
@@ -134,4 +136,11 @@ export async function importFindymail(key: string): Promise<Lead[]> {
     for (const contact of contacts) out.push(leadFromContact(contact, list.kind, list.name, now));
   }
   return out;
+}
+
+/** Everyone Ryan already knows, from the snapshot's CRM and pitches plus his Fundraising warm leads. */
+export async function readKnownIndex(snapshot?: import("../types").Snapshot | null): Promise<KnownIndex> {
+  const snap = snapshot === undefined ? await readSnapshot().catch(() => null) : snapshot;
+  const warm = parseWarmLeads(await readDoc("warm-leads").catch(() => null));
+  return buildKnownIndex({ crm: snap?.crm.people ?? [], pitches: snap?.pitches ?? [], warm: warm.leads.map((w) => ({ name: w.name, firm: w.firm, status: w.status })) });
 }

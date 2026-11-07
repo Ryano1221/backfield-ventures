@@ -783,3 +783,5 @@ body.os .seq-step .btn { justify-self: start; }
 body.os .leads-search { max-width: 420px; }
 body.os .leads-toast { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; animation: os-rise 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) { body.os .leads-toast { animation: none; } }
+body.os .lead-chip.is-known { background: #fdf3dc; color: #7a5300; font-weight: 600; }
+body.os .lead-known { background: #fdf3dc; color: #5c3f00; }
