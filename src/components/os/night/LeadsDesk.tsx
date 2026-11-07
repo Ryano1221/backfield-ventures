@@ -336,7 +336,7 @@ function LeadCard({
           {known.detail ? ` (${known.detail})` : ""}. Autopilot won&apos;t send this person a cold sequence; reach out yourself.
         </p>
       ) : null}
-      {lead.note ? <p className="t-body">{lead.note}</p> : null}
+      <NoteField lead={lead} onOp={onOp} />
       <Research lead={lead} canResearch={canResearch} researching={researching} onResearch={onResearch} />
       {sequence ? (
         <p className="sx-ok" role="status">
@@ -544,5 +544,31 @@ function BulkBar({ book, kind, busy, onBulk }: { book: LeadBook; kind: LeadKind;
         </button>
       ) : null}
     </div>
+  );
+}
+
+/** Ryan's own note on a lead. Saves when he leaves the box; AI drafts use it. */
+function NoteField({ lead, onOp }: { lead: Lead; onOp: (body: Record<string, unknown>) => Promise<boolean> }) {
+  const [note, setNote] = useState(lead.note);
+  const [saved, setSaved] = useState(false);
+  return (
+    <label className="sx-field">
+      <span className="lbl">Your note{saved ? " · saved" : ""}</span>
+      <textarea
+        className="sx-text"
+        rows={2}
+        value={note}
+        maxLength={1000}
+        placeholder="How you know them, what to mention, anything to avoid"
+        onChange={(event) => {
+          setNote(event.target.value);
+          setSaved(false);
+        }}
+        onBlur={async () => {
+          if (note.trim() === lead.note.trim()) return;
+          if (await onOp({ op: "note", id: lead.id, note })) setSaved(true);
+        }}
+      />
+    </label>
   );
 }
