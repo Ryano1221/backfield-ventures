@@ -159,9 +159,18 @@ export function applyLeadOp(book: LeadBook, raw: unknown, now = new Date().toISO
       break;
     case "skip":
       lead.status = "skipped";
+      lead.snoozed_until = null;
       break;
+    case "snooze": {
+      const days = Number(op.days);
+      if (![14, 30, 90].includes(days)) return { ok: false, error: "Snooze for 14, 30 or 90 days." };
+      lead.status = "skipped";
+      lead.snoozed_until = new Date(Date.parse(now) + days * 86_400_000).toISOString().slice(0, 10);
+      break;
+    }
     case "restore":
       lead.status = "new";
+      lead.snoozed_until = null;
       break;
     case "draft": {
       const subject = text(op.subject, 200);
@@ -214,4 +223,16 @@ export function leadsCsv(leads: Lead[]): string {
     return [lead.company, lead.kind, lead.status, lead.score, lead.people[0]?.name, lead.people[0]?.title, contact?.email, contact?.source, lead.location, lead.website, lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, ""), said?.quote, said?.url, lead.source, lead.found_at.slice(0, 10)].map(cell).join(",");
   });
   return [head.join(","), ...rows].join("\r\n") + "\r\n";
+}
+
+/** Snoozed leads whose date has come go back to review. Returns how many woke up. */
+export function wakeSnoozed(book: LeadBook, now: Date): { book: LeadBook; woke: number } {
+  const today = now.toISOString().slice(0, 10);
+  let woke = 0;
+  const leads = book.leads.map((lead) => {
+    if (lead.status !== "skipped" || !lead.snoozed_until || lead.snoozed_until > today) return lead;
+    woke++;
+    return { ...lead, status: "new" as const, snoozed_until: null, updated_at: now.toISOString() };
+  });
+  return { book: woke ? { ...book, leads } : book, woke };
 }

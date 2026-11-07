@@ -6,7 +6,7 @@
  *   4. score against Ryan's taste, then draft the first email
  * Each step can fail on its own without losing the rest. Nothing is sent.
  */
-import { mergeLeads, markFilings } from "./book";
+import { mergeLeads, markFilings, wakeSnoozed } from "./book";
 import { templateDraft } from "./draft";
 import { scoreLead, type Taste } from "./score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, type IndexRow } from "./sec-form-d";
@@ -51,7 +51,9 @@ export function recentDays(now: Date, count: number): string[] {
   return out;
 }
 
-export async function runFinder(book: LeadBook, deps: RunDeps, limits: RunLimits = DEFAULT_LIMITS) {
+export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimits = DEFAULT_LIMITS) {
+  // Snoozed leads whose date has come are back to review before anything else.
+  const book = wakeSnoozed(start, deps.now).book;
   const now = deps.now.toISOString();
   const timeLeft = deps.timeLeft ?? (() => Infinity);
   const errors: string[] = [];

@@ -442,6 +442,9 @@ function LeadCard({
             <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "skip", id: lead.id })}>
               Skip
             </button>
+            <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "snooze", id: lead.id, days: 30 })}>
+              Snooze 30 days
+            </button>
           </>
         ) : null}
         {lead.status === "approved" ? (
@@ -464,6 +467,7 @@ function LeadCard({
             </button>
           </>
         ) : null}
+        {lead.status === "skipped" && lead.snoozed_until ? <p className="sx-hint">Snoozed. Back to review on {lead.snoozed_until}.</p> : null}
         {lead.status === "skipped" || lead.status === "contacted" ? (
           <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "restore", id: lead.id })}>
             Back to review

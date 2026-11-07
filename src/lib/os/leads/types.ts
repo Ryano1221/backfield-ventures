@@ -53,6 +53,8 @@ export type Lead = {
   source: string;
   source_url: string | null;
   note: string;
+  /** Set when Ryan snoozes a lead: it waits in Skipped and comes back to review on this date. */
+  snoozed_until?: string | null;
   /** What they said publicly in the last year, verified. Undefined until researched. */
   research?: LeadResearch | null;
   found_at: string;
