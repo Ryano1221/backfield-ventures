@@ -909,3 +909,10 @@ body.os .composer .btn.is-sure { animation: os-pop 0.3s ease both; }
 body.os .count-bump { display: inline-block; animation: count-bump 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; font-variant-numeric: tabular-nums; }
 @keyframes count-bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { body.os .count-bump { animation: none; } }
+/* A folded card is one tappable line: slim padding, a chevron that turns when it opens. */
+body.os details.sx-card:not([open]) { padding-top: 10px; padding-bottom: 10px; }
+body.os .deal-sources-card summary { list-style: none; justify-content: space-between; gap: 12px; }
+body.os .deal-sources-card summary::-webkit-details-marker { display: none; }
+body.os .deal-sources-card summary::after { content: "›"; font-size: 20px; line-height: 1; color: rgba(0, 0, 0, 0.45); transition: transform 0.2s ease; }
+body.os .deal-sources-card[open] summary::after { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { body.os .deal-sources-card summary::after { transition: none; } }
