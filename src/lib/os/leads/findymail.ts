@@ -21,16 +21,61 @@ export class FindymailError extends Error {
   }
 }
 
+/**
+ * The key as it should be sent. Keys pasted from a web page or chat often carry
+ * invisible characters (zero-width spaces, non-breaking spaces, line breaks),
+ * curly quotes or a "Bearer " prefix. fetch refuses a header holding any of those
+ * and throws before the request is even made, so they are stripped here.
+ */
+export function cleanKey(raw: string): { key: string; stripped: number; bad: string[] } {
+  let key = raw.replace(/[\u200B-\u200D\u2060\uFEFF\u00AD]/g, "").replace(/\s+/g, "");
+  key = key.replace(/^["'\u201C\u201D\u2018\u2019`]+|["'\u201C\u201D\u2018\u2019`]+$/g, "").replace(/^bearer/i, "");
+  // Anything still outside printable ASCII can't go in a header; name it so it can be fixed in Vercel.
+  const bad = [...new Set([...key].filter((c) => c < "!" || c > "~").map((c) => `U+${c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")}`))];
+  return { key, stripped: raw.length - key.length, bad };
+}
+
 export function findymailKey(env: Record<string, string | undefined> = process.env): string | null {
-  return env.FINDYMAIL_API_KEY?.trim() || null;
+  const raw = env.FINDYMAIL_API_KEY;
+  if (!raw?.trim()) return null;
+  return cleanKey(raw).key || null;
+}
+
+/** For the panel: whether the saved key needed cleaning, without ever revealing it. */
+export function keyNote(env: Record<string, string | undefined> = process.env): string | null {
+  const raw = env.FINDYMAIL_API_KEY;
+  if (!raw?.trim()) return null;
+  const { stripped, bad } = cleanKey(raw);
+  if (bad.length) return `FINDYMAIL_API_KEY contains characters that aren't part of an API key (${bad.join(", ")}). Copy it again from Findymail's API page and re-paste it in Vercel.`;
+  if (stripped) return `FINDYMAIL_API_KEY had ${stripped} extra ${stripped === 1 ? "character" : "characters"} (spaces, line breaks, quotes or invisible characters) that are now ignored. Re-pasting it cleanly in Vercel is a good idea.`;
+  return null;
+}
+
+const TIMEOUT_MS = 15_000;
+
+/** A short reason for a request that never got an answer: the cause's code (ENOTFOUND, ECONNRESET...) or a timeout. */
+export function failureReason(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  if (error.name === "TimeoutError" || error.name === "AbortError") return `no answer within ${TIMEOUT_MS / 1000} seconds`;
+  const cause = (error as { cause?: { code?: string; message?: string } }).cause;
+  return [error.message, cause?.code, cause?.message && cause.message !== error.message ? cause.message : null].filter(Boolean).join(": ");
 }
 
 async function call(fetcher: Fetch, key: string, method: "GET" | "POST", path: string, body?: unknown): Promise<Record<string, unknown>> {
-  const res = await fetcher(`${BASE}${path}`, {
-    method,
-    headers: { authorization: `Bearer ${key}`, accept: "application/json", ...(body ? { "content-type": "application/json" } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const { bad } = cleanKey(key);
+  if (bad.length) throw new FindymailError(`Findymail: FINDYMAIL_API_KEY contains characters that can't be sent (${bad.join(", ")}). Re-paste the key in Vercel.`, true);
+  let res: Response;
+  try {
+    res = await fetcher(`${BASE}${path}`, {
+      method,
+      headers: { authorization: `Bearer ${key}`, accept: "application/json", ...(body ? { "content-type": "application/json" } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch (error) {
+    // fetch threw instead of answering: a bad header, DNS, TLS, a dropped connection or the timeout.
+    throw new FindymailError(`Findymail: request to ${path.split("?")[0]} failed (${failureReason(error)})`, true);
+  }
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (res.status === 402 || res.status === 423 || res.status === 429) throw new FindymailError(`Findymail: ${String(data.error ?? res.status)}`, true);
   if (res.status === 401) throw new FindymailError("Findymail: the API key was refused", true);

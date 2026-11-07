@@ -5,7 +5,7 @@ import { KIND_LABEL, LEAD_KINDS, type LeadBook, type LeadKind } from "@/lib/os/l
 import { SEARCH_LIMITS, type FindySearch } from "@/lib/os/leads/findymail";
 
 type List = { id: number; name: string };
-type State = { ready: boolean; lists: List[]; searches: FindySearch[]; map: Record<string, { kind: LeadKind; name: string }>; credits: { finder: number | null; verifier: number | null; capacity: boolean | null } | null };
+type State = { ready: boolean; keyNote: string | null; lists: List[]; searches: FindySearch[]; map: Record<string, { kind: LeadKind; name: string }>; credits: { finder: number | null; verifier: number | null; capacity: boolean | null } | null };
 
 /** Ryan's saved Findymail lists. Tagging one pulls its contacts into Leads now and on every daily run. */
 export function FindymailPanel({ onBook }: { onBook: (book: LeadBook) => void }) {
@@ -17,12 +17,12 @@ export function FindymailPanel({ onBook }: { onBook: (book: LeadBook) => void })
     let live = true;
     fetch("/api/os/findymail")
       .then(async (res) => {
-        const data = (await res.json().catch(() => ({}))) as Partial<State> & { error?: string };
+        const data = (await res.json().catch(() => ({}))) as Partial<State> & { error?: string; key_note?: string | null };
         if (!live) return;
-        if (!res.ok) setMessage({ tone: "error", text: data.error || "Findymail could not be reached." });
-        else setState({ ready: Boolean(data.ready), lists: data.lists ?? [], searches: data.searches ?? [], map: data.map ?? {}, credits: data.credits ?? null });
+        if (!res.ok) setMessage({ tone: "error", text: [data.error || `Findymail answered ${res.status}.`, data.key_note].filter(Boolean).join(" ") });
+        else setState({ ready: Boolean(data.ready), keyNote: data.key_note ?? null, lists: data.lists ?? [], searches: data.searches ?? [], map: data.map ?? {}, credits: data.credits ?? null });
       })
-      .catch(() => live && setMessage({ tone: "error", text: "Findymail could not be reached." }));
+      .catch(() => live && setMessage({ tone: "error", text: "This page lost its connection to the OS before Findymail was checked. Reload to try again." }));
     return () => {
       live = false;
     };
@@ -57,6 +57,7 @@ export function FindymailPanel({ onBook }: { onBook: (book: LeadBook) => void })
               : "Loading…"}
         </p>
       </div>
+      {state?.keyNote ? <p className="sx-hint">{state.keyNote}</p> : null}
       {message ? (
         <p className={message.tone === "error" ? "sx-error" : "sx-ok"} role={message.tone === "error" ? "alert" : "status"}>
           {message.text}

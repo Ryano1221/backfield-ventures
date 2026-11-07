@@ -4,13 +4,22 @@ import { writeDoc } from "@/lib/os/doc-store";
 import { osJson } from "@/lib/os/response";
 import { mergeLeads } from "@/lib/os/leads/book";
 import { templateDraft } from "@/lib/os/leads/draft";
-import { applySearchOp, credits, findymailKey, FindymailError, leadFromContact, listContacts, listLists } from "@/lib/os/leads/findymail";
+import { applySearchOp, credits, findymailKey, FindymailError, keyNote, leadFromContact, listContacts, listLists } from "@/lib/os/leads/findymail";
 import { scoreLead } from "@/lib/os/leads/score";
 import { FINDYMAIL_DOC, LEADS_DOC, readFindyMap, readLeads, readTaste } from "@/lib/os/leads/server";
 import { LEAD_KINDS, type LeadKind } from "@/lib/os/leads/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+/** Logs everything about a failure (never the key) and returns what the panel should say. */
+function explain(where: string, error: unknown): string {
+  const e = error instanceof Error ? error : new Error(String(error));
+  const cause = (e as { cause?: unknown }).cause;
+  console.error(`findymail ${where} failed`, { name: e.name, message: e.message, cause: cause instanceof Error ? { name: cause.name, message: cause.message, code: (cause as { code?: string }).code } : cause, stack: e.stack });
+  if (e instanceof FindymailError) return e.message;
+  return `Findymail: unexpected ${e.name}: ${e.message}`;
+}
 
 /** Ryan's Findymail lists, which kind of lead each one feeds, and his remaining credits. */
 export async function GET() {
@@ -20,9 +29,9 @@ export async function GET() {
   if (!key) return osJson({ ok: true, ready: false, lists: [], map: saved.lists, searches: saved.searches, credits: null });
   try {
     const [lists, balance] = await Promise.all([listLists(fetch, key), credits(fetch, key).catch(() => null)]);
-    return osJson({ ok: true, ready: true, lists, map: saved.lists, searches: saved.searches, credits: balance });
+    return osJson({ ok: true, ready: true, lists, map: saved.lists, searches: saved.searches, credits: balance, key_note: keyNote() });
   } catch (error) {
-    return osJson({ error: error instanceof FindymailError ? error.message : "Findymail could not be reached" }, 502);
+    return osJson({ error: explain("GET", error), key_note: keyNote() }, 502);
   }
 }
 
@@ -68,6 +77,6 @@ export async function POST(req: Request) {
     await writeDoc(LEADS_DOC, JSON.stringify(merged.book));
     return osJson({ ok: true, map: map.lists, added: merged.added, book: merged.book });
   } catch (error) {
-    return osJson({ error: error instanceof FindymailError ? error.message : "Findymail could not be reached", map: map.lists }, 502);
+    return osJson({ error: explain("POST", error), map: map.lists }, 502);
   }
 }

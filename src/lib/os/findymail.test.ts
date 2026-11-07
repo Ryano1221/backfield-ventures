@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applySearchOp, credits, EMPTY_MAP, findEmail, FindymailError, leadFromContact, leadFromMatch, listContacts, listLists, searchResults, searchStatus, searchStep, startSearch, verifyEmail, type Fetch } from "./leads/findymail";
+import { applySearchOp, cleanKey, credits, EMPTY_MAP, failureReason, findEmail, FindymailError, findymailKey, keyNote, leadFromContact, leadFromMatch, listContacts, listLists, searchResults, searchStatus, searchStep, startSearch, verifyEmail, type Fetch } from "./leads/findymail";
 import { DEFAULT_LIMITS, runFinder } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
 import { EMPTY_BOOK } from "./leads/types";
@@ -148,4 +148,35 @@ test("saved searches: start weekly, collect when done, and become leads with ver
   assert.equal(searchStep({ ...search, last_run: "2026-11-01T00:00:00.000Z" }, new Date("2026-11-10T00:00:00Z")), "start");
   assert.equal(applySearchOp(added.map, { op: "search_add", kind: "lp", query: "short" }, "x").ok, false);
   assert.equal(applySearchOp(added.map, { op: "search_remove", id: "s1" }, "x").ok && applySearchOp(added.map, { op: "search_remove", id: "s1" }, "x").ok, true);
+});
+
+test("a pasted key with invisible characters, quotes or a Bearer prefix still works; a request that throws says why", async () => {
+  assert.equal(cleanKey("​abc|123\n").key, "abc|123");
+  assert.equal(cleanKey("“abc|123”").key, "abc|123");
+  assert.equal(cleanKey("Bearer abc|123").key, "abc|123");
+  assert.equal(cleanKey("abc\n|123").key, "abc|123");
+  assert.deepEqual(cleanKey("abcé123").bad, ["U+00E9"]);
+  assert.equal(findymailKey({ FINDYMAIL_API_KEY: " ​abc|123 \n" }), "abc|123");
+  assert.match(keyNote({ FINDYMAIL_API_KEY: "​abc|123\n" }) ?? "", /had 2 extra characters/);
+  assert.equal(keyNote({ FINDYMAIL_API_KEY: "abc|123" }), null);
+  assert.match(keyNote({ FINDYMAIL_API_KEY: "abcé123" }) ?? "", /U\+00E9/);
+
+  let sent = "";
+  const ok: Fetch = async (_url, init) => {
+    sent = new Headers(init?.headers).get("authorization") ?? "";
+    assert.ok(init?.signal, "every request has a timeout");
+    return new Response(JSON.stringify({ lists: [] }), { status: 200 });
+  };
+  await listLists(ok, findymailKey({ FINDYMAIL_API_KEY: "“abc|123”\n" })!);
+  assert.equal(sent, "Bearer abc|123");
+
+  const throws: Fetch = async () => {
+    throw Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new Error("getaddrinfo ENOTFOUND app.findymail.com"), { code: "ENOTFOUND" }) });
+  };
+  await assert.rejects(listLists(throws, "abc"), (error: unknown) => error instanceof FindymailError && /\/lists failed \(fetch failed: ENOTFOUND: getaddrinfo ENOTFOUND/.test(error.message));
+  const slow: Fetch = async () => {
+    throw Object.assign(new Error("The operation was aborted due to timeout"), { name: "TimeoutError" });
+  };
+  await assert.rejects(listLists(slow, "abc"), /no answer within 15 seconds/);
+  assert.equal(failureReason("x"), "x");
 });

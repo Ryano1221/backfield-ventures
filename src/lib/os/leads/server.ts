@@ -160,7 +160,7 @@ export async function importFindymail(key: string): Promise<Lead[]> {
         }
       }
     } catch (error) {
-      search.note = error instanceof Error ? error.message : "Findymail could not be reached";
+      search.note = error instanceof Error ? error.message : `Findymail search failed: ${String(error)}`;
       changed = true;
       if (error instanceof FindymailError && error.stop) break;
     }
