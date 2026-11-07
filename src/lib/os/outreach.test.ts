@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { altSubject, autoEligible, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { altSubject, autoEligible, upcomingSends, wouldStart, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -455,4 +455,15 @@ test("reply rate by source tells which lead sources answer", () => {
     { source: "SEC Form D", emailed: 6, replied: 1, rate: 17 },
     { source: "Findymail", emailed: 2, replied: 1, rate: null },
   ]);
+});
+
+test("the preview lists emails due this week and the leads autopilot would start", () => {
+  const e = makeEnrollment(lead(), "fixture@example.com", "auto", "2026-11-09T00:00:00.000Z", null);
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  const book: OutreachBook = { ...EMPTY_OUTREACH, settings: { ...DEFAULT_SETTINGS, enabled: false, threshold: 80 }, enrollments: [e] };
+  assert.deepEqual(upcomingSends(book, new Date("2026-11-11T00:00:00Z")).map((u) => [u.n, u.at.slice(0, 10)]), [[2, "2026-11-17"]]);
+  assert.deepEqual(upcomingSends(book, new Date("2026-11-11T00:00:00Z"), 3), [], "outside the window");
+  const leads = [lead({ id: "w1", score: 90, contacts: [{ email: "w1@example.com", name: null, source: "website", confidence: "high", note: "" }] }), lead({ id: "w2", score: 70 }), lead({ id: "w3", score: 95, contacts: [{ email: "w3@example.com", name: null, source: "website", confidence: "high", note: "" }] })];
+  const would = wouldStart(book, leads, new Date("2026-11-11T00:00:00Z"), false, (l) => l.id === "w3");
+  assert.deepEqual(would.map((w) => w.id), ["w1"], "known people and leads below the bar are left out, even with autopilot off");
 });

@@ -330,3 +330,31 @@ export function statsBySource(book: OutreachBook, now: Date): { source: string; 
     })
     .sort((a, b) => b.emailed - a.emailed);
 }
+
+export type Upcoming = { lead_id: string; company: string; email: string; n: number; kind: StepKind; at: string };
+
+/** Emails due in the next `days` days for sequences already running, soonest first. */
+export function upcomingSends(book: OutreachBook, now: Date, days = 7): Upcoming[] {
+  const until = now.getTime() + days * DAY_MS;
+  const out: Upcoming[] = [];
+  for (const e of book.enrollments) {
+    if (e.status !== "active") continue;
+    const dates = stepDates(e, now);
+    const next = e.steps.findIndex((s) => !s.sent_at);
+    if (next < 0) continue;
+    const at = dates[next].at;
+    if (Date.parse(at) <= until) out.push({ lead_id: e.lead_id, company: e.company, email: e.email, n: e.steps[next].n, kind: e.steps[next].kind, at });
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}
+
+/** Leads autopilot would start at the current bar if it were on, best first, up to today's cap. */
+export function wouldStart(book: OutreachBook, leads: Lead[], now: Date, researchReady: boolean, isKnown: (lead: Lead) => boolean): { id: string; company: string; score: number; email: string }[] {
+  const on = { ...book, settings: { ...book.settings, enabled: true } };
+  const cap = dailyCap(on.settings, on, now);
+  return leads
+    .filter((lead) => autoEligible(lead, on, researchReady, isKnown(lead)))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, cap)
+    .map((lead) => ({ id: lead.id, company: lead.company, score: lead.score, email: autoAddress(lead)! }));
+}

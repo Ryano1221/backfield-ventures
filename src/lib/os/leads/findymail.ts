@@ -307,3 +307,16 @@ export function applySearchOp(map: FindyMap, op: { op?: unknown; kind?: unknown;
   const search: FindySearch = { id: newId(), kind: op.kind as LeadKind, query, titles, limit, hash: null, started_at: null, last_run: null, last_count: null, note: `Starts on the next daily run (${now.slice(0, 10)} or after).` };
   return { ok: true, map: { ...map, searches: [...map.searches, search] } };
 }
+
+/** The key the e2e server uses. With fixtures on, it gets canned Findymail answers instead of the network. */
+export const FIXTURE_KEY = "e2e-findymail-key";
+
+/** Canned answers shaped like Findymail's documented examples. Fixture servers only. */
+export const fixtureFindymail: Fetch = async (url) => {
+  const path = new URL(url).pathname;
+  const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
+  if (path === "/api/credits") return json({ credits: 150, email: "owner@example.com", has_capacity: null, verifier_credits: 100 });
+  if (path === "/api/lists") return json({ lists: [{ id: 7, name: "Example family offices", created_at: "", updated_at: "", shared_with_team: false, is_owner: true }] });
+  if (path === "/api/contacts/get/7") return json({ draw: 0, recordsTotal: 2, recordsFiltered: 2, data: [{ id: 701, name: "Fixture Principal", email: "principal@example.com", linkedin_url: null, company: "Example Family Office", job_title: "Principal" }, { id: 702, name: "Casey Example", email: "casey@example.com", linkedin_url: null, company: "Example Holdings Office", job_title: "Founder" }] });
+  return json({ error: "not in the fixture" }, 404);
+};

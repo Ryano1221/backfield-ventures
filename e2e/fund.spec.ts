@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-warm-leads.json", "/tmp/os-leads.json", "/tmp/os-outreach.json", "/tmp/os-outreach-outbox.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-warm-leads.json", "/tmp/os-leads.json", "/tmp/os-outreach.json", "/tmp/os-outreach-outbox.json", "/tmp/os-findymail.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -393,4 +393,17 @@ test("leads triage: search, keyboard skip with undo, open and close, and edit a 
   await page.getByRole("textbox", { name: "Email", exact: true }).fill("Hi Fixture,\n\nA shorter follow-up. Still up for a call?\n\nBest,\nRyan");
   await page.getByRole("button", { name: "Save email" }).click();
   await expect(page.getByText("A shorter follow-up. Still up for a call?")).toBeVisible();
+});
+
+test("Findymail panel shows credits and lists, and tagging a list pulls its contacts in as leads", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/os/leads");
+  const panel = page.getByRole("region", { name: "Findymail" });
+  await expect(panel).toContainText("150 finder and 100 verifier credits left");
+  await expect(panel).toContainText("Example family offices");
+  await panel.getByRole("group", { name: "Use Example family offices as" }).getByRole("button", { name: "LPs" }).click();
+  await expect(panel.getByRole("status")).toContainText("Example family offices: 2 new lps added");
+  await page.getByRole("group", { name: "Lead type" }).getByRole("button", { name: /LPs/ }).click();
+  await expect(page.getByRole("button", { name: /Example Family Office/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Example Holdings Office/ })).toBeVisible();
 });

@@ -29,7 +29,7 @@ const GMAIL_NOTE: Record<string, { tone: "ok" | "error"; text: string }> = {
   failed: { tone: "error", text: "Gmail could not be connected. Check the Google client settings and try again." },
 };
 
-export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup, known = {} }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup; known?: Record<string, Known> }) {
+export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup, known = {}, preview = [] }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup; known?: Record<string, Known>; preview?: { id: string; company: string; score: number; email: string }[] }) {
   const [book, setBook] = useState(initial);
   const [outreach, setOutreach] = useState(initialOutreach);
   const [mailSetup, setMailSetup] = useState(outreachSetup);
@@ -162,6 +162,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         capToday={dailyCap(outreach.settings, outreach, new Date(now))}
         sentToday={firstTouchesToday(outreach, new Date(now))}
         now={now}
+        preview={preview}
         onBook={(next, nextSetup) => {
           setOutreach(next);
           if (nextSetup) setMailSetup(nextSetup);

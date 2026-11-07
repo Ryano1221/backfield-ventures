@@ -17,6 +17,8 @@ const SERVER_ENV: Record<string, string> = {
   OS_SNAPSHOT_FILE: "/tmp/os-e2e-none.json",
   OS_INGEST_TOKEN: "e2e-ingest-token",
   CRON_SECRET: "e2e-cron-secret",
+  // Fixture servers answer this key with canned Findymail responses; it never reaches Findymail.
+  FINDYMAIL_API_KEY: "e2e-findymail-key",
   // A Tuesday, 8:30am in Austin: inside the outreach send window. Fixture servers only.
   OUTREACH_FIXTURE_NOW: "2026-11-10T14:30:00Z",
   NEXT_TELEMETRY_DISABLED: "1",
