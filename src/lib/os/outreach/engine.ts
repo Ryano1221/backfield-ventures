@@ -9,12 +9,14 @@
 import type { Lead, LeadBook } from "../leads/types";
 import { logEvent, makeEnrollment } from "./book";
 import { autoAddress, autoEligible, buildDigest, centralNow, dailyCap, firstTouchesToday, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, shouldPause } from "./plan";
-import type { Enrollment, OutreachBook, Step } from "./types";
+import type { Enrollment, OutreachBook, ReplyTriage, Step } from "./types";
 
 export type Mailer = {
   me: { email: string; name: string };
   send: (mail: { to: string; toName: string | null; subject: string; body: string; inReplyTo: string | null }, threadId: string | null) => Promise<{ gmailId: string; threadId: string; messageId: string | null }>;
-  reply: (threadId: string) => Promise<{ replied: boolean; snippet: string }>;
+  reply: (threadId: string) => Promise<{ replied: boolean; snippet: string; auto?: boolean; messageId?: string }>;
+  /** The full text of their reply, quoted history removed. */
+  readReply?: (messageId: string) => Promise<string>;
   bounces: () => Promise<string[]>;
 };
 
@@ -32,6 +34,10 @@ export type EngineDeps = {
   verify?: ((email: string) => Promise<boolean | null>) | null;
   /** Where the Leads page lives, for the morning summary's link. */
   leadsUrl?: string;
+  /** Reads a reply: what it means and a suggested answer. Null when no AI key is set. */
+  triage?: ((enrollment: Enrollment, replyText: string) => Promise<ReplyTriage | null>) | null;
+  /** True when Ryan already knows the lead (Relationships, warm leads, or a pitch in Deals). */
+  isKnown?: (lead: Lead) => boolean;
   /** True when leads get researched; autopilot then waits for the research before starting. */
   researchReady?: boolean;
 };
@@ -60,12 +66,22 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
     report.checked++;
     try {
       const reply = await mailer.reply(enrollment.thread_id);
+      if (reply.auto && !enrollment.auto_reply_seen) {
+        enrollment.auto_reply_seen = true;
+        out = logEvent(out, { at: at(), lead_id: enrollment.lead_id, text: `${enrollment.company}: automatic reply (out of office). The sequence carries on.` });
+      }
       if (!reply.replied) continue;
       report.replied++;
       if (isOptOut(reply.snippet)) finish(enrollment, "opted_out", "Asked not to be contacted. Will never be emailed again.", true);
       else {
-        enrollment.reply = { at: at(), snippet: reply.snippet.slice(0, 400), handled_at: null };
-        finish(enrollment, "replied", "Replied. Sequence stopped; it's in your inbox.", false);
+        let triage: ReplyTriage | null = null;
+        if (deps.triage && reply.messageId && mailer.readReply) {
+          const text = await mailer.readReply(reply.messageId).catch(() => reply.snippet);
+          triage = await deps.triage(enrollment, text || reply.snippet).catch(() => null);
+        }
+        enrollment.reply = { at: at(), snippet: reply.snippet.slice(0, 400), handled_at: null, triage };
+        // A clear no is respected for good, like an opt-out.
+        finish(enrollment, "replied", triage?.intent === "not_interested" ? "Replied: not interested. Won't be emailed again." : "Replied. Sequence stopped; it's in your inbox.", triage?.intent === "not_interested");
       }
     } catch (error) {
       report.errors.push(`${enrollment.company}: ${error instanceof Error ? error.message : "could not check the thread"}`);
@@ -108,7 +124,7 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
   const room = () => cap - firstTouchesToday(out, deps.now()) - waiting();
   for (const lead of [...leadList].sort((a, b) => b.score - a.score)) {
     if (room() <= 0 || deps.timeLeft() < 60_000) break;
-    if (!autoEligible(lead, out, deps.researchReady)) continue;
+    if (!autoEligible(lead, out, deps.researchReady, deps.isKnown?.(lead) ?? false)) continue;
     const email = autoAddress(lead)!;
     const ai = deps.aiSteps ? await deps.aiSteps(lead).catch(() => null) : null;
     out.enrollments.push(makeEnrollment({ ...lead, to: email }, email, "auto", at(), ai));

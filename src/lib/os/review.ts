@@ -19,7 +19,7 @@ export type ReviewItem = {
   /** One line on what is open, or why it's clear. */
   detail: string;
   /** Key into osHrefs. */
-  href: "spv" | "raise" | "portfolio" | "people" | "deals" | "today" | "studio";
+  href: "spv" | "raise" | "portfolio" | "people" | "deals" | "today" | "studio" | "leads";
 };
 
 export type ReviewInputs = {
@@ -35,6 +35,8 @@ export type ReviewInputs = {
   introAsks?: string[];
   /** Leads still "to reach" after a week. */
   staleLeads?: string[];
+  /** Outreach: replies waiting on Ryan, strong new leads to triage, and why autopilot paused itself. */
+  outreach?: { replies: string[]; toReview: string[]; paused: string | null };
   now: number;
 };
 
@@ -177,5 +179,25 @@ export function weeklyReview(input: ReviewInputs): ReviewItem[] {
     detail: input.contentWaiting ? `${input.contentWaiting} ${input.contentWaiting === 1 ? "draft is" : "drafts are"} in review.` : "Nothing in review.",
     href: "studio",
   });
+  if (input.outreach) {
+    const o = input.outreach;
+    items.push({
+      key: "outreach-replies",
+      area: "people",
+      title: "Outreach replies to answer",
+      count: o.replies.length,
+      detail: o.replies.length ? `${list(o.replies)} replied and are waiting on you.` : "Every reply to outreach has an answer.",
+      href: "leads",
+    });
+    items.push({
+      key: "outreach-leads",
+      area: "deals",
+      title: "New leads to review",
+      count: o.toReview.length,
+      detail: o.toReview.length ? `Strongest: ${list(o.toReview)}.` : "No strong new leads waiting on a decision.",
+      href: "leads",
+    });
+    if (o.paused) items.push({ key: "autopilot", area: "office", title: "Autopilot paused", count: 1, detail: o.paused, href: "leads" });
+  }
   return items;
 }

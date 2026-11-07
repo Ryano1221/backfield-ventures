@@ -125,6 +125,22 @@ export function applyLeadOp(book: LeadBook, raw: unknown, now = new Date().toISO
     if (!found.length) return { ok: false, error: "Add one person per line: name, firm, email." };
     return { ok: true, book: mergeLeads(book, found).book };
   }
+  if (op.op === "bulk") {
+    const kind = LEAD_KINDS.includes(op.kind as LeadKind) ? (op.kind as LeadKind) : null;
+    const action = op.action === "approve" || op.action === "skip" ? op.action : null;
+    const score = Number(op.score);
+    if (!kind || !action || !Number.isFinite(score)) return { ok: false, error: "Unknown change." };
+    const picked = bulkPick(book, kind, action, score);
+    if (!picked.length) return { ok: false, error: "Nothing matches." };
+    const ids = new Set(picked.map((lead) => lead.id));
+    const leads = book.leads.map((lead) => (ids.has(lead.id) ? { ...lead, status: action === "approve" ? ("approved" as const) : ("skipped" as const), to: action === "approve" ? bestAddress(lead) : lead.to, updated_at: now } : lead));
+    return { ok: true, book: { ...book, leads } };
+  }
+  if (op.op === "restore_many") {
+    const ids = new Set(Array.isArray(op.ids) ? op.ids.filter((id): id is string => typeof id === "string").slice(0, 1500) : []);
+    if (!ids.size) return { ok: false, error: "Nothing to restore." };
+    return { ok: true, book: { ...book, leads: book.leads.map((lead) => (ids.has(lead.id) ? { ...lead, status: "new" as const, updated_at: now } : lead)) } };
+  }
   const id = text(op.id, 120);
   const index = book.leads.findIndex((lead) => lead.id === id);
   if (index < 0) return { ok: false, error: "That lead is not on the list." };
@@ -170,4 +186,15 @@ export function gmailLink(lead: Lead): string | null {
   if (!lead.to || !lead.draft) return null;
   const params = new URLSearchParams({ view: "cm", fs: "1", to: lead.to, su: lead.draft.subject, body: lead.draft.body });
   return `https://mail.google.com/mail/?${params.toString()}`;
+}
+
+/** A real address to use: the picked one, else the best named or team address. Never a guess. */
+export function bestAddress(lead: Lead): string | null {
+  if (lead.to && lead.contacts.find((c) => c.email === lead.to)?.confidence !== "low") return lead.to;
+  return lead.contacts.find((c) => c.confidence === "high" || c.confidence === "medium")?.email ?? null;
+}
+
+/** Leads a bulk action would touch: new ones of this kind at or above (approve) or below (skip) the score. Approve needs a real address. */
+export function bulkPick(book: LeadBook, kind: LeadKind, action: "approve" | "skip", score: number): Lead[] {
+  return book.leads.filter((lead) => lead.kind === kind && lead.status === "new" && (action === "approve" ? lead.score >= score && Boolean(bestAddress(lead)) : lead.score < score));
 }

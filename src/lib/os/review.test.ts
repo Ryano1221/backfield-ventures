@@ -48,3 +48,16 @@ test("intro asks and untouched warm leads show up when given", () => {
   assert.equal(items.find((i) => i.key === "intros")?.detail, "Ada said yes but hasn't been asked for intros.");
   assert.equal(items.find((i) => i.key === "leads")?.count, 0);
 });
+
+test("outreach shows up in the weekly review: replies, strong new leads, and a self-paused autopilot", () => {
+  const items = weeklyReview({ ...base, outreach: { replies: ["Fixture Founder", "Casey Example"], toReview: ["Example Snacks"], paused: "Paused: 2 of the last 20 first emails bounced." } });
+  const byKey = new Map(items.map((item) => [item.key, item]));
+  assert.equal(byKey.get("outreach-replies")?.count, 2);
+  assert.match(byKey.get("outreach-replies")?.detail ?? "", /Fixture Founder, Casey Example replied/);
+  assert.equal(byKey.get("outreach-replies")?.href, "leads");
+  assert.equal(byKey.get("outreach-leads")?.area, "deals");
+  assert.equal(byKey.get("autopilot")?.area, "office");
+  const clear = weeklyReview({ ...base, outreach: { replies: [], toReview: [], paused: null } });
+  assert.equal(clear.find((item) => item.key === "outreach-replies")?.detail, "Every reply to outreach has an answer.");
+  assert.equal(clear.find((item) => item.key === "autopilot"), undefined);
+});

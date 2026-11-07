@@ -4,6 +4,9 @@ import { NightFrame } from "@/components/os/night/NightFrame";
 import { ReviewDesk } from "@/components/os/night/ReviewDesk";
 import { buildCommand } from "@/lib/os/command";
 import { readDoc } from "@/lib/os/doc-store";
+import { parseOutreach } from "@/lib/os/outreach/book";
+import { repliesWaiting } from "@/lib/os/outreach/plan";
+import { parseLeads as parseLeadBook } from "@/lib/os/leads/book";
 import { parseHoldings } from "@/lib/os/holdings";
 import { isOsHost } from "@/lib/os/host";
 import { osChromeCounts, osHrefs } from "@/lib/os/nav";
@@ -37,6 +40,7 @@ export default async function ReviewPage() {
     readRaise(),
     readDoc("warm-leads").catch(() => null).then(parseLeads),
   ]);
+  const [outreachBook, leadBook] = await Promise.all([readDoc("outreach").catch(() => null).then(parseOutreach), readDoc("leads").catch(() => null).then(parseLeadBook)]);
   const command = buildCommand(page.snapshot, ledger, null, now);
   const people = buildPeople(page.snapshot).rows;
   const items = weeklyReview({
@@ -53,6 +57,11 @@ export default async function ReviewPage() {
       ...spvBackers(spvs).map((row) => ({ name: row.name, person_id: row.personId, why: "" })),
     ]).map((row) => row.name),
     staleLeads: leads.leads.filter((lead) => lead.status === "to_reach" && now - Date.parse(lead.created_at) > 7 * 86_400_000).map((lead) => lead.name),
+    outreach: {
+      replies: repliesWaiting(outreachBook).map((e) => e.name ?? e.company),
+      toReview: leadBook.leads.filter((lead) => lead.status === "new" && lead.score >= 70).sort((a, b) => b.score - a.score).map((lead) => lead.company),
+      paused: outreachBook.settings.paused_reason,
+    },
     now,
   });
   const monday = new Date(now - ((new Date(now).getUTCDay() + 6) % 7) * 86_400_000);

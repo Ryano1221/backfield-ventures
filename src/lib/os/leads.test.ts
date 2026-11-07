@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyLeadOp, gmailLink, mergeLeads, parseImport, parseLeads } from "./leads/book";
+import { applyLeadOp, bulkPick, gmailLink, mergeLeads, parseImport, parseLeads } from "./leads/book";
 import { plainName, templateDraft } from "./leads/draft";
 import { DEFAULT_LIMITS, recentDays, runFinder, type RunDeps } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
@@ -276,4 +276,30 @@ test("company names read the way people write them", () => {
   assert.equal(plainName("AVSF"), "AVSF");
   assert.equal(plainName("THEZERO INC."), "Thezero");
   assert.equal(plainName("iFixture Co"), "iFixture");
+});
+
+test("bulk: approve strong leads that have a real address, skip weak ones, and undo restores exactly those", () => {
+  const book = {
+    ...EMPTY_BOOK,
+    leads: [
+      lead({ id: "a", score: 90 }),
+      lead({ id: "b", score: 92, contacts: [{ email: "guess@example.com", name: null, source: "guess", confidence: "low", note: "" }] }),
+      lead({ id: "c", score: 40 }),
+      lead({ id: "d", score: 45, status: "approved" }),
+      lead({ id: "e", score: 30, kind: "lp" }),
+    ],
+  };
+  assert.deepEqual(bulkPick(book, "founder", "approve", 85).map((l) => l.id), ["a"], "a guessed address doesn't count");
+  assert.deepEqual(bulkPick(book, "founder", "skip", 50).map((l) => l.id), ["c"], "only new ones of this kind");
+  const approved = applyLeadOp(book, { op: "bulk", kind: "founder", action: "approve", score: 85 });
+  assert.ok(approved.ok);
+  assert.equal(approved.book.leads.find((l) => l.id === "a")?.status, "approved");
+  assert.equal(approved.book.leads.find((l) => l.id === "a")?.to, "fixture@example.com");
+  const skipped = applyLeadOp(approved.book, { op: "bulk", kind: "founder", action: "skip", score: 50 });
+  assert.ok(skipped.ok);
+  const undone = applyLeadOp(skipped.book, { op: "restore_many", ids: ["c"] });
+  assert.ok(undone.ok);
+  assert.equal(undone.book.leads.find((l) => l.id === "c")?.status, "new");
+  assert.equal(undone.book.leads.find((l) => l.id === "a")?.status, "approved", "undo touches only what it names");
+  assert.deepEqual(applyLeadOp(book, { op: "bulk", kind: "partner", action: "skip", score: 50 }), { ok: false, error: "Nothing matches." });
 });

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { gmailThreadUrl, repliesWaiting } from "@/lib/os/outreach/plan";
-import type { OutreachBook } from "@/lib/os/outreach/types";
+import { INTENT_LABEL, type OutreachBook } from "@/lib/os/outreach/types";
 
 /** People who replied to outreach and are waiting on Ryan. The reply itself is in his Gmail. */
 export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (book: OutreachBook) => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const replies = repliesWaiting(book);
   if (!replies.length) return null;
 
@@ -40,7 +41,32 @@ export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (bo
             <p className="sx-hint">
               {[e.name, e.company].filter(Boolean).join(", ")} · {new Date(e.reply!.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
             </p>
+            {e.reply!.triage ? (
+              <p className="reply-sum">
+                <span className={`lead-chip reply-intent is-${e.reply!.triage.intent}`}>{INTENT_LABEL[e.reply!.triage.intent]}</span> {e.reply!.triage.summary}
+              </p>
+            ) : null}
             {e.reply!.snippet ? <blockquote>&ldquo;{e.reply!.snippet}&rdquo;</blockquote> : null}
+            {e.reply!.triage?.suggested ? (
+              <details className="lead-why">
+                <summary>Suggested answer</summary>
+                <p className="lead-body">{e.reply!.triage.suggested}</p>
+                <button
+                  type="button"
+                  className="btn sm"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(e.reply!.triage!.suggested);
+                      setCopied(e.lead_id);
+                    } catch {
+                      setCopied(null);
+                    }
+                  }}
+                >
+                  {copied === e.lead_id ? "Copied" : "Copy answer"}
+                </button>
+              </details>
+            ) : null}
             <div className="sx-actions">
               {e.thread_id ? (
                 <a className="btn primary" href={gmailThreadUrl(e.thread_id)} target="_blank" rel="noopener noreferrer">

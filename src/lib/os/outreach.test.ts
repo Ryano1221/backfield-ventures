@@ -3,8 +3,8 @@ import test from "node:test";
 import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
-import { accessToken, rawMessage, sendMail, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildDigest, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
+import { autoEligible, buildDigest, buildSteps, isHoliday, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -211,7 +211,7 @@ test("gmail: builds a plain-text reply, sends in the thread, refreshes tokens, a
   const result = await sendMail(fetcher, "a1", { from: "owner@example.com", fromName: "Ryan", to: "fixture@example.com", toName: null, subject: "Re: x", body: "b", inReplyTo: null }, "t1");
   assert.deepEqual(result, { gmailId: "g1", threadId: "t1", messageId: "<m9@example.com>" });
   assert.match(calls[1].body, /"threadId":"t1"/);
-  assert.deepEqual(await threadReply(fetcher, "a1", "t1", "owner@example.com"), { replied: true, snippet: "Sounds good" });
+  assert.deepEqual(await threadReply(fetcher, "a1", "t1", "owner@example.com"), { replied: true, snippet: "Sounds good", auto: false, messageId: "g2" });
 });
 
 test("a run's save keeps what Ryan changed meanwhile", () => {
@@ -233,7 +233,7 @@ test("a reply is kept for Ryan to answer until he marks it done", async () => {
   const run = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(fakeMailer({ t9: "Happy to chat, how's Thursday?" }).mailer, "2026-11-11T14:30:00Z"));
   const waiting = repliesWaiting(run.book);
   assert.equal(waiting.length, 1);
-  assert.deepEqual(waiting[0].reply, { at: "2026-11-11T14:30:00.000Z", snippet: "Happy to chat, how's Thursday?", handled_at: null });
+  assert.deepEqual(waiting[0].reply, { at: "2026-11-11T14:30:00.000Z", snippet: "Happy to chat, how's Thursday?", handled_at: null, triage: null });
   assert.equal(gmailThreadUrl("t9"), "https://mail.google.com/mail/u/0/#all/t9");
   const done = applyOutreachOp(run.book, { op: "handled", lead_id: e.lead_id }, [], "2026-11-11T15:00:00.000Z");
   assert.ok(done.ok);
@@ -304,4 +304,92 @@ test("the morning summary lists replies and new top leads, once a day after 7am 
   await runOutreach(morning.book, { ...EMPTY_BOOK, leads: [fresh] }, deps(mailer, "2026-11-11T15:30:00Z"));
   assert.equal(sent.length, 1, "once a day");
   assert.equal(mergeRun(book, { ...book, settings: { ...book.settings, threshold: 70 } }, morning.book).settings.last_digest, "2026-11-11", "survives a settings change mid-run");
+});
+
+test("out-of-office answers don't count as replies; a person's does", async () => {
+  const msg = (headers: Record<string, string>, snippet = "") => ({ id: "m", threadId: "t", snippet, payload: { headers: Object.entries(headers).map(([name, value]) => ({ name, value })) } });
+  assert.ok(isAutoReply(msg({ "Auto-Submitted": "auto-replied" })));
+  assert.ok(!isAutoReply(msg({ "Auto-Submitted": "no" })));
+  assert.ok(isAutoReply(msg({ Subject: "Automatic reply: Fixture Snacks + Backfield Ventures" })));
+  assert.ok(isAutoReply(msg({ Subject: "Out of Office" })));
+  assert.ok(isAutoReply(msg({ Precedence: "auto_reply" })));
+  assert.ok(isAutoReply(msg({ Subject: "Re: Fixture Snacks" }, "I'm currently out of the office until Monday with limited access to email.")));
+  assert.ok(!isAutoReply(msg({ Subject: "Re: Fixture Snacks" }, "Thanks Ryan, happy to chat. I'm out next week but free after.")));
+
+  const fetcher: Fetch = async () =>
+    new Response(JSON.stringify({ messages: [
+      { id: "1", payload: { headers: [{ name: "From", value: "Ryan <owner@example.com>" }] } },
+      { id: "2", snippet: "I'm out of the office until Monday", payload: { headers: [{ name: "From", value: "F <fixture@example.com>" }, { name: "Auto-Submitted", value: "auto-replied" }] } },
+    ] }));
+  assert.deepEqual(await threadReply(fetcher, "a", "t", "owner@example.com"), { replied: false, snippet: "", auto: true });
+
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.thread_id = "t1";
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  const mailer: Mailer = { ...fakeMailer().mailer, reply: async () => ({ replied: false, snippet: "", auto: true }) };
+  const first = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(mailer, "2026-11-11T14:30:00Z"));
+  assert.equal(first.book.enrollments[0].status, "active", "the sequence carries on");
+  const second = await runOutreach(first.book, EMPTY_BOOK, deps(mailer, "2026-11-11T15:30:00Z"));
+  assert.equal(second.book.log.filter((l) => l.text.includes("automatic reply")).length, 1, "noted once");
+});
+
+test("a reply is read in full, quoted history dropped, and triaged; a clear no is respected for good", async () => {
+  assert.equal(stripQuoted("Sounds great, Thursday works.\n\n> Hi Fixture,\n> earlier text\n"), "Sounds great, Thursday works.");
+  assert.equal(stripQuoted("Thanks!\nOn Tue, Nov 10, 2026 at 9:30 AM Ryan <owner@example.com> wrote:\nHi Fixture"), "Thanks!");
+  const fetcher: Fetch = async () =>
+    new Response(JSON.stringify({ id: "m1", payload: { mimeType: "multipart/alternative", parts: [{ mimeType: "text/plain", body: { data: Buffer.from("Yes, let's talk.\r\n\r\n> old").toString("base64url") } }, { mimeType: "text/html", body: { data: "" } }] } }));
+  assert.equal(await messageText(fetcher, "a", "m1"), "Yes, let's talk.");
+
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.thread_id = "t1";
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  const base = fakeMailer().mailer;
+  const mailer = (snippet: string): Mailer => ({ ...base, reply: async () => ({ replied: true, snippet, messageId: "m1" }), readReply: async () => `${snippet} (full)` });
+  const seen: string[] = [];
+  const triage = async (_e: unknown, text: string) => {
+    seen.push(text);
+    return text.startsWith("Yes") ? { intent: "interested" as const, summary: "Wants a call.", suggested: "Great, which times work?\n\nBest,\nRyan" } : { intent: "not_interested" as const, summary: "Passing.", suggested: "Thanks.\n\nBest,\nRyan" };
+  };
+  const yes = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(mailer("Yes, keen"), "2026-11-11T14:30:00Z", { triage }));
+  assert.deepEqual(seen, ["Yes, keen (full)"], "triage reads the full reply");
+  assert.equal(yes.book.enrollments[0].reply?.triage?.intent, "interested");
+  assert.ok(!yes.book.suppress.includes("fixture@example.com"));
+  const no = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(mailer("We'll pass for now, thanks"), "2026-11-11T14:30:00Z", { triage }));
+  assert.ok(no.book.suppress.includes("fixture@example.com"));
+});
+
+test("no sends on holidays: Thanksgiving week, the year-end break, and federal holidays", () => {
+  assert.ok(isHoliday("2026-11-26"), "Thanksgiving 2026");
+  assert.ok(isHoliday("2026-11-27"), "the day after");
+  assert.ok(isHoliday("2026-12-29"));
+  assert.ok(isHoliday("2027-01-01"));
+  assert.ok(isHoliday("2027-01-18"), "MLK Day 2027");
+  assert.ok(isHoliday("2027-05-31"), "Memorial Day 2027");
+  assert.ok(isHoliday("2027-09-06"), "Labor Day 2027");
+  assert.ok(!isHoliday("2026-11-24"));
+  assert.ok(!inSendWindow(new Date("2026-11-26T15:00:00Z"), "America/Chicago"), "Thursday 9am, but Thanksgiving");
+  assert.ok(inSendWindow(new Date("2026-11-24T15:00:00Z"), "America/Chicago"));
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.steps[0].sent_at = "2026-11-23T14:30:00.000Z";
+  assert.equal(stepDates(e, new Date("2026-11-24T00:00:00Z"))[1].at.slice(0, 10), "2026-12-01", "due Thanksgiving Thursday, so it waits to Tue Dec 1");
+});
+
+test("do-not-contact can be corrected by hand, and reply rate splits by lead type", () => {
+  const book: OutreachBook = { ...EMPTY_OUTREACH, suppress: ["fixture@example.com"] };
+  const fixed = applyOutreachOp(book, { op: "unsuppress", email: "Fixture@Example.com" }, [], "2026-11-10T00:00:00.000Z");
+  assert.ok(fixed.ok);
+  assert.deepEqual(fixed.book.suppress, []);
+  assert.match(fixed.book.log.at(-1)?.text ?? "", /removed from do-not-contact/);
+  assert.equal(applyOutreachOp(book, { op: "unsuppress", email: "other@example.com" }, []).ok, false);
+
+  const sent = (i: number, kind: "founder" | "lp", status: "active" | "replied") => {
+    const e = makeEnrollment(lead({ id: `k${i}`, kind }), `k${i}@example.com`, "auto", "2026-11-05T00:00:00.000Z", null);
+    e.steps[0].sent_at = "2026-11-05T15:00:00.000Z";
+    return { ...e, status };
+  };
+  const mixed: OutreachBook = { ...EMPTY_OUTREACH, enrollments: [...Array.from({ length: 4 }, (_, i) => sent(i, "founder", "active")), sent(4, "founder", "replied"), sent(5, "lp", "replied")] };
+  assert.deepEqual(statsByKind(mixed, new Date("2026-11-10T00:00:00Z")), [
+    { kind: "founder", emailed: 5, replied: 1, rate: 20 },
+    { kind: "lp", emailed: 1, replied: 1, rate: null },
+  ]);
 });

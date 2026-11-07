@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StepDots } from "./Charts";
-import { gmailLink } from "@/lib/os/leads/book";
+import { bulkPick, gmailLink } from "@/lib/os/leads/book";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
+import type { Known } from "@/lib/os/leads/known";
 import { FindymailPanel } from "./FindymailPanel";
 import { RepliesPanel } from "./RepliesPanel";
 import { SequenceEmails } from "./SequenceEmails";
@@ -27,7 +28,7 @@ const GMAIL_NOTE: Record<string, { tone: "ok" | "error"; text: string }> = {
   failed: { tone: "error", text: "Gmail could not be connected. Check the Google client settings and try again." },
 };
 
-export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup }) {
+export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachSetup, known = {} }: { initial: LeadBook; setup: Setup; outreach: OutreachBook; outreachSetup: OutreachSetup; known?: Record<string, Known> }) {
   const [book, setBook] = useState(initial);
   const [outreach, setOutreach] = useState(initialOutreach);
   const [mailSetup, setMailSetup] = useState(outreachSetup);
@@ -35,7 +36,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const [kind, setKind] = useState<LeadKind>("founder");
   const [status, setStatus] = useState<LeadStatus>("new");
   const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string; undo?: string } | null>(null);
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string; undo?: string; undoMany?: string[] } | null>(null);
 
   useEffect(() => {
     const result = new URLSearchParams(window.location.search).get("gmail");
@@ -127,7 +128,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         return false;
       }
       setBook(data.book);
-      const change = body as { op?: string; id?: string };
+      const change = body as { op?: string; id?: string; action?: string; ids?: string[] };
+      if (change.op === "bulk" && change.ids) setMessage({ tone: "ok", text: `${change.action === "approve" ? "Approved" : "Skipped"} ${change.ids.length} ${change.ids.length === 1 ? "lead" : "leads"}.`, undoMany: change.ids });
       if ((change.op === "skip" || change.op === "approve") && change.id) {
         const company = data.book.leads.find((lead) => lead.id === change.id)?.company ?? "Lead";
         setMessage({ tone: "ok", text: `${change.op === "skip" ? "Skipped" : "Approved"} ${company}.`, undo: change.id });
@@ -181,6 +183,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       {message ? (
         <p className={`${message.tone === "error" ? "sx-error" : "sx-ok"} leads-toast`} role={message.tone === "error" ? "alert" : "status"}>
           {message.text}
+          {message.undoMany ? (
+            <button type="button" className="btn sm" onClick={() => send("/api/os/leads/book", { op: "restore_many", ids: message.undoMany }, "bulk")}>
+              Undo
+            </button>
+          ) : null}
           {message.undo ? (
             <button type="button" className="btn sm" onClick={() => send("/api/os/leads/book", { op: "restore", id: message.undo }, message.undo!)}>
               Undo
@@ -196,6 +203,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           </button>
         ))}
       </div>
+
+      {status === "new" ? <BulkBar book={book} kind={kind} busy={busy === "bulk"} onBulk={(action, score, ids) => send("/api/os/leads/book", { op: "bulk", kind, action, score, ids }, "bulk")} /> : null}
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
@@ -225,6 +234,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
               onEnroll={enroll}
               now={now}
               onSequence={setOutreach}
+              known={known[lead.id] ?? null}
             />
           ))}
         </ul>
@@ -246,6 +256,7 @@ function LeadCard({
   onToggle,
   now,
   onSequence,
+  known,
   lead,
   busy,
   researching,
@@ -259,6 +270,7 @@ function LeadCard({
   onToggle: () => void;
   now: number;
   onSequence: (book: OutreachBook) => void;
+  known: Known | null;
   lead: Lead;
   busy: boolean;
   researching: boolean;
@@ -278,7 +290,7 @@ function LeadCard({
   const band = lead.score >= 80 ? "is-high" : lead.score >= 60 ? "is-mid" : "is-low";
   const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
   const warm = Boolean(said);
-  const chip = said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
+  const chip = known ? `Known: ${known.where}` : said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
 
   async function copy() {
     if (!lead.draft) return;
@@ -301,7 +313,7 @@ function LeadCard({
             <span className="lead-name">{lead.company}</span>
             {headline ? <span className="sx-hint">{headline}</span> : null}
           </span>
-          {chip ? <span className={`lead-chip${warm ? " is-warm" : ""}`}>{chip}</span> : null}
+          {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : ""}`}>{chip}</span> : null}
           {sequence ? <StepDots steps={STEPS.slice(0, sequence.steps.length)} done={sequence.steps.filter((s) => s.sent_at).map((s) => String(s.n))} label={`Sequence: ${sequenceLine(sequence)}`} /> : null}
           <span className="lead-chev" aria-hidden="true" />
         </button>
@@ -318,7 +330,13 @@ function LeadCard({
           ))}
         </ul>
       ) : null}
-      {lead.note ? <p className="t-body">{lead.note}</p> : null}
+      {known ? (
+        <p className="sx-ok lead-known" role="note">
+          Already in {known.where}: {known.name}
+          {known.detail ? ` (${known.detail})` : ""}. Autopilot won&apos;t send this person a cold sequence; reach out yourself.
+        </p>
+      ) : null}
+      <NoteField lead={lead} onOp={onOp} />
       <Research lead={lead} canResearch={canResearch} researching={researching} onResearch={onResearch} />
       {sequence ? (
         <p className="sx-ok" role="status">
@@ -505,5 +523,52 @@ function Research({ lead, canResearch, researching, onResearch }: { lead: Lead; 
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** One-tap triage for long lists: skip the weak ones, approve the strong ones that have an email. */
+function BulkBar({ book, kind, busy, onBulk }: { book: LeadBook; kind: LeadKind; busy: boolean; onBulk: (action: "approve" | "skip", score: number, ids: string[]) => Promise<boolean> }) {
+  const weak = bulkPick(book, kind, "skip", 50);
+  const strong = bulkPick(book, kind, "approve", 85);
+  if (!weak.length && !strong.length) return null;
+  return (
+    <div className="sx-actions leads-bulk">
+      {strong.length ? (
+        <button type="button" className="btn" disabled={busy} onClick={() => onBulk("approve", 85, strong.map((lead) => lead.id))}>
+          Approve the {strong.length} at 85+ with an email
+        </button>
+      ) : null}
+      {weak.length ? (
+        <button type="button" className="btn" disabled={busy} onClick={() => onBulk("skip", 50, weak.map((lead) => lead.id))}>
+          Skip the {weak.length} under 50
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/** Ryan's own note on a lead. Saves when he leaves the box; AI drafts use it. */
+function NoteField({ lead, onOp }: { lead: Lead; onOp: (body: Record<string, unknown>) => Promise<boolean> }) {
+  const [note, setNote] = useState(lead.note);
+  const [saved, setSaved] = useState(false);
+  return (
+    <label className="sx-field">
+      <span className="lbl">Your note{saved ? " · saved" : ""}</span>
+      <textarea
+        className="sx-text"
+        rows={2}
+        value={note}
+        maxLength={1000}
+        placeholder="How you know them, what to mention, anything to avoid"
+        onChange={(event) => {
+          setNote(event.target.value);
+          setSaved(false);
+        }}
+        onBlur={async () => {
+          if (note.trim() === lead.note.trim()) return;
+          if (await onOp({ op: "note", id: lead.id, note })) setSaved(true);
+        }}
+      />
+    </label>
   );
 }

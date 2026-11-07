@@ -301,7 +301,7 @@ test("autopilot: a started sequence sends its first email from the hourly run, a
   await expect(page.locator(".ap-settings summary")).toContainText("sending from owner@example.com");
 
   const card = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Example Fixture Snacks, Inc." }) });
-  await card.getByRole("textbox").fill("founder@example.com");
+  await card.getByRole("textbox", { name: /type one/i }).fill("founder@example.com");
   await card.getByRole("button", { name: "Approve" }).click();
   await page.getByRole("button", { name: /^Approved/ }).click();
   await page.getByRole("button", { name: "Start sequence" }).click();
@@ -384,7 +384,7 @@ test("leads triage: search, keyboard skip with undo, open and close, and edit a 
 
   // Start a sequence and edit email 2 before it goes out.
   const card = page.getByRole("listitem").filter({ has: row });
-  await card.getByRole("textbox").fill("founder@example.com");
+  await card.getByRole("textbox", { name: /type one/i }).fill("founder@example.com");
   await card.getByRole("button", { name: "Approve" }).click();
   await page.getByRole("button", { name: /^Approved/ }).click();
   await page.getByRole("button", { name: "Start sequence" }).click();

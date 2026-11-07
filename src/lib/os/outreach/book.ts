@@ -129,6 +129,11 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
       enrollments[index] = { ...enrollment, steps: threaded, updated_at: now };
       return { ok: true, book: { ...book, enrollments } };
     }
+    case "unsuppress": {
+      const email = typeof op.email === "string" ? op.email.trim().toLowerCase() : "";
+      if (!book.suppress.includes(email)) return { ok: false, error: "That address isn't on the list." };
+      return { ok: true, book: logEvent({ ...book, suppress: book.suppress.filter((entry) => entry !== email) }, { at: now, lead_id: null, text: `${email} removed from do-not-contact by you.` }) };
+    }
     case "handled": {
       const index = book.enrollments.findIndex((e) => e.lead_id === op.lead_id && e.reply);
       if (index < 0) return { ok: false, error: "No reply for that lead." };

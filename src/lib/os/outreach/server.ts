@@ -1,7 +1,8 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { readDoc, writeDoc } from "../doc-store";
-import { readLeads, LEADS_DOC } from "../leads/server";
+import { readKnownIndex, readLeads, LEADS_DOC } from "../leads/server";
+import { knownFor } from "../leads/known";
 import { aiReady } from "../leads/ai";
 import { FindymailError, findymailKey, verifyEmail } from "../leads/findymail";
 import { sessionSecret } from "../session";
@@ -9,7 +10,8 @@ import { fixturesAllowed } from "../store";
 import { aiSteps } from "./ai-steps";
 import { mergeRun, parseOutreach } from "./book";
 import { runOutreach, type Mailer } from "./engine";
-import { accessToken, bouncedAddresses, googleApp, sendMail, threadReply } from "./gmail";
+import { accessToken, bouncedAddresses, googleApp, messageText, sendMail, threadReply } from "./gmail";
+import { triageReply } from "./reply-ai";
 import type { OutreachBook } from "./types";
 
 export const OUTREACH_DOC = "outreach";
@@ -113,6 +115,7 @@ async function liveMailer(): Promise<Mailer | null> {
     me: { email: link.email, name: SENDER_NAME },
     send: (mail, threadId) => sendMail(fetch, token, { ...mail, from: link.email, fromName: SENDER_NAME }, threadId),
     reply: (threadId) => threadReply(fetch, token, threadId, link.email),
+    readReply: (messageId) => messageText(fetch, token, messageId),
     bounces: () => bouncedAddresses(fetch, token),
   };
 }
@@ -120,7 +123,7 @@ async function liveMailer(): Promise<Mailer | null> {
 /** One autopilot pass, saved. `budgetMs` is how long the host lets the request run. */
 export async function runAndSave(budgetMs: number) {
   const started = Date.now();
-  const [book, leads] = await Promise.all([readOutreach(), readLeads()]);
+  const [book, leads, known] = await Promise.all([readOutreach(), readLeads(), readKnownIndex()]);
   let mailer: Mailer | null = null;
   let note: string | null = null;
   try {
@@ -138,6 +141,8 @@ export async function runAndSave(budgetMs: number) {
     spacingMs: () => (fixturesAllowed() ? 0 : 15_000 + Math.floor(Math.random() * 20_000)),
     maxSendsPerRun: 12,
     researchReady: aiReady() && !fixturesAllowed(),
+    isKnown: (lead) => Boolean(knownFor(lead, known)),
+    triage: aiReady() && !fixturesAllowed() ? triageReply : null,
     verify: findymailVerifier(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,

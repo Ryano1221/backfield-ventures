@@ -101,7 +101,7 @@ export function rawMessage(mail: Outgoing): string {
   return Buffer.from(text, "utf8").toString("base64url");
 }
 
-type GmailMessage = { id: string; threadId: string; snippet?: string; labelIds?: string[]; payload?: { headers?: { name: string; value: string }[] } };
+export type GmailMessage = { id: string; threadId: string; snippet?: string; labelIds?: string[]; payload?: { headers?: { name: string; value: string }[] } };
 
 const headerOf = (message: GmailMessage, name: string) => message.payload?.headers?.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? null;
 
@@ -119,14 +119,29 @@ export async function sendMail(fetcher: Fetch, token: string, mail: Outgoing, th
 }
 
 /** Whether someone other than Ryan wrote in the thread, and what they said first. */
-export async function threadReply(fetcher: Fetch, token: string, threadId: string, me: string): Promise<{ replied: boolean; snippet: string }> {
-  const thread = (await api(fetcher, token, "GET", `/threads/${threadId}?format=metadata&metadataHeaders=From`)) as { messages?: GmailMessage[] };
+const AUTO_SUBJECT = /^(?:re:\s*)?(?:automatic reply|auto(?:matic)?[- ]?(?:reply|response)|out of (?:the )?office|ooo\b|away from (?:the )?office|on vacation|on leave|i(?:'|\u2019)?m away|autoreply)/i;
+const AUTO_TEXT = /^(?:thank you for your (?:e-?mail|message)[.,!]? i(?:'|\u2019)?m (?:currently )?(?:out|away)|i(?:'|\u2019)?m (?:currently )?(?:out of (?:the )?office|away|on (?:vacation|leave|holiday|pto))|i am (?:currently )?(?:out of (?:the )?office|away|on (?:vacation|leave|holiday)))/i;
+
+/** An out-of-office or other automatic answer, which shouldn't stop a sequence. */
+export function isAutoReply(message: GmailMessage): boolean {
+  const auto = (headerOf(message, "Auto-Submitted") ?? "").toLowerCase();
+  if (auto && auto !== "no") return true;
+  if (headerOf(message, "X-Autoreply") || headerOf(message, "X-Autorespond")) return true;
+  if (/^(auto_reply|bulk|junk)$/i.test((headerOf(message, "Precedence") ?? "").trim())) return true;
+  return AUTO_SUBJECT.test((headerOf(message, "Subject") ?? "").trim()) || AUTO_TEXT.test((message.snippet ?? "").trim());
+}
+
+/** Whether a person (not Ryan, not a robot) wrote in the thread, and what they said first. */
+export async function threadReply(fetcher: Fetch, token: string, threadId: string, me: string): Promise<{ replied: boolean; snippet: string; auto: boolean; messageId?: string }> {
+  const headers = ["From", "Subject", "Auto-Submitted", "X-Autoreply", "X-Autorespond", "Precedence"].map((h) => `metadataHeaders=${h}`).join("&");
+  const thread = (await api(fetcher, token, "GET", `/threads/${threadId}?format=metadata&${headers}`)) as { messages?: GmailMessage[] };
   const mine = me.toLowerCase();
   const theirs = (thread.messages ?? []).filter((message) => {
     const from = (headerOf(message, "From") ?? "").toLowerCase();
     return from && !from.includes(mine) && !/mailer-daemon|postmaster/.test(from);
   });
-  return { replied: theirs.length > 0, snippet: theirs[0]?.snippet ?? "" };
+  const human = theirs.filter((message) => !isAutoReply(message));
+  return { replied: human.length > 0, snippet: human[0]?.snippet ?? "", auto: theirs.length > human.length, ...(human[0] ? { messageId: human[0].id } : {}) };
 }
 
 /** Addresses that bounced in the last few days, from Gmail's delivery-failure notices. */
@@ -139,4 +154,37 @@ export async function bouncedAddresses(fetcher: Fetch, token: string): Promise<s
     for (const match of (message.snippet ?? "").matchAll(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi)) out.add(match[0].toLowerCase());
   }
   return [...out];
+}
+
+type Part = { mimeType?: string; body?: { data?: string }; parts?: Part[] };
+
+function findPart(part: Part | undefined, type: string): string | null {
+  if (!part) return null;
+  if (part.mimeType === type && part.body?.data) return Buffer.from(part.body.data, "base64url").toString("utf8");
+  for (const child of part.parts ?? []) {
+    const hit = findPart(child, type);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** Just what they wrote: no quoted history below "On ... wrote:", no "> " lines, no signature dashes. */
+export function stripQuoted(text: string): string {
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
+  const out: string[] = [];
+  for (const line of lines) {
+    if (/^On .{4,200} wrote:\s*$/i.test(line.trim()) || /^-{2,}\s*Original Message/i.test(line.trim()) || /^From: .+/i.test(line.trim()) || line.trim() === "--") break;
+    if (line.trim().startsWith(">")) continue;
+    out.push(line);
+  }
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 4000);
+}
+
+/** The text of one message, plain text preferred, quoted history removed. */
+export async function messageText(fetcher: Fetch, token: string, messageId: string): Promise<string> {
+  const message = (await api(fetcher, token, "GET", `/messages/${messageId}?format=full`)) as GmailMessage & { payload?: Part };
+  const plain = findPart(message.payload, "text/plain");
+  const html = plain ? null : findPart(message.payload, "text/html");
+  const text = plain ?? (html ? html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n\n").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&") : message.snippet ?? "");
+  return stripQuoted(text);
 }
