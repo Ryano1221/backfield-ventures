@@ -377,3 +377,8 @@ export function leadFunnel(leads: Lead[], book: OutreachBook, now: Date, days = 
     { label: "Replied", value: replied },
   ];
 }
+
+/** "Re: " once, however many the thread already has. */
+export function replySubject(subject: string): string {
+  return `Re: ${subject.replace(/^(?:\s*re:\s*)+/i, "").trim()}`;
+}

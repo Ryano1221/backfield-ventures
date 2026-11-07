@@ -8,7 +8,7 @@ import { INTENT_LABEL, type OutreachBook } from "@/lib/os/outreach/types";
 export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (book: OutreachBook) => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [sentNote, setSentNote] = useState<string | null>(null);
   const [added, setAdded] = useState<Record<string, string>>({});
 
   // An interested LP belongs in the raise pipeline: add them to Fundraising's warm leads, marked reached.
@@ -32,7 +32,34 @@ export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (bo
     }
   }
   const replies = repliesWaiting(book);
-  if (!replies.length) return null;
+  if (!replies.length)
+    return sentNote ? (
+      <p className="sx-ok leads-toast" role="status">
+        {sentNote}
+      </p>
+    ) : null;
+
+  // Sends Ryan's answer from his Gmail in the same thread; the reply then leaves this list.
+  async function answer(leadId: string, text: string): Promise<boolean> {
+    setBusy(leadId);
+    setError(null);
+    try {
+      const res = await fetch("/api/os/outreach/reply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: leadId, body: text }) });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; book?: OutreachBook };
+      if (!res.ok || !data.book) {
+        setError(data.error || "Could not send that.");
+        return false;
+      }
+      setSentNote("Sent from your Gmail, in the same thread.");
+      onBook(data.book);
+      return true;
+    } catch {
+      setError("No connection. Nothing was sent.");
+      return false;
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function done(leadId: string) {
     setBusy(leadId);
@@ -57,61 +84,94 @@ export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (bo
           {error}
         </p>
       ) : null}
-      <ul className="lead-said">
-        {replies.map((e) => (
-          <li key={e.lead_id}>
-            <p className="sx-hint">
-              {[e.name, e.company].filter(Boolean).join(", ")} · {new Date(e.reply!.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-            </p>
-            {e.reply!.triage ? (
-              <p className="reply-sum">
-                <span className={`lead-chip reply-intent is-${e.reply!.triage.intent}`}>{INTENT_LABEL[e.reply!.triage.intent]}</span> {e.reply!.triage.summary}
+      <ul className="reply-threads">
+        {replies.map((e, i) => {
+          const sent = e.steps.filter((step) => step.sent_at);
+          const mine = sent[sent.length - 1];
+          const triage = e.reply!.triage;
+          return (
+            <li key={e.lead_id} className="reply-thread" style={{ animationDelay: `${i * 60}ms` }}>
+              <p className="reply-meta">
+                <b>{[e.name, e.company].filter(Boolean).join(", ")}</b>
+                <span className="sx-hint">{new Date(e.reply!.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+                {triage ? <span className={`lead-chip reply-intent is-${triage.intent}`}>{INTENT_LABEL[triage.intent]}</span> : null}
               </p>
-            ) : null}
-            {e.reply!.snippet ? <blockquote>&ldquo;{e.reply!.snippet}&rdquo;</blockquote> : null}
-            {e.reply!.triage?.suggested ? (
-              <details className="lead-why">
-                <summary>Suggested answer</summary>
-                <p className="lead-body">{e.reply!.triage.suggested}</p>
-                <button
-                  type="button"
-                  className="btn sm"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(e.reply!.triage!.suggested);
-                      setCopied(e.lead_id);
-                    } catch {
-                      setCopied(null);
-                    }
-                  }}
-                >
-                  {copied === e.lead_id ? "Copied" : "Copy answer"}
-                </button>
-              </details>
-            ) : null}
-            {added[e.lead_id] ? (
-              <p className="sx-ok" role="status">
-                {added[e.lead_id]}
-              </p>
-            ) : null}
-            <div className="sx-actions">
-              {e.thread_id ? (
-                <a className="btn primary" href={gmailThreadUrl(e.thread_id)} target="_blank" rel="noopener noreferrer">
-                  Open in Gmail
-                </a>
+              <div className="bubbles">
+                {mine ? (
+                  <div className="bubble is-me">
+                    <span className="bubble-who">You</span>
+                    <b>{mine.subject}</b>
+                    <span className="bubble-text">{mine.body.length > 240 ? `${mine.body.slice(0, 240).trimEnd()}…` : mine.body}</span>
+                  </div>
+                ) : null}
+                {e.reply!.snippet ? (
+                  <div className="bubble is-them">
+                    <span className="bubble-who">{e.name || e.email}</span>
+                    <span className="bubble-text">{e.reply!.snippet}</span>
+                  </div>
+                ) : null}
+              </div>
+              {triage?.summary ? <p className="sx-hint reply-gist">In short: {triage.summary}</p> : null}
+              {added[e.lead_id] ? (
+                <p className="sx-ok" role="status">
+                  {added[e.lead_id]}
+                </p>
               ) : null}
-              {e.kind === "lp" && e.name && !added[e.lead_id] ? (
-                <button type="button" className="btn" disabled={busy === e.lead_id} onClick={() => toFundraising(e)}>
-                  Add to Fundraising
+              {e.thread_id ? <Composer key={`${e.lead_id}-${triage?.suggested ?? ""}`} name={e.name || e.email} suggested={triage?.suggested ?? ""} busy={busy === e.lead_id} onSend={(text) => answer(e.lead_id, text)} /> : null}
+              <div className="sx-actions">
+                {e.thread_id ? (
+                  <a className="btn" href={gmailThreadUrl(e.thread_id)} target="_blank" rel="noopener noreferrer">
+                    Open in Gmail
+                  </a>
+                ) : null}
+                {e.kind === "lp" && e.name && !added[e.lead_id] ? (
+                  <button type="button" className="btn" disabled={busy === e.lead_id} onClick={() => toFundraising(e)}>
+                    Add to Fundraising
+                  </button>
+                ) : null}
+                <button type="button" className="btn" disabled={busy === e.lead_id} onClick={() => done(e.lead_id)}>
+                  Done, no answer needed
                 </button>
-              ) : null}
-              <button type="button" className="btn" disabled={busy === e.lead_id} onClick={() => done(e.lead_id)}>
-                Done
-              </button>
-            </div>
-          </li>
-        ))}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </section>
+  );
+}
+
+/** The suggested answer as a draft Ryan can edit and send, or his own words when there's none. */
+function Composer({ name, suggested, busy, onSend }: { name: string; suggested: string; busy: boolean; onSend: (text: string) => Promise<boolean> }) {
+  const [text, setText] = useState(suggested);
+  const [sure, setSure] = useState(false);
+  return (
+    <form
+      className="composer"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (!sure) {
+          setSure(true);
+          return;
+        }
+        if (await onSend(text)) setText("");
+        setSure(false);
+      }}
+    >
+      <label className="sx-field">
+        <span className="lbl">{suggested ? "Suggested answer, edit before sending" : `Your answer to ${name}`}</span>
+        <textarea value={text} onChange={(event) => { setText(event.target.value); setSure(false); }} rows={Math.min(8, Math.max(3, text.split("\n").length + 1))} maxLength={5000} />
+      </label>
+      <div className="sx-actions">
+        <button type="submit" className={`btn primary${sure ? " is-sure" : ""}`} disabled={busy || !text.trim()}>
+          {busy ? "Sending…" : sure ? `Send to ${name} now` : "Send from Gmail"}
+        </button>
+        {sure ? (
+          <button type="button" className="btn" onClick={() => setSure(false)}>
+            Not yet
+          </button>
+        ) : null}
+      </div>
+    </form>
   );
 }

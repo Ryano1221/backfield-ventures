@@ -9,7 +9,7 @@ import { sessionSecret } from "../session";
 import { fixturesAllowed } from "../store";
 import { aiSteps } from "./ai-steps";
 import { logEvent, makeEnrollment, mergeRun, parseOutreach } from "./book";
-import { LP_FORBIDDEN, pickVariant, suppressed } from "./plan";
+import { LP_FORBIDDEN, pickVariant, replySubject, suppressed } from "./plan";
 import { runOutreach, type Mailer } from "./engine";
 import { accessToken, bouncedAddresses, googleApp, messageText, sendMail, threadReply } from "./gmail";
 import { triageReply } from "./reply-ai";
@@ -202,5 +202,44 @@ export async function sendNow(leadId: string, to: string): Promise<{ ok: true; b
   const freshLeads = await readLeads();
   await writeDoc(OUTREACH_DOC, JSON.stringify(saved));
   await writeDoc(LEADS_DOC, JSON.stringify({ ...freshLeads, leads: freshLeads.leads.map((l) => (l.id === lead.id ? { ...l, status: "contacted" as const, to: email, updated_at: now } : l)) }));
+  return { ok: true, book: saved };
+}
+
+/**
+ * Ryan's answer to someone who replied: sent from his Gmail in the same thread,
+ * then the reply is marked handled. Only on his click.
+ */
+export async function replyNow(leadId: string, text: string): Promise<{ ok: true; book: OutreachBook } | { ok: false; error: string }> {
+  const body = text.trim();
+  if (!body) return { ok: false, error: "Write the answer first." };
+  if (body.length > 5000) return { ok: false, error: "That answer is too long for a reply. Keep it under 5,000 characters." };
+  const book = await readOutreach();
+  const enrollment = book.enrollments.find((e) => e.lead_id === leadId && e.status === "replied" && e.reply);
+  if (!enrollment) return { ok: false, error: "That reply is not waiting anymore." };
+  if (!enrollment.thread_id) return { ok: false, error: "No Gmail thread for this one. Answer it in Gmail." };
+  if (suppressed(book, enrollment.email)) return { ok: false, error: "That address asked not to be contacted." };
+  if (enrollment.kind === "lp" && LP_FORBIDDEN.test(body)) return { ok: false, error: "LP emails can't mention the fund. Edit the answer first." };
+  const sent = enrollment.steps.filter((s) => s.sent_at);
+  const last = sent[sent.length - 1];
+  if (!last) return { ok: false, error: "No email went out in this thread yet." };
+  let mailer: Mailer | null;
+  try {
+    mailer = await liveMailer();
+  } catch (error) {
+    return { ok: false, error: `Gmail connection failed: ${error instanceof Error ? error.message : "unknown"}. Reconnect Gmail.` };
+  }
+  if (!mailer) return { ok: false, error: "Connect Gmail first, in the Autopilot panel's Settings." };
+  try {
+    await mailer.send({ to: enrollment.email, toName: enrollment.name, subject: replySubject(last.subject), body, inReplyTo: last.message_id ?? null }, enrollment.thread_id);
+  } catch (error) {
+    return { ok: false, error: `Gmail didn't send it: ${error instanceof Error ? error.message : "unknown"}` };
+  }
+  const now = new Date().toISOString();
+  const latest = await readOutreach();
+  const saved = logEvent(
+    { ...latest, enrollments: latest.enrollments.map((e) => (e.lead_id === leadId && e.reply ? { ...e, reply: { ...e.reply, handled_at: now }, updated_at: now } : e)) },
+    { at: now, lead_id: leadId, text: `${enrollment.company}: you answered ${enrollment.email} from Leads.` },
+  );
+  await writeDoc(OUTREACH_DOC, JSON.stringify(saved));
   return { ok: true, book: saved };
 }
