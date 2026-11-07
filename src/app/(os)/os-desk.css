@@ -856,3 +856,7 @@ body.os .leads-anchor { scroll-margin-top: 80px; }
 }
 body.os .lead-pitch { font-size: 14px; font-weight: 600; color: #123D22; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 720px) { body.os .lead-pitch { white-space: normal; } }
+body.os .leads-empty { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 32px 20px; animation: os-rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .leads-empty p { margin: 0; max-width: 42ch; color: rgba(0, 0, 0, 0.66); }
+body.os .leads-empty-mark { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #e6f2e9; color: #123D22; font: 700 20px/1 var(--text); animation: os-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both; }
+@media (prefers-reduced-motion: reduce) { body.os .leads-empty, body.os .leads-empty-mark { animation: none; } }

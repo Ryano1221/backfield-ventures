@@ -298,7 +298,23 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           ))}
         </ul>
       ) : (
-        <p className="t-body muted">{q ? `No ${KIND_LABEL[kind].toLowerCase()} match "${query.trim()}".` : emptyText(kind, status)}</p>
+        <div className="sx-card leads-empty">
+          <span className="leads-empty-mark" aria-hidden="true">{q ? "?" : status === "new" ? "✓" : "–"}</span>
+          <p className="t-body">{q ? `No ${KIND_LABEL[kind].toLowerCase()} match "${query.trim()}".` : emptyText(kind, status)}</p>
+          {q ? (
+            <button type="button" className="btn sm" onClick={() => setQuery("")}>
+              Clear search
+            </button>
+          ) : status === "new" && kind !== "lp" ? (
+            <button type="button" className="btn primary sm" disabled={busy === "find"} onClick={() => send("/api/os/leads/find", {}, "find")}>
+              {busy === "find" ? "Searching…" : "Find new leads"}
+            </button>
+          ) : status !== "new" && (counts[`${kind}:new`] ?? 0) > 0 ? (
+            <button type="button" className="btn sm" onClick={() => setStatus("new")}>
+              See {counts[`${kind}:new`]} to review
+            </button>
+          ) : null}
+        </div>
       )}
 
       {/* Status and settings come after the work: the funnel, autopilot and Findymail. */}
@@ -405,7 +421,7 @@ function CountUp({ value }: { value: number }) {
 function emptyText(kind: LeadKind, status: LeadStatus): string {
   if (status !== "new") return `No ${STATUS_LABEL[status].toLowerCase()} ${KIND_LABEL[kind].toLowerCase()} yet.`;
   if (kind === "lp") return "No LPs yet. Paste a list above, or connect a paid data source.";
-  return `Nothing to review. Find new leads to read the next batch of filings.`;
+  return "All caught up. Find new leads reads the next batch of SEC filings.";
 }
 
 function LeadCard({
