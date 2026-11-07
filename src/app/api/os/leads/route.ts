@@ -1,17 +1,18 @@
 import { sameOriginRequest } from "@/lib/os/answers";
 import { isOsAuthed } from "@/lib/os/current";
-import { writeDoc } from "@/lib/os/doc-store";
+import { readDoc, writeDoc } from "@/lib/os/doc-store";
 import { osJson } from "@/lib/os/response";
-import { applyLeadOp } from "@/lib/os/leads/book";
-import { LEADS_DOC, readLeads } from "@/lib/os/leads/server";
+import { applyLeadOp, parseLeads } from "@/lib/os/warm-leads";
 import { SnapshotStoreError } from "@/lib/os/store";
 
 export const dynamic = "force-dynamic";
 
-/** The lead list and Ryan's changes to it. Private store only. Sends nothing. */
+/** Warm leads and referral asks Ryan keeps by hand. Private store only. Sends nothing. */
+const DOC = "warm-leads";
+
 export async function GET() {
   if (!(await isOsAuthed())) return osJson({ error: "Unauthorized" }, 401);
-  return osJson({ ok: true, book: await readLeads() });
+  return osJson({ ok: true, book: parseLeads(await readDoc(DOC)) });
 }
 
 export async function POST(req: Request) {
@@ -24,10 +25,10 @@ export async function POST(req: Request) {
     return osJson({ error: "Invalid JSON" }, 400);
   }
   try {
-    const result = applyLeadOp(await readLeads(), body);
+    const result = applyLeadOp(parseLeads(await readDoc(DOC)), body);
     if (!result.ok) return osJson({ error: result.error }, 400);
-    await writeDoc(LEADS_DOC, JSON.stringify(result.book));
-    return osJson({ ok: true, book: result.book });
+    await writeDoc(DOC, JSON.stringify(result.book));
+    return osJson({ ok: true, book: result.book, id: result.id });
   } catch (error) {
     if (error instanceof SnapshotStoreError && error.code === "unconfigured") return osJson({ error: "The lead store is not configured" }, 503);
     return osJson({ error: "Could not save that" }, 500);

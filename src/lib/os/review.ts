@@ -31,6 +31,10 @@ export type ReviewInputs = {
   unratedPitches: number;
   decisionsWaiting: number;
   contentWaiting: number;
+  /** People who said yes and haven't been asked for two names. */
+  introAsks?: string[];
+  /** Leads still "to reach" after a week. */
+  staleLeads?: string[];
   now: number;
 };
 
@@ -126,6 +130,27 @@ export function weeklyReview(input: ReviewInputs): ReviewItem[] {
     detail: input.goingCold.length ? `${list(input.goingCold.map((row) => row.name))}: engaged, but quiet three weeks or more.` : "Everyone engaged has heard from you recently.",
     href: "people",
   });
+
+  if (input.introAsks) {
+    items.push({
+      key: "intros",
+      area: "people",
+      title: "Ask for two names",
+      count: input.introAsks.length,
+      detail: input.introAsks.length ? `${list(input.introAsks)} said yes but ${input.introAsks.length === 1 ? "hasn't" : "haven't"} been asked for intros.` : "Everyone who said yes has been asked for intros.",
+      href: "raise",
+    });
+  }
+  if (input.staleLeads) {
+    items.push({
+      key: "leads",
+      area: "people",
+      title: "Warm leads not reached",
+      count: input.staleLeads.length,
+      detail: input.staleLeads.length ? `${list(input.staleLeads)}: added over a week ago, still not contacted.` : "Every warm lead has been contacted.",
+      href: "raise",
+    });
+  }
 
   // Deals and the office.
   items.push({

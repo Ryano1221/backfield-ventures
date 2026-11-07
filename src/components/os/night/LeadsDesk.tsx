@@ -88,7 +88,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     }
   }
 
-  const op = (body: Record<string, unknown>) => send("/api/os/leads", body, String(body.id ?? body.op));
+  const op = (body: Record<string, unknown>) => send("/api/os/leads/book", body, String(body.id ?? body.op));
 
   return (
     <div className="leads">
@@ -133,7 +133,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         ))}
       </div>
 
-      {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads", { op: "import", kind: "lp", text }, "import")} /> : null}
+      {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
       {shown.length ? (
         <ul className="leads-list">

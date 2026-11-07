@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-leads.json", "/tmp/os-outreach.json", "/tmp/os-outreach-outbox.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-warm-leads.json", "/tmp/os-leads.json", "/tmp/os-outreach.json", "/tmp/os-outreach-outbox.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -319,4 +319,37 @@ test("autopilot: a started sequence sends its first email from the hourly run, a
   await page.reload();
   await page.getByRole("button", { name: /^Sent/ }).click();
   await expect(page.getByText(/^Sequence: Running · email 1 of 5 sent/)).toBeVisible();
+});
+
+test("warm leads: an SPV backer becomes a Fund I lead, gets asked for names, and gets credit for the intro", async ({ page }) => {
+  await signIn(page);
+  await page.evaluate(async () => {
+    const post = (body: unknown) => fetch("/api/os/spvs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((res) => res.json() as Promise<{ id: string }>);
+    const { id } = await post({ op: "create", company: "FIXTURE Lead Co" });
+    await post({ op: "allocate", id, name: "FIXTURE Spv Backer", amount_usd: 50000, status: "wired" });
+  });
+  await page.goto("/os/raise");
+  const spvCard = page.getByRole("region", { name: "SPV investors not in Fund I" });
+  await expect(spvCard).toContainText("FIXTURE Spv Backer");
+  await spvCard.getByRole("button", { name: "Make a lead" }).click();
+  await expect(page.getByRole("status")).toContainText("FIXTURE Spv Backer is a Fund I lead.");
+  await expect(page.getByRole("list", { name: "Open leads" })).toContainText("FIXTURE Spv Backer");
+
+  const ask = page.getByRole("region", { name: "Ask for two names" });
+  await ask.locator("li", { hasText: "FIXTURE Spv Backer" }).getByRole("button", { name: "I asked" }).click();
+  await ask.getByRole("button", { name: "Log a name" }).click();
+  const form = page.getByRole("form", { name: "Add a lead" });
+  await expect(form.getByLabel("Introduced by (optional)")).toHaveValue("FIXTURE Spv Backer");
+  await form.getByLabel("Name", { exact: true }).fill("FIXTURE Named Lead");
+  await form.getByRole("button", { name: "Add lead" }).click();
+  const leads = page.getByRole("list", { name: "Open leads" });
+  await expect(leads).toContainText("via FIXTURE Spv Backer");
+  await page.getByRole("group", { name: "Status for FIXTURE Named Lead" }).getByRole("button", { name: "Meeting" }).click();
+  await expect(page.getByRole("region", { name: "Best referrers" })).toContainText("FIXTURE Spv Backer");
+  await expect(ask).not.toContainText("Waiting on names");
+});
+
+test("the leads API needs a session", async ({ request }) => {
+  const res = await request.post("/api/os/leads", { data: { op: "add_lead", name: "x" } });
+  expect(res.status()).toBe(401);
 });
