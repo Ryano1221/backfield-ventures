@@ -874,5 +874,5 @@ body.os .lead-swipe-hint.is-armed { opacity: 1; transform: scale(1.08); }
   body.os .lead.is-swiping { rotate: none; }
   body.os .lead-swipe-hint { transition: none; }
 }
-body.os .leads-swipe-tip { display: none; margin: 0; }
-@media (hover: none) and (pointer: coarse) { body.os .leads-swipe-tip { display: block; } }
+body.os .leads-swipe-tip { margin: 0; }
+@media (hover: hover) { body.os .leads-swipe-tip { display: none; } }
