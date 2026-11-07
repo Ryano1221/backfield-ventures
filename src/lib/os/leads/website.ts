@@ -142,6 +142,13 @@ export function siteThesis(html: string): Thesis {
   return { sports, famousFounder };
 }
 
+/** The "Thesis" fact shown on a lead, or null when the site doesn't fit. */
+export function thesisLabel(thesis: Thesis | undefined): string | null {
+  if (!thesis) return null;
+  const parts = [thesis.famousFounder === "athlete" ? "Founded by an athlete" : thesis.famousFounder === "creator" ? "Founded by a creator or celebrity" : null, thesis.sports ? "Sports / fitness brand" : null].filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
+}
+
 export type WebsiteResult = { website: string | null; contacts: LeadContact[]; kind?: SiteKind; thesis?: Thesis };
 
 /** Finds the site and its published addresses. `known` is a website we already have. */

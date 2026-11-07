@@ -380,3 +380,38 @@ test("scoreLead adds points for the thesis: athlete-founded and sports brands", 
   assert.ok(fit.reasons.includes("+15 founded by an athlete"));
   assert.ok(fit.reasons.includes("+10 sports or fitness brand"));
 });
+
+test("runFinder re-reads older leads' homepages once for the thesis, keeping Ryan's draft and using no paid credits", async () => {
+  const old = lead({ website: "https://fixturegrandma.com", site_checked_at: undefined, signals: [], draft: { subject: "Mine", body: "Ryan's edit", by: "template" }, to: "picked@fixturegrandma.com" });
+  const book = { ...EMPTY_BOOK, leads: [old] };
+  let reads = 0;
+  let vendorCalls = 0;
+  const deps = {
+    secText: async () => null,
+    webText: async (url: string) => {
+      reads++;
+      return url.includes("fixturegrandma") ? "<p>Founded by former NFL quarterback Fixture Person.</p><p>Hydration for athletes, built for training.</p>" : null;
+    },
+    hasMx: async () => false,
+    vendor: async () => {
+      vendorCalls++;
+      return [];
+    },
+    ai: null,
+    research: null,
+    taste: learnTaste([]),
+    now: new Date("2026-11-06T12:00:00Z"),
+    pause: async () => undefined,
+  };
+  const first = await runFinder(book, deps, { ...DEFAULT_LIMITS, days: 1 });
+  const after = first.book.leads.find((l) => l.key === old.key)!;
+  assert.equal(after.signals.find((s) => s.label === "Thesis")?.value, "Founded by an athlete · Sports / fitness brand");
+  assert.ok(after.reasons.includes("+15 founded by an athlete"));
+  assert.equal(after.draft?.body, "Ryan's edit");
+  assert.equal(after.to, "picked@fixturegrandma.com");
+  assert.equal(after.site_checked_at, "2026-11-06T12:00:00.000Z");
+  assert.equal(vendorCalls, 0);
+  const readsAfterFirst = reads;
+  await runFinder(first.book, deps, { ...DEFAULT_LIMITS, days: 1 });
+  assert.equal(reads, readsAfterFirst, "a checked site is not read again");
+});
