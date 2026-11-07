@@ -518,3 +518,29 @@ test("command bar: ⌘K lists actions first, arrow keys move, Enter runs Find ne
   await page.keyboard.press("ArrowDown");
   await expect(bar.getByRole("option").first()).toHaveAttribute("aria-selected", "true");
 });
+
+test("instant taps: skip shows at once, and if the save fails the lead comes back with a note", async ({ request, page }) => {
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  const row = page.getByRole("button", { name: /Example Fixture Snacks/ });
+  await expect(row).toBeVisible();
+
+  // Hold the save for a few seconds: the lead leaves the list before the server answers.
+  let release: () => void = () => undefined;
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/api/os/leads/book", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    await held;
+    await route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "Storage is down." }) });
+  });
+  await row.focus();
+  await page.keyboard.press("s");
+  await expect(page.getByRole("status").filter({ hasText: "Skipped Example Fixture Snacks, Inc." })).toBeVisible();
+  await expect(row).toHaveCount(0);
+
+  // The save fails: it's put back and Ryan is told.
+  release();
+  await expect(page.getByRole("alert").filter({ hasText: "Storage is down. Put it back as it was." })).toBeVisible();
+  await expect(row).toBeVisible();
+});
