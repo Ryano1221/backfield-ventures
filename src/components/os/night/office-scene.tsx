@@ -156,7 +156,7 @@ export function OfficeScene({ layout, counts, failedRoutine }: { layout: OfficeL
       </OnRightWall>
 
       {/* Left wall: the scoreboard with live office numbers, pennants, the film-study screen */}
-      <OnLeftWall y={16.2} z={WALL - 12}>
+      <OnLeftWall y={16.2} z={WALL - 4}>
         <rect x="0" y="0" width="186" height="82" rx="5" fill="#05080c" stroke="#2a3644" strokeWidth="2" />
         <image href="/brand/bv-mark.png" x="160" y="4" width="20" height="20" />
         <text x="12" y="17" fill="#FFB547" fontSize="9" fontWeight="800" letterSpacing="2">HOME · TODAY</text>
@@ -455,12 +455,12 @@ function SportsSet() {
         const jersey = ["#3DDC84", "#4DA3FF", "#FFB547", "#B48CFF", "#FF7A45", "#9FB3C8", "#3DDC84", "#4DA3FF"][i];
         return (
           <g key={`locker${i}`}>
-            <Box x={lock.x} y={y} w={0.7} d={0.72} h={76} top="#2a3644" left="#1d2732" right={open ? "#0a0f15" : "#243140"} stroke="#3a4a5c" />
+            <Box x={lock.x} y={y} w={0.7} d={0.72} h={44} top="#2a3644" left="#1d2732" right={open ? "#0a0f15" : "#243140"} stroke="#3a4a5c" />
             {open ? (
               <g>
-                <polygon points={pts([[0.72, y + 0.14, 58], [0.72, y + 0.58, 58], [0.72, y + 0.62, 30], [0.72, y + 0.1, 30]])} fill={jersey} />
+                <polygon points={pts([[0.72, y + 0.14, 38], [0.72, y + 0.58, 38], [0.72, y + 0.62, 14], [0.72, y + 0.1, 14]])} fill={jersey} />
                 {(() => {
-                  const [jx, jy] = iso(0.72, y + 0.25, 52);
+                  const [jx, jy] = iso(0.72, y + 0.25, 34);
                   return (
                     <g transform={`matrix(1 -0.5 0 1 ${jx.toFixed(1)} ${jy.toFixed(1)})`}>
                       <image href="/brand/bv-mark.png" x="0" y="0" width="9" height="9" />
@@ -470,7 +470,7 @@ function SportsSet() {
               </g>
             ) : (
               <g stroke="#0f151c" strokeWidth="0.8">
-                {[50, 46, 42].map((z) => (
+                {[36, 32, 28].map((z) => (
                   <line key={z} x1={iso(0.72, y + 0.2, z)[0]} y1={iso(0.72, y + 0.2, z)[1]} x2={iso(0.72, y + 0.52, z)[0]} y2={iso(0.72, y + 0.52, z)[1]} />
                 ))}
               </g>

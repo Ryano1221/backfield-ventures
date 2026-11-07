@@ -400,7 +400,7 @@ export function LiveOffice({ desk, interactions, now, builtCt, stale, onOpenBot 
             <img className="lo-mark" src="/brand/bv-mark.png" alt="" width={34} height={34} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="lo-wordmark" src="/brand/backfield-wordmark.png" alt="Backfield Ventures" width={150} height={33} />
-            <span>The office · Austin</span>
+            <span className="lo-place">The office · Austin</span>
             <span className={`lo-live${stale ? " is-stale" : ""}`}>{stale ? `Last update ${builtCt ?? "unknown"}` : `Live${builtCt ? ` · ${builtCt}` : ""}`}</span>
           </div>
           <ul className="lo-chips" aria-label="Office right now">
@@ -464,7 +464,7 @@ export function LiveOffice({ desk, interactions, now, builtCt, stale, onOpenBot 
               </svg>
               <GlassWalls />
               {counts.needs ? (
-                <span className="lo-sign" style={{ left: iso(4.6, 1.2, 96)[0], top: iso(4.6, 1.2, 96)[1] }}>
+                <span className="lo-sign" style={{ left: iso(6.2, 6.6, 84)[0], top: iso(6.2, 6.6, 84)[1] }}>
                   {counts.needs} waiting on you
                 </span>
               ) : null}

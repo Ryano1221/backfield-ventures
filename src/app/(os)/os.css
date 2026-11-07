@@ -2149,6 +2149,10 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
   .lo-roster, .lo-feed { max-height: 280px; }
 }
 @media (max-width: 720px) {
+  .lo-brand { flex-wrap: wrap; gap: 8px; }
+  .lo-brand .lo-wordmark { width: 128px; }
+  .lo-place { display: none; }
+  .lo-live { white-space: nowrap; font-size: 10px; }
   .lo-tools { margin-left: 0; }
   .lo-stage { max-height: 62vh; }
 }

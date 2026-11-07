@@ -571,7 +571,15 @@ function domAudit({ desktop, phone }: { desktop: boolean; phone: boolean }) {
     // Content inside a closed <details> still reports layout boxes; checkVisibility knows it is hidden.
     if (typeof node.checkVisibility === "function" && !node.checkVisibility()) return false;
     const rect = node.getBoundingClientRect();
-    return rect.width > 1 && rect.height > 1;
+    if (!(rect.width > 1 && rect.height > 1)) return false;
+    // Scrolled out of a scrolling box (a long roster or feed): there, but not on screen.
+    for (let up = node.parentElement; up && up !== document.body; up = up.parentElement) {
+      const overflow = getComputedStyle(up);
+      if (overflow.overflowY === "visible" && overflow.overflowX === "visible") continue;
+      const box = up.getBoundingClientRect();
+      if (rect.bottom <= box.top + 1 || rect.top >= box.bottom - 1 || rect.right <= box.left + 1 || rect.left >= box.right - 1) return false;
+    }
+    return true;
   };
   const bars = [...document.querySelectorAll(".appbar, .tabbar, .mbar, .primary-wrap, .crumb, .rail")].filter((el) => {
     const pos = getComputedStyle(el).position;
