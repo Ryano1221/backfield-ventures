@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { StepDots } from "./Charts";
 import { gmailLink } from "@/lib/os/leads/book";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
@@ -8,8 +9,10 @@ import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import { FindymailPanel } from "./FindymailPanel";
 import { RepliesPanel } from "./RepliesPanel";
+import { SequenceEmails } from "./SequenceEmails";
 import { OutreachPanel, sequenceLine, type OutreachSetup } from "./OutreachPanel";
 
+const STEPS = ["1", "2", "3", "4", "5"] as const;
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "To review", approved: "Approved", contacted: "Sent", skipped: "Skipped" };
 const STATUSES: LeadStatus[] = ["new", "approved", "contacted", "skipped"];
 const CONFIDENCE = { high: "Named person", medium: "Team inbox", low: "Unverified" } as const;
@@ -39,6 +42,19 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     if (result && GMAIL_NOTE[result]) setMessage(GMAIL_NOTE[result]);
   }, []);
   const sequences = useMemo(() => new Map(outreach.enrollments.map((e) => [e.lead_id, e])), [outreach]);
+  // The best lead starts open; the rest are one tap (or Enter) away.
+  const [open, setOpen] = useState<Set<string>>(() => new Set());
+  const [touched, setTouched] = useState(false);
+  const listRef = useRef<HTMLUListElement>(null);
+  const toggle = useCallback((id: string) => {
+    setTouched(true);
+    setOpen((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   async function enroll(lead: Lead, to: string) {
     setBusy(lead.id);
@@ -64,6 +80,35 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     return out;
   }, [book]);
   const shown = book.leads.filter((lead) => lead.kind === kind && lead.status === status).sort((a, b) => b.score - a.score);
+  const isOpen = (id: string, index: number) => open.has(id) || (!touched && index === 0);
+
+  // Triage from the keyboard: j and k move between leads, a approves, s skips. Typing in a field is left alone.
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (event.metaKey || event.ctrlKey || event.altKey || target?.closest("input, textarea, select, [contenteditable='true']")) return;
+      const rows = [...(listRef.current?.querySelectorAll<HTMLButtonElement>(".lead-row") ?? [])];
+      if (!rows.length) return;
+      const at = rows.findIndex((row) => row === document.activeElement);
+      if (event.key === "j" || event.key === "k") {
+        event.preventDefault();
+        const next = event.key === "j" ? Math.min(rows.length - 1, at + 1) : Math.max(0, at < 0 ? 0 : at - 1);
+        rows[next]?.focus();
+        rows[next]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        return;
+      }
+      if ((event.key === "a" || event.key === "s") && at >= 0) {
+        const id = rows[at].dataset.lead;
+        const lead = book.leads.find((l) => l.id === id);
+        if (!lead || lead.status !== "new") return;
+        event.preventDefault();
+        if (event.key === "s") void send("/api/os/leads/book", { op: "skip", id: lead.id }, lead.id);
+        else void send("/api/os/leads/book", { op: "approve", id: lead.id, to: lead.to ?? lead.contacts[0]?.email ?? "" }, lead.id);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  });
 
   async function send(url: string, body: unknown, label: string): Promise<boolean> {
     setBusy(label);
@@ -139,10 +184,17 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
       {shown.length ? (
-        <ul className="leads-list">
-          {shown.map((lead) => (
+        <p className="sx-hint leads-keys">
+          <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>a</kbd> approve · <kbd>s</kbd> skip
+        </p>
+      ) : null}
+      {shown.length ? (
+        <ul className="leads-list" ref={listRef}>
+          {shown.map((lead, index) => (
             <LeadCard
               key={lead.id}
+              open={isOpen(lead.id, index)}
+              onToggle={() => toggle(lead.id)}
               lead={lead}
               busy={busy === lead.id}
               researching={busy === `research:${lead.id}`}
@@ -151,6 +203,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
               onResearch={() => send("/api/os/leads/research", { id: lead.id }, `research:${lead.id}`)}
               sequence={sequences.get(lead.id) ?? null}
               onEnroll={enroll}
+              now={now}
+              onSequence={setOutreach}
             />
           ))}
         </ul>
@@ -168,6 +222,10 @@ function emptyText(kind: LeadKind, status: LeadStatus): string {
 }
 
 function LeadCard({
+  open,
+  onToggle,
+  now,
+  onSequence,
   lead,
   busy,
   researching,
@@ -177,6 +235,10 @@ function LeadCard({
   sequence,
   onEnroll,
 }: {
+  open: boolean;
+  onToggle: () => void;
+  now: number;
+  onSequence: (book: OutreachBook) => void;
   lead: Lead;
   busy: boolean;
   researching: boolean;
@@ -193,6 +255,10 @@ function LeadCard({
   const [copied, setCopied] = useState(false);
   const gmail = gmailLink(lead);
   const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location].filter(Boolean).join(" · ");
+  const band = lead.score >= 80 ? "is-high" : lead.score >= 60 ? "is-mid" : "is-low";
+  const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
+  const warm = Boolean(said);
+  const chip = said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
 
   async function copy() {
     if (!lead.draft) return;
@@ -205,26 +271,32 @@ function LeadCard({
   }
 
   return (
-    <li className="sx-card lead">
-      <div className="lead-head">
-        <div>
-          <h2 className="lead-name">{lead.company}</h2>
-          {headline ? <p className="sx-hint">{headline}</p> : null}
-        </div>
-        <span className="lead-score" aria-label={`Fit score ${lead.score} out of 100`}>
-          {lead.score}
-        </span>
-      </div>
-
+    <li className={`sx-card lead${open ? " is-open" : ""}`}>
+      <h2 className="lead-title">
+        <button type="button" className="lead-row" data-lead={lead.id} aria-expanded={open} aria-controls={`${lead.id}-body`} onClick={onToggle}>
+          <span className={`lead-score ${band}`} aria-label={`Fit score ${lead.score} out of 100`}>
+            {lead.score}
+          </span>
+          <span className="lead-id">
+            <span className="lead-name">{lead.company}</span>
+            {headline ? <span className="sx-hint">{headline}</span> : null}
+          </span>
+          {chip ? <span className={`lead-chip${warm ? " is-warm" : ""}`}>{chip}</span> : null}
+          {sequence ? <StepDots steps={STEPS.slice(0, sequence.steps.length)} done={sequence.steps.filter((s) => s.sent_at).map((s) => String(s.n))} label={`Sequence: ${sequenceLine(sequence)}`} /> : null}
+          <span className="lead-chev" aria-hidden="true" />
+        </button>
+      </h2>
+      {open ? (
+      <div className="lead-panel" id={`${lead.id}-body`}>
       {lead.signals.length ? (
-        <dl className="dl lead-facts">
+        <ul className="lead-facts-grid">
           {lead.signals.map((signal) => (
-            <div key={signal.label} style={{ display: "contents" }}>
-              <dt>{signal.label}</dt>
-              <dd>{signal.value}</dd>
-            </div>
+            <li key={signal.label}>
+              <span className="lbl">{signal.label}</span>
+              <b>{signal.value}</b>
+            </li>
           ))}
-        </dl>
+        </ul>
       ) : null}
       {lead.note ? <p className="t-body">{lead.note}</p> : null}
       <Research lead={lead} canResearch={canResearch} researching={researching} onResearch={onResearch} />
@@ -233,6 +305,7 @@ function LeadCard({
           Sequence: {sequenceLine(sequence)}. {sequence.reason}
         </p>
       ) : null}
+      {sequence ? <SequenceEmails sequence={sequence} now={now} onBook={onSequence} /> : null}
 
       {lead.reasons.length ? (
         <details className="lead-why">
@@ -344,6 +417,8 @@ function LeadCard({
           </a>
         ) : null}
       </div>
+      </div>
+      ) : null}
     </li>
   );
 }

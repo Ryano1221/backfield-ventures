@@ -202,3 +202,20 @@ export function outreachStats(book: OutreachBook, now: Date): { emailed: number;
   const delivered = recent.length - bounced;
   return { emailed: recent.length, replied, bounced, optedOut, replyRate: delivered >= 5 ? Math.round((replied / delivered) * 100) : null };
 }
+
+/** When each step went out, or roughly when it will: on or after its gap, on a Tuesday to Thursday. */
+export function stepDates(enrollment: Enrollment, now: Date): { n: number; at: string; sent: boolean }[] {
+  let cursor = now.getTime();
+  return enrollment.steps.map((step, i) => {
+    if (step.sent_at) {
+      cursor = Date.parse(step.sent_at);
+      return { n: step.n, at: step.sent_at, sent: true };
+    }
+    cursor = i === 0 ? Math.max(cursor, now.getTime()) : Math.max(cursor + step.gap_days * DAY_MS, now.getTime());
+    // Sends only go out Tuesday to Thursday: move the estimate to the next of those days.
+    while (![2, 3, 4].includes(new Date(cursor).getUTCDay())) cursor += DAY_MS;
+    return { n: step.n, at: new Date(cursor).toISOString(), sent: false };
+  });
+}
+
+export const STEP_LABEL: Record<StepKind, string> = { first: "First email", value: "Something useful", angle: "A new angle", breakup: "Last note", nurture: "Three-month check-in" };

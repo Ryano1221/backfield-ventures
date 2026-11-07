@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, rawMessage, sendMail, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { autoEligible, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -250,4 +250,31 @@ test("reply rate counts delivered first emails over the last 30 days", () => {
   };
   const book: OutreachBook = { ...EMPTY_OUTREACH, enrollments: [...Array.from({ length: 8 }, (_, i) => sent(i, "active")), sent(8, "replied"), sent(9, "bounced"), sent(10, "opted_out"), sent(11, "replied", "2026-08-01T15:00:00.000Z")] };
   assert.deepEqual(outreachStats(book, new Date("2026-11-10T00:00:00Z")), { emailed: 11, replied: 1, bounced: 1, optedOut: 1, replyRate: 10 });
+});
+
+test("unsent emails can be edited; sent ones and fund talk in LP emails can't", () => {
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  const book: OutreachBook = { ...EMPTY_OUTREACH, enrollments: [e] };
+  assert.deepEqual(applyOutreachOp(book, { op: "edit_step", lead_id: e.lead_id, n: 1, body: "x" }, []), { ok: false, error: "That email already went out." });
+  const edited = applyOutreachOp(book, { op: "edit_step", lead_id: e.lead_id, n: 2, subject: "ignored", body: `Hi Fixture, new text?\n\n${OPT_OUT}` }, []);
+  assert.ok(edited.ok);
+  const step = edited.book.enrollments[0].steps[1];
+  assert.equal(step.body, `Hi Fixture, new text?\n\n${OPT_OUT}`, "the opt-out line stays exactly once");
+  assert.equal(step.subject, "Re: Fixture Snacks + Backfield Ventures", "follow-ups keep the thread subject");
+
+  const lp = makeEnrollment(lead({ id: "lp1", kind: "lp", draft: null }), "lp@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  const first = applyOutreachOp({ ...EMPTY_OUTREACH, enrollments: [lp] }, { op: "edit_step", lead_id: "lp1", n: 1, subject: "A new hello", body: "Hi, want to see startups?" }, []);
+  assert.ok(first.ok);
+  assert.equal(first.book.enrollments[0].steps[1].subject, "Re: A new hello");
+  assert.equal(applyOutreachOp({ ...EMPTY_OUTREACH, enrollments: [lp] }, { op: "edit_step", lead_id: "lp1", n: 2, body: "Would you commit to our fund?" }, []).ok, false);
+
+  const dates = stepDates(e, new Date("2026-11-11T00:00:00Z"));
+  assert.deepEqual(dates.map((d) => [d.n, d.at.slice(0, 10), d.sent]), [
+    [1, "2026-11-10", true],
+    [2, "2026-11-17", false],
+    [3, "2026-11-24", false],
+    [4, "2026-12-01", false],
+    [5, "2027-03-02", false],
+  ]);
 });

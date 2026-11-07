@@ -13,7 +13,12 @@ const signal = (lead: Lead, label: string) => lead.signals.find((s) => s.label =
 
 /** "Example Snacks, Inc." -> "Example Snacks", the way you'd write it in an email. */
 export function plainName(company: string): string {
-  return company.replace(/,?\s+(inc|llc|l\.l\.c|corp|corporation|co|ltd|lp|l\.p\.|pbc)\.?$/i, "").trim() || company;
+  const name = company.replace(/,?\s+(inc|llc|l\.l\.c|corp|corporation|co|ltd|lp|l\.p\.|pbc)\.?$/i, "").trim() || company;
+  // Filings often shout ("NOVA BOULDERS"); write it the way people do. Short acronyms like "AVSF" stay.
+  if (name === name.toUpperCase() && /[A-Z]{2}/.test(name)) {
+    return name.replace(/[A-Za-z][A-Za-z']*/g, (word) => (!/[aeiou]/i.test(word) || /[^aeiou']{3}/i.test(word) ? word : word.charAt(0) + word.slice(1).toLowerCase()));
+  }
+  return name;
 }
 
 export function templateDraft(lead: Lead): LeadDraft {

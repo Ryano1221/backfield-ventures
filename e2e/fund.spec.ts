@@ -298,7 +298,7 @@ test("autopilot: a started sequence sends its first email from the hourly run, a
   await signIn(page);
   await page.goto("/os/leads");
   await expect(page.getByRole("heading", { name: "Autopilot off" })).toBeVisible();
-  await expect(page.getByText("Sending from owner@example.com")).toBeVisible();
+  await expect(page.locator(".ap-settings summary")).toContainText("sending from owner@example.com");
 
   const card = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Example Fixture Snacks, Inc." }) });
   await card.getByRole("textbox").fill("founder@example.com");
