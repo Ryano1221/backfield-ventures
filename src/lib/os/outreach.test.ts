@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { altSubject, autoEligible, leadFunnel, upcomingSends, wouldStart, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { altSubject, autoEligible, leadFunnel, upcomingSends, wouldStart, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, replySubject, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -478,4 +478,10 @@ test("the 30-day funnel follows one cohort from found to replied", () => {
   const old = makeEnrollment(leads[4], "old@example.com", "auto", "2026-08-02T00:00:00.000Z", null);
   old.steps[0].sent_at = "2026-08-03T15:00:00.000Z";
   assert.deepEqual(leadFunnel(leads, { ...EMPTY_OUTREACH, enrollments: [e3, e4, old] }, new Date("2026-11-10T00:00:00Z")).map((s) => s.value), [4, 3, 2, 1], "the old lead stays out of every step");
+});
+
+test("replySubject adds one Re: however many the subject already has", () => {
+  assert.equal(replySubject("Quick question"), "Re: Quick question");
+  assert.equal(replySubject("Re: Quick question"), "Re: Quick question");
+  assert.equal(replySubject("RE: re:  Quick question"), "Re: Quick question");
 });

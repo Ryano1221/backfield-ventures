@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { readFileSync, unlinkSync } from "node:fs";
+import { readFileSync, unlinkSync, writeFileSync } from "node:fs";
 
 const PASSWORD = "e2e-session-only";
 
@@ -457,4 +457,41 @@ test("leads on touch screens: swipe a lead left to skip it, with undo; a short d
   await expect(row).toHaveCount(0);
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(row).toBeVisible();
+});
+
+test("replies: the thread reads like a chat, and the suggested answer sends from Gmail in the same thread after a confirm", async ({ request, page }) => {
+  expect((await request.post("/api/os/outreach/reply", { data: { lead_id: "x", body: "hi" } })).status()).toBe(401);
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  // Send the first email, then have the founder reply (the test server can't receive mail).
+  const card = page.getByRole("listitem").filter({ has: page.getByRole("button", { name: /Example Fixture Snacks/ }) });
+  await card.getByRole("textbox", { name: /type one/i }).fill("founder@example.com");
+  await card.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: /^Approved/ }).click();
+  await page.getByRole("button", { name: "Send now from Gmail" }).click();
+  await page.getByRole("button", { name: "Confirm: send to founder@example.com" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Sent to Example Fixture Snacks, Inc." })).toBeVisible();
+  const book = JSON.parse(readFileSync("/tmp/os-outreach.json", "utf8")) as { enrollments: Record<string, unknown>[] };
+  book.enrollments = book.enrollments.map((e) => ({ ...e, status: "replied", reply: { at: "2026-11-10T15:00:00.000Z", snippet: "Thanks Ryan, happy to talk. Does Thursday work?", handled_at: null, triage: { intent: "interested", summary: "Wants to talk Thursday.", suggested: "Thursday works. 10am Central?" } } }));
+  writeFileSync("/tmp/os-outreach.json", JSON.stringify(book));
+
+  await page.goto("/os/leads");
+  const replies = page.getByRole("region", { name: "Replies" });
+  await expect(replies.getByText("Thanks Ryan, happy to talk. Does Thursday work?")).toBeVisible();
+  await expect(replies.getByText("Interested")).toBeVisible();
+  const draft = replies.getByRole("textbox", { name: /Suggested answer/ });
+  await expect(draft).toHaveValue("Thursday works. 10am Central?");
+  await draft.fill("Thursday works. 10am Central? I'll send an invite.");
+  // First tap arms it, second sends.
+  await replies.getByRole("button", { name: "Send from Gmail" }).click();
+  await replies.getByRole("button", { name: /^Send to .* now$/ }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Sent from your Gmail, in the same thread." })).toBeVisible();
+  const outbox = JSON.parse(readFileSync("/tmp/os-outreach-outbox.json", "utf8")) as { to: string; subject: string; body: string; threadId: string | null }[];
+  expect(outbox).toHaveLength(2);
+  expect(outbox[1].to).toBe("founder@example.com");
+  expect(outbox[1].subject).toMatch(/^Re: /);
+  expect(outbox[1].body).toBe("Thursday works. 10am Central? I'll send an invite.");
+  expect(outbox[1].threadId).toBe(outbox.length && JSON.parse(readFileSync("/tmp/os-outreach.json", "utf8")).enrollments[0].thread_id);
+  await expect(replies.getByRole("textbox")).toHaveCount(0);
 });

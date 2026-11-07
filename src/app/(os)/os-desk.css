@@ -888,3 +888,21 @@ body.os .ap-feed li { display: grid; grid-template-columns: 64px minmax(0, 1fr);
 body.os .ap-feed time { color: rgba(0, 0, 0, 0.45); font-variant-numeric: tabular-nums; }
 @keyframes ap-ping { 0% { transform: scale(1); opacity: 0.6; } 80%, 100% { transform: scale(2.6); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { body.os .ap-live.is-on .ap-dot::after, body.os .ap-feed li { animation: none; } }
+/* Replies as a conversation */
+body.os .reply-threads { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+body.os .reply-thread { display: grid; gap: 10px; animation: os-rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .reply-thread + .reply-thread { padding-top: 20px; border-top: 1px solid rgba(0, 0, 0, 0.07); }
+body.os .reply-meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+body.os .reply-meta .sx-hint { margin: 0; }
+body.os .bubbles { display: grid; gap: 8px; }
+body.os .bubble { display: grid; gap: 4px; max-width: min(560px, 88%); padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.45; animation: bubble-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .bubble-who { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; }
+body.os .bubble-text { white-space: pre-line; }
+body.os .bubble.is-me { justify-self: end; background: #123D22; color: #fff; border-bottom-right-radius: 6px; transform-origin: right bottom; }
+body.os .bubble.is-them { justify-self: start; background: #f1f0ec; color: #000; border-bottom-left-radius: 6px; transform-origin: left bottom; animation-delay: 0.12s; }
+body.os .reply-gist { margin: 0; }
+body.os .composer { display: grid; gap: 10px; }
+body.os .composer textarea { resize: vertical; }
+body.os .composer .btn.is-sure { animation: os-pop 0.3s ease both; }
+@keyframes bubble-in { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { body.os .reply-thread, body.os .bubble, body.os .composer .btn.is-sure { animation: none; } }
