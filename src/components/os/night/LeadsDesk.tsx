@@ -78,6 +78,17 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     }
   }
 
+  // The command bar's "Find new leads" lands here with ?do=find: run it once, then tidy the URL.
+  const ranFromUrl = useRef(false);
+  useEffect(() => {
+    if (ranFromUrl.current) return;
+    ranFromUrl.current = true;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("do") !== "find") return;
+    url.searchParams.delete("do");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    void send("/api/os/leads/find", {}, "find");
+  }, []);
   const counts = useMemo(() => {
     const out: Record<string, number> = {};
     for (const lead of book.leads) out[`${lead.kind}:${lead.status}`] = (out[`${lead.kind}:${lead.status}`] ?? 0) + 1;
