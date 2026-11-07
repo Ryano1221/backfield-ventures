@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StepDots } from "./Charts";
-import { bulkPick, gmailLink } from "@/lib/os/leads/book";
+import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
@@ -212,6 +212,26 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         <span className="lbl">Find a lead</span>
         <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company, person, city or email" autoComplete="off" />
       </label>
+      {shown.length ? (
+        <div className="sx-actions">
+          <button
+            type="button"
+            className="btn sm"
+            onClick={() => {
+              const blob = new Blob([leadsCsv(shown)], { type: "text/csv;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `backfield-${KIND_LABEL[kind].toLowerCase()}-${STATUS_LABEL[status].toLowerCase().replace(/\s+/g, "-")}.csv`;
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+              setMessage({ tone: "ok", text: `Exported ${shown.length} ${shown.length === 1 ? "lead" : "leads"} to CSV.` });
+            }}
+          >
+            Export CSV
+          </button>
+        </div>
+      ) : null}
       {shown.length ? (
         <p className="sx-hint leads-keys">
           <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>a</kbd> approve · <kbd>s</kbd> skip

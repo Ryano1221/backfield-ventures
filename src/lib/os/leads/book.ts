@@ -198,3 +198,20 @@ export function bestAddress(lead: Lead): string | null {
 export function bulkPick(book: LeadBook, kind: LeadKind, action: "approve" | "skip", score: number): Lead[] {
   return book.leads.filter((lead) => lead.kind === kind && lead.status === "new" && (action === "approve" ? lead.score >= score && Boolean(bestAddress(lead)) : lead.score < score));
 }
+
+/** Leads as CSV for other tools (Findymail, a spreadsheet, a CRM import). */
+export function leadsCsv(leads: Lead[]): string {
+  const head = ["company", "type", "status", "score", "person", "title", "email", "email_source", "location", "website", "top_reason", "said_recently", "said_source", "source", "found"];
+  const cell = (value: string | number | null | undefined) => {
+    const text = value == null ? "" : String(value);
+    // Quote anything with a comma, quote or line break; a leading = + - @ is neutralised so spreadsheets don't run it.
+    const safe = /^[=+\-@]/.test(text) ? `'${text}` : text;
+    return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+  };
+  const rows = leads.map((lead) => {
+    const contact = lead.contacts.find((c) => c.email === lead.to) ?? lead.contacts[0];
+    const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
+    return [lead.company, lead.kind, lead.status, lead.score, lead.people[0]?.name, lead.people[0]?.title, contact?.email, contact?.source, lead.location, lead.website, lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, ""), said?.quote, said?.url, lead.source, lead.found_at.slice(0, 10)].map(cell).join(",");
+  });
+  return [head.join(","), ...rows].join("\r\n") + "\r\n";
+}

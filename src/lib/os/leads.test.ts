@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyLeadOp, bulkPick, gmailLink, mergeLeads, parseImport, parseLeads } from "./leads/book";
+import { applyLeadOp, bulkPick, gmailLink, leadsCsv, mergeLeads, parseImport, parseLeads } from "./leads/book";
 import { plainName, templateDraft } from "./leads/draft";
 import { DEFAULT_LIMITS, recentDays, runFinder, type RunDeps } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
@@ -302,4 +302,13 @@ test("bulk: approve strong leads that have a real address, skip weak ones, and u
   assert.equal(undone.book.leads.find((l) => l.id === "c")?.status, "new");
   assert.equal(undone.book.leads.find((l) => l.id === "a")?.status, "approved", "undo touches only what it names");
   assert.deepEqual(applyLeadOp(book, { op: "bulk", kind: "partner", action: "skip", score: 50 }), { ok: false, error: "Nothing matches." });
+});
+
+test("CSV export quotes commas and quotes, and neutralises spreadsheet formulas", () => {
+  const csv = leadsCsv([lead({ company: 'Fixture "Snacks", Inc.', score: 88, reasons: ["+15 seed-size round", "-10 no contact yet"] }), lead({ id: "f2", company: "=HYPERLINK(1)" })]);
+  const lines = csv.trim().split("\r\n");
+  assert.equal(lines[0], "company,type,status,score,person,title,email,email_source,location,website,top_reason,said_recently,said_source,source,found");
+  assert.ok(lines[1].startsWith('"Fixture ""Snacks"", Inc.",founder,new,88,Fixture Founder,Executive Officer,fixture@example.com,website,"Austin, TX",'));
+  assert.ok(lines[1].includes(",seed-size round,"));
+  assert.ok(lines[2].startsWith("'=HYPERLINK(1),"));
 });
