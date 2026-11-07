@@ -33,6 +33,10 @@ export default function OsLoading() {
           ))}
         </div>
         <div className="skel-tabbar" aria-hidden="true" />
+        <span className="skel-badge" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-bv-mark.png" alt="" width={560} height={230} />
+        </span>
       </div>
     </div>
   );

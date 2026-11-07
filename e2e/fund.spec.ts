@@ -544,3 +544,30 @@ test("instant taps: skip shows at once, and if the save fails the lead comes bac
   await expect(page.getByRole("alert").filter({ hasText: "Storage is down. Put it back as it was." })).toBeVisible();
   await expect(row).toBeVisible();
 });
+
+test("loading: a green streak runs across the top from the tap until a slow page arrives", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "one viewport is enough for the streak");
+  await signIn(page);
+  await page.route(/\/os\/crm/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await route.continue();
+  });
+  await page.goto("/os");
+  await page.locator(".rail").getByRole("link", { name: /Relationships/ }).click();
+  await expect(page.locator(".nav-streak")).toHaveCount(1);
+  await page.waitForURL(/crm/, { timeout: 15_000 });
+  await expect(page.locator(".nav-streak")).toHaveCount(0);
+});
+
+test("sign in plays the Backfield intro on the way to Today", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "one viewport is enough for the intro");
+  await page.goto("/os/login");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.route((url) => url.pathname === "/os" || url.pathname === "/", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
+  await page.getByRole("button", { name: "Enter" }).click();
+  await expect(page.getByRole("status", { name: "Opening the OS" }).locator("img")).toBeVisible();
+  await expect(page).toHaveURL(/\/os\/?$/, { timeout: 15_000 });
+});
