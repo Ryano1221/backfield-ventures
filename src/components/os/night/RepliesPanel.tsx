@@ -9,6 +9,28 @@ export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (bo
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [added, setAdded] = useState<Record<string, string>>({});
+
+  // An interested LP belongs in the raise pipeline: add them to Fundraising's warm leads, marked reached.
+  async function toFundraising(e: (typeof replies)[number]) {
+    setBusy(e.lead_id);
+    setError(null);
+    try {
+      const said = e.reply?.triage?.summary || e.reply?.snippet || "";
+      const res = await fetch("/api/os/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "add_lead", name: e.name, firm: e.company, source: "other", note: `Replied to outreach${said ? `: "${said.slice(0, 300)}"` : "."}` }) });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; id?: string };
+      if (!res.ok || !data.id) {
+        setAdded((current) => ({ ...current, [e.lead_id]: data.error || "Could not add them." }));
+        return;
+      }
+      await fetch("/api/os/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "lead_status", id: data.id, status: "reached" }) }).catch(() => undefined);
+      setAdded((current) => ({ ...current, [e.lead_id]: "Added to Fundraising warm leads." }));
+    } catch {
+      setAdded((current) => ({ ...current, [e.lead_id]: "No connection. Nothing was saved." }));
+    } finally {
+      setBusy(null);
+    }
+  }
   const replies = repliesWaiting(book);
   if (!replies.length) return null;
 
@@ -67,11 +89,21 @@ export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (bo
                 </button>
               </details>
             ) : null}
+            {added[e.lead_id] ? (
+              <p className="sx-ok" role="status">
+                {added[e.lead_id]}
+              </p>
+            ) : null}
             <div className="sx-actions">
               {e.thread_id ? (
                 <a className="btn primary" href={gmailThreadUrl(e.thread_id)} target="_blank" rel="noopener noreferrer">
                   Open in Gmail
                 </a>
+              ) : null}
+              {e.kind === "lp" && e.name && !added[e.lead_id] ? (
+                <button type="button" className="btn" disabled={busy === e.lead_id} onClick={() => toFundraising(e)}>
+                  Add to Fundraising
+                </button>
               ) : null}
               <button type="button" className="btn" disabled={busy === e.lead_id} onClick={() => done(e.lead_id)}>
                 Done
