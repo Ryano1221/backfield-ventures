@@ -568,6 +568,8 @@ function domAudit({ desktop, phone }: { desktop: boolean; phone: boolean }) {
     const node = el as HTMLElement;
     const style = getComputedStyle(node);
     if (style.display === "none" || style.visibility === "hidden") return false;
+    // Content inside a closed <details> still reports layout boxes; checkVisibility knows it is hidden.
+    if (typeof node.checkVisibility === "function" && !node.checkVisibility()) return false;
     const rect = node.getBoundingClientRect();
     return rect.width > 1 && rect.height > 1;
   };
@@ -624,9 +626,13 @@ function domAudit({ desktop, phone }: { desktop: boolean; phone: boolean }) {
     for (const el of document.querySelectorAll("a, button, input, textarea, select, summary, [role='button'], [role='tab']")) {
       if (!visible(el)) continue;
       if ((el as HTMLButtonElement).disabled) continue;
-      const rect = el.getBoundingClientRect();
-      if (rect.width >= 44 && rect.height >= 44) continue;
-      small.push(`${labelOf(el)} ${Math.round(rect.width)}x${Math.round(rect.height)}`);
+      // Layout size, not the painted box: a control the crawl just tapped can still be
+      // mid press animation (scale 0.98), which is not its real tap target.
+      const node = el as HTMLElement;
+      const width = node.offsetWidth || el.getBoundingClientRect().width;
+      const height = node.offsetHeight || el.getBoundingClientRect().height;
+      if (width >= 44 && height >= 44) continue;
+      small.push(`${labelOf(el)} ${Math.round(width)}x${Math.round(height)}`);
       if (small.length >= 8) break;
     }
     if (small.length) issues.push({ check: "target", detail: small.join("; ") });
