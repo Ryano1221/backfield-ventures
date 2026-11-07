@@ -41,10 +41,11 @@ function Figure({ bot, number, selected }: { bot: DeskBot; number: number; selec
         <rect x="1" y="-9" width="4" height="8" rx="2" fill="#1d2630" />
         <rect x="-8" y="-25" width="16" height="18" rx="7" fill={team} />
         <rect x="-8" y="-25" width="16" height="18" rx="7" fill="url(#lo-fig-shade)" />
-        <text x="0" y="-12.5" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#0b1220" fontFamily="ui-monospace, monospace">
+        <image href="/brand/bv-mark.png" x="-4.5" y="-24" width="9" height="9" />
+        <text x="0" y="-9.5" textAnchor="middle" fontSize="5.5" fontWeight="800" fill="#0b1220" fontFamily="ui-monospace, monospace">
           {number}
         </text>
-        {gear === "Executive" ? <path d="M0 -24 l2 3 -2 7 -2 -7 z" fill="#0b1220" /> : null}
+        {gear === "Executive" ? <path d="M0 -15 l1.4 2 -1.4 4 -1.4 -4 z" fill="#0b1220" /> : null}
         {bot.isLead ? (
           <g>
             <rect x="5" y="-21" width="5" height="6" rx="1" fill="#F5B83D" />
@@ -396,10 +397,10 @@ export function LiveOffice({ desk, interactions, now, builtCt, stale, onOpenBot 
         <div className="lo-hud">
           <div className="lo-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-bv-mark.png" alt="" width={56} height={23} />
-            <span>
-              <b>Backfield Ventures</b> · The office, Austin
-            </span>
+            <img className="lo-mark" src="/brand/bv-mark.png" alt="" width={34} height={34} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="lo-wordmark" src="/brand/backfield-wordmark.png" alt="Backfield Ventures" width={150} height={33} />
+            <span>The office · Austin</span>
             <span className={`lo-live${stale ? " is-stale" : ""}`}>{stale ? `Last update ${builtCt ?? "unknown"}` : `Live${builtCt ? ` · ${builtCt}` : ""}`}</span>
           </div>
           <ul className="lo-chips" aria-label="Office right now">

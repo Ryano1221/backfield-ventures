@@ -413,7 +413,7 @@ test("the live Backfield office: real counts, roster, the failed routine in deta
   const office = page.getByRole("region", { name: "Backfield Ventures office, live" });
   await expect(office).toBeVisible();
   // Branded, with live counts from the real bot states.
-  await expect(office.getByText("Backfield Ventures", { exact: true })).toBeVisible();
+  await expect(office.getByRole("img", { name: "Backfield Ventures" })).toBeVisible();
   const chips = office.getByRole("list", { name: "Office right now" });
   await expect(chips).toContainText("waiting on you");
   await expect(chips).toContainText("free desks");

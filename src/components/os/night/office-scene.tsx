@@ -131,19 +131,19 @@ export function OfficeScene({ layout, counts, failedRoutine }: { layout: OfficeL
           </text>
         </OnFloor>
       ))}
-      <OnFloor x={field.x + field.w / 2 - 2.2} y={field.y + field.h / 2 - 1.5}>
-        <ellipse cx="53" cy="36" rx="62" ry="44" fill="#0b2a19" stroke="#3DDC84" strokeOpacity="0.7" strokeWidth="2" />
-        <image href="/logo-bv-mark.png" x="6" y="16" width="96" height="40" preserveAspectRatio="xMidYMid meet" />
+      <OnFloor x={field.x + field.w / 2 - 2.3} y={field.y + field.h / 2 - 2.3}>
+        <circle cx="55" cy="55" r="58" fill="none" stroke="#3DDC84" strokeOpacity="0.75" strokeWidth="2.5" />
+        <image href="/brand/bv-mark.png" x="0" y="0" width="110" height="110" />
       </OnFloor>
       <ellipse cx={iso(field.x + field.w / 2, field.y + field.h / 2)[0]} cy={iso(field.x + field.w / 2, field.y + field.h / 2)[1]} rx="120" ry="60" fill="url(#lo-glow)" />
 
       {/* Right wall: the Backfield stadium logo over the team pods, the lab sign */}
-      <OnRightWall x={11.5} z={WALL - 10}>
-        <rect x="-8" y="-6" width="296" height="128" rx="6" fill="#0a0f15" stroke="#3DDC84" strokeOpacity="0.35" />
-        <image href="/office-wall-logo.png" x="0" y="0" width="224" height="122" preserveAspectRatio="xMidYMid meet" />
-        <text x="232" y="40" fill="#e8f0f7" fontSize="11" fontWeight="800" letterSpacing="1.5">AUSTIN, TX</text>
-        <text x="232" y="58" fill="#9fb3c8" fontSize="8" letterSpacing="0.6">SPORTS + CONSUMER</text>
-        <text x="232" y="72" fill="#9fb3c8" fontSize="8" letterSpacing="0.6">BRANDS</text>
+      <OnRightWall x={11.2} z={WALL - 14}>
+        <rect x="-10" y="-8" width="330" height="112" rx="8" fill="#070b10" stroke="#3DDC84" strokeOpacity="0.45" />
+        <image href="/brand/bv-mark.png" x="0" y="0" width="96" height="96" />
+        <image href="/brand/backfield-wordmark.png" x="104" y="10" width="208" height="45" preserveAspectRatio="xMidYMid meet" />
+        <text x="106" y="76" fill="#3DDC84" fontSize="9" fontWeight="800" letterSpacing="2.2">AUSTIN, TEXAS</text>
+        <text x="106" y="90" fill="#9fb3c8" fontSize="7.5" letterSpacing="1.2">SPORTS · CONSUMER BRANDS · CPG</text>
       </OnRightWall>
       <OnRightWall x={25.4} z={WALL - 16}>
         <text x="0" y="0" fill="#4DD8FF" fontSize="14" fontWeight="800" letterSpacing="2" filter="url(#lo-neon)">SPORTS DATA LAB</text>
@@ -158,7 +158,8 @@ export function OfficeScene({ layout, counts, failedRoutine }: { layout: OfficeL
       {/* Left wall: the scoreboard with live office numbers, pennants, the film-study screen */}
       <OnLeftWall y={16.2} z={WALL - 12}>
         <rect x="0" y="0" width="186" height="82" rx="5" fill="#05080c" stroke="#2a3644" strokeWidth="2" />
-        <text x="12" y="17" fill="#FFB547" fontSize="9" fontWeight="800" letterSpacing="2">BACKFIELD · TODAY</text>
+        <image href="/brand/bv-mark.png" x="160" y="4" width="20" height="20" />
+        <text x="12" y="17" fill="#FFB547" fontSize="9" fontWeight="800" letterSpacing="2">HOME · TODAY</text>
         {[
           ["WORKING", counts.working, "#36D17A"],
           ["NEED YOU", counts.needs, "#F5B83D"],
@@ -190,6 +191,7 @@ export function OfficeScene({ layout, counts, failedRoutine }: { layout: OfficeL
           <path className="lo-route" d="M30 62 Q 20 40 45 26" stroke="#3DDC84" strokeDasharray="4 3" />
         </g>
         <text x="10" y="88" fill="#9fb3c8" fontSize="7">Review the tape</text>
+        <image href="/brand/bv-mark.png" x="146" y="72" width="18" height="18" opacity="0.9" />
       </OnLeftWall>
       <OnLeftWall y={8.6} z={WALL - 18}>
         {["#3DDC84", "#4DA3FF", "#FF7A45"].map((c, i) => (
@@ -250,6 +252,7 @@ export function OfficeScene({ layout, counts, failedRoutine }: { layout: OfficeL
           <text x="4" y="9" fill="#FF4D5E" fontSize="5.5" fontWeight="800" letterSpacing="0.8">● HIGHLIGHT REEL</text>
           <path className="lo-arc" d="M6 30 Q 28 2 52 26" stroke="#FFB547" strokeWidth="1.4" fill="none" strokeDasharray="60" />
           <ellipse className="lo-ball" cx="6" cy="30" rx="2.2" ry="1.5" fill="#c46a2c" />
+          <image href="/brand/bv-mark.png" x="47" y="2" width="9" height="9" />
         </g>
       </OnRightWall>
       <Box x={brk.x + 6.6} y={brk.y + 0.4} w={1.0} d={0.9} h={52} top="#26303b" left="#1c242d" right="#171e26" stroke="#4DA3FF" />
@@ -272,13 +275,15 @@ export function OfficeScene({ layout, counts, failedRoutine }: { layout: OfficeL
       <Box x={field.x + field.w - 1.8} y={field.y + 0.2} w={1.4} d={0.6} h={30} top="#1b2a36" left="#14202b" right="#101a23" stroke="#FFB547" />
       <ellipse cx={iso(field.x + field.w - 1.1, field.y + 0.5, 34)[0]} cy={iso(field.x + field.w - 1.1, field.y + 0.5, 34)[1]} rx="5" ry="3" fill="#8a4b22" />
 
+      <SportsSet />
+
       {/* Team pods: a floor mat and a neon name plate per team */}
       {layout.pods.map((pod) => (
         <PodFloor key={pod.team} pod={pod} />
       ))}
 
       {/* Zone labels */}
-      {ZONES.filter((z) => z.key !== "pods").map((z) => (
+      {ZONES.filter((z) => z.key !== "pods" && z.key !== "skate").map((z) => (
         <OnFloor key={`lbl${z.key}`} x={z.x + 0.3} y={z.y + z.h - 0.5}>
           <text x="0" y="0" fill="#9fb3c8" fillOpacity="0.7" fontSize="9" fontWeight="700" letterSpacing="1.5">
             {z.label.toUpperCase()}
@@ -327,9 +332,17 @@ export function GlassWalls() {
       {/* Lab: door gap on the left side. */}
       {wall(lab.x, lab.y + lab.h, lab.x + lab.w, lab.y + lab.h, "#4DD8FF", "l1")}
       {wall(lab.x, lab.y, lab.x, lab.y + lab.h - 2, "#4DD8FF", "l2")}
-      <text x={iso(exec.x + exec.w / 2, exec.y + exec.h, 72)[0]} y={iso(exec.x + exec.w / 2, exec.y + exec.h, 72)[1]} textAnchor="middle" fill="#3DDC84" fontSize="9" fontWeight="800" letterSpacing="1.6">
-        EXECUTIVE OFFICE
-      </text>
+      {/* Frosted plaque on the executive office glass, with the official black wordmark. */}
+      {(() => {
+        const [px, py] = iso(exec.x + 1.2, exec.y + exec.h, 58);
+        return (
+          <g transform={`matrix(1 0.5 0 1 ${px.toFixed(1)} ${py.toFixed(1)})`}>
+            <rect x="0" y="0" width="118" height="34" rx="4" fill="#eef3f6" fillOpacity="0.88" stroke="#3DDC84" strokeWidth="1" />
+            <image href="/brand/backfield-wordmark-outline.png" x="7" y="4" width="104" height="22" preserveAspectRatio="xMidYMid meet" />
+            <text x="59" y="31" textAnchor="middle" fill="#123D22" fontSize="5.5" fontWeight="800" letterSpacing="1.4">EXECUTIVE OFFICE</text>
+          </g>
+        );
+      })()}
     </svg>
   );
 }
@@ -346,6 +359,158 @@ export function DeskSprite({ desk, lit, alert }: { desk: Desk; lit: boolean; ale
       <Box x={x + 0.2} y={screenY} w={0.6} d={0.08} h={13} z={13} top="#05080c" left={lit ? c : "#0b1118"} right="#0b1118" />
       {lit ? <ellipse cx={iso(desk.x, desk.y, 14)[0]} cy={iso(desk.x, desk.y, 14)[1]} rx="16" ry="9" fill={c} opacity="0.22" className="lo-screen-glow" /> : null}
       {alert ? <circle cx={iso(desk.x, desk.y, 32)[0]} cy={iso(desk.x, desk.y, 32)[1]} r="3.5" fill="#FF4D5E" className="lo-alert-dot" /> : null}
+    </g>
+  );
+}
+
+/**
+ * The sports and CPG set pieces: a skate halfpipe with a hoop, a locker room with
+ * jerseys and a cold plunge, goalposts, cones and an agility ladder on the turf,
+ * the wordmark in the end zone, a sideline cooler and a pallet of brand samples.
+ * Only the official Backfield files are used for branding.
+ */
+function SportsSet() {
+  const field = zone("lobby");
+  const skate = zone("skate");
+  const lock = zone("locker");
+  // Halfpipe: the U runs along x, the ramp is `depth` tiles wide along y.
+  const x0 = skate.x + 0.9;
+  const x1 = skate.x + skate.w - 0.9;
+  const y0 = skate.y + 1.2;
+  const y1 = skate.y + 4.4;
+  const H = 44;
+  const mid = (x0 + x1) / 2;
+  const half = (x1 - x0) / 2;
+  const h = (x: number) => H * Math.max(0, (Math.abs(x - mid) - 0.9) / (half - 0.9)) ** 2;
+  const steps = 28;
+  const xs = Array.from({ length: steps + 1 }, (_, i) => x0 + ((x1 - x0) * i) / steps);
+  const side = [...xs.map((x) => [x, y1, 0] as [number, number, number]), ...[...xs].reverse().map((x) => [x, y1, h(x)] as [number, number, number])];
+  const goal = (x: number) => {
+    const y = field.y + field.h / 2;
+    const yellow = "#F5D33D";
+    const [bx, by] = iso(x, y, 0);
+    const [cx, cy] = iso(x, y, 30);
+    const [l0x, l0y] = iso(x, y - 1.3, 30);
+    const [l1x, l1y] = iso(x, y + 1.3, 30);
+    const [u0x, u0y] = iso(x, y - 1.3, 78);
+    const [u1x, u1y] = iso(x, y + 1.3, 78);
+    return (
+      <g key={`goal${x}`} stroke={yellow} strokeWidth="2.4" strokeLinecap="round" filter="url(#lo-neon)">
+        <line x1={bx} y1={by} x2={cx} y2={cy} />
+        <line x1={l0x} y1={l0y} x2={l1x} y2={l1y} />
+        <line x1={l0x} y1={l0y} x2={u0x} y2={u0y} />
+        <line x1={l1x} y1={l1y} x2={u1x} y2={u1y} />
+      </g>
+    );
+  };
+  return (
+    <g>
+      {/* Skate deck: concrete pad, the halfpipe, coping, the BV mark on the ramp's side */}
+      <polygon points={pts([[skate.x, skate.y, 0], [skate.x + skate.w, skate.y, 0], [skate.x + skate.w, skate.y + skate.h, 0], [skate.x, skate.y + skate.h, 0]])} fill="#151a20" stroke="#FF7A45" strokeOpacity="0.35" />
+      <Box x={x0 - 0.8} y={y0} w={0.8} d={y1 - y0} h={H} top="#3b2f25" left="#2a2119" right="#231b14" />
+      {xs.slice(0, -1).map((x, i) => {
+        const xn = xs[i + 1];
+        const slope = (h(xn) - h(x)) / ((x1 - x0) / steps);
+        const light = slope < 0 ? "#c9a273" : slope > 0 ? "#a07c55" : "#b48d63";
+        return <polygon key={`hp${i}`} points={pts([[x, y0, h(x)], [xn, y0, h(xn)], [xn, y1, h(xn)], [x, y1, h(x)]])} fill={light} stroke="#8a6a46" strokeWidth="0.3" />;
+      })}
+      <polygon points={pts(side)} fill="#2d241b" />
+      <Box x={x1} y={y0} w={0.8} d={y1 - y0} h={H} top="#3b2f25" left="#2a2119" right="#231b14" />
+      <polyline points={pts([[x0, y0, H], [x0, y1, H]])} stroke="#FF7A45" strokeWidth="2.2" filter="url(#lo-neon)" fill="none" />
+      <polyline points={pts([[x1, y0, H], [x1, y1, H]])} stroke="#FF7A45" strokeWidth="2.2" filter="url(#lo-neon)" fill="none" />
+      {(() => {
+        const [sx, sy] = iso(mid - 0.6, y1, 26);
+        return (
+          <g transform={`matrix(1 0.5 0 1 ${sx.toFixed(1)} ${sy.toFixed(1)})`}>
+            <image href="/brand/bv-mark.png" x="0" y="-2" width="22" height="22" />
+          </g>
+        );
+      })()}
+      {/* A board leaning on the deck */}
+      <Box x={x1 + 0.1} y={y1 + 0.2} w={0.9} d={0.25} h={2} top="#FF7A45" left="#c45a2f" right="#a84b26" />
+      {/* Basketball hoop beside the deck */}
+      {(() => {
+        const px = skate.x + skate.w - 0.2;
+        const py = skate.y + skate.h - 0.6;
+        const [ax, ay] = iso(px, py, 0);
+        const [bx, by] = iso(px, py, 74);
+        const [rx, ry] = iso(px - 0.55, py, 62);
+        return (
+          <g>
+            <line x1={ax} y1={ay} x2={bx} y2={by} stroke="#9fb3c8" strokeWidth="2.4" />
+            <polygon points={pts([[px, py - 0.7, 58], [px, py + 0.7, 58], [px, py + 0.7, 84], [px, py - 0.7, 84]])} fill="#f4f7fa" fillOpacity="0.9" stroke="#0b1220" strokeWidth="0.8" />
+            <ellipse cx={rx} cy={ry} rx="7" ry="3.2" fill="none" stroke="#FF7A45" strokeWidth="2" />
+            <ellipse cx={iso(px - 1.2, py + 0.6, 4)[0]} cy={iso(px - 1.2, py + 0.6, 4)[1]} rx="4" ry="4" fill="#d9692b" stroke="#0b1220" strokeWidth="0.6" />
+          </g>
+        );
+      })()}
+      <OnFloor x={skate.x + 0.3} y={skate.y + skate.h - 0.4}>
+        <text x="0" y="0" fill="#FF7A45" fillOpacity="0.85" fontSize="9" fontWeight="800" letterSpacing="1.5">SKATE DECK</text>
+      </OnFloor>
+
+      {/* Locker room: lockers on the wall, a couple open with jerseys, a bench, a cold plunge */}
+      {Array.from({ length: 8 }, (_, i) => {
+        const y = lock.y + 0.4 + i * 0.8;
+        const open = i === 2 || i === 5;
+        const jersey = ["#3DDC84", "#4DA3FF", "#FFB547", "#B48CFF", "#FF7A45", "#9FB3C8", "#3DDC84", "#4DA3FF"][i];
+        return (
+          <g key={`locker${i}`}>
+            <Box x={lock.x} y={y} w={0.7} d={0.72} h={76} top="#2a3644" left="#1d2732" right={open ? "#0a0f15" : "#243140"} stroke="#3a4a5c" />
+            {open ? (
+              <g>
+                <polygon points={pts([[0.72, y + 0.14, 58], [0.72, y + 0.58, 58], [0.72, y + 0.62, 30], [0.72, y + 0.1, 30]])} fill={jersey} />
+                {(() => {
+                  const [jx, jy] = iso(0.72, y + 0.25, 52);
+                  return (
+                    <g transform={`matrix(1 -0.5 0 1 ${jx.toFixed(1)} ${jy.toFixed(1)})`}>
+                      <image href="/brand/bv-mark.png" x="0" y="0" width="9" height="9" />
+                    </g>
+                  );
+                })()}
+              </g>
+            ) : (
+              <g stroke="#0f151c" strokeWidth="0.8">
+                {[50, 46, 42].map((z) => (
+                  <line key={z} x1={iso(0.72, y + 0.2, z)[0]} y1={iso(0.72, y + 0.2, z)[1]} x2={iso(0.72, y + 0.52, z)[0]} y2={iso(0.72, y + 0.52, z)[1]} />
+                ))}
+              </g>
+            )}
+          </g>
+        );
+      })}
+      <Box x={lock.x + 1.6} y={lock.y + 0.8} w={0.55} d={5.4} h={9} top="#5a4532" left="#3f3023" right="#36291e" />
+      <Box x={lock.x + 4.6} y={lock.y + 1.6} w={2.2} d={1.4} h={14} top="#cfe6f5" left="#7f9fb5" right="#6c8ba0" stroke="#4DD8FF" />
+      <polygon points={pts([[lock.x + 4.75, lock.y + 1.72, 14.2], [lock.x + 6.65, lock.y + 1.72, 14.2], [lock.x + 6.65, lock.y + 2.88, 14.2], [lock.x + 4.75, lock.y + 2.88, 14.2]])} fill="#4DD8FF" fillOpacity="0.55" className="lo-water" />
+      <OnFloor x={lock.x + 4.5} y={lock.y + 3.6}>
+        <text x="0" y="0" fill="#4DD8FF" fontSize="7.5" fontWeight="800" letterSpacing="1.2">COLD PLUNGE</text>
+      </OnFloor>
+      {/* Brand samples: a pallet of shipping boxes from portfolio-style CPG brands */}
+      <Box x={lock.x + 6.6} y={lock.y + 4.6} w={1.4} d={1.2} h={3} top="#6b5236" left="#523f2a" right="#463624" />
+      {[[0, 0, "#d8b98a"], [0.7, 0, "#c9a877"], [0, 0.6, "#d2b282"], [0.35, 0.3, "#e0c495"]].map(([dx, dy, c], i) => (
+        <Box key={`box${i}`} x={lock.x + 6.65 + (dx as number)} y={lock.y + 4.65 + (dy as number)} w={0.62} d={0.52} h={11} z={3 + (i === 3 ? 11 : 0)} top={c as string} left="#a88a5c" right="#957a51" />
+      ))}
+
+      {/* The turf: goalposts, the official wordmark in the end zone, cones, an agility ladder, a sideline cooler */}
+      {goal(field.x + 0.2)}
+      {goal(field.x + field.w - 0.2)}
+      {(() => {
+        const [ex, ey] = iso(field.x + 0.45, field.y + field.h - 0.5);
+        return (
+          <g transform={`matrix(1 -0.5 1 0.5 ${ex.toFixed(1)} ${ey.toFixed(1)})`} opacity="0.85">
+            <image href="/brand/backfield-wordmark.png" x="0" y="-8" width="140" height="30" preserveAspectRatio="xMidYMid meet" />
+          </g>
+        );
+      })()}
+      <g stroke="#FFB547" strokeOpacity="0.85" strokeWidth="1">
+        {Array.from({ length: 6 }, (_, i) => (
+          <polygon key={`lad${i}`} points={pts([[field.x + 3 + i * 0.5, field.y + 0.6, 0], [field.x + 3.5 + i * 0.5, field.y + 0.6, 0], [field.x + 3.5 + i * 0.5, field.y + 1.3, 0], [field.x + 3 + i * 0.5, field.y + 1.3, 0]])} fill="none" />
+        ))}
+      </g>
+      {[[7, 1.0], [8.2, 1.6], [9.4, 1.0], [10.6, 1.6]].map(([dx, dy]) => {
+        const [cx, cy] = iso(field.x + dx, field.y + dy, 0);
+        return <polygon key={`cone${dx}`} points={`${cx - 4},${cy} ${cx + 4},${cy} ${cx},${cy - 11}`} fill="#FF7A45" stroke="#fff" strokeWidth="0.6" />;
+      })}
+      <Box x={field.x + field.w + 0.4} y={field.y + 0.6} w={0.7} d={0.7} h={18} top="#f4f7fa" left="#e5641f" right="#c9531a" />
     </g>
   );
 }

@@ -2040,7 +2040,8 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
 .lo-main { min-width: 0; border-radius: 18px; background: radial-gradient(120% 80% at 50% 0%, #121b26 0%, #070b10 70%); border: 1px solid #1d2733; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
 .lo-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 14px; border-bottom: 1px solid #1d2733; background: rgba(7, 11, 16, 0.85); }
 .lo-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c9d6e2; }
-.lo-brand img { width: 56px; height: auto; filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.45)); }
+.lo-brand .lo-mark { width: 34px; height: 34px; filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.45)); }
+.lo-brand .lo-wordmark { width: 150px; height: auto; }
 .lo-brand b { color: #fff; letter-spacing: 0.02em; }
 .lo-live { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; background: rgba(54, 209, 122, 0.12); color: #36D17A; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .lo-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 0 currentColor; animation: lo-ping 1.8s ease-out infinite; }
@@ -2094,6 +2095,7 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
 .lo-led-dot { animation: lo-blink-led 1.6s steps(2) infinite; }
 .lo-led-dot.d1 { animation-delay: 0.4s; } .lo-led-dot.d2 { animation-delay: 0.8s; } .lo-led-dot.d3 { animation-delay: 1.2s; }
 .lo-alert-dot, .lo-alert-text { animation: lo-alarm 1s ease-in-out infinite; }
+.lo-water { animation: lo-glow 3s ease-in-out infinite; }
 .lo-route { stroke-dashoffset: 0; animation: lo-dash 1.4s linear infinite; }
 .lo-arc { animation: lo-arc 2.6s ease-in-out infinite; }
 .lo-ball { animation: lo-throw 2.6s ease-in-out infinite; offset-path: path("M6 30 Q 28 2 52 26"); }
@@ -2151,6 +2153,6 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
   .lo-stage { max-height: 62vh; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lo-live::before, .lo-fig .lo-body, .lo-eye, .lo-ring, .lo-badge, .lo-bulb, .lo-tether, .lo-screen-glow, .lo-led-dot, .lo-alert-dot, .lo-alert-text, .lo-route, .lo-arc, .lo-ball, .lo-bubble, .lo-feed li.is-live { animation: none !important; }
+  .lo-live::before, .lo-fig .lo-body, .lo-eye, .lo-ring, .lo-badge, .lo-bulb, .lo-tether, .lo-screen-glow, .lo-led-dot, .lo-alert-dot, .lo-alert-text, .lo-route, .lo-arc, .lo-ball, .lo-water, .lo-bubble, .lo-feed li.is-live { animation: none !important; }
 }
 .lo-sign { position: absolute; transform: translate(-50%, -100%); padding: 5px 12px; border-radius: 999px; background: #F5B83D; color: #0b1220; font: 800 12px/1.2 var(--text); letter-spacing: 0.02em; white-space: nowrap; box-shadow: 0 0 22px rgba(245, 184, 61, 0.55); pointer-events: none; animation: lo-in 0.4s ease both; z-index: 999; }

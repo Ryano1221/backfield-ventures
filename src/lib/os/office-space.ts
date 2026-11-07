@@ -12,7 +12,7 @@ import type { Interaction } from "./types";
 
 export const GRID = { w: 34, h: 26 } as const;
 
-export type ZoneKey = "exec" | "lab" | "pods" | "lounge" | "break" | "lobby";
+export type ZoneKey = "exec" | "lab" | "pods" | "lounge" | "break" | "lobby" | "skate" | "locker";
 
 export type Zone = { key: ZoneKey; label: string; x: number; y: number; w: number; h: number; glass: boolean };
 
@@ -24,6 +24,8 @@ export const ZONES: Zone[] = [
   { key: "lounge", label: "Film study lounge", x: 1, y: 17, w: 9, h: 8, glass: false },
   { key: "break", label: "Break room", x: 25, y: 17, w: 8, h: 8, glass: false },
   { key: "lobby", label: "The field", x: 11, y: 18, w: 13, h: 7, glass: false },
+  { key: "skate", label: "Skate deck", x: 26, y: 9.5, w: 7.5, h: 6, glass: false },
+  { key: "locker", label: "Locker room", x: 0.2, y: 9, w: 8.6, h: 7, glass: false },
 ];
 
 export type Point = { x: number; y: number };
@@ -155,7 +157,7 @@ const trim = (text: string | null | undefined, n = 64) => {
 export function placeBots(bots: DeskBot[], layout: OfficeLayout): Map<string, Placement> {
   const out = new Map<string, Placement>();
   const deskOf = new Map(layout.desks.filter((d) => d.owner).map((d) => [d.owner!, d]));
-  const used: Record<ZoneKey, number> = { exec: 0, lab: 0, pods: 0, lounge: 0, break: 0, lobby: 0 };
+  const used: Record<ZoneKey, number> = { exec: 0, lab: 0, pods: 0, lounge: 0, break: 0, lobby: 0, skate: 0, locker: 0 };
   const take = (zone: ZoneKey): Point => {
     const list = spots(zone);
     return list[used[zone]++ % list.length];
