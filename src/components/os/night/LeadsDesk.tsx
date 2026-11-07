@@ -228,7 +228,10 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       <div id="leads-list" className="segment sx-wrap leads-anchor" role="group" aria-label="Status">
         {STATUSES.map((value) => (
           <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(value)}>
-            {STATUS_LABEL[value]} {counts[`${kind}:${value}`] ?? 0}
+            {STATUS_LABEL[value]}{" "}
+            <span key={counts[`${kind}:${value}`] ?? 0} className="count-bump">
+              {counts[`${kind}:${value}`] ?? 0}
+            </span>
           </button>
         ))}
       </div>
@@ -528,6 +531,15 @@ function LeadCard({
   const age = Number.isFinite(days) ? (days === 0 ? "found today" : days === 1 ? "found yesterday" : `found ${days}d ago`) : null;
   const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location, age].filter(Boolean).join(" · ");
   const pitch = pitchLine(lead);
+  // Approve and Skip send the card off the same way a swipe does, then save.
+  const [leaving, setLeaving] = useState<"left" | "right" | null>(null);
+  async function leave(dir: "left" | "right", body: Record<string, unknown>) {
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setLeaving(dir);
+    if (!still) await new Promise((resolve) => setTimeout(resolve, 220));
+    const ok = await onOp(body);
+    if (!ok) setLeaving(null);
+  }
   const swipe = useSwipe(lead.status === "new" && !busy, (dir) => {
     if (dir === "right") void onOp({ op: "approve", id: lead.id, to: to || lead.contacts[0]?.email || "" });
     else void onOp({ op: "skip", id: lead.id });
@@ -551,7 +563,7 @@ function LeadCard({
   }
 
   return (
-    <li className={`sx-card lead${open ? " is-open" : ""}${swipe.dx ? " is-swiping" : ""}${swipe.gone ? ` is-gone-${swipe.gone}` : ""}`} {...swipe.handlers} style={swipe.dx ? ({ "--swipe": `${swipe.dx}px` } as React.CSSProperties) : undefined}>
+    <li className={`sx-card lead${open ? " is-open" : ""}${swipe.dx ? " is-swiping" : ""}${swipe.gone || leaving ? ` is-gone-${swipe.gone ?? leaving}` : ""}`} {...swipe.handlers} style={swipe.dx ? ({ "--swipe": `${swipe.dx}px` } as React.CSSProperties) : undefined}>
       {lead.status === "new" ? (
         <span className={`lead-swipe-hint${swipe.dx > 0 ? " is-approve" : swipe.dx < 0 ? " is-skip" : ""}${Math.abs(swipe.dx) > SWIPE_AT ? " is-armed" : ""}`} aria-hidden="true">
           {swipe.dx >= 0 ? "Approve" : "Skip"}
@@ -665,7 +677,7 @@ function LeadCard({
       <div className="sx-actions lead-actions">
         {lead.status === "new" ? (
           <>
-            <button type="button" className="btn primary" disabled={busy} onClick={() => onOp({ op: "approve", id: lead.id, to })}>
+            <button type="button" className="btn primary" disabled={busy} onClick={() => leave("right", { op: "approve", id: lead.id, to })}>
               Approve
             </button>
             {lead.draft && !editing ? (
@@ -673,7 +685,7 @@ function LeadCard({
                 Edit draft
               </button>
             ) : null}
-            <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "skip", id: lead.id })}>
+            <button type="button" className="btn" disabled={busy} onClick={() => leave("left", { op: "skip", id: lead.id })}>
               Skip
             </button>
             <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "snooze", id: lead.id, days: 30 })}>
