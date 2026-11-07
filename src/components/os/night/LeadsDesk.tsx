@@ -216,6 +216,13 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         ))}
       </div>
 
+      {status === "new" && setup.ai ? (
+        <ResearchTop
+          leads={shown}
+          busy={busy}
+          onResearch={async (id) => send("/api/os/leads/research", { id }, `research:${id}`)}
+        />
+      ) : null}
       {status === "new" ? <BulkBar book={book} kind={kind} busy={busy === "bulk"} onBulk={(action, score, ids) => send("/api/os/leads/book", { op: "bulk", kind, action, score, ids }, "bulk")} /> : null}
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
@@ -687,5 +694,40 @@ function SendNow({ leadId, to, onSent }: { leadId: string; to: string; onSent: (
         </span>
       ) : null}
     </span>
+  );
+}
+
+/** Researches the best unresearched leads one after another, so each request stays short. */
+function ResearchTop({ leads, busy, onResearch }: { leads: Lead[]; busy: string | null; onResearch: (id: string) => Promise<boolean> }) {
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const onProgress = setProgress;
+  const picks = leads.filter((lead) => lead.research === undefined && lead.people.length && lead.score >= 60).slice(0, 5);
+  if (!picks.length && !running && !progress) return null;
+  return (
+    <div className="sx-actions">
+      <button
+        type="button"
+        className="btn"
+        disabled={running || Boolean(busy)}
+        onClick={async () => {
+          setRunning(true);
+          let done = 0;
+          for (const [i, lead] of picks.entries()) {
+            onProgress(`Researching ${i + 1} of ${picks.length}: ${lead.company}. About 2 minutes each.`);
+            if (await onResearch(lead.id)) done++;
+          }
+          onProgress(`Researched ${done} of ${picks.length}. Check each card for what they said in the last year.`);
+          setRunning(false);
+        }}
+      >
+        {running ? "Researching…" : `Research the top ${picks.length}`}
+      </button>
+      {progress ? (
+        <span className="sx-hint" role="status">
+          {progress}
+        </span>
+      ) : null}
+    </div>
   );
 }
