@@ -93,6 +93,15 @@ export function FindymailPanel({ onBook }: { onBook: (book: LeadBook) => void })
 }
 
 /** Saved plain-language searches. Each runs weekly; results arrive as leads with verified emails. */
+// Ready-made searches for Backfield's thesis. A tap fills the form; nothing runs or spends credits until Save.
+const PRESETS: { label: string; query: string; kind: LeadKind; titles: string }[] = [
+  { label: "Athlete-founded brands", query: "Consumer brands founded or co-founded by professional athletes", kind: "founder", titles: "Founder, Co-Founder, CEO" },
+  { label: "Creator and celebrity brands", query: "Consumer brands founded by creators, influencers or celebrities", kind: "founder", titles: "Founder, Co-Founder, CEO" },
+  { label: "Sports and fitness startups in Texas", query: "Early-stage sports, fitness and performance brands based in Texas", kind: "founder", titles: "Founder, Co-Founder, CEO" },
+  { label: "Family offices in sports and consumer", query: "Family offices that invest in sports and consumer brands", kind: "lp", titles: "Principal, Founder, Chief Investment Officer" },
+  { label: "Sports-focused funds and syndicates", query: "Venture funds and angel syndicates focused on sports and athlete-led brands", kind: "partner", titles: "General Partner, Managing Partner, Founder" },
+];
+
 function Searches({ searches, onSearches }: { searches: FindySearch[]; onSearches: (searches: FindySearch[]) => void }) {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<LeadKind>("lp");
@@ -145,6 +154,24 @@ function Searches({ searches, onSearches }: { searches: FindySearch[]; onSearche
       )}
       <details className="lead-why">
         <summary>Add a saved search</summary>
+        <div className="fm-presets" role="group" aria-label="Start from a thesis search">
+          <span className="sx-hint">Start from one of these, then edit and save:</span>
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              className="btn sm"
+              aria-pressed={query === preset.query}
+              onClick={() => {
+                setQuery(preset.query);
+                setKind(preset.kind);
+                setTitles(preset.titles);
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
       <form
         className="lead-edit"
         onSubmit={async (event) => {

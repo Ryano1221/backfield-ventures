@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   calendar,
   CHANNEL_LABEL,
@@ -20,6 +20,8 @@ import {
   type SourceKind,
   type Studio,
 } from "@/lib/os/studio";
+import type { InspoBook, InspoPost } from "@/lib/os/inspo/types";
+import { InspoFeed } from "./InspoFeed";
 import { saveStudio } from "./save";
 
 type Hrefs = { studio: string; email: string; compose: string; magnets: string; forms: string; bots: string };
@@ -32,10 +34,11 @@ const COLUMNS: { status: DraftStatus; title: string; empty: string }[] = [
   { status: "published", title: "Published", empty: "Nothing published yet. Publishing is off." },
 ];
 
-export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studio; hrefs: Hrefs; now: number; engagement: number }) {
+export function StudioDesk({ initial, hrefs, now, engagement, inspo }: { initial: Studio; hrefs: Hrefs; now: number; engagement: number; inspo: InspoBook }) {
   const router = useRouter();
   const [studio] = useState(initial);
-  const [open, setOpen] = useState(initial.items.length === 0);
+  const [more, setMore] = useState(false);
+  const ideaRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState("");
   const [kind, setKind] = useState<SourceKind>("note");
   const [ref, setRef] = useState("");
@@ -67,6 +70,20 @@ export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studi
     router.push(itemHref(hrefs.studio, result.id));
   }
 
+  // "Use as an idea" on a VC post: start a draft from it, with the link kept as the source.
+  function useAsIdea(post: InspoPost) {
+    setTitle(`${post.title}`.slice(0, 160));
+    setKind("research");
+    setRef(post.url || post.author);
+    setBrief(`Inspired by ${post.author}: "${post.text.slice(0, 400)}${post.text.length > 400 ? "..." : ""}"\n\nOur angle (sports and consumer brands): `);
+    setMore(true);
+    requestAnimationFrame(() => {
+      const box = ideaRef.current;
+      box?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+      box?.focus({ preventScroll: true });
+    });
+  }
+
   function toggle(channel: Channel) {
     setChannels((current) => (current.includes(channel) ? current.filter((row) => row !== channel) : [...current, channel]));
   }
@@ -77,71 +94,79 @@ export function StudioDesk({ initial, hrefs, now, engagement }: { initial: Studi
       <div className="sx-head">
         <div>
           <h1 className="d-xl">Content studio.</h1>
-          <p className="lede">One idea, a draft for each channel. Nothing posts or sends from here.</p>
+          <p className="lede">Write one idea and get a draft for your newsletter, LinkedIn and X. You edit and approve every word. Nothing posts by itself.</p>
         </div>
-        <button type="button" className="btn primary" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-          {open ? "Close" : "New idea"}
-        </button>
       </div>
+      <ol className="sx-steps" aria-label="How it works">
+        <li><b>1</b> Write the idea</li>
+        <li><b>2</b> Edit each draft</li>
+        <li><b>3</b> Approve and pick a date</li>
+      </ol>
 
-      {open ? (
-        <form className="sx-card sx-new" onSubmit={create}>
-          <label className="sx-field">
-            <span className="lbl">Idea</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={160} placeholder="What is this about, in a line" required />
-          </label>
-          <div className="sx-field">
-            <span className="lbl" id="sx-source">Where it came from</span>
-            <div className="segment sx-wrap" role="group" aria-labelledby="sx-source">
-              {SOURCE_KINDS.map((row) => (
-                <button key={row} type="button" aria-pressed={kind === row} onClick={() => setKind(row)}>
-                  {SOURCE_LABEL[row]}
-                </button>
-              ))}
-            </div>
+      <form className="sx-card sx-new" onSubmit={create}>
+        <label className="sx-field">
+          <span className="lbl">Idea</span>
+          <textarea ref={ideaRef} className="sx-idea" value={title} onChange={(event) => setTitle(event.target.value.replace(/\n/g, " "))} maxLength={160} rows={2} placeholder="One line is enough. Example: why athletes make great angel investors" required />
+        </label>
+        <div className="sx-field">
+          <span className="lbl" id="sx-channels">Channels</span>
+          <div className="segment sx-wrap" role="group" aria-labelledby="sx-channels">
+            {CHANNELS.map((channel) => (
+              <button key={channel} type="button" aria-pressed={channels.includes(channel)} onClick={() => toggle(channel)}>
+                {CHANNEL_LABEL[channel]}
+              </button>
+            ))}
           </div>
-          <label className="sx-field">
-            <span className="lbl">Source detail (optional)</span>
-            <input value={ref} onChange={(event) => setRef(event.target.value)} maxLength={300} placeholder="Company, person, link, or event name" />
-          </label>
-          <label className="sx-field">
-            <span className="lbl">Brief</span>
-            <textarea value={brief} onChange={(event) => setBrief(event.target.value)} maxLength={4000} rows={4} placeholder="The point, who it is for, and anything it must say or avoid" />
-          </label>
-          <div className="sx-field">
-            <span className="lbl" id="sx-channels">Channels</span>
-            <div className="segment sx-wrap" role="group" aria-labelledby="sx-channels">
-              {CHANNELS.map((channel) => (
-                <button key={channel} type="button" aria-pressed={channels.includes(channel)} onClick={() => toggle(channel)}>
-                  {CHANNEL_LABEL[channel]}
-                </button>
-              ))}
-            </div>
-          </div>
-          {channels.includes("newsletter") ? (
+        </div>
+        <details className="sx-more" open={more} onToggle={(event) => setMore((event.target as HTMLDetailsElement).open)}>
+          <summary>More options: source, notes for the writer, newsletter layout</summary>
+          <div className="sx-more-body">
             <div className="sx-field">
-              <span className="lbl" id="sx-template">Newsletter starts from</span>
-              <div className="segment sx-wrap" role="group" aria-labelledby="sx-template">
-                <button type="button" aria-pressed={template === ""} onClick={() => setTemplate("")}>
-                  Blank
-                </button>
-                {(Object.keys(NEWSLETTER_TEMPLATES) as NewsletterTemplate[]).map((key) => (
-                  <button key={key} type="button" aria-pressed={template === key} onClick={() => setTemplate(key)}>
-                    {NEWSLETTER_TEMPLATES[key].label}
+              <span className="lbl" id="sx-source">Where it came from</span>
+              <div className="segment sx-wrap" role="group" aria-labelledby="sx-source">
+                {SOURCE_KINDS.map((row) => (
+                  <button key={row} type="button" aria-pressed={kind === row} onClick={() => setKind(row)}>
+                    {SOURCE_LABEL[row]}
                   </button>
                 ))}
               </div>
-              {template ? <p className="sx-hint">A new draft with the {NEWSLETTER_TEMPLATES[template].label} layout. Replace each [bracketed] prompt before approving.</p> : null}
             </div>
-          ) : null}
-          {error ? <p className="sx-error" role="alert">{error}</p> : null}
-          <div className="sx-actions">
-            <button type="submit" className="btn primary" disabled={busy || !title.trim() || !channels.length}>
-              {busy ? "Saving…" : "Create drafts"}
-            </button>
+            <label className="sx-field">
+              <span className="lbl">Link or name (optional)</span>
+              <input value={ref} onChange={(event) => setRef(event.target.value)} maxLength={300} placeholder="Company, person, link, or event" />
+            </label>
+            <label className="sx-field">
+              <span className="lbl">Notes for the writer (optional)</span>
+              <textarea value={brief} onChange={(event) => setBrief(event.target.value)} maxLength={4000} rows={4} placeholder="The point, who it's for, and anything it must say or avoid" />
+            </label>
+            {channels.includes("newsletter") ? (
+              <div className="sx-field">
+                <span className="lbl" id="sx-template">Newsletter starts from</span>
+                <div className="segment sx-wrap" role="group" aria-labelledby="sx-template">
+                  <button type="button" aria-pressed={template === ""} onClick={() => setTemplate("")}>
+                    Blank
+                  </button>
+                  {(Object.keys(NEWSLETTER_TEMPLATES) as NewsletterTemplate[]).map((key) => (
+                    <button key={key} type="button" aria-pressed={template === key} onClick={() => setTemplate(key)}>
+                      {NEWSLETTER_TEMPLATES[key].label}
+                    </button>
+                  ))}
+                </div>
+                {template ? <p className="sx-hint">A new draft with the {NEWSLETTER_TEMPLATES[template].label} layout. Replace each [bracketed] prompt before approving.</p> : null}
+              </div>
+            ) : null}
           </div>
-        </form>
-      ) : null}
+        </details>
+        {error ? <p className="sx-error" role="alert">{error}</p> : null}
+        <div className="sx-actions">
+          <button type="submit" className="btn primary" disabled={busy || !title.trim() || !channels.length}>
+            {busy ? "Saving…" : "Create drafts"}
+          </button>
+          {!channels.length ? <span className="sx-hint">Pick at least one channel.</span> : null}
+        </div>
+      </form>
+
+      <InspoFeed initial={inspo} onUse={useAsIdea} />
 
       <section className="sx-board" aria-label="Content by status">
         {COLUMNS.map((column) => {

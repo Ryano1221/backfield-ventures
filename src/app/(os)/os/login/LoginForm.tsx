@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BootIntro } from "@/components/os/BootIntro";
 
 export function LoginForm({ destination }: { destination: string }) {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [entering, setEntering] = useState(false);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -19,6 +21,8 @@ export function LoginForm({ destination }: { destination: string }) {
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
+      // The intro covers the jump to Today; it goes away when this page does.
+      setEntering(true);
       router.replace(destination);
       router.refresh();
       return;
@@ -31,6 +35,7 @@ export function LoginForm({ destination }: { destination: string }) {
 
   return (
     <form onSubmit={onSubmit}>
+      {entering ? <BootIntro label="Opening the OS" /> : null}
       <label htmlFor="os-password">Password</label>
       <input
         id="os-password"

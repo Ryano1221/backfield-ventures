@@ -12,7 +12,7 @@ import { scoreLead, type Taste } from "./score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, type IndexRow } from "./sec-form-d";
 import type { LeadResearch } from "./research";
 import type { Lead, LeadBook, LeadContact, LeadDraft } from "./types";
-import { findOnWebsite, type FetchText, type HasMx } from "./website";
+import { findOnWebsite, siteKind, siteThesis, thesisLabel, type FetchText, type HasMx } from "./website";
 
 export type RunDeps = {
   /** Fetches SEC pages (with the SEC's required User-Agent). Null on 404 or error. */
@@ -115,6 +115,7 @@ export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimit
     if (old) partners.set(key, addVehicle(old, lead));
   }
 
+  const rechecked: Lead[] = [];
   // Contacts: the free website check for new founders, then the paid vendor when set.
   const known = new Set(book.leads.map((lead) => lead.key));
   let websites = 0;
@@ -125,13 +126,37 @@ export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimit
       const site = await findOnWebsite(lead.company, lead.people, lead.website, { fetchText: deps.webText, hasMx: deps.hasMx });
       lead.website = site.website;
       lead.contacts = site.contacts;
+      lead.site_checked_at = now;
       if (site.kind === "store") lead.signals.push({ label: "Website", value: "Sells online (store)" });
       if (site.kind === "b2b") lead.signals.push({ label: "Website", value: "Business software" });
+      const fit = thesisLabel(site.thesis);
+      if (fit) lead.signals.push({ label: "Thesis", value: fit });
     } catch {
       errors.push(`${lead.company}: website check failed`);
     }
   }
-  const found = [...founders, ...partners.values()];
+  // Leads found before the thesis check: read each one's homepage once, best first.
+  const recheck = book.leads
+    .filter((lead) => lead.kind === "founder" && (lead.status === "new" || lead.status === "approved") && lead.website && !lead.site_checked_at && !founders.some((f) => f.key === lead.key))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limits.websites);
+  for (const old of recheck) {
+    if (timeLeft() < 20_000) break;
+    const lead: Lead = { ...old, signals: [...old.signals], site_checked_at: now };
+    try {
+      const html = await deps.webText(old.website!);
+      if (html) {
+        const kind = siteKind(html);
+        if (kind && !lead.signals.some((s) => s.label === "Website")) lead.signals.push({ label: "Website", value: kind === "store" ? "Sells online (store)" : "Business software" });
+        const fit = thesisLabel(siteThesis(html));
+        if (fit) lead.signals = [...lead.signals.filter((s) => s.label !== "Thesis"), { label: "Thesis", value: fit }];
+      }
+    } catch {
+      /* the site didn't answer: marked checked, try again only if the website changes */
+    }
+    rechecked.push(lead);
+  }
+  const found = [...founders, ...partners.values(), ...rechecked];
   if (deps.imported) {
     const onList = new Set(book.leads.map((lead) => lead.key));
     for (const lead of await deps.imported().catch(() => {
@@ -145,7 +170,7 @@ export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimit
   if (deps.vendor) {
     // Credits cost money: ask only for the most promising leads still missing a named address.
     const missing = found
-      .filter((lead) => lead.people.length && !lead.contacts.some((c) => c.confidence === "high"))
+      .filter((lead) => lead.people.length && !lead.contacts.some((c) => c.confidence === "high") && !rechecked.includes(lead))
       .sort((a, b) => scoreLead(b, deps.taste).score - scoreLead(a, deps.taste).score)
       .slice(0, limits.vendor);
     for (const lead of missing) {
@@ -167,6 +192,8 @@ export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimit
     const scored = scoreLead(lead, deps.taste);
     lead.score = scored.score;
     lead.reasons = scored.reasons;
+    // A re-checked lead keeps the address and draft Ryan may already have picked or edited.
+    if (rechecked.includes(lead)) continue;
     lead.to = lead.contacts[0]?.email ?? null;
     lead.draft = templateDraft(lead);
   }

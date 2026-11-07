@@ -102,7 +102,54 @@ export function siteKind(html: string): SiteKind {
   return null;
 }
 
-export type WebsiteResult = { website: string | null; contacts: LeadContact[]; kind?: SiteKind };
+export type Thesis = { sports: boolean; famousFounder: "athlete" | "creator" | null };
+
+/** Visible words only: no scripts, styles or tags. */
+function visibleText(html: string): string {
+  return html
+    .slice(0, 400_000)
+    .replace(/<(script|style|noscript)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+const SPORTS = [/\bathletes?\b/, /\bsports?\b/, /\b(?:training|workout|gym|fitness)\b/, /\b(?:performance|recovery|hydration|electrolytes?)\b/, /\b(?:golf|tennis|pickleball|basketball|football|soccer|baseball|hockey|running|cycling)\b/, /\b(?:game ?day|locker room|on the field|on the court)\b/];
+const ATHLETE = /\b(?:nba|nfl|mlb|nhl|wnba|mls|ufc|pga|lpga|olympi(?:an|c)|all-star|pro bowl|super bowl|world champion|(?:pro|professional|former pro) (?:athlete|player|golfer|quarterback)|quarterback|point guard|wide receiver|pitcher)\b/;
+const CREATOR = /\b(?:creator|influencer|youtuber|tiktok(?:er)?|instagram|podcaster|celebrity|actress|actor|musician|singer|rapper|grammy|emmy|chef and tv|tv host|reality star)\b/;
+const FOUNDED = /\b(?:founded|co-?founded|created|started|launched|built) by\b|\bour (?:co-?)?founders?\b|\bmeet the founders?\b/g;
+
+/**
+ * Does the homepage fit Backfield's thesis: a sports or fitness brand, or one
+ * founded by an athlete, creator or celebrity? Sports needs two different
+ * cues, so one passing mention doesn't count; the founder check only reads
+ * words right after "founded by" or "our founder".
+ */
+export function siteThesis(html: string): Thesis {
+  const text = visibleText(html);
+  const sports = SPORTS.filter((rule) => rule.test(text)).length >= 2;
+  let famousFounder: Thesis["famousFounder"] = null;
+  for (const match of text.matchAll(FOUNDED)) {
+    const near = text.slice(match.index ?? 0, (match.index ?? 0) + 160);
+    if (ATHLETE.test(near)) {
+      famousFounder = "athlete";
+      break;
+    }
+    if (!famousFounder && CREATOR.test(near)) famousFounder = "creator";
+  }
+  return { sports, famousFounder };
+}
+
+/** The "Thesis" fact shown on a lead, or null when the site doesn't fit. */
+export function thesisLabel(thesis: Thesis | undefined): string | null {
+  if (!thesis) return null;
+  const parts = [thesis.famousFounder === "athlete" ? "Founded by an athlete" : thesis.famousFounder === "creator" ? "Founded by a creator or celebrity" : null, thesis.sports ? "Sports / fitness brand" : null].filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
+}
+
+export type WebsiteResult = { website: string | null; contacts: LeadContact[]; kind?: SiteKind; thesis?: Thesis };
 
 /** Finds the site and its published addresses. `known` is a website we already have. */
 export async function findOnWebsite(company: string, people: LeadPerson[], known: string | null, deps: { fetchText: FetchText; hasMx: HasMx }): Promise<WebsiteResult> {
@@ -137,5 +184,5 @@ export async function findOnWebsite(company: string, people: LeadPerson[], known
     const guess = guessAddress(people, domain);
     if (guess && !contacts.some((contact) => contact.email === guess.email)) contacts.push(guess);
   }
-  return { website: `https://${domain}`, contacts, kind: home ? siteKind(home) : null };
+  return { website: `https://${domain}`, contacts, kind: home ? siteKind(home) : null, thesis: home ? siteThesis(home) : undefined };
 }

@@ -7,7 +7,7 @@ import { learnTaste, scoreLead } from "./leads/score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, syndicateName, syndicatePerson } from "./leads/sec-form-d";
 import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { vendorConfig, vendorContacts, vendorUrl } from "./leads/vendor";
-import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails, siteKind } from "./leads/website";
+import { extractEmails, findOnWebsite, guessDomains, pageMatches, rankEmails, siteKind, siteThesis } from "./leads/website";
 
 // Shaped like a real EDGAR Form D primary_doc.xml. Names and numbers are fake.
 function formD(opts: { name: string; industry: string; fundType?: string; total?: string; sold?: string; investors?: string; age?: string; amendment?: boolean; people?: [string, string, string][] }): string {
@@ -358,4 +358,60 @@ test("the homepage tells a consumer store from business software", async () => {
   assert.ok(store.reasons.includes("+10 sells online, a consumer brand"));
   const saas = scoreLead(lead({ signals: [{ label: "Website", value: "Business software" }] }), learnTaste([]));
   assert.ok(saas.reasons.includes("-10 looks like business software"));
+});
+
+test("siteThesis spots sports brands and athlete- or creator-founded brands, and ignores passing mentions", () => {
+  assert.deepEqual(siteThesis("<h1>Hydration for athletes</h1><p>Built for training and recovery.</p>"), { sports: true, famousFounder: null });
+  // One sports word alone is not a sports brand.
+  assert.equal(siteThesis("<p>We sponsor a local sports league.</p><p>Organic snacks.</p>").sports, false);
+  assert.equal(siteThesis("<p>Founded by former NFL quarterback Sam Example, who wanted a better protein bar.</p>").famousFounder, "athlete");
+  assert.equal(siteThesis("<section>Meet the founders: a YouTuber and her sister.</section>").famousFounder, "creator");
+  // Words in scripts or far from "founded by" don't count.
+  assert.equal(siteThesis('<script>var nba = "founded by";</script><p>Founded by two friends in Austin.</p>').famousFounder, null);
+  assert.equal(siteThesis(`<p>Founded by two friends in Austin.${" Lorem ipsum.".repeat(20)} Follow us on Instagram.</p>`).famousFounder, null);
+});
+
+test("scoreLead adds points for the thesis: athlete-founded and sports brands", () => {
+  const none = { weights: new Map<string, number>(), rated: 0 };
+  const base = lead({ signals: [] });
+  const plain = scoreLead(base, none);
+  const fit = scoreLead({ ...base, signals: [{ label: "Thesis", value: "Founded by an athlete · Sports / fitness brand" }] }, none);
+  assert.equal(fit.score - plain.score, 25);
+  assert.ok(fit.reasons.includes("+15 founded by an athlete"));
+  assert.ok(fit.reasons.includes("+10 sports or fitness brand"));
+});
+
+test("runFinder re-reads older leads' homepages once for the thesis, keeping Ryan's draft and using no paid credits", async () => {
+  const old = lead({ website: "https://fixturegrandma.com", site_checked_at: undefined, signals: [], draft: { subject: "Mine", body: "Ryan's edit", by: "template" }, to: "picked@fixturegrandma.com" });
+  const book = { ...EMPTY_BOOK, leads: [old] };
+  let reads = 0;
+  let vendorCalls = 0;
+  const deps = {
+    secText: async () => null,
+    webText: async (url: string) => {
+      reads++;
+      return url.includes("fixturegrandma") ? "<p>Founded by former NFL quarterback Fixture Person.</p><p>Hydration for athletes, built for training.</p>" : null;
+    },
+    hasMx: async () => false,
+    vendor: async () => {
+      vendorCalls++;
+      return [];
+    },
+    ai: null,
+    research: null,
+    taste: learnTaste([]),
+    now: new Date("2026-11-06T12:00:00Z"),
+    pause: async () => undefined,
+  };
+  const first = await runFinder(book, deps, { ...DEFAULT_LIMITS, days: 1 });
+  const after = first.book.leads.find((l) => l.key === old.key)!;
+  assert.equal(after.signals.find((s) => s.label === "Thesis")?.value, "Founded by an athlete · Sports / fitness brand");
+  assert.ok(after.reasons.includes("+15 founded by an athlete"));
+  assert.equal(after.draft?.body, "Ryan's edit");
+  assert.equal(after.to, "picked@fixturegrandma.com");
+  assert.equal(after.site_checked_at, "2026-11-06T12:00:00.000Z");
+  assert.equal(vendorCalls, 0);
+  const readsAfterFirst = reads;
+  await runFinder(first.book, deps, { ...DEFAULT_LIMITS, days: 1 });
+  assert.equal(reads, readsAfterFirst, "a checked site is not read again");
 });

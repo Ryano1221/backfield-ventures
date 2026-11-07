@@ -55,6 +55,8 @@ export type Lead = {
   note: string;
   /** Set when Ryan snoozes a lead: it waits in Skipped and comes back to review on this date. */
   snoozed_until?: string | null;
+  /** When the company's homepage was last read (contacts, store or software, thesis). Read once per lead. */
+  site_checked_at?: string | null;
   /** What they said publicly in the last year, verified. Undefined until researched. */
   research?: LeadResearch | null;
   found_at: string;

@@ -70,7 +70,7 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
   }
   if (isTokenRoute(path)) return { kind: "os-next" };
   // The lead search and outreach runs check their own secret.
-  if (path === "/api/cron/leads" || path === "/api/cron/outreach") return { kind: "os-next" };
+  if (path === "/api/cron/leads" || path === "/api/cron/outreach" || path === "/api/cron/inspo") return { kind: "os-next" };
   if (path === "/api/os" || path.startsWith("/api/os/")) {
     return authed ? { kind: "os-next" } : { kind: "unauthorized" };
   }

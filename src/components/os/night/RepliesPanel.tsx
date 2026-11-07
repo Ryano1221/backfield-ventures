@@ -61,18 +61,22 @@ export function RepliesPanel({ book, onBook }: { book: OutreachBook; onBook: (bo
     }
   }
 
+  // Clears at once and saves in the background; if the save fails it comes back with a note.
   async function done(leadId: string) {
-    setBusy(leadId);
+    const before = book;
+    const at = new Date().toISOString();
     setError(null);
+    onBook({ ...book, enrollments: book.enrollments.map((e) => (e.lead_id === leadId && e.reply ? { ...e, reply: { ...e.reply, handled_at: at } } : e)) });
     try {
       const res = await fetch("/api/os/outreach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "handled", lead_id: leadId }) });
       const data = (await res.json().catch(() => ({}))) as { error?: string; book?: OutreachBook };
-      if (!res.ok || !data.book) setError(data.error || "Could not save that.");
-      else onBook(data.book);
+      if (!res.ok || !data.book) {
+        onBook(before);
+        setError(`${data.error || "Could not save that."} It's back on the list.`);
+      } else onBook(data.book);
     } catch {
-      setError("No connection. Nothing was saved.");
-    } finally {
-      setBusy(null);
+      onBook(before);
+      setError("No connection, so that didn't save. It's back on the list.");
     }
   }
 

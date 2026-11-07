@@ -518,3 +518,70 @@ test("command bar: ⌘K lists actions first, arrow keys move, Enter runs Find ne
   await page.keyboard.press("ArrowDown");
   await expect(bar.getByRole("option").first()).toHaveAttribute("aria-selected", "true");
 });
+
+test("instant taps: skip shows at once, and if the save fails the lead comes back with a note", async ({ request, page }) => {
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  const row = page.getByRole("button", { name: /Example Fixture Snacks/ });
+  await expect(row).toBeVisible();
+
+  // Hold the save for a few seconds: the lead leaves the list before the server answers.
+  let release: () => void = () => undefined;
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/api/os/leads/book", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    await held;
+    await route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "Storage is down." }) });
+  });
+  await row.focus();
+  await page.keyboard.press("s");
+  await expect(page.getByRole("status").filter({ hasText: "Skipped Example Fixture Snacks, Inc." })).toBeVisible();
+  await expect(row).toHaveCount(0);
+
+  // The save fails: it's put back and Ryan is told.
+  release();
+  await expect(page.getByRole("alert").filter({ hasText: "Storage is down. Put it back as it was." })).toBeVisible();
+  await expect(row).toBeVisible();
+});
+
+test("loading: a green streak runs across the top from the tap until a slow page arrives", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "one viewport is enough for the streak");
+  await signIn(page);
+  await page.route(/\/os\/crm/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await route.continue();
+  });
+  await page.goto("/os");
+  await page.locator(".rail").getByRole("link", { name: /Relationships/ }).click();
+  await expect(page.locator(".nav-streak")).toHaveCount(1);
+  await page.waitForURL(/crm/, { timeout: 15_000 });
+  await expect(page.locator(".nav-streak")).toHaveCount(0);
+});
+
+test("sign in plays the Backfield intro on the way to Today", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "one viewport is enough for the intro");
+  await page.goto("/os/login");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.route((url) => url.pathname === "/os" || url.pathname === "/", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
+  await page.getByRole("button", { name: "Enter" }).click();
+  await expect(page.getByRole("status", { name: "Opening the OS" }).locator("img")).toBeVisible();
+  await expect(page).toHaveURL(/\/os\/?$/, { timeout: 15_000 });
+});
+
+test("Findymail: a thesis preset fills the saved-search form, and nothing runs until Save", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "one viewport is enough for a form fill");
+  await signIn(page);
+  await page.goto("/os/leads");
+  await page.getByText("Add a saved search").click();
+  const presets = page.getByRole("group", { name: "Start from a thesis search" });
+  await presets.getByRole("button", { name: "Athlete-founded brands" }).click();
+  await expect(page.getByLabel("Who to find")).toHaveValue("Consumer brands founded or co-founded by professional athletes");
+  await expect(page.getByRole("group", { name: "Search finds" }).getByRole("button", { name: "Founders" })).toHaveAttribute("aria-pressed", "true");
+  await expect(presets.getByRole("button", { name: "Athlete-founded brands" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Save search" }).click();
+  await expect(page.getByText("Consumer brands founded or co-founded by professional athletes", { exact: true })).toBeVisible();
+});

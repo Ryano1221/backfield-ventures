@@ -177,7 +177,9 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   await expect(page.getByRole("status").last()).toBeVisible();
 
   await visit(page, "/os/bots");
-  // The office building is the default view: floors, desks, and a bot sheet on tap.
+  // The live Backfield office is the default view; the floor-by-floor building is under Floors.
+  await expect(page.getByRole("region", { name: "Backfield Ventures office, live" })).toBeVisible();
+  await page.getByRole("button", { name: "Floors", exact: true }).click();
   await expect(page.locator(".tower")).toBeVisible();
   expect(await page.locator(".floor").count()).toBeGreaterThan(1);
   // Tap a bot in the building, pause it from its sheet, then resume it.
@@ -194,8 +196,10 @@ test("gate, pages, and actions stay clean", async ({ page }) => {
   await expect(sheet).toHaveCount(0);
   await page.getByRole("button", { name: "List", exact: true }).click();
   await expect(page.locator(".tower")).toBeHidden();
-  await page.getByRole("button", { name: "Office", exact: true }).click();
+  await page.getByRole("button", { name: "Floors", exact: true }).click();
   await expect(page.locator(".tower")).toBeVisible();
+  await page.getByRole("button", { name: "Office", exact: true }).click();
+  await expect(page.locator(".tower")).toBeHidden();
 
   await clean(page, bag);
 });
@@ -399,3 +403,39 @@ async function shot(page: Page, path: string) {
   expect(text).not.toMatch(/ERR_CONNECTION|Application error|This page could not be found|Internal Server Error/);
   await page.screenshot({ path, fullPage: false });
 }
+
+test("the live Backfield office: real counts, roster, the failed routine in detail, a bot sheet on tap, and replays of real syncs", async ({ page }) => {
+  await page.goto("/os/login");
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Enter" }).click();
+  await page.waitForURL(/\/os\/?$/);
+  await page.goto("/os/bots");
+  const office = page.getByRole("region", { name: "Backfield Ventures office, live" });
+  await expect(office).toBeVisible();
+  // Branded, with live counts from the real bot states.
+  await expect(office.getByRole("img", { name: "Backfield Ventures" })).toBeVisible();
+  const chips = office.getByRole("list", { name: "Office right now" });
+  await expect(chips).toContainText("waiting on you");
+  await expect(chips).toContainText("free desks");
+  // The roster lists every bot, the ones waiting on Ryan first.
+  const roster = office.getByRole("region", { name: "Roster" });
+  const rows = roster.getByRole("button");
+  expect(await rows.count()).toBeGreaterThan(40);
+  await expect(rows.first()).toContainText("Needs you");
+  // "1 routine failed" says which one, when, and why.
+  const failed = office.getByRole("region", { name: "Failed routines" });
+  await expect(failed).toContainText("FIXTURE Network digest");
+  await expect(failed).toContainText("The sample digest did not send.");
+  // Tap a bot on the floor: its sheet opens.
+  const chief = office.getByRole("button", { name: /^FIXTURE Executive, .*Open\./ });
+  await chief.evaluate((el) => el.scrollIntoView({ block: "center", inline: "center" }));
+  await chief.click();
+  await expect(page.locator(".bots-sheet")).toBeVisible();
+  await page.keyboard.press("Escape");
+  // Replay the latest real interactions: bots meet in the lounge with a tether and say what it's about.
+  await office.getByRole("button", { name: "Replay latest" }).click();
+  await expect(office.getByRole("status")).toContainText("Replaying the latest real interactions");
+  await expect(office.locator(".lo-bubble.is-sync").first()).toBeVisible({ timeout: 15_000 });
+  await expect(office.locator(".lo-tether").first()).toBeAttached();
+  await expect(office.getByRole("region", { name: "Activity" }).locator("li.is-live").first()).toContainText("FIXTURE");
+});

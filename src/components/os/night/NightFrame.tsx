@@ -91,6 +91,29 @@ export function NightFrame({
   const [menu, setMenu] = useState(false);
   const [compact, setCompact] = useState(false);
   const pathname = usePathname() || "/os";
+  // The top streak shows from the tap until the new page is in. It hides itself
+  // once the path changes, or after 10 seconds if the trip never finishes.
+  const [leavingFrom, setLeavingFrom] = useState<string | null>(null);
+  useEffect(() => {
+    let timer = 0;
+    function onClick(event: MouseEvent) {
+      // Capture phase: Next's Link cancels the click's default before it bubbles.
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = (event.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const url = new URL(link.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
+      setLeavingFrom(window.location.pathname);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setLeavingFrom(null), 10_000);
+    }
+    document.addEventListener("click", onClick, true);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+      window.clearTimeout(timer);
+    };
+  }, []);
+  const navigating = leavingFrom !== null && typeof window !== "undefined" && window.location.pathname === leavingFrom;
   const [askContext, setAskContext] = useState<AskContext>({ page: pathname, about: askAbout, requestedBy: askOwner, botName: null });
   const askKey = `${pathname}|${askAbout ?? ""}|${askOwner ?? ""}`;
   const [seenAskKey, setSeenAskKey] = useState(askKey);
@@ -439,6 +462,7 @@ export function NightFrame({
 
   return (
     <Ctx.Provider value={{ actions: visible, enqueue, submit, retry, inflight, errors, reportToday, askContext, setAskContext }}>
+      {navigating ? <div className="nav-streak" aria-hidden="true" /> : null}
       <header className={`appbar${compact ? " is-compact" : ""}`}>
         <Link href={hrefs.today} className="wordmark" prefetch>
           <img src="/logo-text.png" alt="Backfield Ventures" />

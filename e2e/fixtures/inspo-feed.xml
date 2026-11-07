@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>FIXTURE 20VC</title>
+    <link>https://example.com/20vc</link>
+    <item>
+      <title>FIXTURE: Why the best seed funds say no 99% of the time</title>
+      <link>https://example.com/20vc/no-99</link>
+      <pubDate>Mon, 09 Nov 2026 13:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Fixture episode. Saying no fast is a <b>service</b> to founders &amp; to your fund.</p>]]></description>
+    </item>
+    <item>
+      <title>FIXTURE: Consumer brands are back, and the playbook changed</title>
+      <link>https://example.com/20vc/consumer-back</link>
+      <pubDate>Sat, 07 Nov 2026 15:30:00 GMT</pubDate>
+      <description>Fixture episode about retail distribution and athlete-led brands.</description>
+    </item>
+  </channel>
+</rss>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Funnel, StepDots } from "./Charts";
-import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
+import { applyLeadOp, bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
 import { plainName } from "@/lib/os/leads/draft";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
@@ -88,6 +88,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     url.searchParams.delete("do");
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
     void send("/api/os/leads/find", {}, "find");
+    // Runs once on arrival; send reads the latest state through refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const counts = useMemo(() => {
     const out: Record<string, number> = {};
@@ -98,8 +100,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const q = query.trim().toLowerCase();
   const matches = (lead: Lead) => !q || `${lead.company} ${lead.people.map((p) => p.name).join(" ")} ${lead.location ?? ""} ${lead.contacts.map((c) => c.email).join(" ")}`.toLowerCase().includes(q);
   const [sort, setSort] = useState<"score" | "newest">("score");
+  const [thesisOnly, setThesisOnly] = useState(false);
+  const fits = (lead: Lead) => lead.signals.some((s) => s.label === "Thesis");
+  const thesisCount = book.leads.filter((lead) => lead.kind === kind && lead.status === status && fits(lead)).length;
   const shown = book.leads
-    .filter((lead) => lead.kind === kind && lead.status === status && matches(lead))
+    .filter((lead) => lead.kind === kind && lead.status === status && matches(lead) && (!thesisOnly || !thesisCount || fits(lead)))
     .sort((a, b) => (sort === "newest" ? b.found_at.localeCompare(a.found_at) || b.score - a.score : b.score - a.score));
   const isOpen = (id: string, index: number) => open.has(id) || (!touched && index === 0);
   const firstId = shown[0]?.id ?? null;
@@ -132,33 +137,56 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
     return () => document.removeEventListener("keydown", onKey);
   });
 
+  // Quick lead changes show at once and save in the background. If the save
+  // fails, the change is put back and Ryan is told. Slower jobs (find, research,
+  // import) still wait for the server, with their own progress text.
+  const bookRef = useRef(book);
+  bookRef.current = book;
+  const latest = useRef(0);
   async function send(url: string, body: unknown, label: string): Promise<boolean> {
-    setBusy(label);
+    const change = body as { op?: string; id?: string; action?: string; ids?: string[] };
+    const instant = url === "/api/os/leads/book" && ["approve", "skip", "snooze", "restore", "restore_many", "note", "bulk"].includes(change.op ?? "");
+    const before = bookRef.current;
+    const seq = ++latest.current;
     setMessage(null);
+    if (instant) {
+      const guess = applyLeadOp(before, body);
+      if (guess.ok) {
+        setBook(guess.book);
+        sayDone(change, guess.book);
+      }
+    } else setBusy(label);
     try {
       const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = (await res.json().catch(() => ({}))) as { error?: string; book?: LeadBook; run?: { scanned: number; added: number; errors: string[] } };
       if (!res.ok || !data.book) {
-        setMessage({ tone: "error", text: data.error || "Could not save that." });
+        if (instant && seq === latest.current) setBook(before);
+        setMessage({ tone: "error", text: instant ? `${data.error || "Could not save that."} Put it back as it was.` : data.error || "Could not save that." });
         return false;
       }
-      setBook(data.book);
-      const change = body as { op?: string; id?: string; action?: string; ids?: string[] };
-      if (change.op === "bulk" && change.ids) setMessage({ tone: "ok", text: `${change.action === "approve" ? "Approved" : "Skipped"} ${change.ids.length} ${change.ids.length === 1 ? "lead" : "leads"}.`, undoMany: change.ids });
-      if ((change.op === "skip" || change.op === "approve") && change.id) {
-        const company = data.book.leads.find((lead) => lead.id === change.id)?.company ?? "Lead";
-        setMessage({ tone: "ok", text: `${change.op === "skip" ? "Skipped" : "Approved"} ${company}.`, undo: change.id });
-      }
+      // An older answer must not undo a newer tap.
+      if (seq === latest.current) setBook(data.book);
+      if (instant) return true;
+      sayDone(change, data.book);
       if (data.run) {
         const found = data.run.added === 1 ? "1 new lead" : `${data.run.added} new leads`;
         setMessage({ tone: "ok", text: `Read ${data.run.scanned} ${data.run.scanned === 1 ? "filing" : "filings"}. ${found}.${data.run.errors.length ? ` ${data.run.errors.length} could not be read.` : ""}` });
       }
       return true;
     } catch {
-      setMessage({ tone: "error", text: "No connection. Nothing was saved." });
+      if (instant && seq === latest.current) setBook(before);
+      setMessage({ tone: "error", text: instant ? "No connection, so that didn't save. Put it back as it was." : "No connection. Nothing was saved." });
       return false;
     } finally {
-      setBusy(null);
+      if (!instant) setBusy(null);
+    }
+  }
+
+  function sayDone(change: { op?: string; id?: string; action?: string; ids?: string[] }, next: LeadBook) {
+    if (change.op === "bulk" && change.ids) setMessage({ tone: "ok", text: `${change.action === "approve" ? "Approved" : "Skipped"} ${change.ids.length} ${change.ids.length === 1 ? "lead" : "leads"}.`, undoMany: change.ids });
+    if ((change.op === "skip" || change.op === "approve") && change.id) {
+      const company = next.leads.find((lead) => lead.id === change.id)?.company ?? "Lead";
+      setMessage({ tone: "ok", text: `${change.op === "skip" ? "Skipped" : "Approved"} ${company}.`, undo: change.id });
     }
   }
 
@@ -260,6 +288,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
             Newest first
           </button>
         </div>
+        {thesisCount ? (
+          <button type="button" className="btn sm leads-thesis" aria-pressed={thesisOnly} onClick={() => setThesisOnly((on) => !on)}>
+            {thesisOnly ? "✓ " : ""}Fits thesis ({thesisCount})
+          </button>
+        ) : null}
         {shown.length ? (
           <button
             type="button"
@@ -359,6 +392,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
 // The facts that make a lead worth an email, in the order they matter, for the collapsed row.
 const PITCH: { label: string; show: (value: string) => string }[] = [
+  { label: "Thesis", show: (v) => v.split(" · ")[0] },
   { label: "Raising", show: (v) => `Raising ${v}` },
   { label: "In so far", show: (v) => v.replace(/^(\S+)\s*(\(.*\))?$/, (_, amount: string, share?: string) => `${amount} in${share ? ` ${share}` : ""}`) },
   { label: "Vehicle size", show: (v) => `${v} vehicle` },
@@ -550,7 +584,8 @@ function LeadCard({
   const band = lead.score >= 80 ? "is-high" : lead.score >= 60 ? "is-mid" : "is-low";
   const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
   const warm = Boolean(said);
-  const chip = known ? `Known: ${known.where}` : said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
+  const thesis = lead.signals.find((s) => s.label === "Thesis")?.value.split(" · ")[0] ?? null;
+  const chip = known ? `Known: ${known.where}` : said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : thesis ?? (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
 
   async function copy() {
     if (!lead.draft) return;
@@ -579,7 +614,7 @@ function LeadCard({
             {pitch ? <span className="lead-pitch">{pitch}</span> : null}
             {headline ? <span className="sx-hint">{headline}</span> : null}
           </span>
-          {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : ""}`}>{chip}</span> : null}
+          {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : thesis && chip === thesis ? " is-thesis" : ""}`}>{chip}</span> : null}
           {sequence ? <StepDots steps={STEPS.slice(0, sequence.steps.length)} done={sequence.steps.filter((s) => s.sent_at).map((s) => String(s.n))} label={`Sequence: ${sequenceLine(sequence)}`} /> : null}
           <span className="lead-chev" aria-hidden="true" />
         </button>

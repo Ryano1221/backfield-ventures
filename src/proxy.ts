@@ -80,5 +80,5 @@ export function proxy(req: NextRequest) {
 
 // Public pages, including /lists, pass through. Dashboard paths are gated above.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff2?)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff2?|webmanifest)$).*)"],
 };

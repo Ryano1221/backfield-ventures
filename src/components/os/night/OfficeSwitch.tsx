@@ -10,6 +10,7 @@ import type { Interaction } from "@/lib/os/types";
 import { officeStatus, whoLabel } from "@/lib/os/ask";
 import { FlowView } from "./FlowView";
 import { OfficeTower } from "./OfficeTower";
+import { LiveOffice } from "./LiveOffice";
 import { useNightActions } from "./NightFrame";
 
 const DOT: Record<DeskBot["status"], string> = {
@@ -38,14 +39,14 @@ export function OfficeSwitch({
   /** "today", or "on Nov 3" when the snapshot is stale. */
   asOf?: string;
 }) {
-  const [choice, setChoice] = useState<"flow" | "list" | "map" | null>(null);
+  const [choice, setChoice] = useState<"live" | "flow" | "list" | "map" | null>(null);
   const [filter, setFilter] = useState<DeskFilter | null>(null);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const [feedAll, setFeedAll] = useState(false);
-  const view = choice ?? "map";
+  const view = choice ?? "live";
   const visible = useMemo(() => desk.bots.filter((bot) => botMatches(bot, filter, query)), [desk.bots, filter, query]);
   const needs = visible.filter((bot) => bot.status === "Needs Ryan");
   const teams = groupTeams(visible);
@@ -91,8 +92,11 @@ export function OfficeSwitch({
         }}
       />
       <div className="bots-toggle" role="group" aria-label="Office view">
-        <button type="button" data-for="map" aria-pressed={view === "map"} onClick={() => setChoice("map")}>
+        <button type="button" data-for="live" aria-pressed={view === "live"} onClick={() => setChoice("live")}>
           Office
+        </button>
+        <button type="button" data-for="map" aria-pressed={view === "map"} onClick={() => setChoice("map")}>
+          Floors
         </button>
         <button type="button" data-for="flow" aria-pressed={view === "flow"} onClick={() => setChoice("flow")}>
           Flow
@@ -100,6 +104,9 @@ export function OfficeSwitch({
         <button type="button" data-for="list" aria-pressed={view === "list"} onClick={() => setChoice("list")}>
           List
         </button>
+      </div>
+      <div className="bots-office">
+        {desk.bots.length && view === "live" ? <LiveOffice desk={desk} interactions={interactions} now={now} builtCt={office.built_ct || null} stale={asOf !== "today"} onOpenBot={setSelected} /> : null}
       </div>
       <div className="bots-flow">
         <FlowView interactions={interactions} bots={desk.bots} now={now} active={view === "flow"} onOpenBot={setSelected} />
