@@ -156,25 +156,6 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   return (
     <div className="leads">
       <RepliesPanel book={outreach} onBook={setOutreach} />
-      {book.leads.length ? (
-        <section className="sx-card autopilot" aria-label="Last 30 days">
-          <h2 className="lead-name">Last 30 days</h2>
-          <Funnel steps={leadFunnel(book.leads, outreach, new Date(now))} label="Leads found in the last 30 days: how many were reviewed, emailed and replied" />
-        </section>
-      ) : null}
-      <OutreachPanel
-        book={outreach}
-        setup={mailSetup}
-        capToday={dailyCap(outreach.settings, outreach, new Date(now))}
-        sentToday={firstTouchesToday(outreach, new Date(now))}
-        now={now}
-        preview={preview}
-        onBook={(next, nextSetup) => {
-          setOutreach(next);
-          if (nextSetup) setMailSetup(nextSetup);
-        }}
-      />
-      <FindymailPanel onBook={setBook} />
       <div className="leads-bar">
         <div className="segment" role="group" aria-label="Lead type">
           {LEAD_KINDS.map((value) => (
@@ -232,20 +213,20 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
       {kind === "lp" ? <ImportLps busy={busy === "import"} onImport={(text) => send("/api/os/leads/book", { op: "import", kind: "lp", text }, "import")} /> : null}
 
-      <div className="segment sx-wrap" role="group" aria-label="Sort leads">
-        <button type="button" aria-pressed={sort === "score"} onClick={() => setSort("score")}>
-          Best first
-        </button>
-        <button type="button" aria-pressed={sort === "newest"} onClick={() => setSort("newest")}>
-          Newest first
-        </button>
-      </div>
-      <label className="sx-field leads-search">
-        <span className="lbl">Find a lead</span>
-        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company, person, city or email" autoComplete="off" />
-      </label>
-      {shown.length ? (
-        <div className="sx-actions">
+      <div className="leads-tools">
+        <label className="sx-field leads-search">
+          <span className="lbl">Find a lead</span>
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company, person, city or email" autoComplete="off" />
+        </label>
+        <div className="segment leads-sort" role="group" aria-label="Sort leads">
+          <button type="button" aria-pressed={sort === "score"} onClick={() => setSort("score")}>
+            Best first
+          </button>
+          <button type="button" aria-pressed={sort === "newest"} onClick={() => setSort("newest")}>
+            Newest first
+          </button>
+        </div>
+        {shown.length ? (
           <button
             type="button"
             className="btn sm"
@@ -262,8 +243,8 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           >
             Export CSV
           </button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
       {shown.length ? (
         <p className="sx-hint leads-keys">
           <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>a</kbd> approve · <kbd>s</kbd> skip
@@ -299,6 +280,27 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       ) : (
         <p className="t-body muted">{q ? `No ${KIND_LABEL[kind].toLowerCase()} match "${query.trim()}".` : emptyText(kind, status)}</p>
       )}
+
+      {/* Status and settings come after the work: the funnel, autopilot and Findymail. */}
+      {book.leads.length ? (
+        <section className="sx-card autopilot" aria-label="Last 30 days">
+          <h2 className="lead-name">Last 30 days</h2>
+          <Funnel steps={leadFunnel(book.leads, outreach, new Date(now))} label="Leads found in the last 30 days: how many were reviewed, emailed and replied" />
+        </section>
+      ) : null}
+      <OutreachPanel
+        book={outreach}
+        setup={mailSetup}
+        capToday={dailyCap(outreach.settings, outreach, new Date(now))}
+        sentToday={firstTouchesToday(outreach, new Date(now))}
+        now={now}
+        preview={preview}
+        onBook={(next, nextSetup) => {
+          setOutreach(next);
+          if (nextSetup) setMailSetup(nextSetup);
+        }}
+      />
+      <FindymailPanel onBook={setBook} />
     </div>
   );
 }
