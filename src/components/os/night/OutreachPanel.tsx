@@ -61,19 +61,24 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
         </button>
       </div>
       {stats.emailed ? (
-        <dl className="dl lead-facts" aria-label="Last 30 days">
-          <dt>Emailed (30 days)</dt>
-          <dd>{stats.emailed}</dd>
-          <dt>Replied</dt>
-          <dd>
-            {stats.replied}
-            {stats.replyRate != null ? ` (${stats.replyRate}%, aim for 8 to 12%)` : ""}
-          </dd>
-          <dt>Bounced</dt>
-          <dd>{stats.bounced}</dd>
-          <dt>Opted out</dt>
-          <dd>{stats.optedOut}</dd>
-        </dl>
+        <ul className="ap-stats" aria-label="Last 30 days">
+          <li>
+            <b>{stats.emailed}</b>
+            <span className="lbl">Emailed, 30 days</span>
+          </li>
+          <li>
+            <b>{stats.replyRate != null ? `${stats.replyRate}%` : stats.replied}</b>
+            <span className="lbl">{stats.replyRate != null ? `Replied (${stats.replied}), aim 8 to 12%` : "Replied"}</span>
+          </li>
+          <li>
+            <b>{stats.bounced}</b>
+            <span className="lbl">Bounced</span>
+          </li>
+          <li>
+            <b>{stats.optedOut}</b>
+            <span className="lbl">Opted out</span>
+          </li>
+        </ul>
       ) : null}
       {s.paused_reason ? (
         <p className="sx-error" role="alert">
@@ -86,43 +91,53 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
         </p>
       ) : null}
 
-      <div className="lead-to">
-        <span className="lbl">Gmail</span>
-        {setup.gmail ? (
-          <div className="sx-actions">
-            <span className="t-body">Sending from {setup.gmail}</span>
-            <button type="button" className="btn" disabled={busy} onClick={() => send({}, "/api/os/gmail/disconnect")}>
-              Disconnect
-            </button>
+      <details className="lead-why ap-settings" open={!setup.gmail}>
+        <summary>Settings{setup.gmail ? ` · sending from ${setup.gmail} · score ${s.threshold}+` : " · connect Gmail to start"}</summary>
+        <div className="ap-settings-body">
+          <div className="lead-to">
+            <span className="lbl">Gmail</span>
+            {setup.gmail ? (
+              <div className="sx-actions">
+                <span className="t-body">Sending from {setup.gmail}</span>
+                <button type="button" className="btn" disabled={busy} onClick={() => send({}, "/api/os/gmail/disconnect")}>
+                  Disconnect
+                </button>
+              </div>
+            ) : setup.googleReady ? (
+              <a className="btn primary" href="/api/os/gmail/connect">
+                Connect Gmail
+              </a>
+            ) : (
+              <p className="sx-hint">Not connected. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel, then connect here.</p>
+            )}
           </div>
-        ) : setup.googleReady ? (
-          <a className="btn primary" href="/api/os/gmail/connect">
-            Connect Gmail
-          </a>
-        ) : (
-          <p className="sx-hint">Not connected. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel, then connect here.</p>
-        )}
-      </div>
 
-      <div className="lead-to">
-        <span className="lbl">Start automatically at score</span>
-        <div className="segment sx-wrap" role="group" aria-label="Score bar">
-          {THRESHOLDS.map((value) => (
-            <button key={value} type="button" aria-pressed={s.threshold === value} disabled={busy} onClick={() => send({ op: "settings", threshold: value })}>
-              {value}+
-            </button>
-          ))}
-        </div>
-        <div className="segment sx-wrap" role="group" aria-label="Who autopilot emails">
-          {LEAD_KINDS.map((kind) => (
-            <button key={kind} type="button" aria-pressed={s.kinds[kind]} disabled={busy} onClick={() => send({ op: "settings", kinds: { [kind]: !s.kinds[kind] } })}>
-              {KIND_LABEL[kind]}
-            </button>
-          ))}
+          <div className="lead-to">
+            <span className="lbl">Start automatically at score</span>
+            <div className="segment sx-wrap" role="group" aria-label="Score bar">
+              {THRESHOLDS.map((value) => (
+                <button key={value} type="button" aria-pressed={s.threshold === value} disabled={busy} onClick={() => send({ op: "settings", threshold: value })}>
+                  {value}+
+                </button>
+              ))}
+            </div>
+            <div className="segment sx-wrap" role="group" aria-label="Who autopilot emails">
+              {LEAD_KINDS.map((kind) => (
+                <button key={kind} type="button" aria-pressed={s.kinds[kind]} disabled={busy} onClick={() => send({ op: "settings", kinds: { [kind]: !s.kinds[kind] } })}>
+                  {KIND_LABEL[kind]}
+                </button>
+              ))}
+            </div>
+            <div className="segment sx-wrap" role="group" aria-label="Morning summary email">
+          <button type="button" aria-pressed={s.digest} disabled={busy} onClick={() => send({ op: "settings", digest: !s.digest })}>
+            Morning summary email {s.digest ? "on" : "off"}
+          </button>
         </div>
         <p className="sx-hint">Five emails each: first, 3 days, a week, a week, then 3 months. Stops on any reply. Never emails a guessed address. LP emails only cover The Handoff and startups, never the fund. Daily limit starts at {s.start_cap} and rises {s.ramp_per_week} a week to {s.max_cap}.</p>
-      </div>
+          </div>
 
+        </div>
+      </details>
       {recent.length ? (
         <details className="lead-why">
           <summary>Sequences ({book.enrollments.length})</summary>

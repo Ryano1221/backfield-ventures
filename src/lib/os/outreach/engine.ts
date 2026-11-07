@@ -8,7 +8,7 @@
  */
 import type { Lead, LeadBook } from "../leads/types";
 import { logEvent, makeEnrollment } from "./book";
-import { autoAddress, autoEligible, dailyCap, firstTouchesToday, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, shouldPause } from "./plan";
+import { autoAddress, autoEligible, buildDigest, centralNow, dailyCap, firstTouchesToday, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, shouldPause } from "./plan";
 import type { Enrollment, OutreachBook, Step } from "./types";
 
 export type Mailer = {
@@ -30,6 +30,8 @@ export type EngineDeps = {
   maxSendsPerRun: number;
   /** Checks an address accepts mail before the first email: true, false, or null when it can't tell. */
   verify?: ((email: string) => Promise<boolean | null>) | null;
+  /** Where the Leads page lives, for the morning summary's link. */
+  leadsUrl?: string;
   /** True when leads get researched; autopilot then waits for the research before starting. */
   researchReady?: boolean;
 };
@@ -86,6 +88,18 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
     out = logEvent({ ...out, settings: { ...out.settings, enabled: false, paused_reason: pause } }, { at: at(), lead_id: null, text: pause });
     report.note = pause;
   }
+  // The morning summary to Ryan: once a day, from the first run after 7am Central.
+  const central = centralNow(deps.now());
+  if (out.settings.digest && central.hour >= 7 && out.settings.last_digest !== central.date) {
+    const digest = buildDigest(out, leadList, out.settings.last_digest, deps.now(), deps.leadsUrl ?? "https://os.backfieldventures.com/leads");
+    try {
+      if (digest) await mailer.send({ to: mailer.me.email, toName: mailer.me.name, subject: digest.subject, body: digest.body, inReplyTo: null }, null);
+      out = { ...out, settings: { ...out.settings, last_digest: central.date } };
+    } catch (error) {
+      report.errors.push(`Morning summary: ${error instanceof Error ? error.message : "could not send"}`);
+    }
+  }
+
   if (!out.settings.enabled) return { book: out, leads: { ...leads, leads: leadList }, report: { ...report, note: report.note ?? "Autopilot is off. Checked replies only." } };
 
   // 3. Start sequences for the best new leads, never more waiting than today's cap.

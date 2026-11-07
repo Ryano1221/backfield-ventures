@@ -377,6 +377,21 @@ export function NightFrame({
     };
   }, []);
 
+  // Replies to outreach waiting on Ryan. Fetched after load so no page waits on it.
+  const [leadReplies, setLeadReplies] = useState(0);
+  useEffect(() => {
+    let live = true;
+    fetch("/api/os/outreach/count")
+      .then((res) => (res.ok ? (res.json() as Promise<{ replies?: number }>) : null))
+      .then((data) => {
+        if (live && typeof data?.replies === "number") setLeadReplies(data.replies);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+
   const hrefs = osHrefs(onOs);
   const waitingCount = waitingActions(actions.filter((action) => !action.action_id.startsWith("local:"))).length;
   // How Ryan runs the firm: five working areas, then the machinery under
@@ -390,7 +405,7 @@ export function NightFrame({
   ];
   const ops: NavLink[] = [
     { id: "review", label: "Weekly review", short: "Review", href: hrefs.review, count: null },
-    { id: "leads", label: "Leads", short: "Leads", href: hrefs.leads, count: null },
+    { id: "leads", label: "Leads", short: "Leads", href: hrefs.leads, count: leadReplies || null },
     { id: "bots", label: "Bots", short: "Bots", href: hrefs.bots, count: counts.bots ?? null },
     { id: "activity", label: "Activity", short: "Activity", href: hrefs.activity, count: null },
     { id: "waiting", label: "Waiting", short: "Waiting", href: hrefs.waiting, count: waitingCount },

@@ -298,7 +298,7 @@ test("autopilot: a started sequence sends its first email from the hourly run, a
   await signIn(page);
   await page.goto("/os/leads");
   await expect(page.getByRole("heading", { name: "Autopilot off" })).toBeVisible();
-  await expect(page.getByText("Sending from owner@example.com")).toBeVisible();
+  await expect(page.locator(".ap-settings summary")).toContainText("sending from owner@example.com");
 
   const card = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Example Fixture Snacks, Inc." }) });
   await card.getByRole("textbox").fill("founder@example.com");
@@ -352,4 +352,45 @@ test("warm leads: an SPV backer becomes a Fund I lead, gets asked for names, and
 test("the leads API needs a session", async ({ request }) => {
   const res = await request.post("/api/os/leads", { data: { op: "add_lead", name: "x" } });
   expect(res.status()).toBe(401);
+});
+
+test("leads triage: search, keyboard skip with undo, open and close, and edit a queued sequence email", async ({ request, page }) => {
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  const row = page.getByRole("button", { name: /Example Fixture Snacks/ });
+  await expect(row).toHaveAttribute("aria-expanded", "true");
+
+  // Search narrows the list, and says so when nothing matches.
+  await page.getByLabel("Find a lead").fill("no such company");
+  await expect(page.getByText('No founders match "no such company".')).toBeVisible();
+  await page.getByLabel("Find a lead").fill("fixture snacks");
+  await expect(row).toBeVisible();
+  await page.getByLabel("Find a lead").fill("");
+
+  // Keyboard: s skips the focused lead; Undo brings it back.
+  await row.focus();
+  await page.keyboard.press("s");
+  await expect(page.getByRole("status").filter({ hasText: "Skipped Example Fixture Snacks, Inc." })).toBeVisible();
+  await expect(row).toHaveCount(0);
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(row).toBeVisible();
+
+  // Rows open and close.
+  await row.click();
+  await expect(row).toHaveAttribute("aria-expanded", "false");
+  await row.click();
+  await expect(row).toHaveAttribute("aria-expanded", "true");
+
+  // Start a sequence and edit email 2 before it goes out.
+  const card = page.getByRole("listitem").filter({ has: row });
+  await card.getByRole("textbox").fill("founder@example.com");
+  await card.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: /^Approved/ }).click();
+  await page.getByRole("button", { name: "Start sequence" }).click();
+  await page.getByText(/^The 5 emails$/).click();
+  await page.getByRole("button", { name: "Edit email 2" }).click();
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill("Hi Fixture,\n\nA shorter follow-up. Still up for a call?\n\nBest,\nRyan");
+  await page.getByRole("button", { name: "Save email" }).click();
+  await expect(page.getByText("A shorter follow-up. Still up for a call?")).toBeVisible();
 });

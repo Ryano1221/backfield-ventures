@@ -1,6 +1,6 @@
 /** Saved outreach state and the changes Ryan makes to it. Pure functions. */
 import type { Lead } from "../leads/types";
-import { autoAddress, buildSteps, LP_FORBIDDEN, suppressed, templateSteps, zoneFor } from "./plan";
+import { autoAddress, buildSteps, LP_FORBIDDEN, OPT_OUT, suppressed, templateSteps, zoneFor } from "./plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type Enrollment, type OutreachBook, type OutreachEvent } from "./types";
 
 const MAX_LOG = 300;
@@ -82,6 +82,7 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
           s.ramp_from = s.ramp_from ?? now;
         }
       }
+      if (typeof op.digest === "boolean") s.digest = op.digest;
       if (op.threshold !== undefined) s.threshold = clampInt(op.threshold, 50, 100, s.threshold);
       if (op.kinds && typeof op.kinds === "object") {
         const k = op.kinds as Record<string, unknown>;
@@ -110,6 +111,24 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
       const suppress = [...new Set([...book.suppress, enrollments[index].email])];
       return { ok: true, book: logEvent({ ...book, enrollments, suppress }, { at: now, lead_id: enrollments[index].lead_id, text: `Sequence stopped for ${enrollments[index].company}.` }) };
     }
+    case "edit_step": {
+      const index = book.enrollments.findIndex((e) => e.lead_id === op.lead_id);
+      if (index < 0) return { ok: false, error: "No sequence for that lead." };
+      const enrollment = book.enrollments[index];
+      const step = enrollment.steps.find((s) => s.n === Number(op.n));
+      if (!step) return { ok: false, error: "No such email in the sequence." };
+      if (step.sent_at) return { ok: false, error: "That email already went out." };
+      const body = typeof op.body === "string" ? op.body.replace(OPT_OUT, "").trim() : "";
+      if (!body || body.length > 4000) return { ok: false, error: "The email needs some text." };
+      const subject = step.new_thread && typeof op.subject === "string" && op.subject.trim() ? op.subject.trim().slice(0, 200) : step.subject;
+      if (enrollment.kind === "lp" && LP_FORBIDDEN.test(`${subject} ${body}`)) return { ok: false, error: "LP emails can't mention the fund, raising, returns or commitments." };
+      const steps = enrollment.steps.map((s) => (s.n === step.n ? { ...s, subject, body: `${body}\n\n${OPT_OUT}` } : s));
+      // A new first subject carries to the replies in its thread.
+      const threaded = step.n === 1 ? steps.map((s) => (!s.new_thread ? { ...s, subject: `Re: ${subject}` } : s)) : steps;
+      const enrollments = [...book.enrollments];
+      enrollments[index] = { ...enrollment, steps: threaded, updated_at: now };
+      return { ok: true, book: { ...book, enrollments } };
+    }
     case "handled": {
       const index = book.enrollments.findIndex((e) => e.lead_id === op.lead_id && e.reply);
       if (index < 0) return { ok: false, error: "No reply for that lead." };
@@ -130,7 +149,9 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
 export function mergeRun(before: OutreachBook, latest: OutreachBook, ran: OutreachBook): OutreachBook {
   const settingsChanged = JSON.stringify(latest.settings) !== JSON.stringify(before.settings);
   const pausedByRun = before.settings.enabled && !ran.settings.enabled && Boolean(ran.settings.paused_reason);
-  const settings = pausedByRun ? { ...(settingsChanged ? latest.settings : ran.settings), enabled: false, paused_reason: ran.settings.paused_reason } : settingsChanged ? latest.settings : ran.settings;
+  const picked = pausedByRun ? { ...(settingsChanged ? latest.settings : ran.settings), enabled: false, paused_reason: ran.settings.paused_reason } : settingsChanged ? latest.settings : ran.settings;
+  // The run's own bookkeeping always survives, so the morning email never goes twice.
+  const settings = { ...picked, last_digest: ran.settings.last_digest ?? picked.last_digest };
   const latestById = new Map(latest.enrollments.map((e) => [e.lead_id, e]));
   const enrollments = ran.enrollments.map((e) => {
     const now = latestById.get(e.lead_id);

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { applyLeadOp, gmailLink, mergeLeads, parseImport, parseLeads } from "./leads/book";
-import { templateDraft } from "./leads/draft";
+import { plainName, templateDraft } from "./leads/draft";
 import { DEFAULT_LIMITS, recentDays, runFinder, type RunDeps } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, syndicateName, syndicatePerson } from "./leads/sec-form-d";
@@ -268,4 +268,12 @@ test("a syndicate named after a person gets that person; other names don't", () 
   assert.equal(syndicatePerson("Roll Up Vehicles, LP"), null);
   assert.equal(syndicatePerson("JMWTX Investments, LP"), null);
   assert.equal(syndicatePerson("Platform Funds 2026, LP"), null);
+});
+
+test("company names read the way people write them", () => {
+  assert.equal(plainName("NOVA BOULDERS LLC"), "Nova Boulders");
+  assert.equal(plainName("Fixture Snacks, Inc."), "Fixture Snacks");
+  assert.equal(plainName("AVSF"), "AVSF");
+  assert.equal(plainName("THEZERO INC."), "Thezero");
+  assert.equal(plainName("iFixture Co"), "iFixture");
 });
