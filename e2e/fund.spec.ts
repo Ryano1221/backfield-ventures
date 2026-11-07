@@ -495,3 +495,26 @@ test("replies: the thread reads like a chat, and the suggested answer sends from
   expect(outbox[1].threadId).toBe(outbox.length && JSON.parse(readFileSync("/tmp/os-outreach.json", "utf8")).enrollments[0].thread_id);
   await expect(replies.getByRole("textbox")).toHaveCount(0);
 });
+
+test("command bar: ⌘K lists actions first, arrow keys move, Enter runs Find new leads on the Leads page", async ({ page }) => {
+  test.skip(test.info().project.name !== "desk", "keyboard command bar");
+  await signIn(page);
+  await page.goto("/os");
+  await page.getByRole("button", { name: "Search" }).click();
+  const bar = page.getByRole("dialog", { name: "Search" });
+  await expect(bar.getByRole("option").first()).toContainText("Answer replies");
+  await expect(bar.getByRole("option").first()).toHaveAttribute("aria-selected", "true");
+  await page.getByLabel("Search people, deals, bots").fill("find");
+  await expect(bar.getByRole("option", { name: /Find new leads/ })).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/leads$/);
+  await expect(page.getByText(/Last search .*read 1 filing, 1 new/)).toBeVisible();
+
+  // Arrow keys wrap around the list.
+  await page.keyboard.press("Control+k");
+  await page.getByLabel("Search people, deals, bots").fill("");
+  await page.keyboard.press("ArrowUp");
+  await expect(bar.getByRole("option").first()).toHaveAttribute("aria-selected", "false");
+  await page.keyboard.press("ArrowDown");
+  await expect(bar.getByRole("option").first()).toHaveAttribute("aria-selected", "true");
+});

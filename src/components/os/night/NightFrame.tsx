@@ -105,6 +105,7 @@ export function NightFrame({
   const inflightRef = useRef<Record<string, boolean>>({});
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [cursor, setCursor] = useState(0);
   const queuedRef = useRef<Queued[]>([]);
   const timers = useRef(new Map<string, number>());
   const chain = useRef(Promise.resolve());
@@ -421,6 +422,15 @@ export function NightFrame({
   const matches = finder
     .filter((item) => (q ? `${item.title} ${item.hint}`.toLowerCase().includes(q) : item.kind !== "page" || item.id !== "today"))
     .slice(0, 12);
+  // Things to do, not just places to go. Shown first; they filter with the query too.
+  const commands: { id: string; title: string; hint: string; href?: string; run?: () => void }[] = [
+    { id: "replies", title: "Answer replies", hint: leadReplies ? `${leadReplies} waiting` : "Leads", href: `${hrefs.leads}#leads-replies` },
+    { id: "review", title: "Review new leads", hint: "Leads", href: `${hrefs.leads}#leads-list` },
+    { id: "find", title: "Find new leads", hint: "Reads the latest SEC filings", href: `${hrefs.leads}?do=find` },
+    { id: "ask", title: "Ask the firm", hint: "Question about deals, LPs, the fund", run: () => setAskOpen(true) },
+  ].filter((c) => !q || `${c.title} ${c.hint}`.toLowerCase().includes(q));
+  const choices = commands.length + matches.length;
+  const pick = Math.min(cursor, Math.max(0, choices - 1));
 
   async function signOut() {
     await fetch("/api/os/logout", { method: "POST" });
@@ -564,21 +574,68 @@ export function NightFrame({
             <input
               autoFocus
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search people, deals, bots"
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setCursor(0);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                  event.preventDefault();
+                  if (!choices) return;
+                  setCursor((pick + (event.key === "ArrowDown" ? 1 : choices - 1)) % choices);
+                } else if (event.key === "Enter" && choices) {
+                  event.preventDefault();
+                  document.querySelector<HTMLElement>(`.palette-card [data-choice="${pick}"]`)?.click();
+                }
+              }}
+              placeholder="Search people, deals, bots, or type a command"
               aria-label="Search people, deals, bots"
+              role="combobox"
+              aria-expanded="true"
+              aria-controls="palette-list"
+              aria-activedescendant={choices ? `palette-${pick}` : undefined}
             />
-            <ul>
-              {matches.map((item) => (
-                <li key={`${item.kind}-${item.id}`}>
-                  <Link href={finderHref(item, hrefs)} prefetch onClick={() => setOpen(false)}>
-                    <span>{item.title}</span>
-                    <span className="muted">{item.hint || item.kind}</span>
-                  </Link>
+            <ul id="palette-list" role="listbox" aria-label="Results">
+              {commands.length ? <li className="palette-head" role="presentation">Do</li> : null}
+              {commands.map((c, i) => (
+                <li key={`cmd-${c.id}`} id={`palette-${i}`} role="option" aria-selected={pick === i} className={pick === i ? "is-active" : ""} onMouseEnter={() => setCursor(i)}>
+                  {c.href ? (
+                    <Link href={c.href} data-choice={i} prefetch onClick={() => setOpen(false)}>
+                      <span>{c.title}</span>
+                      <span className="muted">{c.hint}</span>
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      data-choice={i}
+                      onClick={() => {
+                        setOpen(false);
+                        c.run?.();
+                      }}
+                    >
+                      <span>{c.title}</span>
+                      <span className="muted">{c.hint}</span>
+                    </button>
+                  )}
                 </li>
               ))}
-              {matches.length === 0 ? <li className="muted" style={{ padding: 16 }}>No matches.</li> : null}
+              {commands.length && matches.length ? <li className="palette-head" role="presentation">Go to</li> : null}
+              {matches.map((item, j) => {
+                const i = commands.length + j;
+                return (
+                  <li key={`${item.kind}-${item.id}`} id={`palette-${i}`} role="option" aria-selected={pick === i} className={pick === i ? "is-active" : ""} onMouseEnter={() => setCursor(i)}>
+                    <Link href={finderHref(item, hrefs)} data-choice={i} prefetch onClick={() => setOpen(false)}>
+                      <span>{item.title}</span>
+                      <span className="muted">{item.hint || item.kind}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+              {choices === 0 ? <li className="muted" style={{ padding: 16 }}>No matches.</li> : null}
             </ul>
+            <p className="palette-keys pointer-keys" aria-hidden="true">
+              <kbd>↑</kbd> <kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>Esc</kbd> close
+            </p>
           </div>
         </div>
       ) : null}
