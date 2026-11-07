@@ -58,6 +58,10 @@ export type OutreachSettings = {
   ramp_from: string | null;
   /** Why autopilot switched itself off, if it did. */
   paused_reason: string | null;
+  /** A short morning email to Ryan: replies waiting, new top leads, what went out. */
+  digest: boolean;
+  /** The Central-time date the last morning email went out, YYYY-MM-DD. */
+  last_digest: string | null;
 };
 
 export type OutreachEvent = { at: string; lead_id: string | null; text: string };
@@ -80,6 +84,8 @@ export const DEFAULT_SETTINGS: OutreachSettings = {
   ramp_per_week: 5,
   ramp_from: null,
   paused_reason: null,
+  digest: false,
+  last_digest: null,
 };
 
 export const EMPTY_OUTREACH: OutreachBook = { version: 1, settings: DEFAULT_SETTINGS, enrollments: [], suppress: [], log: [] };

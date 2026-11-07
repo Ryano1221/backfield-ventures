@@ -128,7 +128,12 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
                 </button>
               ))}
             </div>
-            <p className="sx-hint">Five emails each: first, 3 days, a week, a week, then 3 months. Stops on any reply. Never emails a guessed address. LP emails only cover The Handoff and startups, never the fund. Daily limit starts at {s.start_cap} and rises {s.ramp_per_week} a week to {s.max_cap}.</p>
+            <div className="segment sx-wrap" role="group" aria-label="Morning summary email">
+          <button type="button" aria-pressed={s.digest} disabled={busy} onClick={() => send({ op: "settings", digest: !s.digest })}>
+            Morning summary email {s.digest ? "on" : "off"}
+          </button>
+        </div>
+        <p className="sx-hint">Five emails each: first, 3 days, a week, a week, then 3 months. Stops on any reply. Never emails a guessed address. LP emails only cover The Handoff and startups, never the fund. Daily limit starts at {s.start_cap} and rises {s.ramp_per_week} a week to {s.max_cap}.</p>
           </div>
 
         </div>

@@ -219,3 +219,25 @@ export function stepDates(enrollment: Enrollment, now: Date): { n: number; at: s
 }
 
 export const STEP_LABEL: Record<StepKind, string> = { first: "First email", value: "Something useful", angle: "A new angle", breakup: "Last note", nurture: "Three-month check-in" };
+
+/** The Central-time date and hour, for the once-a-morning summary. */
+export function centralNow(now: Date): { date: string; hour: number } {
+  const { date, hour } = local(now, "America/Chicago");
+  return { date, hour };
+}
+
+/** The morning summary to Ryan, or null when there's nothing worth an email. */
+export function buildDigest(book: OutreachBook, leads: Lead[], since: string | null, now: Date, leadsUrl: string): { subject: string; body: string } | null {
+  const sinceMs = since ? Date.parse(`${since}T12:00:00Z`) : now.getTime() - DAY_MS;
+  const replies = repliesWaiting(book);
+  const fresh = leads.filter((lead) => lead.status === "new" && Date.parse(lead.found_at) >= sinceMs && lead.score >= Math.max(50, book.settings.threshold - 10)).sort((a, b) => b.score - a.score);
+  const sent = book.enrollments.flatMap((e) => e.steps.filter((s) => s.sent_at && Date.parse(s.sent_at) >= sinceMs)).length;
+  if (!replies.length && !fresh.length && !sent) return null;
+  const parts: string[] = [];
+  if (replies.length) parts.push(`Replies waiting on you:\n${replies.slice(0, 8).map((e) => `- ${[e.name, e.company].filter(Boolean).join(", ")}: "${(e.reply?.snippet ?? "").slice(0, 140)}"`).join("\n")}`);
+  if (fresh.length) parts.push(`New leads worth a look:\n${fresh.slice(0, 8).map((l) => `- ${l.company} (${l.score})${l.research?.status === "found" ? ", said something recently" : ""}`).join("\n")}`);
+  if (sent) parts.push(`Autopilot sent ${sent} ${sent === 1 ? "email" : "emails"} since the last summary.`);
+  parts.push(`Open Leads: ${leadsUrl}`);
+  const subject = [replies.length ? `${replies.length} ${replies.length === 1 ? "reply" : "replies"}` : null, fresh.length ? `${fresh.length} new ${fresh.length === 1 ? "lead" : "leads"}` : null, !replies.length && !fresh.length ? `${sent} sent` : null].filter(Boolean).join(", ");
+  return { subject: `Backfield leads: ${subject}`, body: parts.join("\n\n") };
+}

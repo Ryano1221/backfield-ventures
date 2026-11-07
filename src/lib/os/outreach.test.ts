@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, rawMessage, sendMail, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { autoEligible, buildDigest, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -277,4 +277,31 @@ test("unsent emails can be edited; sent ones and fund talk in LP emails can't", 
     [4, "2026-12-01", false],
     [5, "2027-03-02", false],
   ]);
+});
+
+test("the morning summary lists replies and new top leads, once a day after 7am Central", async () => {
+  const replied = makeEnrollment(lead({ id: "r1" }), "r1@example.com", "auto", "2026-11-09T00:00:00.000Z", null);
+  replied.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  replied.status = "replied";
+  replied.reply = { at: "2026-11-10T16:00:00.000Z", snippet: "Thursday works", handled_at: null };
+  const fresh = lead({ id: "n1", company: "Fixture Fresh", score: 88, found_at: "2026-11-10T11:30:00.000Z" });
+  const old = lead({ id: "n2", company: "Fixture Old", score: 95, found_at: "2026-10-01T00:00:00.000Z" });
+  const book: OutreachBook = { ...EMPTY_OUTREACH, settings: { ...DEFAULT_SETTINGS, digest: true, last_digest: "2026-11-09" }, enrollments: [replied] };
+  const digest = buildDigest(book, [fresh, old], "2026-11-09", new Date("2026-11-11T13:30:00Z"), "https://os.example/leads");
+  assert.equal(digest?.subject, "Backfield leads: 1 reply, 1 new lead");
+  assert.match(digest?.body ?? "", /Fixture Founder, Fixture Snacks, Inc\.: "Thursday works"/);
+  assert.match(digest?.body ?? "", /Fixture Fresh \(88\)/);
+  assert.ok(!digest?.body.includes("Fixture Old"));
+  assert.equal(buildDigest({ ...EMPTY_OUTREACH }, [], null, new Date("2026-11-11T13:30:00Z"), "x"), null, "nothing to say, no email");
+
+  const { mailer, sent } = fakeMailer();
+  const early = await runOutreach(book, { ...EMPTY_BOOK, leads: [fresh] }, deps(mailer, "2026-11-11T11:30:00Z"));
+  assert.equal(sent.length, 0, "5:30am Central is too early");
+  const morning = await runOutreach(early.book, { ...EMPTY_BOOK, leads: [fresh] }, deps(mailer, "2026-11-11T13:30:00Z"));
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].to, "owner@example.com");
+  assert.equal(morning.book.settings.last_digest, "2026-11-11");
+  await runOutreach(morning.book, { ...EMPTY_BOOK, leads: [fresh] }, deps(mailer, "2026-11-11T15:30:00Z"));
+  assert.equal(sent.length, 1, "once a day");
+  assert.equal(mergeRun(book, { ...book, settings: { ...book.settings, threshold: 70 } }, morning.book).settings.last_digest, "2026-11-11", "survives a settings change mid-run");
 });

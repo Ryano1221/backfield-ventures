@@ -82,6 +82,7 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
           s.ramp_from = s.ramp_from ?? now;
         }
       }
+      if (typeof op.digest === "boolean") s.digest = op.digest;
       if (op.threshold !== undefined) s.threshold = clampInt(op.threshold, 50, 100, s.threshold);
       if (op.kinds && typeof op.kinds === "object") {
         const k = op.kinds as Record<string, unknown>;
@@ -148,7 +149,9 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
 export function mergeRun(before: OutreachBook, latest: OutreachBook, ran: OutreachBook): OutreachBook {
   const settingsChanged = JSON.stringify(latest.settings) !== JSON.stringify(before.settings);
   const pausedByRun = before.settings.enabled && !ran.settings.enabled && Boolean(ran.settings.paused_reason);
-  const settings = pausedByRun ? { ...(settingsChanged ? latest.settings : ran.settings), enabled: false, paused_reason: ran.settings.paused_reason } : settingsChanged ? latest.settings : ran.settings;
+  const picked = pausedByRun ? { ...(settingsChanged ? latest.settings : ran.settings), enabled: false, paused_reason: ran.settings.paused_reason } : settingsChanged ? latest.settings : ran.settings;
+  // The run's own bookkeeping always survives, so the morning email never goes twice.
+  const settings = { ...picked, last_digest: ran.settings.last_digest ?? picked.last_digest };
   const latestById = new Map(latest.enrollments.map((e) => [e.lead_id, e]));
   const enrollments = ran.enrollments.map((e) => {
     const now = latestById.get(e.lead_id);
