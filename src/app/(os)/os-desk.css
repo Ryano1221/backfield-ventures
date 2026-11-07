@@ -940,3 +940,36 @@ body.os .tower .floor .tbot:nth-child(n + 6) { --pop: 5; }
 }
 @keyframes tbot-pop { from { opacity: 0; transform: translateY(10px) scale(0.4); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { body.os .tower .floor, body.os .tower .floor .tbot { animation: none; } }
+/* Studio: steps, simpler composer, VC feed */
+body.os .sx-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+body.os .sx-steps li { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; animation: os-rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .sx-steps li:nth-child(2) { animation-delay: 60ms; }
+body.os .sx-steps li:nth-child(3) { animation-delay: 120ms; }
+body.os .sx-steps b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #123D22; color: #fff; font-size: 12px; }
+body.os .sx-idea { font-size: 18px !important; line-height: 1.4 !important; resize: none; }
+body.os .sx-more > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; color: rgba(0, 0, 0, 0.7); }
+body.os .sx-more-body { display: grid; gap: 16px; padding-top: 6px; animation: os-rise 0.3s ease both; }
+body.os .inspo { display: grid; gap: 14px; }
+body.os .inspo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+body.os .inspo-head .sx-hint { margin: 4px 0 0; max-width: 60ch; }
+body.os .inspo-key { margin: 0; padding: 10px 12px; border-radius: 10px; background: #fdf3dc; color: #5c3f00; }
+body.os .inspo-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+body.os .inspo-post { display: grid; gap: 6px; padding: 14px 0; border-top: 1px solid rgba(0, 0, 0, 0.07); animation: os-rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+body.os .inspo-meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+body.os .inspo-meta .sx-hint { margin: 0; }
+body.os .inspo-who, body.os .inspo-link { background: none; border: 0; padding: 0; min-height: 44px; font: inherit; font-weight: 700; color: #000; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(0, 0, 0, 0.2); text-underline-offset: 3px; }
+body.os .inspo-who:hover, body.os .inspo-link:hover, body.os .inspo-who:focus-visible, body.os .inspo-link:focus-visible { text-decoration-color: currentColor; }
+body.os .inspo-link { font-weight: 600; min-height: 0; }
+body.os .inspo-kind.is-linkedin { background: #e7eef8; color: #0a4a8a; }
+body.os .inspo-kind.is-x { background: #ececec; color: #000; }
+body.os .inspo-title { font-size: 16px; line-height: 1.35; }
+body.os .inspo-text { margin: 0; color: rgba(0, 0, 0, 0.66); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+body.os .inspo-sources { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+body.os .inspo-sources li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+body.os .inspo-src { display: grid; gap: 2px; min-width: 0; }
+body.os .inspo-src .sx-hint { margin: 0; overflow-wrap: anywhere; }
+body.os .inspo-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(0, 0, 0, 0.2); }
+body.os .inspo-dot.is-ok { background: #1f8a4c; }
+body.os .inspo-dot.is-bad { background: #c0392b; }
+body.os .inspo-add { display: grid; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0, 0, 0, 0.07); }
+@media (prefers-reduced-motion: reduce) { body.os .sx-steps li, body.os .sx-more-body, body.os .inspo-post { animation: none; } }

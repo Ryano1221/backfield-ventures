@@ -9,6 +9,7 @@ import { osChromeCounts, osHrefs } from "@/lib/os/nav";
 import { buildToday } from "@/lib/os/night";
 import { loadOsPage } from "@/lib/os/page-data";
 import { parseStudio } from "@/lib/os/studio";
+import { readInspo } from "@/lib/os/inspo/server";
 
 export const dynamic = "force-dynamic";
 
@@ -23,13 +24,14 @@ export default async function StudioPage() {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const onOs = isOsHost(host);
   const model = buildToday(page.snapshot, page.actions);
-  const studio = parseStudio(await readDoc("content-studio").catch(() => null));
+  const [studio, inspo] = await Promise.all([readDoc("content-studio").catch(() => null).then(parseStudio), readInspo()]);
   const hrefs = osHrefs(onOs);
   const email = emailHrefs(onOs);
   return (
     <NightFrame onOs={onOs} active="email" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
       <StudioDesk
         initial={studio}
+        inspo={inspo}
         now={readClock()}
         engagement={page.snapshot?.warmups?.length ?? 0}
         hrefs={{ studio: hrefs.studio, email: email.dashboard, compose: email.compose, magnets: email.magnets, forms: email.forms, bots: hrefs.bots }}

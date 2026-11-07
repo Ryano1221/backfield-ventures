@@ -10,6 +10,11 @@ test.beforeEach(() => {
   } catch {
     /* nothing saved yet */
   }
+  try {
+    unlinkSync("/tmp/os-inspo.json");
+  } catch {
+    /* nothing saved yet */
+  }
 });
 
 async function signIn(page: Page) {
@@ -69,7 +74,8 @@ test("a Handoff template opens as a new draft and stays unapprovable until fille
   await signIn(page);
   await page.goto("/os/studio");
   await page.getByLabel("Idea").fill("November Handoff");
-  // Newsletter is one of the default channels.
+  // Newsletter is one of the default channels; its layout is under More options.
+  await page.getByText(/^More options/).click();
   await page.getByRole("group", { name: "Newsletter starts from" }).getByRole("button", { name: "The Handoff" }).click();
   await page.getByRole("button", { name: "Create drafts" }).click();
   await expect(page).toHaveURL(/\/os\/studio\/c_/);
@@ -77,4 +83,37 @@ test("a Handoff template opens as a new draft and stays unapprovable until fille
   await expect(page.getByLabel("Subject")).toHaveValue(/^The Handoff, Issue/);
   await expect(page.locator(".sx-checks")).toContainText("Replace the [bracketed] template prompts.");
   await expect(page.getByRole("button", { name: "Approve this exact text" })).toBeDisabled();
+});
+
+test("what top VCs are posting: refresh reads the feeds, flags the ones that fail, and Use as an idea starts a draft", async ({ page, request }) => {
+  expect((await request.post("/api/os/inspo", { data: { op: "refresh" } })).status()).toBe(401);
+  await signIn(page);
+  await page.goto("/os/studio");
+  const feed = page.getByRole("region", { name: "What top VCs are posting" });
+  await expect(feed.getByText("Nothing read yet.")).toBeVisible();
+  await feed.getByRole("button", { name: "Refresh now" }).click();
+  await expect(feed.getByRole("status")).toContainText("2 new posts.");
+  await expect(feed.getByText("FIXTURE: Why the best seed funds say no 99% of the time")).toBeVisible();
+  // LinkedIn and X wait for an Apify key, and say so.
+  await expect(feed.getByText(/LinkedIn and X posts start once an Apify key/)).toBeVisible();
+
+  // Sources that couldn't be read are flagged with the reason.
+  await feed.getByText(/^Who you follow/).click();
+  await expect(feed.getByText(/not reading/)).toBeVisible();
+  await expect(feed.getByText("The site answered 404.").first()).toBeVisible();
+
+  // Add someone by X handle, then remove them.
+  await feed.getByLabel(/^Add someone/).fill("@fixturevc");
+  await feed.getByRole("button", { name: "Add" }).click();
+  await expect(feed.getByRole("status")).toContainText("Added.");
+  await feed.getByRole("button", { name: "Remove @fixturevc" }).click();
+  await expect(feed.getByRole("button", { name: "Remove @fixturevc" })).toHaveCount(0);
+
+  // Use as an idea fills in the composer with the post and its link.
+  await feed.getByRole("button", { name: "Use as an idea" }).first().click();
+  await expect(page.getByLabel("Idea")).toHaveValue("FIXTURE: Why the best seed funds say no 99% of the time");
+  await expect(page.getByLabel(/^Link or name/)).toHaveValue("https://example.com/20vc/no-99");
+  await expect(page.getByLabel(/^Notes for the writer/)).toHaveValue(/^Inspired by 20VC \(Harry Stebbings\)/);
+  await page.getByRole("button", { name: "Create drafts" }).click();
+  await expect(page).toHaveURL(/\/os\/studio\/c_/);
 });

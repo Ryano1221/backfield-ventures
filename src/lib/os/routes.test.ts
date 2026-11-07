@@ -88,6 +88,7 @@ test("detail links from a live-shaped snapshot resolve instead of 404", () => {
   // The cron route checks its own secret, on every host, including the main domain in production.
   assert.equal(decideOs({ host: HOST, pathname: "/api/cron/leads", authed: false }).kind, "os-next");
   assert.equal(decideOs({ host: "backfieldventures.com", pathname: "/api/cron/leads", authed: false, vercelEnv: "production" }).kind, "public");
+  assert.equal(decideOs({ host: HOST, pathname: "/api/cron/inspo", authed: false }).kind, "os-next");
 });
 
 function assertResolved(href: string, rewrite: string) {
