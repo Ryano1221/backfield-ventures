@@ -3,6 +3,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { readDoc, writeDoc } from "../doc-store";
 import { readLeads, LEADS_DOC } from "../leads/server";
 import { aiReady } from "../leads/ai";
+import { FindymailError, findymailKey, verifyEmail } from "../leads/findymail";
 import { sessionSecret } from "../session";
 import { fixturesAllowed } from "../store";
 import { aiSteps } from "./ai-steps";
@@ -69,6 +70,22 @@ export async function forgetGmail(): Promise<void> {
   await writeDoc(AUTH_DOC, JSON.stringify({}));
 }
 
+/** Findymail checks each address before its first email; null when it can't (no key, no credits). */
+function findymailVerifier(): ((email: string) => Promise<boolean | null>) | null {
+  const key = findymailKey();
+  if (!key || fixturesAllowed()) return null;
+  let out = false;
+  return async (email) => {
+    if (out) return null;
+    try {
+      return await verifyEmail(fetch, key, email);
+    } catch (error) {
+      if (error instanceof FindymailError && error.stop) out = true;
+      return null;
+    }
+  };
+}
+
 const SENDER_NAME = process.env.OUTREACH_FROM_NAME?.trim() || "Ryan Arnold";
 
 /** Test and preview servers "send" into a local outbox, never Gmail. */
@@ -121,6 +138,7 @@ export async function runAndSave(budgetMs: number) {
     spacingMs: () => (fixturesAllowed() ? 0 : 15_000 + Math.floor(Math.random() * 20_000)),
     maxSendsPerRun: 12,
     researchReady: aiReady() && !fixturesAllowed(),
+    verify: findymailVerifier(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,
   // the lead search may have added leads). Merge onto the latest saves instead of overwriting them.

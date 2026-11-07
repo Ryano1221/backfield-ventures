@@ -28,6 +28,8 @@ export type EngineDeps = {
   /** Wait between two sends, so a batch doesn't leave all at once. */
   spacingMs: () => number;
   maxSendsPerRun: number;
+  /** Checks an address accepts mail before the first email: true, false, or null when it can't tell. */
+  verify?: ((email: string) => Promise<boolean | null>) | null;
   /** True when leads get researched; autopilot then waits for the research before starting. */
   researchReady?: boolean;
 };
@@ -114,6 +116,13 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
     if (enrollment.kind === "lp" && LP_FORBIDDEN.test(`${step.subject} ${step.body}`)) {
       finish(enrollment, "stopped", "Held back: an LP email mentioned the fund. Edit it before restarting.", false);
       continue;
+    }
+    if (step.n === 1 && deps.verify) {
+      const ok = await deps.verify(enrollment.email).catch(() => null);
+      if (ok === false) {
+        finish(enrollment, "bounced", `Findymail says ${enrollment.email} doesn't accept mail. Not sent.`, true);
+        continue;
+      }
     }
     if (report.sent > 0) await deps.pause(deps.spacingMs());
     const previous = enrollment.steps.filter((s) => s.sent_at).at(-1);

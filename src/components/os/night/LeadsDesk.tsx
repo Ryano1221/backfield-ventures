@@ -6,6 +6,7 @@ import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
+import { FindymailPanel } from "./FindymailPanel";
 import { OutreachPanel, sequenceLine, type OutreachSetup } from "./OutreachPanel";
 
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "To review", approved: "Approved", contacted: "Sent", skipped: "Skipped" };
@@ -101,6 +102,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           if (nextSetup) setMailSetup(nextSetup);
         }}
       />
+      <FindymailPanel onBook={setBook} />
       <div className="leads-bar">
         <div className="segment" role="group" aria-label="Lead type">
           {LEAD_KINDS.map((value) => (

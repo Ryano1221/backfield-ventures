@@ -22,6 +22,8 @@ export type RunDeps = {
   hasMx: HasMx;
   vendor: ((lead: Lead) => Promise<LeadContact[]>) | null;
   ai: ((lead: Lead) => Promise<{ draft: LeadDraft; fit: number; why: string[] } | null>) | null;
+  /** Contacts from Ryan's tagged Findymail lists, as leads. Null when Findymail isn't set up. */
+  imported?: (() => Promise<Lead[]>) | null;
   /** Looks up what the lead said publicly in the last year. Null when no AI key is set. */
   research: ((lead: Lead) => Promise<LeadResearch>) | null;
   taste: Taste;
@@ -32,9 +34,9 @@ export type RunDeps = {
   timeLeft?: () => number;
 };
 
-export type RunLimits = { filings: number; days: number; websites: number; drafts: number; research: number };
+export type RunLimits = { filings: number; days: number; websites: number; drafts: number; research: number; vendor: number };
 /** The button: no research (it takes a minute or two a lead); use Research on a card for that. */
-export const DEFAULT_LIMITS: RunLimits = { filings: 60, days: 10, websites: 8, drafts: 8, research: 0 };
+export const DEFAULT_LIMITS: RunLimits = { filings: 60, days: 10, websites: 8, drafts: 8, research: 0, vendor: 15 };
 
 /** Weekdays before `now`, newest first, as YYYYMMDD. */
 export function recentDays(now: Date, count: number): string[] {
@@ -118,12 +120,33 @@ export async function runFinder(book: LeadBook, deps: RunDeps, limits: RunLimits
     }
   }
   const found = [...founders, ...partners.values()];
+  if (deps.imported) {
+    const onList = new Set(book.leads.map((lead) => lead.key));
+    for (const lead of await deps.imported().catch(() => {
+      errors.push("Findymail lists could not be read");
+      return [] as Lead[];
+    })) {
+      // Already on the list: keep it as it is (status, research, draft); only add what's new.
+      if (!onList.has(lead.key) && !found.some((f) => f.key === lead.key)) found.push(lead);
+    }
+  }
   if (deps.vendor) {
-    for (const lead of found) {
-      if (lead.contacts.some((c) => c.confidence === "high") || !lead.people.length || timeLeft() < 15_000) continue;
-      const extra = await deps.vendor(lead).catch(() => []);
-      const have = new Set(lead.contacts.map((c) => c.email));
-      lead.contacts = [...extra.filter((c) => !have.has(c.email)), ...lead.contacts];
+    // Credits cost money: ask only for the most promising leads still missing a named address.
+    const missing = found
+      .filter((lead) => lead.people.length && !lead.contacts.some((c) => c.confidence === "high"))
+      .sort((a, b) => scoreLead(b, deps.taste).score - scoreLead(a, deps.taste).score)
+      .slice(0, limits.vendor);
+    for (const lead of missing) {
+      if (timeLeft() < 15_000) break;
+      try {
+        const extra = await deps.vendor(lead);
+        const have = new Set(lead.contacts.map((c) => c.email));
+        lead.contacts = [...extra.filter((c) => !have.has(c.email)), ...lead.contacts];
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : "contact finder failed");
+        // Out of credits, paused or busy: no point asking again this run.
+        if (error && typeof error === "object" && "stop" in error && (error as { stop: boolean }).stop) break;
+      }
     }
   }
 

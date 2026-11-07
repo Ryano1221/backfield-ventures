@@ -8,13 +8,14 @@ import { parseLeads } from "./book";
 import { DEFAULT_LIMITS, runFinder, type RunDeps, type RunLimits } from "./run";
 import { learnTaste, type RatedPitch } from "./score";
 import { dailyIndexUrl } from "./sec-form-d";
-import type { LeadBook } from "./types";
 import { vendorConfig, vendorContacts } from "./vendor";
+import { findEmail, findymailKey, leadFromContact, listContacts, parseMap, type FindyMap } from "./findymail";
+import type { Lead, LeadBook, LeadContact } from "./types";
 
 export const LEADS_DOC = "leads";
 
 /** The daily run: a whole day of filings (about 260), more site checks and AI drafts. Time limits still apply. */
-export const CRON_LIMITS: RunLimits = { filings: 1200, days: 10, websites: 40, drafts: 15, research: 8 };
+export const CRON_LIMITS: RunLimits = { filings: 1200, days: 10, websites: 40, drafts: 15, research: 8, vendor: 40 };
 
 /** The SEC asks automated readers to name themselves and give a contact address. */
 const SEC_AGENT = `Backfield Ventures OS ${process.env.OS_FROM_MAILBOX?.trim() || "ryan@backfieldventures.com"}`;
@@ -54,17 +55,29 @@ export async function readTaste() {
 
 function liveDeps(started: number, budgetMs: number): Omit<RunDeps, "taste"> {
   const vendor = vendorConfig();
+  const findy = findymailKey();
   return {
     secText: (url) => text(url, { "user-agent": SEC_AGENT, accept: "text/plain, application/xml" }, 10_000, 2_000_000),
     webText: (url) => text(url, { "user-agent": "Mozilla/5.0 (compatible; BackfieldOS/1.0)" }, 4_000, 400_000),
     hasMx,
-    vendor: vendor
-      ? (lead) =>
-          vendorContacts(vendor, lead.company, lead.people, lead.website, async (url, headers) => {
-            const res = await fetch(url, { headers, signal: AbortSignal.timeout(8_000) });
-            return res.ok ? res.json() : null;
-          })
-      : null,
+    vendor: findy
+      ? async (lead) => {
+          const domain = lead.website ? new URL(lead.website).hostname.replace(/^www\./, "") : lead.company;
+          const out: LeadContact[] = [];
+          for (const person of lead.people.slice(0, 2)) {
+            const email = await findEmail(fetch, findy, person.name, domain);
+            if (email) out.push({ email, name: person.name, source: "vendor:Findymail", confidence: "high", note: "Found by Findymail." });
+          }
+          return out;
+        }
+      : vendor
+        ? (lead) =>
+            vendorContacts(vendor, lead.company, lead.people, lead.website, async (url, headers) => {
+              const res = await fetch(url, { headers, signal: AbortSignal.timeout(8_000) });
+              return res.ok ? res.json() : null;
+            })
+        : null,
+    imported: findy ? () => importFindymail(findy) : null,
     ai: aiReady() ? (lead) => aiRead(lead) : null,
     research: aiReady() ? (lead) => researchLead(lead, new Date()) : null,
     now: new Date(),
@@ -102,5 +115,23 @@ export async function findAndSave(budgetMs: number, limits: RunLimits = DEFAULT_
 
 export function leadsSetup(env: Record<string, string | undefined> = process.env) {
   const vendor = vendorConfig(env);
-  return { ai: aiReady(env), vendor: vendor?.name ?? null };
+  return { ai: aiReady(env), vendor: findymailKey(env) ? "Findymail" : vendor?.name ?? null };
+}
+
+export const FINDYMAIL_DOC = "findymail";
+
+export async function readFindyMap(): Promise<FindyMap> {
+  return parseMap(await readDoc(FINDYMAIL_DOC).catch(() => null));
+}
+
+/** Every contact in the Findymail lists Ryan tagged, as leads of the tagged kind. */
+export async function importFindymail(key: string): Promise<Lead[]> {
+  const map = await readFindyMap();
+  const now = new Date().toISOString();
+  const out: Lead[] = [];
+  for (const [id, list] of Object.entries(map.lists)) {
+    const contacts = await listContacts(fetch, key, Number(id));
+    for (const contact of contacts) out.push(leadFromContact(contact, list.kind, list.name, now));
+  }
+  return out;
 }
