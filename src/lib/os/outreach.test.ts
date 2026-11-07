@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, isAutoReply, messageText, rawMessage, sendMail, stripQuoted, threadReply, type Fetch } from "./outreach/gmail";
-import { altSubject, autoEligible, upcomingSends, wouldStart, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { altSubject, autoEligible, leadFunnel, upcomingSends, wouldStart, buildDigest, buildSteps, isHoliday, pickVariant, subjectTest, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, statsByKind, statsBySource, stepDates, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -466,4 +466,16 @@ test("the preview lists emails due this week and the leads autopilot would start
   const leads = [lead({ id: "w1", score: 90, contacts: [{ email: "w1@example.com", name: null, source: "website", confidence: "high", note: "" }] }), lead({ id: "w2", score: 70 }), lead({ id: "w3", score: 95, contacts: [{ email: "w3@example.com", name: null, source: "website", confidence: "high", note: "" }] })];
   const would = wouldStart(book, leads, new Date("2026-11-11T00:00:00Z"), false, (l) => l.id === "w3");
   assert.deepEqual(would.map((w) => w.id), ["w1"], "known people and leads below the bar are left out, even with autopilot off");
+});
+
+test("the 30-day funnel follows one cohort from found to replied", () => {
+  const recent = (id: string, status: Lead["status"]) => lead({ id, status, found_at: "2026-11-01T00:00:00.000Z" });
+  const leads = [recent("f1", "new"), recent("f2", "skipped"), recent("f3", "contacted"), recent("f4", "contacted"), lead({ id: "old", status: "contacted", found_at: "2026-08-01T00:00:00.000Z" })];
+  const e3 = { ...makeEnrollment(leads[2], "f3@example.com", "auto", "2026-11-02T00:00:00.000Z", null), status: "replied" as const };
+  e3.steps[0].sent_at = "2026-11-03T15:00:00.000Z";
+  const e4 = makeEnrollment(leads[3], "f4@example.com", "auto", "2026-11-02T00:00:00.000Z", null);
+  e4.steps[0].sent_at = "2026-11-03T15:00:00.000Z";
+  const old = makeEnrollment(leads[4], "old@example.com", "auto", "2026-08-02T00:00:00.000Z", null);
+  old.steps[0].sent_at = "2026-08-03T15:00:00.000Z";
+  assert.deepEqual(leadFunnel(leads, { ...EMPTY_OUTREACH, enrollments: [e3, e4, old] }, new Date("2026-11-10T00:00:00Z")).map((s) => s.value), [4, 3, 2, 1], "the old lead stays out of every step");
 });

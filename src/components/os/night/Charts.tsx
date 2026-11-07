@@ -156,3 +156,26 @@ export function Columns({ rows, label, unit }: { rows: { day: string; label: str
     </figure>
   );
 }
+
+/** A funnel: one bar per step, sized against the first, with the share kept from the step before. */
+export function Funnel({ steps, label }: { steps: { label: string; value: number }[]; label: string }) {
+  const top = Math.max(1, steps[0]?.value ?? 0);
+  return (
+    <ol className="os-funnel" aria-label={label}>
+      {steps.map((step, i) => {
+        const prev = i > 0 ? steps[i - 1].value : null;
+        const share = prev ? Math.round((step.value / prev) * 100) : null;
+        return (
+          <li key={step.label}>
+            <span className="os-funnel-label">{step.label}</span>
+            <span className="os-funnel-track">
+              <i style={{ width: `${Math.max(step.value ? 2 : 0, (step.value / top) * 100)}%`, animationDelay: `${i * 110}ms` }} />
+            </span>
+            <b>{step.value.toLocaleString("en-US")}</b>
+            <span className="os-funnel-share">{share != null ? `${share}%` : ""}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}

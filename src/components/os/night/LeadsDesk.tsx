@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { StepDots } from "./Charts";
+import { Funnel, StepDots } from "./Charts";
 import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
 import { plainName } from "@/lib/os/leads/draft";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
-import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
+import { dailyCap, firstTouchesToday, leadFunnel } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import type { Known } from "@/lib/os/leads/known";
 import { FindymailPanel } from "./FindymailPanel";
@@ -156,6 +156,12 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   return (
     <div className="leads">
       <RepliesPanel book={outreach} onBook={setOutreach} />
+      {book.leads.length ? (
+        <section className="sx-card autopilot" aria-label="Last 30 days">
+          <h2 className="lead-name">Last 30 days</h2>
+          <Funnel steps={leadFunnel(book.leads, outreach, new Date(now))} label="Leads found in the last 30 days: how many were reviewed, emailed and replied" />
+        </section>
+      ) : null}
       <OutreachPanel
         book={outreach}
         setup={mailSetup}
