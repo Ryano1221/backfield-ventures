@@ -10,7 +10,8 @@ import { fixturesAllowed } from "../store";
 import { aiSteps } from "./ai-steps";
 import { mergeRun, parseOutreach } from "./book";
 import { runOutreach, type Mailer } from "./engine";
-import { accessToken, bouncedAddresses, googleApp, sendMail, threadReply } from "./gmail";
+import { accessToken, bouncedAddresses, googleApp, messageText, sendMail, threadReply } from "./gmail";
+import { triageReply } from "./reply-ai";
 import type { OutreachBook } from "./types";
 
 export const OUTREACH_DOC = "outreach";
@@ -114,6 +115,7 @@ async function liveMailer(): Promise<Mailer | null> {
     me: { email: link.email, name: SENDER_NAME },
     send: (mail, threadId) => sendMail(fetch, token, { ...mail, from: link.email, fromName: SENDER_NAME }, threadId),
     reply: (threadId) => threadReply(fetch, token, threadId, link.email),
+    readReply: (messageId) => messageText(fetch, token, messageId),
     bounces: () => bouncedAddresses(fetch, token),
   };
 }
@@ -140,6 +142,7 @@ export async function runAndSave(budgetMs: number) {
     maxSendsPerRun: 12,
     researchReady: aiReady() && !fixturesAllowed(),
     isKnown: (lead) => Boolean(knownFor(lead, known)),
+    triage: aiReady() && !fixturesAllowed() ? triageReply : null,
     verify: findymailVerifier(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,

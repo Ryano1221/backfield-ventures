@@ -41,7 +41,7 @@ export type Enrollment = {
   updated_at: string;
   by: "auto" | "you";
   /** Their reply, for Ryan to act on. Cleared from the to-do list once he marks it done. */
-  reply?: { at: string; snippet: string; handled_at: string | null } | null;
+  reply?: { at: string; snippet: string; handled_at: string | null; triage?: ReplyTriage | null } | null;
   /** An out-of-office came back; noted once, and it doesn't stop the sequence. */
   auto_reply_seen?: boolean;
 };
@@ -91,3 +91,10 @@ export const DEFAULT_SETTINGS: OutreachSettings = {
 };
 
 export const EMPTY_OUTREACH: OutreachBook = { version: 1, settings: DEFAULT_SETTINGS, enrollments: [], suppress: [], log: [] };
+
+export const INTENTS = ["interested", "question", "referral", "not_now", "not_interested", "other"] as const;
+export type Intent = (typeof INTENTS)[number];
+export const INTENT_LABEL: Record<Intent, string> = { interested: "Interested", question: "Has a question", referral: "Pointed you to someone", not_now: "Not now", not_interested: "Not interested", other: "Replied" };
+
+/** What the reply means and a suggested answer, written by AI from the reply's text. Ryan sends it himself. */
+export type ReplyTriage = { intent: Intent; summary: string; suggested: string };

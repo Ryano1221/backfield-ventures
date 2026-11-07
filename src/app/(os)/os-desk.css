@@ -785,3 +785,7 @@ body.os .leads-toast { display: flex; flex-wrap: wrap; align-items: center; gap:
 @media (prefers-reduced-motion: reduce) { body.os .leads-toast { animation: none; } }
 body.os .lead-chip.is-known { background: #fdf3dc; color: #7a5300; font-weight: 600; }
 body.os .lead-known { background: #fdf3dc; color: #5c3f00; }
+body.os .reply-sum { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+body.os .reply-intent.is-interested, body.os .reply-intent.is-question, body.os .reply-intent.is-referral { background: #e6f2e9; color: #123D22; font-weight: 600; }
+body.os .reply-intent.is-not_now { background: #fdf3dc; color: #7a5300; font-weight: 600; }
+body.os .reply-intent.is-not_interested { background: rgba(0, 0, 0, 0.06); color: var(--ink3); }
