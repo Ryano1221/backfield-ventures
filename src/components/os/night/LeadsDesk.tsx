@@ -6,7 +6,7 @@ import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
 import { plainName } from "@/lib/os/leads/draft";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
-import { dailyCap, firstTouchesToday, leadFunnel } from "@/lib/os/outreach/plan";
+import { dailyCap, firstTouchesToday, leadFunnel, repliesWaiting } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import type { Known } from "@/lib/os/leads/known";
 import { FindymailPanel } from "./FindymailPanel";
@@ -155,7 +155,27 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
   return (
     <div className="leads">
-      <RepliesPanel book={outreach} onBook={setOutreach} />
+      <NowStrip
+        replies={repliesWaiting(outreach).length}
+        review={LEAD_KINDS.reduce((sum, k) => sum + (counts[`${k}:new`] ?? 0), 0)}
+        approved={LEAD_KINDS.reduce((sum, k) => sum + (counts[`${k}:approved`] ?? 0), 0)}
+        sent={firstTouchesToday(outreach, new Date(now))}
+        cap={dailyCap(outreach.settings, outreach, new Date(now))}
+        autopilot={outreach.settings.enabled}
+        onGo={(target) => {
+          if (target === "review" || target === "approved") {
+            const want: LeadStatus = target === "review" ? "new" : "approved";
+            const best = LEAD_KINDS.slice().sort((a, b) => (counts[`${b}:${want}`] ?? 0) - (counts[`${a}:${want}`] ?? 0))[0];
+            setStatus(want);
+            setKind(best);
+          }
+          const id = target === "replies" ? "leads-replies" : target === "sent" ? "leads-autopilot" : "leads-list";
+          requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
+        }}
+      />
+      <div id="leads-replies" className="leads-anchor">
+        <RepliesPanel book={outreach} onBook={setOutreach} />
+      </div>
       <div className="leads-bar">
         <div className="segment" role="group" aria-label="Lead type">
           {LEAD_KINDS.map((value) => (
@@ -194,7 +214,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         </p>
       ) : null}
 
-      <div className="segment sx-wrap" role="group" aria-label="Status">
+      <div id="leads-list" className="segment sx-wrap leads-anchor" role="group" aria-label="Status">
         {STATUSES.map((value) => (
           <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(value)}>
             {STATUS_LABEL[value]} {counts[`${kind}:${value}`] ?? 0}
@@ -288,6 +308,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           <Funnel steps={leadFunnel(book.leads, outreach, new Date(now))} label="Leads found in the last 30 days: how many were reviewed, emailed and replied" />
         </section>
       ) : null}
+      <div id="leads-autopilot" className="leads-anchor" />
       <OutreachPanel
         book={outreach}
         setup={mailSetup}
@@ -303,6 +324,82 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       <FindymailPanel onBook={setBook} />
     </div>
   );
+}
+
+// The facts that make a lead worth an email, in the order they matter, for the collapsed row.
+const PITCH: { label: string; show: (value: string) => string }[] = [
+  { label: "Raising", show: (v) => `Raising ${v}` },
+  { label: "In so far", show: (v) => v.replace(/^(\S+)\s*(\(.*\))?$/, (_, amount: string, share?: string) => `${amount} in${share ? ` ${share}` : ""}`) },
+  { label: "Vehicle size", show: (v) => `${v} vehicle` },
+  { label: "Investors in it", show: (v) => `${v} investors` },
+  { label: "Title", show: (v) => v },
+  { label: "Firm", show: (v) => v },
+  { label: "Industry", show: (v) => v },
+  { label: "Matched search", show: (v) => `Matched "${v}"` },
+];
+
+function pitchLine(lead: Pick<Lead, "signals">): string | null {
+  const parts: string[] = [];
+  for (const rule of PITCH) {
+    const signal = lead.signals.find((s) => s.label === rule.label);
+    if (signal?.value) parts.push(rule.show(signal.value));
+    if (parts.length === 3) break;
+  }
+  return parts.length ? parts.join(" · ") : null;
+}
+
+type NowTarget = "replies" | "review" | "approved" | "sent";
+
+/** The top of Leads: what needs Ryan right now, biggest first. Each tile jumps to the work. */
+function NowStrip({ replies, review, approved, sent, cap, autopilot, onGo }: { replies: number; review: number; approved: number; sent: number; cap: number; autopilot: boolean; onGo: (target: NowTarget) => void }) {
+  const tiles: { target: NowTarget; count: number; label: string; hint: string; urgent: boolean }[] = [
+    { target: "replies", count: replies, label: replies === 1 ? "reply to answer" : "replies to answer", hint: "Open in Gmail", urgent: replies > 0 },
+    { target: "review", count: review, label: review === 1 ? "lead to review" : "leads to review", hint: "Approve or skip", urgent: false },
+    { target: "approved", count: approved, label: "approved, not sent", hint: autopilot ? "Autopilot sends these" : "Send from the lead", urgent: false },
+    { target: "sent", count: sent, label: `of ${cap} sent today`, hint: autopilot ? "Autopilot is on" : "Autopilot is off", urgent: false },
+  ];
+  const work = replies + review + approved;
+  return (
+    <section className="now-strip" aria-label="Do this now">
+      <h2 className="now-title">{work ? "Do this now" : "All caught up"}</h2>
+      <div className="now-tiles">
+        {tiles.map((tile, i) => (
+          <button key={tile.target} type="button" className={`now-tile${tile.urgent ? " is-urgent" : ""}${tile.count ? "" : " is-zero"}`} style={{ animationDelay: `${i * 50}ms` }} onClick={() => onGo(tile.target)}>
+            <span className="now-count">
+              <CountUp value={tile.count} />
+            </span>
+            <span className="now-label">{tile.label}</span>
+            <span className="now-hint">{tile.hint} ›</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** A number that counts up when it first shows or changes. Static under reduced motion. */
+function CountUp({ value }: { value: number }) {
+  // null means "show the real value"; a number is a frame of the count-up.
+  const [frame, setFrame] = useState<number | null>(null);
+  const from = useRef(0);
+  useEffect(() => {
+    const start = from.current;
+    from.current = value;
+    if (start === value || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const began = performance.now();
+    let id = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - began) / 600);
+      setFrame(p < 1 ? Math.round(start + (value - start) * (1 - Math.pow(1 - p, 3))) : null);
+      if (p < 1) id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(id);
+      setFrame(null);
+    };
+  }, [value]);
+  return <>{frame ?? value}</>;
 }
 
 function emptyText(kind: LeadKind, status: LeadStatus): string {
@@ -353,6 +450,7 @@ function LeadCard({
   const days = Math.max(0, Math.floor((now - Date.parse(lead.found_at)) / 86_400_000));
   const age = Number.isFinite(days) ? (days === 0 ? "found today" : days === 1 ? "found yesterday" : `found ${days}d ago`) : null;
   const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location, age].filter(Boolean).join(" · ");
+  const pitch = pitchLine(lead);
   // One tap to look the person up yourself, in your own browser.
   const plainCompany = plainName(lead.company);
   const lookup = lead.people[0] ? `${lead.people[0].name} ${plainCompany}`.trim() : null;
@@ -380,6 +478,7 @@ function LeadCard({
           </span>
           <span className="lead-id">
             <span className="lead-name">{lead.company}</span>
+            {pitch ? <span className="lead-pitch">{pitch}</span> : null}
             {headline ? <span className="sx-hint">{headline}</span> : null}
           </span>
           {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : ""}`}>{chip}</span> : null}
