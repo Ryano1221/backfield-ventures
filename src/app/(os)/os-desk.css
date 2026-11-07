@@ -973,3 +973,5 @@ body.os .inspo-dot.is-ok { background: #1f8a4c; }
 body.os .inspo-dot.is-bad { background: #c0392b; }
 body.os .inspo-add { display: grid; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0, 0, 0, 0.07); }
 @media (prefers-reduced-motion: reduce) { body.os .sx-steps li, body.os .sx-more-body, body.os .inspo-post { animation: none; } }
+body.os .lead-chip.is-thesis { background: #123D22; color: #fff; }
+body.os .leads-thesis[aria-pressed="true"] { background: #123D22; border-color: #123D22; color: #fff; }

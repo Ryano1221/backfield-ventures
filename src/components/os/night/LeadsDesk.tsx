@@ -100,8 +100,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
   const q = query.trim().toLowerCase();
   const matches = (lead: Lead) => !q || `${lead.company} ${lead.people.map((p) => p.name).join(" ")} ${lead.location ?? ""} ${lead.contacts.map((c) => c.email).join(" ")}`.toLowerCase().includes(q);
   const [sort, setSort] = useState<"score" | "newest">("score");
+  const [thesisOnly, setThesisOnly] = useState(false);
+  const fits = (lead: Lead) => lead.signals.some((s) => s.label === "Thesis");
+  const thesisCount = book.leads.filter((lead) => lead.kind === kind && lead.status === status && fits(lead)).length;
   const shown = book.leads
-    .filter((lead) => lead.kind === kind && lead.status === status && matches(lead))
+    .filter((lead) => lead.kind === kind && lead.status === status && matches(lead) && (!thesisOnly || !thesisCount || fits(lead)))
     .sort((a, b) => (sort === "newest" ? b.found_at.localeCompare(a.found_at) || b.score - a.score : b.score - a.score));
   const isOpen = (id: string, index: number) => open.has(id) || (!touched && index === 0);
   const firstId = shown[0]?.id ?? null;
@@ -285,6 +288,11 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
             Newest first
           </button>
         </div>
+        {thesisCount ? (
+          <button type="button" className="btn sm leads-thesis" aria-pressed={thesisOnly} onClick={() => setThesisOnly((on) => !on)}>
+            {thesisOnly ? "✓ " : ""}Fits thesis ({thesisCount})
+          </button>
+        ) : null}
         {shown.length ? (
           <button
             type="button"
@@ -576,7 +584,8 @@ function LeadCard({
   const band = lead.score >= 80 ? "is-high" : lead.score >= 60 ? "is-mid" : "is-low";
   const said = lead.research?.status === "found" ? lead.research.findings[0] : null;
   const warm = Boolean(said);
-  const chip = known ? `Known: ${known.where}` : said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
+  const thesis = lead.signals.find((s) => s.label === "Thesis")?.value.split(" · ")[0] ?? null;
+  const chip = known ? `Known: ${known.where}` : said ? `Said: ${SIGNAL_LABEL[said.signal].toLowerCase()}` : thesis ?? (lead.reasons.find((r) => r.startsWith("+"))?.replace(/^\+\d+\s+/, "") ?? null);
 
   async function copy() {
     if (!lead.draft) return;
@@ -605,7 +614,7 @@ function LeadCard({
             {pitch ? <span className="lead-pitch">{pitch}</span> : null}
             {headline ? <span className="sx-hint">{headline}</span> : null}
           </span>
-          {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : ""}`}>{chip}</span> : null}
+          {chip ? <span className={`lead-chip${known ? " is-known" : warm ? " is-warm" : thesis && chip === thesis ? " is-thesis" : ""}`}>{chip}</span> : null}
           {sequence ? <StepDots steps={STEPS.slice(0, sequence.steps.length)} done={sequence.steps.filter((s) => s.sent_at).map((s) => String(s.n))} label={`Sequence: ${sequenceLine(sequence)}`} /> : null}
           <span className="lead-chev" aria-hidden="true" />
         </button>
