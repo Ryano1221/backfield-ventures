@@ -28,6 +28,8 @@ export type EngineDeps = {
   /** Wait between two sends, so a batch doesn't leave all at once. */
   spacingMs: () => number;
   maxSendsPerRun: number;
+  /** True when leads get researched; autopilot then waits for the research before starting. */
+  researchReady?: boolean;
 };
 
 export type EngineReport = { checked: number; replied: number; bounced: number; enrolled: number; sent: number; errors: string[]; note: string | null };
@@ -87,7 +89,7 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
   const room = () => cap - firstTouchesToday(out, deps.now()) - waiting();
   for (const lead of [...leadList].sort((a, b) => b.score - a.score)) {
     if (room() <= 0 || deps.timeLeft() < 60_000) break;
-    if (!autoEligible(lead, out)) continue;
+    if (!autoEligible(lead, out, deps.researchReady)) continue;
     const email = autoAddress(lead)!;
     const ai = deps.aiSteps ? await deps.aiSteps(lead).catch(() => null) : null;
     out.enrollments.push(makeEnrollment({ ...lead, to: email }, email, "auto", at(), ai));

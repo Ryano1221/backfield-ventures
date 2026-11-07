@@ -49,6 +49,7 @@ export function mergeLeads(book: LeadBook, found: Lead[]): { book: LeadBook; add
       signals: [...lead.signals, ...old.signals.filter((s) => !labels.has(s.label))],
       people: old.people.length ? old.people : lead.people,
       website: old.website ?? lead.website,
+      research: lead.research ?? old.research,
       location: old.location ?? lead.location,
       contacts: [...old.contacts, ...lead.contacts.filter((c) => !emails.has(c.email))],
       score: lead.score || old.score,

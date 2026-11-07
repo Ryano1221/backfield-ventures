@@ -1,5 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { researchBrief } from "./research";
 import type { Lead, LeadDraft } from "./types";
 
 /**
@@ -16,10 +17,12 @@ Ryan's style: short, plain, friendly, no hype. 60 to 110 words. No buzzwords, no
 
 Use only the facts given. Name one specific fact that made the lead stand out. Never invent numbers, customers, mutual contacts or past conversations.
 
+If "recently_said" is given, those are verified things this person said in the last year. Open with the most relevant one, naturally and briefly, saying where you saw it (for example "I heard you on the X podcast talk about ..."). Paraphrase; quote at most a few words. Never claim to have seen anything not listed.
+
 By lead kind:
 - founder: Ryan may want to invest. Ask for a short call to learn more.
 - partner: another investor running a fund or angel syndicate. Offer to swap deals and mention Ryan's monthly note with three companies he likes.
-- lp: a possible backer of the fund. A relationship note only: no fund terms, no returns, no ask to invest.
+- lp: someone curious about startups. Invite them to The Handoff (backfieldventures.com/handoff), Ryan's monthly note on early consumer brands, or to talk startups. Never mention a fund, raising, investing with Ryan, commitments, returns or LPs.
 
 Also rate fit from 0 to 100 for an early consumer-brand fund in Austin, with up to three short reasons.`;
 
@@ -50,6 +53,7 @@ function facts(lead: Lead): string {
     people: lead.people,
     facts: lead.signals.map((s) => `${s.label}: ${s.value}`),
     ryans_note: lead.note || null,
+    recently_said: researchBrief(lead.research),
     source: lead.source,
   });
 }

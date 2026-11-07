@@ -236,6 +236,7 @@ test("a run reads filings, groups syndicates, finds contacts, and remembers wher
     hasMx: async () => false,
     vendor: null,
     ai: null,
+    research: null,
     taste: learnTaste([]),
     now: new Date("2026-11-06T12:00:00Z"),
     pause: async () => undefined,

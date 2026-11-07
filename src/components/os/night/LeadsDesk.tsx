@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { gmailLink } from "@/lib/os/leads/book";
+import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
@@ -135,7 +136,17 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       {shown.length ? (
         <ul className="leads-list">
           {shown.map((lead) => (
-            <LeadCard key={lead.id} lead={lead} busy={busy === lead.id} onOp={op} sequence={sequences.get(lead.id) ?? null} onEnroll={enroll} />
+            <LeadCard
+              key={lead.id}
+              lead={lead}
+              busy={busy === lead.id}
+              researching={busy === `research:${lead.id}`}
+              canResearch={setup.ai}
+              onOp={op}
+              onResearch={() => send("/api/os/leads/research", { id: lead.id }, `research:${lead.id}`)}
+              sequence={sequences.get(lead.id) ?? null}
+              onEnroll={enroll}
+            />
           ))}
         </ul>
       ) : (
@@ -151,7 +162,25 @@ function emptyText(kind: LeadKind, status: LeadStatus): string {
   return `Nothing to review. Find new leads to read the next batch of filings.`;
 }
 
-function LeadCard({ lead, busy, onOp, sequence, onEnroll }: { lead: Lead; busy: boolean; onOp: (body: Record<string, unknown>) => Promise<boolean>; sequence: Enrollment | null; onEnroll: (lead: Lead, to: string) => Promise<void> }) {
+function LeadCard({
+  lead,
+  busy,
+  researching,
+  canResearch,
+  onOp,
+  onResearch,
+  sequence,
+  onEnroll,
+}: {
+  lead: Lead;
+  busy: boolean;
+  researching: boolean;
+  canResearch: boolean;
+  onOp: (body: Record<string, unknown>) => Promise<boolean>;
+  onResearch: () => Promise<boolean>;
+  sequence: Enrollment | null;
+  onEnroll: (lead: Lead, to: string) => Promise<void>;
+}) {
   const [to, setTo] = useState(lead.to ?? lead.contacts[0]?.email ?? "");
   const [editing, setEditing] = useState(false);
   const [subject, setSubject] = useState(lead.draft?.subject ?? "");
@@ -193,6 +222,7 @@ function LeadCard({ lead, busy, onOp, sequence, onEnroll }: { lead: Lead; busy: 
         </dl>
       ) : null}
       {lead.note ? <p className="t-body">{lead.note}</p> : null}
+      <Research lead={lead} canResearch={canResearch} researching={researching} onResearch={onResearch} />
       {sequence ? (
         <p className="sx-ok" role="status">
           Sequence: {sequenceLine(sequence)}. {sequence.reason}
@@ -334,5 +364,46 @@ function ImportLps({ busy, onImport }: { busy: boolean; onImport: (text: string)
         </button>
       </div>
     </form>
+  );
+}
+
+/** What the lead said publicly in the last year, each with its source. Only verified quotes are shown. */
+function Research({ lead, canResearch, researching, onResearch }: { lead: Lead; canResearch: boolean; researching: boolean; onResearch: () => Promise<boolean> }) {
+  const research = lead.research;
+  if (!research && !canResearch) return null;
+  return (
+    <div className="lead-research">
+      <span className="lbl">Said in the last year</span>
+      {research?.status === "found" ? (
+        <ul className="lead-said">
+          {research.findings.map((finding) => (
+            <li key={`${finding.url}-${finding.quote.slice(0, 20)}`}>
+              <p className="sx-hint">
+                {SIGNAL_LABEL[finding.signal]} · {finding.date} · {finding.title ?? finding.source}
+              </p>
+              <blockquote>&ldquo;{finding.quote}&rdquo;</blockquote>
+              {finding.why ? <p className="t-body">{finding.why}</p> : null}
+              <a className="btn sm" href={finding.url} target="_blank" rel="noopener noreferrer">
+                Source
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : research?.status === "nothing" ? (
+        <p className="sx-hint">Nothing from the last year checks out. {research.note} The email sticks to the public facts.</p>
+      ) : research?.status === "failed" ? (
+        <p className="sx-hint">The research didn&apos;t finish: {research.note}</p>
+      ) : (
+        <p className="sx-hint">Not researched yet.</p>
+      )}
+      {research && research.dropped ? <p className="sx-hint">{research.dropped === 1 ? "1 finding" : `${research.dropped} findings`} dropped: couldn&apos;t confirm the quote, the page, or that it&apos;s from the last year.</p> : null}
+      {canResearch ? (
+        <div className="sx-actions">
+          <button type="button" className="btn" disabled={researching} onClick={() => onResearch()}>
+            {researching ? "Researching, about 2 minutes…" : research ? "Research again" : "Research"}
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }

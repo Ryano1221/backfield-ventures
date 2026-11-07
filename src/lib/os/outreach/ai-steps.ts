@@ -1,5 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { researchBrief } from "../leads/research";
 import type { Lead } from "../leads/types";
 
 /**
@@ -24,6 +25,8 @@ By lead kind:
 - partner: another investor running a fund or syndicate. Offer to swap deals and The Handoff.
 - lp: someone curious about startups. Talk only about The Handoff and learning about early-stage startups. Never mention a fund, raising, investing with Ryan, commitments, returns, or LPs.
 
+If "recently_said" is given, those are verified things the person said in the last year. Email 1 should open with the most relevant one, briefly, saying where you saw it; one later email may refer to another. Paraphrase; quote at most a few words. Never mention anything not listed, and never imply you know them.
+
 Do not add an unsubscribe line; one is added after.`;
 
 const SCHEMA = {
@@ -46,6 +49,7 @@ export async function aiSteps(lead: Lead, client = new Anthropic()): Promise<{ s
     location: lead.location,
     website: lead.website,
     facts: lead.signals.map((s) => `${s.label}: ${s.value}`),
+    recently_said: researchBrief(lead.research),
     first_email_already_written: lead.draft ? { subject: lead.draft.subject, body: lead.draft.body } : null,
   });
   try {

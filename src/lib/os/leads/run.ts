@@ -10,6 +10,7 @@ import { mergeLeads, markFilings } from "./book";
 import { templateDraft } from "./draft";
 import { scoreLead, type Taste } from "./score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, type IndexRow } from "./sec-form-d";
+import type { LeadResearch } from "./research";
 import type { Lead, LeadBook, LeadContact, LeadDraft } from "./types";
 import { findOnWebsite, type FetchText, type HasMx } from "./website";
 
@@ -21,6 +22,8 @@ export type RunDeps = {
   hasMx: HasMx;
   vendor: ((lead: Lead) => Promise<LeadContact[]>) | null;
   ai: ((lead: Lead) => Promise<{ draft: LeadDraft; fit: number; why: string[] } | null>) | null;
+  /** Looks up what the lead said publicly in the last year. Null when no AI key is set. */
+  research: ((lead: Lead) => Promise<LeadResearch>) | null;
   taste: Taste;
   now: Date;
   /** Waits between SEC requests; the SEC asks for at most 10 a second. */
@@ -29,8 +32,9 @@ export type RunDeps = {
   timeLeft?: () => number;
 };
 
-export type RunLimits = { filings: number; days: number; websites: number; drafts: number };
-export const DEFAULT_LIMITS: RunLimits = { filings: 60, days: 10, websites: 8, drafts: 8 };
+export type RunLimits = { filings: number; days: number; websites: number; drafts: number; research: number };
+/** The button: no research (it takes a minute or two a lead); use Research on a card for that. */
+export const DEFAULT_LIMITS: RunLimits = { filings: 60, days: 10, websites: 8, drafts: 8, research: 0 };
 
 /** Weekdays before `now`, newest first, as YYYYMMDD. */
 export function recentDays(now: Date, count: number): string[] {
@@ -131,10 +135,29 @@ export async function runFinder(book: LeadBook, deps: RunDeps, limits: RunLimits
     lead.to = lead.contacts[0]?.email ?? null;
     lead.draft = templateDraft(lead);
   }
+  // Research the most promising leads not yet researched: new ones from this run, then older ones on the list.
+  if (deps.research && limits.research > 0 && timeLeft() > 120_000) {
+    const research = deps.research;
+    const waiting = book.leads.filter((lead) => lead.status === "new" && lead.research === undefined && !found.some((f) => f.key === lead.key)).map((lead) => ({ ...lead }));
+    const picks = [...found.filter((lead) => !known.has(lead.key)), ...waiting].filter((lead) => lead.people.length && lead.score >= 50).sort((a, b) => b.score - a.score).slice(0, limits.research);
+    for (let i = 0; i < picks.length && timeLeft() > 120_000; i += 3) {
+      const batch = picks.slice(i, i + 3);
+      const results = await Promise.all(batch.map((lead) => research(lead).catch(() => null)));
+      batch.forEach((lead, j) => {
+        if (!results[j]) return;
+        lead.research = results[j];
+        const scored = scoreLead(lead, deps.taste);
+        lead.score = scored.score;
+        lead.reasons = scored.reasons;
+        if (!found.includes(lead)) found.push(lead);
+      });
+    }
+  }
+
   if (deps.ai && timeLeft() > 20_000) {
     // The AI reads the best new leads, all at once so the batch fits the time limit.
     const ai = deps.ai;
-    const picks = [...found].filter((lead) => !known.has(lead.key) && lead.score >= 50).sort((a, b) => b.score - a.score).slice(0, limits.drafts);
+    const picks = [...found].filter((lead) => (!known.has(lead.key) || lead.research?.status === "found") && lead.score >= 50).sort((a, b) => b.score - a.score).slice(0, limits.drafts);
     const reads = await Promise.all(picks.map((lead) => ai(lead).catch(() => null)));
     picks.forEach((lead, i) => {
       const read = reads[i];

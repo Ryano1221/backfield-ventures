@@ -2,9 +2,10 @@
  * Lead finder: one pipeline for three kinds of people Ryan reaches out to.
  *   founder  a young company raising a round (to invest in)
  *   partner  someone running a small venture fund or angel syndicate (to swap deals, Best 3)
- *   lp       someone who might back the fund (pasted in or from a paid data source)
- * Nothing here sends email. Approving a lead only prepares a draft Ryan sends himself.
+ *   lp       someone curious about startups, invited to The Handoff (pasted in or from a paid source)
+ * Leads only hold facts and drafts. Sending happens in outreach, from Ryan's Gmail.
  */
+import type { LeadResearch } from "./research";
 
 export const LEAD_KINDS = ["founder", "partner", "lp"] as const;
 export type LeadKind = (typeof LEAD_KINDS)[number];
@@ -52,6 +53,8 @@ export type Lead = {
   source: string;
   source_url: string | null;
   note: string;
+  /** What they said publicly in the last year, verified. Undefined until researched. */
+  research?: LeadResearch | null;
   found_at: string;
   updated_at: string;
 };

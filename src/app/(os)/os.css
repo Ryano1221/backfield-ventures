@@ -1941,3 +1941,8 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
 .autopilot { display: grid; gap: 14px; }
 .autopilot-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
 .autopilot-list li { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.lead-research { display: grid; gap: 8px; }
+.lead-said { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.lead-said li { display: grid; gap: 6px; padding-left: 12px; border-left: 3px solid #123d22; }
+.lead-said blockquote { margin: 0; font: italic 15px/1.5 var(--text); overflow-wrap: anywhere; }
+.lead-said .btn { justify-self: start; }

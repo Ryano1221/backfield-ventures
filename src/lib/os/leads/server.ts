@@ -3,6 +3,7 @@ import { resolveMx } from "node:dns/promises";
 import { readDoc, writeDoc } from "../doc-store";
 import { readSnapshot, fixturesAllowed } from "../store";
 import { aiRead, aiReady } from "./ai";
+import { researchLead } from "./research-call";
 import { parseLeads } from "./book";
 import { DEFAULT_LIMITS, runFinder, type RunDeps, type RunLimits } from "./run";
 import { learnTaste, type RatedPitch } from "./score";
@@ -13,7 +14,7 @@ import { vendorConfig, vendorContacts } from "./vendor";
 export const LEADS_DOC = "leads";
 
 /** The daily run: a whole day of filings (about 260), more site checks and AI drafts. Time limits still apply. */
-export const CRON_LIMITS: RunLimits = { filings: 1200, days: 10, websites: 40, drafts: 15 };
+export const CRON_LIMITS: RunLimits = { filings: 1200, days: 10, websites: 40, drafts: 15, research: 8 };
 
 /** The SEC asks automated readers to name themselves and give a contact address. */
 const SEC_AGENT = `Backfield Ventures OS ${process.env.OS_FROM_MAILBOX?.trim() || "ryan@backfieldventures.com"}`;
@@ -43,7 +44,7 @@ async function hasMx(domain: string): Promise<boolean> {
   }
 }
 
-async function taste() {
+export async function readTaste() {
   const snapshot = await readSnapshot().catch(() => null);
   const rated: RatedPitch[] = (snapshot?.pitches ?? []).flatMap((pitch) =>
     pitch.ryan_rating ? [{ company: pitch.company, sector: pitch.sector, summary: pitch.summary, title: pitch.title, rating: pitch.ryan_rating }] : [],
@@ -65,6 +66,7 @@ function liveDeps(started: number, budgetMs: number): Omit<RunDeps, "taste"> {
           })
       : null,
     ai: aiReady() ? (lead) => aiRead(lead) : null,
+    research: aiReady() ? (lead) => researchLead(lead, new Date()) : null,
     now: new Date(),
     pause: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     timeLeft: () => budgetMs - (Date.now() - started),
@@ -82,6 +84,7 @@ function fixtureDeps(): Omit<RunDeps, "taste"> {
     hasMx: async () => false,
     vendor: null,
     ai: null,
+    research: null,
     now,
     pause: async () => undefined,
   };
@@ -92,7 +95,7 @@ export async function findAndSave(budgetMs: number, limits: RunLimits = DEFAULT_
   const started = Date.now();
   const book = await readLeads();
   const base = fixturesAllowed() ? fixtureDeps() : liveDeps(started, budgetMs);
-  const result = await runFinder(book, { ...base, taste: await taste() }, fixturesAllowed() ? { ...limits, days: 1 } : limits);
+  const result = await runFinder(book, { ...base, taste: await readTaste() }, fixturesAllowed() ? { ...limits, days: 1 } : limits);
   await writeDoc(LEADS_DOC, JSON.stringify(result.book));
   return result;
 }

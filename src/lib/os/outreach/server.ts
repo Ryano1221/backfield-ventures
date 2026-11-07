@@ -120,6 +120,7 @@ export async function runAndSave(budgetMs: number) {
     // 15 to 35 seconds apart, so a batch looks like a person sending, not a blast.
     spacingMs: () => (fixturesAllowed() ? 0 : 15_000 + Math.floor(Math.random() * 20_000)),
     maxSendsPerRun: 12,
+    researchReady: aiReady() && !fixturesAllowed(),
   });
   // Ryan may have changed things while this ran (switched autopilot off, stopped a sequence,
   // the lead search may have added leads). Merge onto the latest saves instead of overwriting them.

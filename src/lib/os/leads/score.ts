@@ -4,6 +4,7 @@
  * words from deals he rated no push it down.
  */
 import { coreWords } from "./website";
+import { researchPoints } from "./research";
 import type { Lead } from "./types";
 
 export type RatedPitch = { company: string; sector: string | null; summary?: string | null; title?: string | null; rating: "great" | "good" | "maybe" | "no" };
@@ -84,6 +85,8 @@ export function scoreLead(lead: Lead, taste: Taste): { score: number; reasons: s
   if (best?.confidence === "high") add(15, "named contact found");
   else if (best?.confidence === "medium") add(8, "team inbox found");
   else if (!best) add(-10, "no contact yet");
+  const warm = researchPoints(lead.research, lead.kind);
+  if (warm.points && warm.why) add(warm.points, warm.why);
   if (taste.rated >= 5) {
     const t = tasteOf(lead, taste);
     if (t.points > 0) add(t.points, `like deals you rated well (${t.liked.slice(0, 3).join(", ")})`);
