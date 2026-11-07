@@ -974,10 +974,6 @@ body.os { font-variant-numeric: tabular-nums; }
 .ask-note { font-size: 15px; line-height: 1.4; color: rgba(0, 0, 0, 0.66); margin-bottom: 12px; }
 .ask-who { display: grid; gap: 6px; margin-bottom: 8px; font-size: 15px; }
 .ask-who select, .ask-panel .ask input { width: 100%; min-height: 44px; border: 1px solid rgba(0, 0, 0, 0.16); background: #fff; font: 16px/24px var(--text); padding: 8px 12px; }
-.skel { display: grid; gap: 12px; padding: 24px 16px 120px; }
-.skel-title, .skel-card { background: linear-gradient(90deg, rgba(0,0,0,.06), rgba(0,0,0,.02), rgba(0,0,0,.06)); background-size: 200% 100%; border-radius: 16px; }
-.skel-title { height: 40px; width: 60%; }
-.skel-card { height: 140px; }
 
 @media (max-width: 899px) {
   .appbar {
@@ -1285,9 +1281,6 @@ body.os { font-variant-numeric: tabular-nums; }
 .greet { font-size: 15px; color: rgba(0, 0, 0, 0.55); }
 .stack-row.has-action { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .stack-row.has-action .btn { flex: none; }
-.load-shell .appbar, .load-shell .tabbar { display: flex; }
-.load-shell .appbar { height: calc(52px + env(safe-area-inset-top)); }
-.load-shell .tabbar { position: fixed; }
 
 @media (max-width: 1200px) {
   .crumb .stamp, .crumb .private { display: none; }
@@ -1953,3 +1946,35 @@ body.os .ow.is-compact .ow-track figcaption span { font-size: 12px; }
 .palette-card { animation: palette-in 0.18s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 @keyframes palette-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .palette-card { animation: none; } }
+
+/* Loading skeleton: mirrors the frame, shimmer on the placeholders */
+.skel-frame { min-height: 100vh; background: var(--e-cream, #f0ede8); }
+.skel-rail { display: none; }
+.skel-top { height: calc(56px + env(safe-area-inset-top)); border-bottom: 1px solid rgba(0, 0, 0, 0.06); }
+.skel-tabbar { position: fixed; left: 0; right: 0; bottom: 0; height: calc(64px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+.skel { display: grid; gap: 14px; padding: 20px 16px 120px; }
+.skel-shine { position: relative; overflow: hidden; background: rgba(0, 0, 0, 0.06); border-radius: 12px; animation: skel-in 0.4s ease both; }
+.skel-shine::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent); animation: skel-shine 1.4s ease-in-out infinite; }
+.skel-eyebrow { height: 12px; width: 90px; border-radius: 6px; }
+.skel-title { height: 40px; width: min(320px, 70%); }
+.skel-line { height: 14px; width: min(560px, 90%); border-radius: 7px; }
+.skel-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.skel-tile { height: 84px; border-radius: 16px; }
+.skel-card { display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; gap: 8px 14px; align-items: center; padding: 18px; border-radius: 16px; background: #fff; }
+.skel-card::after { background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.035), transparent); }
+.skel-dot { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; background: rgba(0, 0, 0, 0.07); }
+.skel-row { height: 14px; width: 55%; border-radius: 7px; background: rgba(0, 0, 0, 0.07); }
+.skel-row.is-short { width: 35%; background: rgba(0, 0, 0, 0.05); }
+@keyframes skel-shine { to { transform: translateX(100%); } }
+@keyframes skel-in { from { opacity: 0; } to { opacity: 1; } }
+@media (min-width: 720px) { .skel-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 900px) {
+  .skel-frame { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+  .skel-rail { display: grid; align-content: start; gap: 22px; padding: 28px 20px; background: var(--e-side, #000); min-height: 100vh; position: sticky; top: 0; height: 100vh; }
+  .skel-logo { width: 120px; height: 26px; margin-bottom: 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.85); }
+  .skel-link { height: 12px; border-radius: 6px; background: rgba(255, 255, 255, 0.16); }
+  .skel-top { height: 48px; }
+  .skel-tabbar { display: none; }
+  .skel { padding: 30px 40px 64px; gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .skel-shine, .skel-shine::after { animation: none; } }
