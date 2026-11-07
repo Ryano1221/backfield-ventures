@@ -275,6 +275,12 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
               now={now}
               onSequence={setOutreach}
               known={known[lead.id] ?? null}
+              canSend={Boolean(mailSetup.gmail)}
+              onSent={(book) => {
+                setOutreach(book);
+                setBook((current) => ({ ...current, leads: current.leads.map((l) => (l.id === lead.id ? { ...l, status: "contacted" } : l)) }));
+                setMessage({ tone: "ok", text: `Sent to ${lead.company}. Follow-ups go out on schedule; a reply stops them.` });
+              }}
             />
           ))}
         </ul>
@@ -297,6 +303,8 @@ function LeadCard({
   now,
   onSequence,
   known,
+  canSend,
+  onSent,
   lead,
   busy,
   researching,
@@ -311,6 +319,8 @@ function LeadCard({
   now: number;
   onSequence: (book: OutreachBook) => void;
   known: Known | null;
+  canSend: boolean;
+  onSent: (book: OutreachBook) => void;
   lead: Lead;
   busy: boolean;
   researching: boolean;
@@ -474,6 +484,7 @@ function LeadCard({
         ) : null}
         {lead.status === "approved" ? (
           <>
+            {canSend && (!sequence || !sequence.steps[0]?.sent_at) ? <SendNow leadId={lead.id} to={to} onSent={onSent} /> : null}
             {!sequence || sequence.status !== "active" ? (
               <button type="button" className="btn primary" disabled={busy} onClick={() => onEnroll(lead, to)}>
                 Start sequence
@@ -629,5 +640,52 @@ function NoteField({ lead, onOp }: { lead: Lead; onOp: (body: Record<string, unk
         }}
       />
     </label>
+  );
+}
+
+/** Two taps to send the first email now from Gmail: one to ask, one to confirm. */
+function SendNow({ leadId, to, onSent }: { leadId: string; to: string; onSent: (book: OutreachBook) => void }) {
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (!asking) {
+    return (
+      <button type="button" className="btn" onClick={() => setAsking(true)}>
+        Send now from Gmail
+      </button>
+    );
+  }
+  return (
+    <span className="send-now">
+      <button
+        type="button"
+        className="btn primary"
+        disabled={busy || !to.trim()}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            const res = await fetch("/api/os/outreach/send-now", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lead_id: leadId, to }) });
+            const data = (await res.json().catch(() => ({}))) as { error?: string; book?: OutreachBook };
+            if (!res.ok || !data.book) setError(data.error || "Could not send.");
+            else onSent(data.book);
+          } catch {
+            setError("No connection. Nothing was sent.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "Sending…" : `Confirm: send to ${to || "this address"}`}
+      </button>
+      <button type="button" className="btn" disabled={busy} onClick={() => setAsking(false)}>
+        Cancel
+      </button>
+      {error ? (
+        <span className="sx-error" role="alert">
+          {error}
+        </span>
+      ) : null}
+    </span>
   );
 }

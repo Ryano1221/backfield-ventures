@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { unlinkSync } from "node:fs";
+import { readFileSync, unlinkSync } from "node:fs";
 
 const PASSWORD = "e2e-session-only";
 
@@ -406,4 +406,23 @@ test("Findymail panel shows credits and lists, and tagging a list pulls its cont
   await page.getByRole("group", { name: "Lead type" }).getByRole("button", { name: /LPs/ }).click();
   await expect(page.getByRole("button", { name: /Example Family Office/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Example Holdings Office/ })).toBeVisible();
+});
+
+test("send now: two taps send the first email from Gmail and start the sequence", async ({ request, page }) => {
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  expect((await request.post("/api/os/outreach/send-now", { data: { lead_id: "x", to: "a@example.com" } })).status()).toBe(401);
+  await signIn(page);
+  await page.goto("/os/leads");
+  const card = page.getByRole("listitem").filter({ has: page.getByRole("button", { name: /Example Fixture Snacks/ }) });
+  await card.getByRole("textbox", { name: /type one/i }).fill("founder@example.com");
+  await card.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: /^Approved/ }).click();
+  await page.getByRole("button", { name: "Send now from Gmail" }).click();
+  await page.getByRole("button", { name: "Confirm: send to founder@example.com" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Sent to Example Fixture Snacks, Inc." })).toBeVisible();
+  const outbox = JSON.parse(readFileSync("/tmp/os-outreach-outbox.json", "utf8")) as { to: string; subject: string }[];
+  expect(outbox).toHaveLength(1);
+  expect(outbox[0].to).toBe("founder@example.com");
+  await page.getByRole("button", { name: /^Sent/ }).click();
+  await expect(page.getByText(/^Sequence: Running · email 1 of 5 sent/)).toBeVisible();
 });
