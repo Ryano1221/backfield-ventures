@@ -19,6 +19,9 @@ export const DEFAULT_SOURCES: InspoSource[] = [
   { id: "x-harry", name: "Harry Stebbings", kind: "x", url: "HarryStebbings" },
   { id: "x-a16z", name: "a16z", kind: "x", url: "a16z" },
   { id: "x-eyin", name: "Elizabeth Yin (Hustle Fund)", kind: "x", url: "dunkhippo33" },
+  { id: "li-rogers-healy", name: "Rogers Healy (Morrison Seger)", kind: "linkedin", url: "https://www.linkedin.com/in/rogershealy/" },
+  { id: "li-scott-vdb", name: "Scott Van den Berg (HotStart)", kind: "linkedin", url: "https://www.linkedin.com/in/scott-van-den-berg-22b534150/" },
+  { id: "li-sean-clifford", name: "Sean Clifford (The New Era Fund)", kind: "linkedin", url: "https://www.linkedin.com/in/sean-clifford-79a064161/" },
   { id: "li-harry", name: "Harry Stebbings", kind: "linkedin", url: "https://www.linkedin.com/in/harrystebbings/" },
   { id: "li-eyin", name: "Elizabeth Yin (Hustle Fund)", kind: "linkedin", url: "https://www.linkedin.com/in/elizabethyin/" },
 ];
