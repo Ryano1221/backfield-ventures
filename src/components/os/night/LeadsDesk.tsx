@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StepDots } from "./Charts";
-import { bulkPick, gmailLink } from "@/lib/os/leads/book";
+import { bulkPick, gmailLink, leadsCsv } from "@/lib/os/leads/book";
 import { SIGNAL_LABEL } from "@/lib/os/leads/research";
 import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type LeadStatus } from "@/lib/os/leads/types";
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
@@ -178,6 +178,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
       </div>
       <p className="sx-hint leads-run" aria-live="polite">
         {book.last_run ? `Last search ${new Date(book.last_run.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}: read ${book.last_run.scanned} ${book.last_run.scanned === 1 ? "filing" : "filings"}, ${book.last_run.added} new.` : "No search yet. Each search reads the next batch of SEC filings."}{" "}
+        {book.last_run?.errors.length ? <span className="sx-error leads-run-errors">Last search problems: {book.last_run.errors.slice(0, 3).join("; ")}{book.last_run.errors.length > 3 ? ` and ${book.last_run.errors.length - 3} more` : ""}. </span> : null}
         {setup.ai ? "AI writes the drafts." : "Drafts use a plain template until an AI key is set."} {setup.vendor ? `Contacts: company sites and ${setup.vendor}.` : "Contacts: company sites only, until a paid finder is connected."}
       </p>
       {message ? (
@@ -212,6 +213,26 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
         <span className="lbl">Find a lead</span>
         <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company, person, city or email" autoComplete="off" />
       </label>
+      {shown.length ? (
+        <div className="sx-actions">
+          <button
+            type="button"
+            className="btn sm"
+            onClick={() => {
+              const blob = new Blob([leadsCsv(shown)], { type: "text/csv;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `backfield-${KIND_LABEL[kind].toLowerCase()}-${STATUS_LABEL[status].toLowerCase().replace(/\s+/g, "-")}.csv`;
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+              setMessage({ tone: "ok", text: `Exported ${shown.length} ${shown.length === 1 ? "lead" : "leads"} to CSV.` });
+            }}
+          >
+            Export CSV
+          </button>
+        </div>
+      ) : null}
       {shown.length ? (
         <p className="sx-hint leads-keys">
           <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>a</kbd> approve · <kbd>s</kbd> skip
@@ -422,6 +443,9 @@ function LeadCard({
             <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "skip", id: lead.id })}>
               Skip
             </button>
+            <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "snooze", id: lead.id, days: 30 })}>
+              Snooze 30 days
+            </button>
           </>
         ) : null}
         {lead.status === "approved" ? (
@@ -444,6 +468,7 @@ function LeadCard({
             </button>
           </>
         ) : null}
+        {lead.status === "skipped" && lead.snoozed_until ? <p className="sx-hint">Snoozed. Back to review on {lead.snoozed_until}.</p> : null}
         {lead.status === "skipped" || lead.status === "contacted" ? (
           <button type="button" className="btn" disabled={busy} onClick={() => onOp({ op: "restore", id: lead.id })}>
             Back to review

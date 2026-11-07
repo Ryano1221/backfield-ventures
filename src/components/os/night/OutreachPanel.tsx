@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { outreachStats, statsByKind } from "@/lib/os/outreach/plan";
+import { outreachStats, statsByKind, subjectTest } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import { KIND_LABEL, LEAD_KINDS } from "@/lib/os/leads/types";
 
@@ -87,6 +87,20 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
           {byKind.map((row) => `${KIND_LABEL[row.kind]} ${row.rate != null ? `${row.rate}%` : `${row.replied} of ${row.emailed}`}`).join(" · ")}
         </p>
       ) : null}
+      {s.subject_test
+        ? LEAD_KINDS.map((kind) => {
+            const t = subjectTest(book, kind);
+            if (!t.A.delivered && !t.B.delivered) return null;
+            const arm = (label: string, a: { delivered: number; rate: number | null }) => `${label} ${a.rate != null ? `${a.rate}%` : "–"} (${a.delivered})`;
+            const winner = s.subject_winner[kind];
+            return (
+              <p key={kind} className="sx-hint">
+                Subject test, {KIND_LABEL[kind].toLowerCase()}: {arm("your draft's subject", t.A)} · {arm("playbook subject", t.B)}
+                {winner ? ` · ${winner === "A" ? "your draft's" : "the playbook"} subject won` : " · decides at 20 each, 5+ points apart"}
+              </p>
+            );
+          })
+        : null}
       {s.paused_reason ? (
         <p className="sx-error" role="alert">
           {s.paused_reason}
@@ -135,7 +149,12 @@ export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }:
                 </button>
               ))}
             </div>
-            <div className="segment sx-wrap" role="group" aria-label="Morning summary email">
+            <div className="segment sx-wrap" role="group" aria-label="Subject test">
+          <button type="button" aria-pressed={s.subject_test} disabled={busy} onClick={() => send({ op: "settings", subject_test: !s.subject_test })}>
+            Subject A/B test {s.subject_test ? "on" : "off"}
+          </button>
+        </div>
+        <div className="segment sx-wrap" role="group" aria-label="Morning summary email">
           <button type="button" aria-pressed={s.digest} disabled={busy} onClick={() => send({ op: "settings", digest: !s.digest })}>
             Morning summary email {s.digest ? "on" : "off"}
           </button>

@@ -1,6 +1,6 @@
 /** Saved outreach state and the changes Ryan makes to it. Pure functions. */
 import type { Lead } from "../leads/types";
-import { autoAddress, buildSteps, LP_FORBIDDEN, OPT_OUT, suppressed, templateSteps, zoneFor } from "./plan";
+import { altSubject, autoAddress, buildSteps, LP_FORBIDDEN, OPT_OUT, pickVariant, suppressed, templateSteps, zoneFor } from "./plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type Enrollment, type OutreachBook, type OutreachEvent } from "./types";
 
 const MAX_LOG = 300;
@@ -12,7 +12,7 @@ export function parseOutreach(raw: string | null): OutreachBook {
     const data = JSON.parse(raw) as Partial<OutreachBook>;
     return {
       version: 1,
-      settings: { ...DEFAULT_SETTINGS, ...(data.settings ?? {}), kinds: { ...DEFAULT_SETTINGS.kinds, ...(data.settings?.kinds ?? {}) } },
+      settings: { ...DEFAULT_SETTINGS, ...(data.settings ?? {}), kinds: { ...DEFAULT_SETTINGS.kinds, ...(data.settings?.kinds ?? {}) }, subject_winner: { ...(data.settings?.subject_winner ?? {}) } },
       enrollments: Array.isArray(data.enrollments) ? data.enrollments.filter((e) => e && typeof e.lead_id === "string" && Array.isArray(e.steps)) : [],
       suppress: Array.isArray(data.suppress) ? data.suppress.filter((s) => typeof s === "string") : [],
       log: Array.isArray(data.log) ? data.log.slice(-MAX_LOG) : [],
@@ -42,16 +42,23 @@ export function writtenSteps(lead: Lead, ai: { subject: string; body: string }[]
   });
 }
 
-export function makeEnrollment(lead: Lead, email: string, by: "auto" | "you", now: string, ai: { subject: string; body: string }[] | null): Enrollment {
+export function makeEnrollment(lead: Lead, email: string, by: "auto" | "you", now: string, ai: { subject: string; body: string }[] | null, variant?: "A" | "B"): Enrollment {
   const name = lead.contacts.find((c) => c.email === email)?.name ?? lead.people[0]?.name ?? null;
+  let steps = buildSteps(writtenSteps(lead, ai));
+  if (variant === "B") {
+    // Arm B swaps only the first subject; follow-ups in the thread reply under it.
+    const subject = altSubject(lead.kind, lead.company, name);
+    steps = steps.map((step) => (step.n === 1 ? { ...step, subject } : step.new_thread ? step : { ...step, subject: `Re: ${subject}` }));
+  }
   return {
+    ...(variant ? { variant } : {}),
     lead_id: lead.id,
     kind: lead.kind,
     email: email.toLowerCase(),
     name,
     company: lead.company,
     tz: zoneFor(lead.location),
-    steps: buildSteps(writtenSteps(lead, ai)),
+    steps,
     thread_id: null,
     status: "active",
     reason: by === "auto" ? `Started automatically at score ${lead.score}.` : "Started by you.",
@@ -83,6 +90,7 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
         }
       }
       if (typeof op.digest === "boolean") s.digest = op.digest;
+      if (typeof op.subject_test === "boolean") s.subject_test = op.subject_test;
       if (op.threshold !== undefined) s.threshold = clampInt(op.threshold, 50, 100, s.threshold);
       if (op.kinds && typeof op.kinds === "object") {
         const k = op.kinds as Record<string, unknown>;
@@ -98,7 +106,7 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
       if (!EMAIL.test(email)) return { ok: false, error: "Pick or type an email address first." };
       if (suppressed(book, email)) return { ok: false, error: "That address asked not to be contacted, or bounced." };
       if (book.enrollments.some((e) => e.email === email && e.status === "active")) return { ok: false, error: "That person is already in a sequence." };
-      const enrollment = makeEnrollment({ ...lead, to: email }, email, "you", now, null);
+      const enrollment = makeEnrollment({ ...lead, to: email }, email, "you", now, null, pickVariant(book, lead.kind));
       const others = book.enrollments.filter((e) => e.lead_id !== lead.id);
       return { ok: true, book: logEvent({ ...book, enrollments: [...others, enrollment] }, { at: now, lead_id: lead.id, text: `Sequence started for ${enrollment.company}.` }) };
     }
@@ -156,7 +164,7 @@ export function mergeRun(before: OutreachBook, latest: OutreachBook, ran: Outrea
   const pausedByRun = before.settings.enabled && !ran.settings.enabled && Boolean(ran.settings.paused_reason);
   const picked = pausedByRun ? { ...(settingsChanged ? latest.settings : ran.settings), enabled: false, paused_reason: ran.settings.paused_reason } : settingsChanged ? latest.settings : ran.settings;
   // The run's own bookkeeping always survives, so the morning email never goes twice.
-  const settings = { ...picked, last_digest: ran.settings.last_digest ?? picked.last_digest };
+  const settings = { ...picked, last_digest: ran.settings.last_digest ?? picked.last_digest, subject_winner: { ...picked.subject_winner, ...ran.settings.subject_winner } };
   const latestById = new Map(latest.enrollments.map((e) => [e.lead_id, e]));
   const enrollments = ran.enrollments.map((e) => {
     const now = latestById.get(e.lead_id);

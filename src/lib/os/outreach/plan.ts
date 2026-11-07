@@ -278,3 +278,41 @@ export function statsByKind(book: OutreachBook, now: Date): { kind: LeadKind; em
     return [{ kind, emailed: rows.length, replied, rate: delivered >= 5 ? Math.round((replied / delivered) * 100) : null }];
   });
 }
+
+/**
+ * Subject B for the A/B test, from Apollo's best-performing formulas: name something
+ * specific and ask. A stays the draft's own subject.
+ */
+export function altSubject(kind: LeadKind, company: string, name: string | null): string {
+  const first = (name ?? "").split(/\s+/)[0];
+  if (kind === "founder") return `Quick question about ${plainName(company)}`;
+  if (kind === "partner") return first ? `${first}, swapping consumer deals?` : "Swapping consumer deals?";
+  return first ? `${first}, early startups you might like` : "Early startups you might like";
+}
+
+/** Which arm a new sequence gets: the winner once decided, else whichever arm has fewer so far. */
+export function pickVariant(book: OutreachBook, kind: LeadKind): "A" | "B" | undefined {
+  if (!book.settings.subject_test) return undefined;
+  const winner = book.settings.subject_winner[kind];
+  if (winner) return winner;
+  const rows = book.enrollments.filter((e) => e.kind === kind && e.variant);
+  const a = rows.filter((e) => e.variant === "A").length;
+  return rows.length - a < a ? "B" : "A";
+}
+
+export type ArmStats = { delivered: number; replied: number; rate: number | null };
+
+/** Reply rate per arm for one lead type, on delivered first emails. */
+export function subjectTest(book: OutreachBook, kind: LeadKind): { A: ArmStats; B: ArmStats; winner: "A" | "B" | null } {
+  const arm = (variant: "A" | "B"): ArmStats => {
+    const rows = book.enrollments.filter((e) => e.kind === kind && e.variant === variant && e.steps[0]?.sent_at && e.status !== "bounced");
+    const replied = rows.filter((e) => e.status === "replied").length;
+    return { delivered: rows.length, replied, rate: rows.length ? Math.round((replied / rows.length) * 1000) / 10 : null };
+  };
+  const A = arm("A");
+  const B = arm("B");
+  // A clear win: 20+ delivered on each side and at least 5 points apart.
+  let winner: "A" | "B" | null = null;
+  if (A.delivered >= 20 && B.delivered >= 20 && A.rate != null && B.rate != null && Math.abs(A.rate - B.rate) >= 5) winner = A.rate > B.rate ? "A" : "B";
+  return { A, B, winner };
+}

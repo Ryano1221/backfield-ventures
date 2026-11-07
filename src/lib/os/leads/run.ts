@@ -6,7 +6,7 @@
  *   4. score against Ryan's taste, then draft the first email
  * Each step can fail on its own without losing the rest. Nothing is sent.
  */
-import { mergeLeads, markFilings } from "./book";
+import { mergeLeads, markFilings, wakeSnoozed } from "./book";
 import { templateDraft } from "./draft";
 import { scoreLead, type Taste } from "./score";
 import { classify, dailyIndexUrl, filingXmlUrl, leadFromFiling, parseDailyIndex, parseFormD, type IndexRow } from "./sec-form-d";
@@ -51,7 +51,12 @@ export function recentDays(now: Date, count: number): string[] {
   return out;
 }
 
-export async function runFinder(book: LeadBook, deps: RunDeps, limits: RunLimits = DEFAULT_LIMITS) {
+export async function runFinder(start: LeadBook, deps: RunDeps, limits: RunLimits = DEFAULT_LIMITS) {
+  // Snoozed leads whose date has come are back to review before anything else.
+  let book = wakeSnoozed(start, deps.now).book;
+  // Self-heal: days marked read while no filing was ever read were marked by mistake
+  // (an index that failed to load was taken for a holiday). Read them again.
+  if (!book.cursor.done_filings.length && book.cursor.done_days.length) book = { ...book, cursor: { ...book.cursor, done_days: [] } };
   const now = deps.now.toISOString();
   const timeLeft = deps.timeLeft ?? (() => Infinity);
   const errors: string[] = [];
@@ -65,10 +70,15 @@ export async function runFinder(book: LeadBook, deps: RunDeps, limits: RunLimits
   for (const day of recentDays(deps.now, limits.days)) {
     if (budget <= 0 || timeLeft() < 30_000) break;
     if (book.cursor.done_days.includes(day)) continue;
-    const index = await deps.secText(dailyIndexUrl(day)).catch(() => {
-      errors.push(`SEC index for ${day} could not be read`);
-      return null;
-    });
+    let index: string | null;
+    try {
+      index = await deps.secText(dailyIndexUrl(day));
+    } catch (error) {
+      // A failed read is not a holiday: report it and leave the day to try again.
+      errors.push(`SEC index for ${day}: ${error instanceof Error ? error.message : "could not be read"}`);
+      await deps.pause(150);
+      continue;
+    }
     await deps.pause(150);
     if (index == null) {
       // No index: a holiday, or not published yet. Today's comes out after midnight ET, so retry later.

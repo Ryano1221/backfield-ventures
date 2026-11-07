@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyLeadOp, bulkPick, gmailLink, mergeLeads, parseImport, parseLeads } from "./leads/book";
+import { applyLeadOp, bulkPick, gmailLink, leadsCsv, mergeLeads, parseImport, parseLeads, wakeSnoozed } from "./leads/book";
 import { plainName, templateDraft } from "./leads/draft";
 import { DEFAULT_LIMITS, recentDays, runFinder, type RunDeps } from "./leads/run";
 import { learnTaste, scoreLead } from "./leads/score";
@@ -302,4 +302,47 @@ test("bulk: approve strong leads that have a real address, skip weak ones, and u
   assert.equal(undone.book.leads.find((l) => l.id === "c")?.status, "new");
   assert.equal(undone.book.leads.find((l) => l.id === "a")?.status, "approved", "undo touches only what it names");
   assert.deepEqual(applyLeadOp(book, { op: "bulk", kind: "partner", action: "skip", score: 50 }), { ok: false, error: "Nothing matches." });
+});
+
+test("CSV export quotes commas and quotes, and neutralises spreadsheet formulas", () => {
+  const csv = leadsCsv([lead({ company: 'Fixture "Snacks", Inc.', score: 88, reasons: ["+15 seed-size round", "-10 no contact yet"] }), lead({ id: "f2", company: "=HYPERLINK(1)" })]);
+  const lines = csv.trim().split("\r\n");
+  assert.equal(lines[0], "company,type,status,score,person,title,email,email_source,location,website,top_reason,said_recently,said_source,source,found");
+  assert.ok(lines[1].startsWith('"Fixture ""Snacks"", Inc.",founder,new,88,Fixture Founder,Executive Officer,fixture@example.com,website,"Austin, TX",'));
+  assert.ok(lines[1].includes(",seed-size round,"));
+  assert.ok(lines[2].startsWith("'=HYPERLINK(1),"));
+});
+
+test("snoozed leads wait in Skipped and come back to review on their date", async () => {
+  const book = { ...EMPTY_BOOK, leads: [lead()] };
+  const snoozed = applyLeadOp(book, { op: "snooze", id: "lead_founder_fixture", days: 30 }, "2026-11-07T12:00:00.000Z");
+  assert.ok(snoozed.ok);
+  assert.equal(snoozed.book.leads[0].status, "skipped");
+  assert.equal(snoozed.book.leads[0].snoozed_until, "2026-12-07");
+  assert.equal(applyLeadOp(book, { op: "snooze", id: "lead_founder_fixture", days: 7 }).ok, false);
+  assert.equal(wakeSnoozed(snoozed.book, new Date("2026-12-06T12:00:00Z")).woke, 0);
+  const woke = wakeSnoozed(snoozed.book, new Date("2026-12-07T08:00:00Z"));
+  assert.equal(woke.woke, 1);
+  assert.equal(woke.book.leads[0].status, "new");
+  assert.equal(woke.book.leads[0].snoozed_until, null);
+  const plainSkip = applyLeadOp(book, { op: "skip", id: "lead_founder_fixture" });
+  assert.ok(plainSkip.ok);
+  assert.equal(wakeSnoozed(plainSkip.book, new Date("2030-01-01T00:00:00Z")).woke, 0, "a plain skip stays skipped");
+  const run = await runFinder(snoozed.book, { secText: async () => null, webText: async () => null, hasMx: async () => false, vendor: null, ai: null, research: null, taste: learnTaste([]), now: new Date("2026-12-08T12:00:00Z"), pause: async () => undefined }, { ...DEFAULT_LIMITS, days: 1 });
+  assert.equal(run.book.leads[0].status, "new", "the daily run wakes it");
+});
+
+test("a failed SEC read is reported and retried, never taken for a holiday; mistaken days self-heal", async () => {
+  const base = { webText: async () => null, hasMx: async () => false, vendor: null, ai: null, research: null, taste: learnTaste([]), now: new Date("2026-11-06T12:00:00Z"), pause: async () => undefined };
+  const failing = await runFinder(EMPTY_BOOK, { ...base, secText: async () => { throw new Error("SEC answered 403 for form.20261105.idx"); } }, { ...DEFAULT_LIMITS, days: 5 });
+  assert.equal(failing.run.scanned, 0);
+  assert.deepEqual(failing.book.cursor.done_days, [], "no day is marked read after a failed read");
+  assert.ok(failing.run.errors.some((e) => e.includes("SEC answered 403")));
+
+  const holiday = await runFinder(EMPTY_BOOK, { ...base, secText: async () => null }, { ...DEFAULT_LIMITS, days: 5 });
+  assert.ok(holiday.book.cursor.done_days.length > 0, "a real 404 older than 3 days still counts as no index");
+
+  const mistaken = { ...EMPTY_BOOK, cursor: { done_days: ["20261103", "20261104"], done_filings: [] } };
+  const healed = await runFinder(mistaken, { ...base, secText: async (url) => (url === dailyIndexUrl("20261105") ? INDEX : null) }, { ...DEFAULT_LIMITS, days: 1 });
+  assert.ok(healed.run.scanned > 0, "reads again after healing");
 });
