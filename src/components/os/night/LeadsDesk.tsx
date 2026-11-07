@@ -270,6 +270,7 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
           <kbd>j</kbd> <kbd>k</kbd> move · <kbd>Enter</kbd> open · <kbd>a</kbd> approve · <kbd>s</kbd> skip
         </p>
       ) : null}
+      {shown.length && status === "new" ? <p className="sx-hint leads-swipe-tip">Swipe a lead right to approve, left to skip.</p> : null}
       {shown.length ? (
         <ul className="leads-list" ref={listRef}>
           {shown.map((lead, index) => (
@@ -362,6 +363,55 @@ function pitchLine(lead: Pick<Lead, "signals">): string | null {
     if (parts.length === 3) break;
   }
   return parts.length ? parts.join(" · ") : null;
+}
+
+const SWIPE_AT = 96;
+
+/**
+ * Phone gesture on a lead to review: drag right to approve, left to skip.
+ * Touch only, and only once the drag is clearly sideways, so scrolling the list is untouched.
+ * The buttons inside the card still do the same thing for anyone who doesn't swipe.
+ */
+function useSwipe(enabled: boolean, onSwipe: (dir: "left" | "right") => void) {
+  const [dx, setDx] = useState(0);
+  const [gone, setGone] = useState<"left" | "right" | null>(null);
+  const start = useRef<{ x: number; y: number; id: number; sideways: boolean | null } | null>(null);
+  const handlers = enabled
+    ? {
+        onPointerDown: (event: React.PointerEvent) => {
+          if (event.pointerType !== "touch") return;
+          start.current = { x: event.clientX, y: event.clientY, id: event.pointerId, sideways: null };
+        },
+        onPointerMove: (event: React.PointerEvent) => {
+          const s = start.current;
+          if (!s || s.id !== event.pointerId) return;
+          const x = event.clientX - s.x;
+          const y = event.clientY - s.y;
+          if (s.sideways === null && Math.hypot(x, y) > 10) s.sideways = Math.abs(x) > Math.abs(y) * 1.5;
+          if (s.sideways) setDx(x);
+        },
+        onPointerUp: () => {
+          const s = start.current;
+          start.current = null;
+          if (!s?.sideways) return setDx(0);
+          if (Math.abs(dx) > SWIPE_AT) {
+            const dir = dx > 0 ? "right" : "left";
+            setGone(dir);
+            navigator.vibrate?.(10);
+            window.setTimeout(() => {
+              onSwipe(dir);
+              setGone(null);
+              setDx(0);
+            }, 220);
+          } else setDx(0);
+        },
+        onPointerCancel: () => {
+          start.current = null;
+          setDx(0);
+        },
+      }
+    : {};
+  return { dx, gone, handlers };
 }
 
 type NowTarget = "replies" | "review" | "approved" | "sent";
@@ -467,6 +517,10 @@ function LeadCard({
   const age = Number.isFinite(days) ? (days === 0 ? "found today" : days === 1 ? "found yesterday" : `found ${days}d ago`) : null;
   const headline = [lead.people.slice(0, 2).map((p) => p.name).join(", "), lead.location, age].filter(Boolean).join(" · ");
   const pitch = pitchLine(lead);
+  const swipe = useSwipe(lead.status === "new" && !busy, (dir) => {
+    if (dir === "right") void onOp({ op: "approve", id: lead.id, to: to || lead.contacts[0]?.email || "" });
+    else void onOp({ op: "skip", id: lead.id });
+  });
   // One tap to look the person up yourself, in your own browser.
   const plainCompany = plainName(lead.company);
   const lookup = lead.people[0] ? `${lead.people[0].name} ${plainCompany}`.trim() : null;
@@ -486,7 +540,12 @@ function LeadCard({
   }
 
   return (
-    <li className={`sx-card lead${open ? " is-open" : ""}`}>
+    <li className={`sx-card lead${open ? " is-open" : ""}${swipe.dx ? " is-swiping" : ""}${swipe.gone ? ` is-gone-${swipe.gone}` : ""}`} {...swipe.handlers} style={swipe.dx ? ({ "--swipe": `${swipe.dx}px` } as React.CSSProperties) : undefined}>
+      {lead.status === "new" ? (
+        <span className={`lead-swipe-hint${swipe.dx > 0 ? " is-approve" : swipe.dx < 0 ? " is-skip" : ""}${Math.abs(swipe.dx) > SWIPE_AT ? " is-armed" : ""}`} aria-hidden="true">
+          {swipe.dx >= 0 ? "Approve" : "Skip"}
+        </span>
+      ) : null}
       <h2 className="lead-title">
         <button type="button" className="lead-row" data-lead={lead.id} aria-expanded={open} aria-controls={`${lead.id}-body`} onClick={onToggle}>
           <span className={`lead-score ${band}`} aria-label={`Fit score ${lead.score} out of 100`}>
