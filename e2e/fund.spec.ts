@@ -4,7 +4,7 @@ import { unlinkSync } from "node:fs";
 const PASSWORD = "e2e-session-only";
 
 test.beforeEach(() => {
-  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-warm-leads.json"]) {
+  for (const file of ["/tmp/os-lp-pipeline.json", "/tmp/os-raise.json", "/tmp/os-deal-memos.json", "/tmp/os-spvs.json", "/tmp/os-holdings.json", "/tmp/os-added-companies.json", "/tmp/os-warm-leads.json", "/tmp/os-leads.json", "/tmp/os-outreach.json", "/tmp/os-outreach-outbox.json"]) {
     try {
       unlinkSync(file);
     } catch {
@@ -275,6 +275,50 @@ test("the weekly review catches an unwired SPV commitment and links to fix it", 
   await expect(page.getByRole("region", { name: "Portfolio" })).toContainText("Every closed SPV is a holding.");
   await money.getByRole("link", { name: "Open" }).first().click();
   await expect(page).toHaveURL(/\/os\/spv$/);
+});
+
+test("the daily lead search needs the cron secret, then finds leads and they show on Leads", async ({ request, page }) => {
+  expect((await request.get("/api/cron/leads")).status()).toBe(401);
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer wrong" } })).status()).toBe(401);
+  expect((await request.post("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(405);
+  const run = await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } });
+  expect(run.status()).toBe(200);
+  const body = (await run.json()) as { run: { scanned: number; added: number } };
+  expect(body.run.added).toBe(1);
+  // The test server reads canned filings only; it never reaches the SEC.
+  await signIn(page);
+  await page.goto("/os/leads");
+  await expect(page.getByRole("heading", { name: "Example Fixture Snacks, Inc." })).toBeVisible();
+  await expect(page.getByText("Last search")).toBeVisible();
+});
+
+test("autopilot: a started sequence sends its first email from the hourly run, and only with the cron secret", async ({ request, page }) => {
+  expect((await request.get("/api/cron/outreach")).status()).toBe(401);
+  expect((await request.get("/api/cron/leads", { headers: { authorization: "Bearer e2e-cron-secret" } })).status()).toBe(200);
+  await signIn(page);
+  await page.goto("/os/leads");
+  await expect(page.getByRole("heading", { name: "Autopilot off" })).toBeVisible();
+  await expect(page.getByText("Sending from owner@example.com")).toBeVisible();
+
+  const card = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Example Fixture Snacks, Inc." }) });
+  await card.getByRole("textbox").fill("founder@example.com");
+  await card.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("button", { name: /^Approved/ }).click();
+  await page.getByRole("button", { name: "Start sequence" }).click();
+  await expect(page.getByRole("status").filter({ hasText: /Sequence started for Example Fixture Snacks/ })).toBeVisible();
+
+  // Autopilot off: the run only checks replies.
+  let run = await request.get("/api/cron/outreach", { headers: { authorization: "Bearer e2e-cron-secret" } });
+  expect(((await run.json()) as { report: { sent: number } }).report.sent).toBe(0);
+
+  await page.getByRole("button", { name: "Turn on" }).click();
+  await expect(page.getByRole("heading", { name: "Autopilot on" })).toBeVisible();
+  run = await request.get("/api/cron/outreach", { headers: { authorization: "Bearer e2e-cron-secret" } });
+  expect(((await run.json()) as { report: { sent: number } }).report.sent).toBe(1);
+
+  await page.reload();
+  await page.getByRole("button", { name: /^Sent/ }).click();
+  await expect(page.getByText(/^Sequence: Running · email 1 of 5 sent/)).toBeVisible();
 });
 
 test("warm leads: an SPV backer becomes a Fund I lead, gets asked for names, and gets credit for the intro", async ({ page }) => {

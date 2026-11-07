@@ -76,7 +76,7 @@ test("detail links from a live-shaped snapshot resolve instead of 404", () => {
     assert.equal(decision.kind, "rewrite", href);
   }
 
-  for (const href of ["/", "/raise", "/deals", "/crm", "/bots", "/activity", "/waiting", "/email", "/studio", "/spv"]) {
+  for (const href of ["/", "/raise", "/deals", "/crm", "/bots", "/activity", "/waiting", "/email", "/studio", "/spv", "/leads"]) {
     assert.equal(decideOs({ host: HOST, pathname: href, authed: true }).kind, "rewrite", href);
   }
   assert.equal(decideOs({ host: HOST, pathname: "/ask", authed: true }).kind, "not-found");
@@ -85,6 +85,9 @@ test("detail links from a live-shaped snapshot resolve instead of 404", () => {
   assert.equal(decideOs({ host: HOST, pathname: "/api/os/snapshot", authed: false }).kind, "unauthorized");
   assert.equal(decideOs({ host: HOST, pathname: "/api/os/raise", authed: false }).kind, "unauthorized");
   assert.equal(decideOs({ host: HOST, pathname: "/raise", authed: false }).kind, "redirect");
+  // The cron route checks its own secret, on every host, including the main domain in production.
+  assert.equal(decideOs({ host: HOST, pathname: "/api/cron/leads", authed: false }).kind, "os-next");
+  assert.equal(decideOs({ host: "backfieldventures.com", pathname: "/api/cron/leads", authed: false, vercelEnv: "production" }).kind, "public");
 });
 
 function assertResolved(href: string, rewrite: string) {

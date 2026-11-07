@@ -69,6 +69,8 @@ function decideOsHost(path: string, authed: boolean): OsDecision {
     return { kind: "redirect", pathname: authed ? external : "/login" };
   }
   if (isTokenRoute(path)) return { kind: "os-next" };
+  // The lead search and outreach runs check their own secret.
+  if (path === "/api/cron/leads" || path === "/api/cron/outreach") return { kind: "os-next" };
   if (path === "/api/os" || path.startsWith("/api/os/")) {
     return authed ? { kind: "os-next" } : { kind: "unauthorized" };
   }
@@ -100,6 +102,7 @@ const OS_PAGE_REWRITES: Record<string, string> = {
   "/spv": "/os/spv",
   "/portfolio": "/os/portfolio",
   "/review": "/os/review",
+  "/leads": "/os/leads",
 };
 
 const NESTED_PREFIXES = ["/d/", "/crm/", "/deals/", "/email/", "/studio/", "/spv/"] as const;

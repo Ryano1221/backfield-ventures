@@ -783,7 +783,7 @@ function validatePreview(value: unknown, path: string, issues: string[]): Decisi
   const preview: DecisionPreview = {};
   const subject = publicText(value.subject, 200);
   const toLabel = publicText(value.to_label, 80);
-  const text = publicText(value.text, 8000);
+  const text = publicBody(value.text, 8000);
   const html = typeof value.html === "string" ? sanitizePreviewHtml(stripPrivate(value.html)).trim().slice(0, 20000) : "";
   const attachment = publicText(value.attachment_label, 120);
   const version = publicText(value.version, 40);
@@ -806,8 +806,22 @@ function publicText(value: unknown, max: number): string | undefined {
   return stripped.slice(0, max);
 }
 
+// Like publicText, but keeps line breaks: an email body needs its paragraphs.
+function publicBody(value: unknown, max: number): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const stripped = stripPrivate(value.replace(/\r\n?/g, "\n"))
+    .split("\n")
+    .map((line) => line.replace(/[^\S\n]{2,}/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (!stripped) return undefined;
+  return stripped.slice(0, max);
+}
+
+// A phone number never spans a line break, so "2026)\n\n1)" is not one.
 function stripPrivate(value: string): string {
-  return value.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "").replace(/(?:\+?\d[\d\s().-]{7,}\d)/g, "");
+  return value.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "").replace(/(?:\+?\d[\d \t().-]{7,}\d)/g, "");
 }
 
 function httpsUrl(value: unknown): string | null {

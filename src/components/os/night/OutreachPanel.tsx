@@ -1,0 +1,163 @@
+"use client";
+
+import { useState } from "react";
+import { outreachStats } from "@/lib/os/outreach/plan";
+import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
+import { KIND_LABEL, LEAD_KINDS } from "@/lib/os/leads/types";
+
+export type OutreachSetup = { gmail: string | null; googleReady: boolean };
+
+const STATUS: Record<Enrollment["status"], string> = { active: "Running", replied: "Replied", bounced: "Bounced", opted_out: "Opted out", finished: "Finished", stopped: "Stopped" };
+const THRESHOLDS = [70, 75, 80, 85, 90];
+
+export function sequenceLine(enrollment: Enrollment): string {
+  const sent = enrollment.steps.filter((s) => s.sent_at).length;
+  const progress = sent ? `email ${sent} of ${enrollment.steps.length} sent` : "first email queued";
+  return `${STATUS[enrollment.status]} · ${progress}`;
+}
+
+/** Autopilot: the switch, its rules, and what it is doing. Every change saves; the hourly run sends. */
+export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }: { book: OutreachBook; setup: OutreachSetup; capToday: number; sentToday: number; now: number; onBook: (book: OutreachBook, setup?: OutreachSetup) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const s = book.settings;
+
+  async function send(body: Record<string, unknown>, url = "/api/os/outreach") {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; book?: OutreachBook; setup?: OutreachSetup };
+      if (!res.ok) {
+        setError(data.error || "Could not save that.");
+        return;
+      }
+      if (data.book) onBook(data.book, data.setup);
+      else if (url.endsWith("/disconnect")) onBook(book, { ...setup, gmail: null });
+    } catch {
+      setError("No connection. Nothing was saved.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const live = book.enrollments.filter((e) => e.status === "active");
+  const stats = outreachStats(book, new Date(now));
+  const recent = [...book.enrollments].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 12);
+
+  return (
+    <section className="sx-card autopilot" aria-label="Outreach autopilot">
+      <div className="lead-head">
+        <div>
+          <h2 className="lead-name">Autopilot {s.enabled ? "on" : "off"}</h2>
+          <p className="sx-hint">
+            {s.enabled
+              ? `Starts sequences for leads scoring ${s.threshold}+ and sends Tuesday to Thursday mornings, their time. ${sentToday} of ${capToday} new people today. ${live.length} running.`
+              : "Nothing sends while autopilot is off. Replies are still checked."}
+          </p>
+        </div>
+        <button type="button" className={s.enabled ? "btn" : "btn primary"} disabled={busy} onClick={() => send({ op: "settings", enabled: !s.enabled })}>
+          {s.enabled ? "Turn off" : "Turn on"}
+        </button>
+      </div>
+      {stats.emailed ? (
+        <dl className="dl lead-facts" aria-label="Last 30 days">
+          <dt>Emailed (30 days)</dt>
+          <dd>{stats.emailed}</dd>
+          <dt>Replied</dt>
+          <dd>
+            {stats.replied}
+            {stats.replyRate != null ? ` (${stats.replyRate}%, aim for 8 to 12%)` : ""}
+          </dd>
+          <dt>Bounced</dt>
+          <dd>{stats.bounced}</dd>
+          <dt>Opted out</dt>
+          <dd>{stats.optedOut}</dd>
+        </dl>
+      ) : null}
+      {s.paused_reason ? (
+        <p className="sx-error" role="alert">
+          {s.paused_reason}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="sx-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="lead-to">
+        <span className="lbl">Gmail</span>
+        {setup.gmail ? (
+          <div className="sx-actions">
+            <span className="t-body">Sending from {setup.gmail}</span>
+            <button type="button" className="btn" disabled={busy} onClick={() => send({}, "/api/os/gmail/disconnect")}>
+              Disconnect
+            </button>
+          </div>
+        ) : setup.googleReady ? (
+          <a className="btn primary" href="/api/os/gmail/connect">
+            Connect Gmail
+          </a>
+        ) : (
+          <p className="sx-hint">Not connected. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel, then connect here.</p>
+        )}
+      </div>
+
+      <div className="lead-to">
+        <span className="lbl">Start automatically at score</span>
+        <div className="segment sx-wrap" role="group" aria-label="Score bar">
+          {THRESHOLDS.map((value) => (
+            <button key={value} type="button" aria-pressed={s.threshold === value} disabled={busy} onClick={() => send({ op: "settings", threshold: value })}>
+              {value}+
+            </button>
+          ))}
+        </div>
+        <div className="segment sx-wrap" role="group" aria-label="Who autopilot emails">
+          {LEAD_KINDS.map((kind) => (
+            <button key={kind} type="button" aria-pressed={s.kinds[kind]} disabled={busy} onClick={() => send({ op: "settings", kinds: { [kind]: !s.kinds[kind] } })}>
+              {KIND_LABEL[kind]}
+            </button>
+          ))}
+        </div>
+        <p className="sx-hint">Five emails each: first, 3 days, a week, a week, then 3 months. Stops on any reply. Never emails a guessed address. LP emails only cover The Handoff and startups, never the fund. Daily limit starts at {s.start_cap} and rises {s.ramp_per_week} a week to {s.max_cap}.</p>
+      </div>
+
+      {recent.length ? (
+        <details className="lead-why">
+          <summary>Sequences ({book.enrollments.length})</summary>
+          <ul className="autopilot-list">
+            {recent.map((enrollment) => (
+              <li key={enrollment.lead_id}>
+                <span>
+                  <b>{enrollment.company}</b> · {enrollment.email}
+                </span>
+                <span className="sx-hint">{sequenceLine(enrollment)}</span>
+                {enrollment.status === "active" ? (
+                  <button type="button" className="btn sm" disabled={busy} onClick={() => send({ op: "stop", lead_id: enrollment.lead_id })}>
+                    Stop
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+      {book.log.length ? (
+        <details className="lead-why">
+          <summary>Activity</summary>
+          <ul>
+            {book.log
+              .slice(-10)
+              .reverse()
+              .map((event) => (
+                <li key={`${event.at}-${event.text}`}>
+                  {new Date(event.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}: {event.text}
+                </li>
+              ))}
+          </ul>
+        </details>
+      ) : null}
+    </section>
+  );
+}

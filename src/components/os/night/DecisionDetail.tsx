@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
+import { emailParagraphs, mergeLabel, parseSender } from "@/lib/os/email-preview";
+import { BEST3_FROM } from "@/lib/email/templates";
 import { sanitizePreviewHtml } from "@/lib/os/preview-html";
 import type { DecisionCompany, DecisionDetail as Detail, DecisionSwap } from "@/lib/os/types";
 
@@ -121,7 +123,7 @@ function Company({ company, action }: { company: DecisionCompany; action?: React
           </dl>
         ) : null}
         {company.website ? (
-          <a className="lnk" href={company.website} rel="noopener noreferrer">
+          <a className="lnk" href={company.website} target="_blank" rel="noopener noreferrer">
             {company.website.replace(/^https:\/\//, "")}
           </a>
         ) : null}
@@ -140,30 +142,72 @@ function Company({ company, action }: { company: DecisionCompany; action?: React
   );
 }
 
+// Sends go out from Ryan's Gmail.
+const SENDER = parseSender(BEST3_FROM);
+
 function Preview({ preview }: { preview: NonNullable<Detail["preview"]> }) {
   const html = preview.html ? sanitizePreviewHtml(preview.html) : "";
   return (
     <div className="block pack">
       <div className="lbl">Preview what we&apos;d send</div>
       <p className="preview-flag">Preview. Nothing has been sent, and nothing sends from this view.</p>
-      <div className="preview-body">
+      <article className="preview-body mail" aria-label="Email preview">
         {preview.subject ? (
-          <p>
-            <span className="lbl">Subject</span> {preview.subject}
-          </p>
+          <h2 className="mail-subject">
+            {preview.subject} <span className="mail-inbox">Inbox</span>
+          </h2>
         ) : null}
-        {preview.to_label ? (
-          <p>
-            <span className="lbl">To</span> {preview.to_label}
-          </p>
+        <div className="mail-from">
+          <span className="mail-avatar" aria-hidden="true">
+            {SENDER.initial}
+          </span>
+          <div>
+            <p className="mail-sender">
+              <b>{SENDER.name}</b> <span className="mail-addr">&lt;{SENDER.email}&gt;</span>
+            </p>
+            {preview.to_label ? <p className="mail-to">to {preview.to_label}</p> : null}
+          </div>
+        </div>
+        {html ? (
+          <div className="preview-html mail-text" dangerouslySetInnerHTML={{ __html: html }} />
+        ) : preview.text ? (
+          <div className="preview-text mail-text">
+            {emailParagraphs(preview.text).map((paragraph, p) => (
+              <p key={p}>
+                {paragraph.map((line, l) => (
+                  <Fragment key={l}>
+                    {l ? <br /> : null}
+                    {line.map((part, i) =>
+                      part.kind === "merge" ? (
+                        <span key={i} className="mail-merge" title={`Filled in per person${part.fallback ? `, or "${part.fallback}"` : ""}`}>
+                          {mergeLabel(part.field)}
+                        </span>
+                      ) : part.kind === "link" ? (
+                        // Shown the way Gmail shows a link. Not clickable: this is a preview.
+                        <span key={i} className="mail-link" title={part.href}>
+                          {part.value}
+                        </span>
+                      ) : (
+                        <Fragment key={i}>{part.value}</Fragment>
+                      ),
+                    )}
+                  </Fragment>
+                ))}
+              </p>
+            ))}
+          </div>
         ) : null}
-        {html ? <div className="preview-html" dangerouslySetInnerHTML={{ __html: html }} /> : preview.text ? <p className="preview-text">{preview.text}</p> : null}
         {preview.attachment_label ? (
-          <p>
-            <span className="lbl">Attachment</span> {preview.attachment_label}
-          </p>
+          <div className="mail-attach">
+            <span className="mail-file" aria-hidden="true">
+              {/\.pdf$/i.test(preview.attachment_label) ? "PDF" : "FILE"}
+            </span>
+            <span className="mail-file-name">
+              <span className="lbl">Attachment</span> {preview.attachment_label}
+            </span>
+          </div>
         ) : null}
-      </div>
+      </article>
     </div>
   );
 }

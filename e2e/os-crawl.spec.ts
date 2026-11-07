@@ -349,8 +349,13 @@ async function openBotSheets(
   }
 }
 
-async function tapControls(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
-  const plan = await page.evaluate((needles) => {
+type TapItem = { i: string; name: string; href: string; target: string; kind: string };
+
+// Marks the controls to tap with data-crawl-i and returns them in page order.
+async function markControls(page: Page): Promise<TapItem[]> {
+  return page.evaluate((needles) => {
+    // Drop marks from an earlier pass so ids never point at two elements.
+    for (const old of document.querySelectorAll("[data-crawl-i]")) old.removeAttribute("data-crawl-i");
     const visible = (el: Element) => {
       const node = el as HTMLElement;
       const style = getComputedStyle(node);
@@ -384,17 +389,63 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       if (items.length >= 24) break;
     }
     return items;
-  }, EDGE_NEEDLES).catch(async (error: unknown) => {
+  }, EDGE_NEEDLES);
+}
+
+async function tapControls(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
+  let marked: TapItem[];
+  try {
+    marked = await markControls(page);
+  } catch (error) {
     await note(route, "tap", error instanceof Error ? error.message : String(error));
-    return [] as { i: string; name: string; href: string; target: string; kind: string }[];
-  });
+    return;
+  }
+  const routePath = new URL(route, page.url()).pathname;
+  const origin = new URL(page.url()).origin;
+  const offSite = (item: TapItem) => /^https?:/.test(item.href) && new URL(item.href).origin !== origin;
+  const leaves = (item: TapItem) => {
+    if (!item.href || item.target === "_blank" || /^(mailto|tel|javascript):/.test(item.href)) return false;
+    return new URL(item.href, page.url()).pathname !== routePath;
+  };
+  // Kind, name and link, plus which copy it is, so three identical "Copy text" buttons stay three.
+  const keysOf = (items: TapItem[]) => {
+    const count = new Map<string, number>();
+    return items.map((item) => {
+      const base = `${item.kind}|${item.name}|${item.href}`;
+      const n = count.get(base) || 0;
+      count.set(base, n + 1);
+      return { key: `${base}|${n}`, item };
+    });
+  };
+  const keyed = keysOf(marked);
+  const keyOf = (item: TapItem) => keyed.find((entry) => entry.item === item)?.key || "";
+  // Links that leave the page go last, so every in-page control is tapped first.
+  const plan = [...marked.filter((item) => !leaves(item)), ...marked.filter(leaves)];
+  // Coming back to the route renders a fresh DOM without the marks, so mark it again
+  // and look each remaining control up by what it is, not by its old id.
+  let current = new Map(keyed.map(({ key, item }) => [key, item.i]));
+  const returnTo = async () => {
+    if (new URL(page.url()).pathname !== routePath) {
+      await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => undefined);
+    }
+    await page.getByRole("heading", { level: 1 }).first().waitFor({ timeout: 15_000 }).catch(() => undefined);
+    await page.waitForLoadState("load", { timeout: 8_000 }).catch(() => undefined);
+    current = new Map(keysOf(await markControls(page).catch(() => [] as TapItem[])).map(({ key, item }) => [key, item.i]));
+  };
 
   for (const item of plan) {
-    const el = page.locator(`[data-crawl-i="${item.i}"]`);
+    const id = current.get(keyOf(item));
+    if (!id) continue;
+    const el = page.locator(`[data-crawl-i="${id}"]`);
     if (!(await el.count())) continue;
     if (!(await el.isVisible().catch(() => false))) continue;
     if (await el.evaluate((node) => (node as HTMLButtonElement).disabled || node.getAttribute("aria-disabled") === "true").catch(() => false)) continue;
     if (item.href.startsWith("mailto:") || item.href.startsWith("tel:")) continue;
+    // An outside site must open in a new tab, so the OS stays put. Never follow it here.
+    if (offSite(item) && item.target !== "_blank") {
+      await note(route, "tap", `${item.name || item.href} opens ${item.href} in the same tab`);
+      continue;
+    }
     if (item.kind === "button" && (await el.getAttribute("type")) === "submit") {
       const form = el.locator("xpath=ancestor::form[1]");
       const name = form.locator("input[type='text'], input:not([type])");
@@ -422,27 +473,51 @@ async function tapControls(page: Page, route: string, note: (route: string, chec
       return false;
     });
     if (!clicked) continue;
-    await page.waitForTimeout(120);
-    const afterUrl = page.url();
-    if (new URL(afterUrl).pathname !== new URL(beforeUrl).pathname) {
-      await page.goBack({ waitUntil: "domcontentloaded", timeout: 8_000 }).catch(async () => {
-        await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-      });
+    const beforePath = new URL(beforeUrl).pathname;
+    if (leaves(item)) {
+      // A client-side navigation can land well after the click, so wait for it
+      // instead of checking the URL once.
+      const waitMove = (timeout: number) =>
+        page.waitForURL((url) => url.pathname !== beforePath, { timeout, waitUntil: "commit" }).then(() => true).catch(() => false);
+      let moved = await waitMove(6_000);
+      // A click that lands while the page is still hydrating can be dropped; checkBack retries the same way.
+      if (!moved && (await el.count().catch(() => 0))) {
+        await el.click({ noWaitAfter: true, timeout: 2_000 }).catch(() => undefined);
+        moved = await waitMove(6_000);
+      }
+      if (!moved) await note(route, "tap", `${item.name || item.href} did not navigate`);
+      await returnTo();
       continue;
     }
+    await page.waitForTimeout(120);
     let after = await signature(page);
     const started = Date.now();
     while (before && after === before && Date.now() - started < 700) {
       await page.waitForTimeout(100);
       after = await signature(page);
     }
-    if (before && after === before) await note(route, "tap", `${item.name || item.href || item.kind} did nothing`);
-    if ((await page.locator("[role='dialog']").count()) > 0) {
-      const close = page.locator("[role='dialog']").getByRole("button", { name: /close/i }).first();
-      if (await close.count()) await close.click().catch(() => undefined);
-      else await page.keyboard.press("Escape").catch(() => undefined);
+    // A button can navigate too (router.push after a save); come back before the next tap.
+    if (new URL(page.url()).pathname !== beforePath) {
+      await returnTo();
+      continue;
     }
+    if (before && after === before) await note(route, "tap", `${item.name || item.href || item.kind} did nothing`);
+    await closeDialogs(page, route, note);
   }
+}
+
+// Every open dialog must close, by Escape or its Close control, before the next tap.
+async function closeDialogs(page: Page, route: string, note: (route: string, check: string, detail: string) => Promise<void>) {
+  const dialogs = page.locator("[role='dialog']:visible");
+  if (!(await dialogs.count())) return;
+  await page.keyboard.press("Escape").catch(() => undefined);
+  if (await dialogs.first().waitFor({ state: "hidden", timeout: 1_000 }).then(() => true).catch(() => false)) return;
+  const label = (await dialogs.first().getAttribute("aria-label").catch(() => null)) || "dialog";
+  await note(route, "dialog", `${label} does not close on Escape`);
+  // A full-screen scrim sits under the sheet card, so click its corner, not its centre.
+  const close = dialogs.first().getByRole("button", { name: /close/i }).first();
+  if (await close.count()) await close.click({ position: { x: 4, y: 4 }, timeout: 2_000 }).catch(() => undefined);
+  if (await dialogs.count()) await note(route, "dialog", `${label} stays open after Escape and Close`);
 }
 
 async function signOut(page: Page, note: (route: string, check: string, detail: string) => Promise<void>) {

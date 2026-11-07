@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { officeStatus } from "@/lib/os/ask";
 import { stageButtonLabel, stageChoices } from "@/lib/os/night";
 import type { PersonModel } from "@/lib/os/night";
 import { useNightActions } from "./NightFrame";
+import { useEscape } from "./useEscape";
 
 export function PersonActions({ person }: { person: PersonModel }) {
   const { submit, actions } = useNightActions();
@@ -12,6 +13,7 @@ export function PersonActions({ person }: { person: PersonModel }) {
   const [note, setNote] = useState("");
   const [draft, setDraft] = useState("");
   const [stageOpen, setStageOpen] = useState(false);
+  useEscape(stageOpen, useCallback(() => setStageOpen(false), []));
   const latest = [...actions].reverse().find((action) => action.target_id === person.id && (action.type === "crm_next_step" || action.type === "crm_note" || action.type === "crm_stage"));
   const status = latest ? officeStatus(latest, "the office") : null;
 

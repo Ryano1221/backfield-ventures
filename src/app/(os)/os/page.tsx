@@ -12,6 +12,8 @@ import { headers } from "next/headers";
 import { readDoc } from "@/lib/os/doc-store";
 import { contentWaiting, parseStudio } from "@/lib/os/studio";
 import { parseSpvs, spvsForToday } from "@/lib/os/spv";
+import { parseOutreach } from "@/lib/os/outreach/book";
+import { repliesWaiting } from "@/lib/os/outreach/plan";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +31,10 @@ export default async function OsPage() {
   const command = buildCommand(page.snapshot, await readRaise(), page.snapshot ? buildBotDesk(page.snapshot, page.actions, now) : null, now);
   const content = contentWaiting(parseStudio(await readDoc("content-studio").catch(() => null)));
   const spvs = spvsForToday(parseSpvs(await readDoc("spvs").catch(() => null)), now);
+  const replies = repliesWaiting(parseOutreach(await readDoc("outreach").catch(() => null))).map((e) => ({ id: e.lead_id, who: [e.name, e.company].filter(Boolean).join(", "), snippet: e.reply?.snippet ?? "" }));
   return (
     <NightFrame onOs={isOsHost(host)} active="today" counts={osChromeCounts(page.snapshot, model)} stamp={model.stamp} stale={page.model.stale} initialActions={page.actions} finder={page.finder}>
-      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} stale={page.model.stale} outreachWeeks={await loadOutreachWeeks(page.snapshot, now)} content={content} spvs={spvs} />
+      <TodayDesk model={model} onOs={isOsHost(host)} posts={page.snapshot?.posts ?? []} schedule={page.snapshot?.schedule ?? []} warmups={page.snapshot?.warmups ?? []} briefs={page.snapshot?.briefs ?? []} answered={page.snapshot?.answered_decisions ?? []} command={command} stale={page.model.stale} outreachWeeks={await loadOutreachWeeks(page.snapshot, now)} content={content} spvs={spvs} replies={replies} />
     </NightFrame>
   );
 }

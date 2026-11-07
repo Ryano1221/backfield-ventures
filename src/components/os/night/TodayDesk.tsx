@@ -31,6 +31,7 @@ export function TodayDesk({
   outreachWeeks = [],
   content = [],
   spvs = [],
+  replies = [],
 }: {
   model: TodayModel;
   onOs: boolean;
@@ -46,6 +47,8 @@ export function TodayDesk({
   content?: ContentWaiting[];
   /** Open SPVs closing within two weeks. */
   spvs?: SpvToday[];
+  /** People who replied to outreach and are waiting on Ryan. */
+  replies?: { id: string; who: string; snippet: string }[];
 }) {
   const hrefs = osHrefs(onOs);
   const { enqueue, inflight, reportToday, actions, setAskContext } = useNightActions();
@@ -185,6 +188,22 @@ export function TodayDesk({
           <p className="empty-clear">Inbox clear.</p>
         )}
         {command ? <CommandLists command={command} hrefs={hrefs} part="people" /> : null}
+        {replies.length ? (
+          <section className="stack" aria-label="Replies to outreach">
+            <h2>Replies to outreach</h2>
+            <ul className="bot-list">
+              {replies.map((row) => (
+                <li key={row.id}>
+                  <Link className="note-row" href={hrefs.leads} prefetch>
+                    <span className="bot-wait-name">{row.who}</span>
+                    <span className="bot-wait-when is-due">Replied</span>
+                    <span className="bot-wait-sum">{row.snippet || "Open Leads to answer."}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         {spvs.length ? (
           <section className="stack" aria-label="SPVs closing">
             <h2>SPVs closing</h2>
