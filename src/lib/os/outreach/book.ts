@@ -110,6 +110,13 @@ export function applyOutreachOp(book: OutreachBook, raw: unknown, leads: Lead[],
       const suppress = [...new Set([...book.suppress, enrollments[index].email])];
       return { ok: true, book: logEvent({ ...book, enrollments, suppress }, { at: now, lead_id: enrollments[index].lead_id, text: `Sequence stopped for ${enrollments[index].company}.` }) };
     }
+    case "handled": {
+      const index = book.enrollments.findIndex((e) => e.lead_id === op.lead_id && e.reply);
+      if (index < 0) return { ok: false, error: "No reply for that lead." };
+      const enrollments = [...book.enrollments];
+      enrollments[index] = { ...enrollments[index], reply: { ...enrollments[index].reply!, handled_at: now } };
+      return { ok: true, book: { ...book, enrollments } };
+    }
     default:
       return { ok: false, error: "Unknown change." };
   }

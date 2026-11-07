@@ -182,3 +182,23 @@ export function suppressed(book: OutreachBook, email: string): boolean {
 export function isOptOut(text: string): boolean {
   return /\b(no thanks|no thank you|unsubscribe|remove me|stop emailing|not interested|take me off|do not contact|don't contact|please stop)\b/i.test(text);
 }
+
+/** Replies Ryan hasn't dealt with yet, newest first. */
+export function repliesWaiting(book: OutreachBook): Enrollment[] {
+  return book.enrollments.filter((e) => e.status === "replied" && e.reply && !e.reply.handled_at).sort((a, b) => (b.reply?.at ?? "").localeCompare(a.reply?.at ?? ""));
+}
+
+/** Opens the thread in Gmail on the web. The API's thread id is the one Gmail's URLs use. */
+export function gmailThreadUrl(threadId: string): string {
+  return `https://mail.google.com/mail/u/0/#all/${encodeURIComponent(threadId)}`;
+}
+
+/** The last 30 days of autopilot, measured the way Apollo does: reply rate on people emailed. */
+export function outreachStats(book: OutreachBook, now: Date): { emailed: number; replied: number; bounced: number; optedOut: number; replyRate: number | null } {
+  const recent = book.enrollments.filter((e) => e.steps[0]?.sent_at && now.getTime() - Date.parse(e.steps[0].sent_at) < 30 * DAY_MS);
+  const replied = recent.filter((e) => e.status === "replied").length;
+  const bounced = recent.filter((e) => e.status === "bounced").length;
+  const optedOut = recent.filter((e) => e.status === "opted_out").length;
+  const delivered = recent.length - bounced;
+  return { emailed: recent.length, replied, bounced, optedOut, replyRate: delivered >= 5 ? Math.round((replied / delivered) * 100) : null };
+}

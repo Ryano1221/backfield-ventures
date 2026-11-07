@@ -61,7 +61,10 @@ export async function runOutreach(book: OutreachBook, leads: LeadBook, deps: Eng
       if (!reply.replied) continue;
       report.replied++;
       if (isOptOut(reply.snippet)) finish(enrollment, "opted_out", "Asked not to be contacted. Will never be emailed again.", true);
-      else finish(enrollment, "replied", "Replied. Sequence stopped; it's in your inbox.", false);
+      else {
+        enrollment.reply = { at: at(), snippet: reply.snippet.slice(0, 400), handled_at: null };
+        finish(enrollment, "replied", "Replied. Sequence stopped; it's in your inbox.", false);
+      }
     } catch (error) {
       report.errors.push(`${enrollment.company}: ${error instanceof Error ? error.message : "could not check the thread"}`);
     }

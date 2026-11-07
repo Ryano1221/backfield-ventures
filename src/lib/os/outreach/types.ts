@@ -40,6 +40,8 @@ export type Enrollment = {
   started_at: string;
   updated_at: string;
   by: "auto" | "you";
+  /** Their reply, for Ryan to act on. Cleared from the to-do list once he marks it done. */
+  reply?: { at: string; snippet: string; handled_at: string | null } | null;
 };
 
 export type OutreachSettings = {

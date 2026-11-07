@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { outreachStats } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import { KIND_LABEL, LEAD_KINDS } from "@/lib/os/leads/types";
 
@@ -16,7 +17,7 @@ export function sequenceLine(enrollment: Enrollment): string {
 }
 
 /** Autopilot: the switch, its rules, and what it is doing. Every change saves; the hourly run sends. */
-export function OutreachPanel({ book, setup, capToday, sentToday, onBook }: { book: OutreachBook; setup: OutreachSetup; capToday: number; sentToday: number; onBook: (book: OutreachBook, setup?: OutreachSetup) => void }) {
+export function OutreachPanel({ book, setup, capToday, sentToday, now, onBook }: { book: OutreachBook; setup: OutreachSetup; capToday: number; sentToday: number; now: number; onBook: (book: OutreachBook, setup?: OutreachSetup) => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const s = book.settings;
@@ -41,6 +42,7 @@ export function OutreachPanel({ book, setup, capToday, sentToday, onBook }: { bo
   }
 
   const live = book.enrollments.filter((e) => e.status === "active");
+  const stats = outreachStats(book, new Date(now));
   const recent = [...book.enrollments].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 12);
 
   return (
@@ -58,6 +60,21 @@ export function OutreachPanel({ book, setup, capToday, sentToday, onBook }: { bo
           {s.enabled ? "Turn off" : "Turn on"}
         </button>
       </div>
+      {stats.emailed ? (
+        <dl className="dl lead-facts" aria-label="Last 30 days">
+          <dt>Emailed (30 days)</dt>
+          <dd>{stats.emailed}</dd>
+          <dt>Replied</dt>
+          <dd>
+            {stats.replied}
+            {stats.replyRate != null ? ` (${stats.replyRate}%, aim for 8 to 12%)` : ""}
+          </dd>
+          <dt>Bounced</dt>
+          <dd>{stats.bounced}</dd>
+          <dt>Opted out</dt>
+          <dd>{stats.optedOut}</dd>
+        </dl>
+      ) : null}
       {s.paused_reason ? (
         <p className="sx-error" role="alert">
           {s.paused_reason}

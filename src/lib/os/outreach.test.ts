@@ -4,7 +4,7 @@ import { EMPTY_BOOK, type Lead } from "./leads/types";
 import { applyOutreachOp, makeEnrollment, mergeRun, writtenSteps } from "./outreach/book";
 import { runOutreach, type EngineDeps, type Mailer } from "./outreach/engine";
 import { accessToken, rawMessage, sendMail, threadReply, type Fetch } from "./outreach/gmail";
-import { autoEligible, buildSteps, dailyCap, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
+import { autoEligible, buildSteps, dailyCap, gmailThreadUrl, inSendWindow, isOptOut, LP_FORBIDDEN, nextStep, OPT_OUT, outreachStats, repliesWaiting, shouldPause, templateSteps, zoneFor } from "./outreach/plan";
 import { DEFAULT_SETTINGS, EMPTY_OUTREACH, type OutreachBook } from "./outreach/types";
 
 function lead(over: Partial<Lead> = {}): Lead {
@@ -224,4 +224,30 @@ test("a run's save keeps what Ryan changed meanwhile", () => {
   assert.ok(merged.suppress.includes("fixture@example.com"));
   const paused = mergeRun(before, before, { ...ran, settings: { ...ran.settings, enabled: false, paused_reason: "Paused: bounces" } });
   assert.equal(paused.settings.paused_reason, "Paused: bounces");
+});
+
+test("a reply is kept for Ryan to answer until he marks it done", async () => {
+  const e = makeEnrollment(lead(), "fixture@example.com", "you", "2026-11-10T00:00:00.000Z", null);
+  e.thread_id = "t9";
+  e.steps[0].sent_at = "2026-11-10T14:30:00.000Z";
+  const run = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(fakeMailer({ t9: "Happy to chat, how's Thursday?" }).mailer, "2026-11-11T14:30:00Z"));
+  const waiting = repliesWaiting(run.book);
+  assert.equal(waiting.length, 1);
+  assert.deepEqual(waiting[0].reply, { at: "2026-11-11T14:30:00.000Z", snippet: "Happy to chat, how's Thursday?", handled_at: null });
+  assert.equal(gmailThreadUrl("t9"), "https://mail.google.com/mail/u/0/#all/t9");
+  const done = applyOutreachOp(run.book, { op: "handled", lead_id: e.lead_id }, [], "2026-11-11T15:00:00.000Z");
+  assert.ok(done.ok);
+  assert.equal(repliesWaiting(done.book).length, 0);
+  const optOut = await runOutreach({ ...EMPTY_OUTREACH, enrollments: [e] }, EMPTY_BOOK, deps(fakeMailer({ t9: "No thanks" }).mailer, "2026-11-11T14:30:00Z"));
+  assert.equal(repliesWaiting(optOut.book).length, 0, "an opt-out is not a reply to answer");
+});
+
+test("reply rate counts delivered first emails over the last 30 days", () => {
+  const sent = (i: number, status: "active" | "replied" | "bounced" | "opted_out", at = "2026-11-05T15:00:00.000Z") => {
+    const e = makeEnrollment(lead({ id: `s${i}` }), `s${i}@example.com`, "auto", at, null);
+    e.steps[0].sent_at = at;
+    return { ...e, status };
+  };
+  const book: OutreachBook = { ...EMPTY_OUTREACH, enrollments: [...Array.from({ length: 8 }, (_, i) => sent(i, "active")), sent(8, "replied"), sent(9, "bounced"), sent(10, "opted_out"), sent(11, "replied", "2026-08-01T15:00:00.000Z")] };
+  assert.deepEqual(outreachStats(book, new Date("2026-11-10T00:00:00Z")), { emailed: 11, replied: 1, bounced: 1, optedOut: 1, replyRate: 10 });
 });

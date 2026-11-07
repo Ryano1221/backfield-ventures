@@ -7,6 +7,7 @@ import { KIND_LABEL, LEAD_KINDS, type Lead, type LeadBook, type LeadKind, type L
 import { dailyCap, firstTouchesToday } from "@/lib/os/outreach/plan";
 import type { Enrollment, OutreachBook } from "@/lib/os/outreach/types";
 import { FindymailPanel } from "./FindymailPanel";
+import { RepliesPanel } from "./RepliesPanel";
 import { OutreachPanel, sequenceLine, type OutreachSetup } from "./OutreachPanel";
 
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "To review", approved: "Approved", contacted: "Sent", skipped: "Skipped" };
@@ -92,11 +93,13 @@ export function LeadsDesk({ initial, setup, outreach: initialOutreach, outreachS
 
   return (
     <div className="leads">
+      <RepliesPanel book={outreach} onBook={setOutreach} />
       <OutreachPanel
         book={outreach}
         setup={mailSetup}
         capToday={dailyCap(outreach.settings, outreach, new Date(now))}
         sentToday={firstTouchesToday(outreach, new Date(now))}
+        now={now}
         onBook={(next, nextSetup) => {
           setOutreach(next);
           if (nextSetup) setMailSetup(nextSetup);
